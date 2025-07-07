@@ -2,6 +2,7 @@ import { createWebHistory, createRouter } from "vue-router";
 import NotFound from "/src/views/404View.vue";
 import UnAuthRoutes from "../const/UnauthRoutes.js";
 import LoginView from "../views/LoginView.vue";
+import DashboardView from '../views/DashboardView.vue';
 
 const routes = [
     {
@@ -14,6 +15,11 @@ const routes = [
         name: "404",
         component: NotFound
     },
+	{
+		path: "/dashboard",
+		name: "dashboard",
+		component: DashboardView
+	},
 ];
 export default function () {
     const router = createRouter({
