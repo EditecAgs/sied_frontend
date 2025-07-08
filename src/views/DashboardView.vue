@@ -8,7 +8,7 @@
 			<SideBar class="fixed top-16 left-0 bottom-0 z-40 w-64" />
 
 
-			<main class="flex-1 ml-64 p-6 overflow-auto bg-gray-100">
+			<main class="ml-64 p-6 overflow-auto bg-gray-100 w-[calc(100%-16rem)]">
 				<h1 class="text-2xl font-semibold mb-4">Contenido del Dashboard</h1>
 
 			</main>
