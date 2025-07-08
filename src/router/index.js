@@ -3,6 +3,7 @@ import NotFound from "/src/views/404View.vue";
 import UnAuthRoutes from "../const/UnauthRoutes.js";
 import LoginView from "../views/LoginView.vue";
 import DashboardView from '../views/DashboardView.vue';
+import UserCatalogView from '../views/UserCatalogView.vue';
 
 const routes = [
     {
@@ -19,6 +20,11 @@ const routes = [
 		path: "/dashboard",
 		name: "dashboard",
 		component: DashboardView
+	},
+	{
+		path: "/usercatalog",
+		name: "usercatalog",
+		component: UserCatalogView
 	},
 ];
 export default function () {

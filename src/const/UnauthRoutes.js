@@ -4,5 +4,6 @@ export default [
     '404',
     'login',
 	'dashboard',
+	'usercatalog',
     ''
 ];

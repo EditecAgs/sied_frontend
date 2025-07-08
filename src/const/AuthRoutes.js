@@ -1,5 +1,6 @@
 export default [
     'dashboard',
     'form',
-    'stats'
+    'stats',
+	'usercatalog'
 ];
