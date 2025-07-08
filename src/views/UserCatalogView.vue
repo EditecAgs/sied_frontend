@@ -1,8 +1,8 @@
 <template>
 	<div class="flex h-screen">
-		<SideBar />
+
 		<div class="flex-1 flex flex-col">
-			<NavBar />
+
 			<div class="p-4 overflow-auto">
 				<!-- Tu tabla -->
 				<table class="min-w-full divide-y divide-gray-200">
@@ -26,6 +26,5 @@
 <script
 	setup
 	lang="ts">
-import NavBar from '../components/NavBar.vue';
-import SideBar from '../components/SideBar.vue';
+
 </script>

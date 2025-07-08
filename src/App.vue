@@ -1,21 +1,12 @@
 <template>
-	<un-auth-layout />
+	<ThemeProvider>
+		<SidebarProvider>
+			<RouterView />
+		</SidebarProvider>
+	</ThemeProvider>
 </template>
-<script setup>
-import {watch,defineAsyncComponent} from "vue";
-import { useRoute, useRouter } from 'vue-router';
-import { useAxios } from './axios';
-const UnAuthLayout = defineAsyncComponent(() => import('/src/layouts/UnauthLayout.vue'))
-const route = useRoute();
-const router = useRouter();
 
-//localStorage.setItem('lang', 'en');
-
-
-watch(
-    () => route.name,
-    () => {
-      window.axios = useAxios(router);
-    }
-);
+<script setup lang="ts">
+import ThemeProvider from './components/layouts/ThemeProvider.vue'
+import SidebarProvider from './components/layouts/SidebarProvider.vue'
 </script>
