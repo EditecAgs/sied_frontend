@@ -125,7 +125,8 @@ export default function () {
     const router = createRouter({
         history: createWebHistory(),
         routes,
-        scrollBehavior (to, from, savedPosition) {
+		// eslint-disable-next-line @typescript-eslint/no-unused-vars
+        scrollBehavior (_to, _from, _savedPosition) {
             return { top: 0 }
         }
     });
