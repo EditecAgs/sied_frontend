@@ -6,25 +6,6 @@
 					<!-- Form -->
 					<div class="flex flex-col justify-center flex-1 w-full max-w-md mx-auto">
 						<div class="mb-5 sm:mb-3">
-							<router-link
-								to="/"
-								class="inline-flex items-center text-sm text-gray-500 transition-colors hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300">
-								<svg
-									class="stroke-current"
-									xmlns="http://www.w3.org/2000/svg"
-									width="20"
-									height="20"
-									viewBox="0 0 20 20"
-									fill="none">
-									<path
-										d="M12.7083 5L7.5 10.2083L12.7083 15.4167"
-										stroke=""
-										stroke-width="1.5"
-										stroke-linecap="round"
-										stroke-linejoin="round" />
-								</svg>
-								Back to dashboard
-							</router-link>
 							<h1 class="mb-2 font-semibold text-gray-800 text-title-sm dark:text-white/90 sm:text-title-md">Sign Up</h1>
 							<p class="text-sm text-gray-500 dark:text-gray-400">Enter your email and password to sign up!</p>
 						</div>
@@ -189,7 +170,7 @@
 								<p class="text-sm font-normal text-center text-gray-700 dark:text-gray-400 sm:text-start">
 									Already have an account?
 									<router-link
-										to="/signin"
+										to="/"
 										class="text-brand-500 hover:text-brand-600 dark:text-brand-400">
 										Sign In
 									</router-link>

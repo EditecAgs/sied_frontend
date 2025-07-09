@@ -253,7 +253,7 @@ const menuGroups = [
 		{
 			name: "Catalogós",
 			icon: TableIcon,
-			subItems: [{name: "Ususarios", path: "/basic-tables", pro: false}],
+			subItems: [{name: "Usuarios", path: "/basic-tables", pro: false}],
 		},
       {
         icon: PieChartIcon,
