@@ -209,7 +209,6 @@ import {
   ListIcon,
   PlugInIcon,
 } from "../../icons";
-import SidebarWidget from "./SidebarWidget.vue";
 import BoxCubeIcon from "../../icons/BoxCubeIcon.vue";
 import {useSidebar} from "../../composables/useSidebar";
 
@@ -224,12 +223,7 @@ const menuGroups = [
       {
         icon: GridIcon,
         name: "Dashboard",
-        subItems: [{name: "Ecommerce", path: "/", pro: false}],
-      },
-      {
-        icon: CalenderIcon,
-        name: "Calendar",
-        path: "/calendar",
+        subItems: [{name: "Ecommerce", path: "/ecommerce", pro: false}],
       },
       {
         icon: UserCircleIcon,
@@ -254,7 +248,6 @@ const menuGroups = [
         icon: PageIcon,
         subItems: [
           {name: "Black Page", path: "/blank", pro: false},
-          {name: "404 Page", path: "/error-404", pro: false},
         ],
       },
     ],
@@ -290,7 +283,7 @@ const menuGroups = [
           {name: "Signup", path: "/signup", pro: false},
         ],
       },
-      // ... Add other menu items here
+
     ],
   },
 ];

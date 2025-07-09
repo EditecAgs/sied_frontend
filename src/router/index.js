@@ -5,7 +5,6 @@ import LoginView from "../views/LoginView.vue";
 import DashboardView from '../views/DashboardView.vue';
 import UserCatalogView from '../views/UserCatalogView.vue';
 import EcommerceView from '../views/EcommerceView.vue'
-import Calendar from '../views/Others/Calendar.vue'
 import Profile from '../views/Others/UserProfile.vue'
 import FormElements from '../views/Forms/FormElements.vue'
 import BasicTables from '../views/Tables/BasicTables.vue'
@@ -18,7 +17,6 @@ import Buttons from '../views/UiElements/Buttons.vue'
 import Images from '../views/UiElements/Images.vue'
 import Videos from '../views/UiElements/Videos.vue'
 import BlankPage from '../views/Pages/BlankPage.vue'
-import Error404 from '../views/Errors/FourZeroFour.vue'
 import Signin from '../views/Auth/Signin.vue'
 import Signup from '../views/Auth/Signup.vue'
 
@@ -47,12 +45,10 @@ const routes = [
     {
         path: '/ecommerce',
         name: 'ecommerce',
-        component: EcommerceView
-    },
-    {
-        path: '/calendar',
-        name: 'calendar',
-        component: Calendar
+        component: EcommerceView,
+        meta: {
+            title: 'eCommerce Dashboard',
+        }
     },
     {
         path: '/profile',
@@ -113,11 +109,6 @@ const routes = [
         path: '/blank',
         name: 'Blank',
         component: BlankPage
-    },
-    {
-        path: '/error-404',
-        name: 'Error404',
-        component: Error404
     },
     {
         path: '/signin',
