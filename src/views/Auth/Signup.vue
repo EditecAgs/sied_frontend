@@ -5,7 +5,7 @@
 				<div class="flex flex-col flex-1 w-full lg:w-1/2">
 					<!-- Form -->
 					<div class="flex flex-col justify-center flex-1 w-full max-w-md mx-auto">
-						<div class="mb-5 sm:mb-8">
+						<div class="mb-5 sm:mb-3">
 							<router-link
 								to="/"
 								class="inline-flex items-center text-sm text-gray-500 transition-colors hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300">
