@@ -2,8 +2,6 @@ import { createWebHistory, createRouter } from "vue-router";
 import NotFound from "../views/404View.vue";
 import UnAuthRoutes from "../const/UnauthRoutes.js";
 import LoginView from "../views/LoginView.vue";
-import DashboardView from '../views/DashboardView.vue';
-import UserCatalogView from '../views/UserCatalogView.vue';
 import EcommerceView from '../views/EcommerceView.vue'
 import Profile from '../views/Others/UserProfile.vue'
 import FormElements from '../views/Forms/FormElements.vue'
@@ -32,16 +30,6 @@ const routes = [
         name: "404",
         component: NotFound
     },
-	{
-		path: "/dashboard",
-		name: "dashboard",
-		component: DashboardView
-	},
-	{
-		path: "/usercatalog",
-		name: "usercatalog",
-		component: UserCatalogView
-	},
     {
         path: '/ecommerce',
         name: 'ecommerce',

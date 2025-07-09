@@ -3,8 +3,6 @@ export default [
     'home',
     '404',
     'login',
-	'dashboard',
-	'usercatalog',
     'ecommerce',
     'Profile',
     'FormElements',

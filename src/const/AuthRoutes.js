@@ -1,8 +1,6 @@
 export default [
-    'dashboard',
     'form',
     'stats',
-	'usercatalog',
     'ecommerce',
     'Profile',
     'FormElements',
