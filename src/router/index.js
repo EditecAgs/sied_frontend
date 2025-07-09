@@ -1,8 +1,23 @@
 import { createWebHistory, createRouter } from "vue-router";
-import NotFound from "/src/views/404View.vue";
+import NotFound from "../views/404View.vue";
 import UnAuthRoutes from "../const/UnauthRoutes.js";
 import LoginView from "../views/LoginView.vue";
-import DashboardView from '../views/DashboardView.vue';
+import EcommerceView from '../views/EcommerceView.vue'
+import Profile from '../views/Others/UserProfile.vue'
+import FormElements from '../views/Forms/FormElements.vue'
+import BasicTables from '../views/Tables/BasicTables.vue'
+import LineChart from '../views/Chart/LineChart/LineChart.vue'
+import BarChart from '../views/Chart/BarChart/BarChart.vue'
+import Alerts from '../views/UiElements/Alerts.vue'
+import Avatars from '../views/UiElements/Avatars.vue'
+import Badges from '../views/UiElements/Badges.vue'
+import Buttons from '../views/UiElements/Buttons.vue'
+import Images from '../views/UiElements/Images.vue'
+import Videos from '../views/UiElements/Videos.vue'
+import BlankPage from '../views/Pages/BlankPage.vue'
+import Signin from '../views/Auth/Signin.vue'
+import Signup from '../views/Auth/Signup.vue'
+
 
 const routes = [
     {
@@ -15,17 +30,91 @@ const routes = [
         name: "404",
         component: NotFound
     },
-	{
-		path: "/dashboard",
-		name: "dashboard",
-		component: DashboardView
-	},
+    {
+        path: '/ecommerce',
+        name: 'ecommerce',
+        component: EcommerceView,
+        meta: {
+            title: 'eCommerce Dashboard',
+        }
+    },
+    {
+        path: '/profile',
+        name: 'Profile',
+        component: Profile
+    },
+    {
+        path: '/form-elements',
+        name: 'FormElements',
+        component: FormElements
+    },
+    {
+        path: '/basic-tables',
+        name: 'BasicTables',
+        component: BasicTables
+    },
+    {
+        path: '/line-chart',
+        name: 'LineChart',
+        component: LineChart
+    },
+    {
+        path: '/bar-chart',
+        name: 'BarChart',
+        component: BarChart
+    },
+    {
+        path: '/alerts',
+        name: 'Alerts',
+        component: Alerts
+    },
+    {
+        path: '/avatars',
+        name: 'Avatars',
+        component: Avatars
+    },
+    {
+        path: '/badge',
+        name: 'Badge',
+        component: Badges
+    },
+    {
+        path: '/buttons',
+        name: 'Buttons',
+        component: Buttons
+    },
+    {
+        path: '/images',
+        name: 'Images',
+        component: Images
+    },
+    {
+        path: '/videos',
+        name: 'Videos',
+        component: Videos
+    },
+    {
+        path: '/blank',
+        name: 'Blank',
+        component: BlankPage
+    },
+    {
+        path: '/signin',
+        name: 'Signin',
+        component: Signin
+    },
+    {
+        path: '/signup',
+        name: 'Signup',
+        component: Signup
+    }
 ];
 export default function () {
     const router = createRouter({
         history: createWebHistory(),
         routes,
-        scrollBehavior (to, from, savedPosition) {
+		// eslint-disable-next-line @typescript-eslint/no-unused-vars
+        scrollBehavior (_to, _from, _savedPosition) {
             return { top: 0 }
         }
     });

@@ -1,5 +1,21 @@
 export default [
-    'dashboard',
     'form',
-    'stats'
+    'stats',
+    'ecommerce',
+    'Profile',
+    'FormElements',
+    'BasicTables',
+    'LineChart',
+    'BarChart',
+    'Alerts',
+    'Avatars',
+    'Badge',
+    'Buttons',
+    'Images',
+    'Videos',
+    'Blank',
+    'Error404',
+    'Signin',
+    'Signup',
+
 ];

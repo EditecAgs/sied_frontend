@@ -5,7 +5,9 @@
  */
 import axios from 'axios';
 
-export function useAxios(router, store) {
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+export function useAxios(_router, _store) {
+	// eslint-disable-next-line @typescript-eslint/no-unused-expressions
     axios;
 
     axios.defaults.baseURL = import.meta.env.VITE_API_BASE_URL + '/api/' //replace ziggy

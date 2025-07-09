@@ -8,7 +8,13 @@ module.exports = {
         defineEmits: 'readonly',
         defineExpose: 'readonly',
     },
-    extends: ['eslint:recommended', 'plugin:vue/vue3-recommended', 'plugin:vue/vue3-essential'],
+    parser: 'vue-eslint-parser',
+    parserOptions: {
+        parser: '@typescript-eslint/parser',
+        ecmaVersion: 2020,
+        sourceType: 'module',
+    },
+    extends: ['eslint:recommended', 'plugin:vue/vue3-recommended', 'plugin:vue/vue3-essential','plugin:@typescript-eslint/recommended'],
     rules: {
         'no-unused-vars': ['warn', { argsIgnorePattern: '^_' }],
         'no-mixed-spaces-and-tabs': ['error', 'smart-tabs'],
