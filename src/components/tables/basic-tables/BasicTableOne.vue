@@ -6,19 +6,19 @@
 				<thead>
 					<tr class="border-b border-gray-200 dark:border-gray-700">
 						<th class="px-5 py-3 text-left w-3/11 sm:px-6">
-							<p class="font-medium text-gray-500 text-theme-xs dark:text-gray-400">User</p>
+							<p class="font-medium text-gray-500 text-theme-xs dark:text-gray-400">Name</p>
 						</th>
 						<th class="px-5 py-3 text-left w-2/11 sm:px-6">
-							<p class="font-medium text-gray-500 text-theme-xs dark:text-gray-400">Project Name</p>
+							<p class="font-medium text-gray-500 text-theme-xs dark:text-gray-400">E-mail</p>
 						</th>
 						<th class="px-5 py-3 text-left w-2/11 sm:px-6">
-							<p class="font-medium text-gray-500 text-theme-xs dark:text-gray-400">Team</p>
+							<p class="font-medium text-gray-500 text-theme-xs dark:text-gray-400">Password</p>
 						</th>
 						<th class="px-5 py-3 text-left w-2/11 sm:px-6">
-							<p class="font-medium text-gray-500 text-theme-xs dark:text-gray-400">Status</p>
+							<p class="font-medium text-gray-500 text-theme-xs dark:text-gray-400">Institution</p>
 						</th>
 						<th class="px-5 py-3 text-left w-2/11 sm:px-6">
-							<p class="font-medium text-gray-500 text-theme-xs dark:text-gray-400">Budget</p>
+							<p class="font-medium text-gray-500 text-theme-xs dark:text-gray-400">Options</p>
 						</th>
 					</tr>
 				</thead>
@@ -72,8 +72,14 @@
 							</span>
 						</td>
 						<td class="px-5 py-4 sm:px-6">
-							<p class="text-gray-500 text-theme-sm dark:text-gray-400">{{ user.budget }}</p>
+							<div class="flex space-x-2">
+								<!-- Edit Button -->
+								<btnEdit :table="'user'" :pk="1" />
+								<!-- Delete Button -->
+								<btn-delete :table="'user'" :pk="1" />
+							</div>
 						</td>
+
 					</tr>
 				</tbody>
 			</table>
@@ -82,7 +88,21 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref } from 'vue';
+import btnEdit from "../../../components/buttons/btnEdit.vue";
+import btnDelete from "../../../components/buttons/btnDelete.vue";
+
+const editUser = (index) => {
+	console.log('Editar usuario:', users.value[index])
+	// Aquí puedes abrir un modal o redirigir a una página de edición
+}
+
+const deleteUser = (index) => {
+	if (confirm('¿Estás seguro de que deseas eliminar este usuario?')) {
+		users.value.splice(index, 1)
+	}
+}
+
 
 const users = ref([
   {
