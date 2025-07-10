@@ -1,7 +1,6 @@
 import { createWebHistory, createRouter } from "vue-router";
 import NotFound from "../views/404View.vue";
 import UnAuthRoutes from "../const/UnauthRoutes.js";
-import LoginView from "../views/LoginView.vue";
 import EcommerceView from '../views/EcommerceView.vue'
 import Profile from '../views/Others/UserProfile.vue'
 import FormElements from '../views/Forms/FormElements.vue'
@@ -21,9 +20,14 @@ import Signup from '../views/Auth/Signup.vue'
 
 const routes = [
     {
-        path: "",
-        name: "login",
-        component: LoginView
+        path: '/',
+        name: 'signin',
+        component: Signin
+    },
+    {
+        path: '/signup',
+        name: 'signup',
+        component: Signup
     },
     {
         path: "/404",
@@ -31,8 +35,8 @@ const routes = [
         component: NotFound
     },
     {
-        path: '/ecommerce',
-        name: 'ecommerce',
+        path: '/dashboard',
+        name: 'dashboard',
         component: EcommerceView,
         meta: {
             title: 'eCommerce Dashboard',
@@ -97,16 +101,6 @@ const routes = [
         path: '/blank',
         name: 'Blank',
         component: BlankPage
-    },
-    {
-        path: '/signin',
-        name: 'Signin',
-        component: Signin
-    },
-    {
-        path: '/signup',
-        name: 'Signup',
-        component: Signup
     }
 ];
 export default function () {

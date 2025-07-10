@@ -223,7 +223,7 @@ const menuGroups = [
       {
         icon: GridIcon,
         name: "Dashboard",
-        subItems: [{name: "Ecommerce", path: "/ecommerce", pro: false}],
+        path: "/dashboard"
       },
       {
         icon: UserCircleIcon,
@@ -238,23 +238,23 @@ const menuGroups = [
           {name: "Form Elements", path: "/form-elements", pro: false},
         ],
       },
-      {
-        name: "Tables",
-        icon: TableIcon,
-        subItems: [{name: "Basic Tables", path: "/basic-tables", pro: false}],
-      },
-      {
+      /*{
         name: "Pages",
         icon: PageIcon,
         subItems: [
           {name: "Black Page", path: "/blank", pro: false},
         ],
-      },
+      },*/
     ],
   },
   {
-    title: "Others",
+    title: "Admin",
     items: [
+		{
+			name: "Catalogós",
+			icon: TableIcon,
+			subItems: [{name: "Usuarios", path: "/basic-tables", pro: false}],
+		},
       {
         icon: PieChartIcon,
         name: "Charts",
@@ -263,7 +263,7 @@ const menuGroups = [
           {name: "Bar Chart", path: "/bar-chart", pro: false},
         ],
       },
-      {
+      /*{
         icon: BoxCubeIcon,
         name: "Ui Elements",
         subItems: [
@@ -282,7 +282,7 @@ const menuGroups = [
           {name: "Signin", path: "/signin", pro: false},
           {name: "Signup", path: "/signup", pro: false},
         ],
-      },
+      },*/
 
     ],
   },

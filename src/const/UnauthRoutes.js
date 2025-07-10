@@ -1,9 +1,7 @@
 export default [
-    'register',
     'home',
     '404',
-    'login',
-    'ecommerce',
+    'dashboard',
     'Profile',
     'FormElements',
     'BasicTables',
@@ -17,7 +15,7 @@ export default [
     'Videos',
     'Blank',
     'Error404',
-    'Signin',
-    'Signup',
+    'signin',
+    'signup',
     ''
 ];
