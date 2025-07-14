@@ -1,22 +1,23 @@
 <template>
 	<button
-		class="px-3 py-1 text-xs font-medium text-white bg-blue-600 rounded hover:bg-blue-700"
-		@click="editItem">
-		✏️ Edit
+		class="text-sm text-blue-600 hover:underline"
+		@click="handleClick">
+		✏️ Editar
 	</button>
 </template>
 
-<script setup lang="ts">
-import { defineProps } from 'vue'
+<script setup>
+const props = defineProps({
+  table: String,
+  pk: Number
+})
 
-// eslint-disable-next-line vue/valid-define-props
-const props = defineProps<{
-	table: string
-	pk: number | string
-}>()
+const emit = defineEmits(['open'])
 
-const editItem = () => {
-	console.log('Editar en tabla:', props.table, 'ID:', props.pk)
-	// Aquí puedes emitir evento, navegar o abrir modal
+function handleClick() {
+  emit('open', {
+    mode: 'edit',
+    pk: props.pk
+  })
 }
 </script>

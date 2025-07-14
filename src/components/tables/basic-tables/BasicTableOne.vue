@@ -74,7 +74,7 @@
 						<td class="px-5 py-4 sm:px-6">
 							<div class="flex space-x-2">
 								<!-- Edit Button -->
-								<btnEdit :table="'user'" :pk="1" />
+                <btnEdit :table="'user'" :pk="1" @open="(data) => $emit('open', data)" />
 								<!-- Delete Button -->
 								<btn-delete :table="'user'" :pk="1" />
 							</div>
