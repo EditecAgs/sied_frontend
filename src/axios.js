@@ -10,11 +10,10 @@ export function useAxios(_router, _store) {
 	// eslint-disable-next-line @typescript-eslint/no-unused-expressions
     axios;
 
-    axios.defaults.baseURL = import.meta.env.VITE_API_BASE_URL + '/api/' //replace ziggy
+    axios.defaults.baseURL = import.meta.env.VITE_API_BASE_URL + '/api/'
 
     axios.defaults.headers.common['X-Requested-With'] = 'XMLHttpRequest';
 
-    //console.log('asdasd')
 
     axios.interceptors.response.use(
         function (response) {
