@@ -1,6 +1,19 @@
 <script setup lang="ts">
-import { defineProps, defineEmits, reactive, watchEffect } from 'vue'
+import {defineProps, defineEmits, reactive, watchEffect, ref} from 'vue'
+import axios from 'axios';
 
+const alvRoute = ref();
+alvRoute.value = axios.defaults.baseURL + 'users';
+
+const alvMethod = ref("POST");
+
+const afterDone = (response) => {
+  console.log(response + "asasdasd")
+}
+
+const afterError = (response) => {
+  console.log(response + "asdasd")
+}
 
 // eslint-disable-next-line vue/valid-define-props
 const props = defineProps<{
@@ -58,9 +71,19 @@ const submitForm = () => {
 				{{ data.mode === 'create' ? `Crear ${data.table}` : `Editar ${data.table}` }}
 			</h4>
 
-			<form @submit.prevent="submitForm">
+			<alv-form
+				id="UserForm"
+				ref="UserForm"
+				:action="alvRoute"
+				:data-object="form"
+				:enable-button-on-done="true"
+				:input-parent-selector="'.form-group'"
+				:method="alvMethod"
+				:spinner="true"
+				@after-done="afterDone"
+				@after-error="afterError">
 				<!-- Nombre -->
-				<div class="mb-4">
+				<div class="mb-4 form-error">
 					<label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Nombre</label>
 					<input
 						v-model="form.name"
@@ -70,7 +93,7 @@ const submitForm = () => {
 				</div>
 
 				<!-- Correo -->
-				<div class="mb-4">
+				<div class="mb-4 form-error">
 					<label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Correo</label>
 					<input
 						v-model="form.email"
@@ -79,7 +102,7 @@ const submitForm = () => {
 						class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring focus:ring-green-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white" />
 				</div>
         
-				<div class="mb-4">
+				<div class="mb-4 form-error">
 					<label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Password</label>
 					<input
 						v-model="form.password"
@@ -88,7 +111,7 @@ const submitForm = () => {
 						class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring focus:ring-green-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white" />
 				</div>
         
-				<div class="mb-4">
+				<div class="mb-4 form-error">
 					<label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Institución</label>
 					<input
 						v-model="form.institucion"
@@ -96,6 +119,7 @@ const submitForm = () => {
 						required
 						class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring focus:ring-green-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white" />
 				</div>
+
 
 				<!-- Acciones -->
 				<div class="flex justify-end gap-2 mt-6">
@@ -106,14 +130,14 @@ const submitForm = () => {
 						Cancelar
 					</button>
 					<button
-						type="submit"
+						form="UserForm"
 						class="flex items-center gap-1 px-4 py-2 text-sm text-white bg-blue-600 rounded-md hover:bg-blue-700">
 						<span v-if="data.mode === 'create'">➕</span>
 						<span v-else>💾</span>
 						<span>Guardar</span>
 					</button>
 				</div>
-			</form>
+			</alv-form>
 		</div>
 	</div>
 </template>

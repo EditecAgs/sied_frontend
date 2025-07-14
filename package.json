@@ -13,6 +13,7 @@
     "@fullcalendar/interaction": "^6.1.18",
     "@fullcalendar/timegrid": "^6.1.18",
     "@fullcalendar/vue3": "^6.1.18",
+    "@myshell/alvue": "^1.3.9",
     "@tailwindcss/vite": "^4.1.11",
     "axios": "^1.10.0",
     "dropzone": "^6.0.0-beta.2",
