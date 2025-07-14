@@ -251,7 +251,7 @@ const menuGroups = [
     title: "Admin",
     items: [
 		{
-			name: "Catalogós",
+			name: "Catálogos",
 			icon: TableIcon,
 			subItems: [{name: "Usuarios", path: "/basic-tables", pro: false}],
 		},
