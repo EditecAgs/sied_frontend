@@ -31,7 +31,7 @@ const emit = defineEmits(['close'])
 const form = reactive({
 	name: '',
 	email: '',
-  password: '',
+  lastname: '',
   institucion: ''
 })
 
@@ -40,14 +40,14 @@ watchEffect(() => {
 		// 🔁 Aquí vamos a llamar a la api
 		form.name = `Usuario ${props.data.pk}`
 		form.email = `usuario${props.data.pk}@correo.com`
-    form.password = `**********`
+    form.lastname = `**********`
     form.institucion = `ITA`
 	}
 
 	if (props.data.mode === 'create') {
 		form.name = ''
 		form.email = ''
-    form.password = ''
+    form.lastname = ''
     form.institucion= ''
   }
 })
@@ -91,6 +91,15 @@ const submitForm = () => {
 						required
 						class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring focus:ring-green-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white" />
 				</div>
+        
+				<div class="mb-4 form-error">
+					<label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Apellido</label>
+					<input
+						v-model="form.lastname"
+						type="text"
+						required
+						class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring focus:ring-green-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white" />
+				</div>
 
 				<!-- Correo -->
 				<div class="mb-4 form-error">
@@ -98,15 +107,6 @@ const submitForm = () => {
 					<input
 						v-model="form.email"
 						type="email"
-						required
-						class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring focus:ring-green-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white" />
-				</div>
-        
-				<div class="mb-4 form-error">
-					<label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Password</label>
-					<input
-						v-model="form.password"
-						type="password"
 						required
 						class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring focus:ring-green-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white" />
 				</div>
