@@ -8,6 +8,7 @@ const props = defineProps<{
 	data: {
 		mode: 'create' | 'edit'
 		pk: number | null
+    table: string
 	}
 }>()
 
@@ -16,7 +17,9 @@ const emit = defineEmits(['close'])
 
 const form = reactive({
 	name: '',
-	email: ''
+	email: '',
+  password: '',
+  institucion: ''
 })
 
 watchEffect(() => {
@@ -24,12 +27,16 @@ watchEffect(() => {
 		// 🔁 Aquí vamos a llamar a la api
 		form.name = `Usuario ${props.data.pk}`
 		form.email = `usuario${props.data.pk}@correo.com`
+    form.password = `**********`
+    form.institucion = `ITA`
 	}
 
 	if (props.data.mode === 'create') {
 		form.name = ''
 		form.email = ''
-	}
+    form.password = ''
+    form.institucion= ''
+  }
 })
 
 
@@ -47,9 +54,8 @@ const submitForm = () => {
 <template>
 	<div v-if="show" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
 		<div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg w-full max-w-md p-6">
-
 			<h4 class="text-lg font-semibold text-gray-800 dark:text-white mb-4">
-				{{ data.mode === 'create' ? 'Crear Usuario' : 'Editar Usuario' }}
+				{{ data.mode === 'create' ? `Crear ${data.table}` : `Editar ${data.table}` }}
 			</h4>
 
 			<form @submit.prevent="submitForm">
@@ -69,6 +75,24 @@ const submitForm = () => {
 					<input
 						v-model="form.email"
 						type="email"
+						required
+						class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring focus:ring-green-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white" />
+				</div>
+        
+				<div class="mb-4">
+					<label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Password</label>
+					<input
+						v-model="form.password"
+						type="password"
+						required
+						class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring focus:ring-green-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white" />
+				</div>
+        
+				<div class="mb-4">
+					<label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Institución</label>
+					<input
+						v-model="form.institucion"
+						type="text"
 						required
 						class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring focus:ring-green-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white" />
 				</div>

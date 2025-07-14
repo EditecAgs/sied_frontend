@@ -3,9 +3,9 @@
 		<PageBreadcrumb :pageTitle="currentPageTitle" />
 		<div class="space-y-5 sm:space-y-6">
 			<ComponentCard title="Users Table">
-				<btn-create :table="'user'" @open="() => openModal('create')" />
+				<btn-create table="user" @open="({ mode, pk, table}) => openModal(mode, pk, table)" />
 				<mdl-create-user :show="showModal" :data="modalData" @close="closeModal" />
-				<BasicTableOne @open="({ mode, pk }) => openModal(mode, pk)" />
+				<BasicTableOne @open="({ mode, pk, table }) => openModal(mode, pk, table)" />
 			</ComponentCard>
 		</div>
 	</AdminLayout>

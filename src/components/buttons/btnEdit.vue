@@ -8,8 +8,14 @@
 
 <script setup>
 const props = defineProps({
-  table: String,
-  pk: Number
+  table:{
+	  type: String,
+	  required: true
+  },
+  pk:{
+	  type: Number,
+	  required: true
+  }
 })
 
 const emit = defineEmits(['open'])
@@ -17,7 +23,8 @@ const emit = defineEmits(['open'])
 function handleClick() {
   emit('open', {
     mode: 'edit',
-    pk: props.pk
+    pk: props.pk,
+	table: props.table
   })
 }
 </script>
