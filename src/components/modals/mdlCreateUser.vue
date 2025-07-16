@@ -70,15 +70,13 @@ const submitForm = () => {
 			<h4 class="text-lg font-semibold text-gray-800 dark:text-white mb-4">
 				{{ data.mode === 'create' ? `Crear ${data.table}` : `Editar ${data.table}` }}
 			</h4>
-
 			<alv-form
 				id="UserForm"
-				ref="UserForm"
 				:action="alvRoute"
 				:data-object="form"
-				:enable-button-on-done="true"
-				:input-parent-selector="'.form-group'"
+				:input-parent-selector="'.form-error'"
 				:method="alvMethod"
+				:enable-button-on-done="true"
 				:spinner="true"
 				@after-done="afterDone"
 				@after-error="afterError">

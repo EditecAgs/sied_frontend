@@ -6,11 +6,10 @@ import './css/index.css';
 import 'swiper/css'
 import 'swiper/css/navigation'
 import 'swiper/css/pagination'
-
-//import alvue from '@myshell/alvue';
+import alvue from '@myshell/alvue';
 
 createApp(App)
     .use(router)
     .use(generateRouter())
-    //.use(alvue)
+    .use(alvue)
     .mount('#app')
