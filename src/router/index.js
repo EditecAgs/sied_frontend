@@ -16,6 +16,7 @@ import Videos from '../views/UiElements/Videos.vue'
 import BlankPage from '../views/Pages/BlankPage.vue'
 import Signin from '../views/Auth/Signin.vue'
 import Signup from '../views/Auth/Signup.vue'
+import FormDual from '../views/Forms/FormularioDualView.vue'
 
 
 const routes = [
@@ -50,7 +51,7 @@ const routes = [
     {
         path: '/form-elements',
         name: 'FormElements',
-        component: FormElements
+        component: FormDual
     },
     {
         path: '/basic-tables',
@@ -101,7 +102,12 @@ const routes = [
         path: '/blank',
         name: 'Blank',
         component: BlankPage
-    }
+    },
+	{
+		path: '/formulario-dual',
+		name: 'FormDual',
+		component:FormDual
+	}
 ];
 export default function () {
     const router = createRouter({

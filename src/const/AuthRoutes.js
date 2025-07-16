@@ -17,5 +17,6 @@ export default [
     'Error404',
     'signin',
     'signup',
+	'Formdual'
 
 ];
