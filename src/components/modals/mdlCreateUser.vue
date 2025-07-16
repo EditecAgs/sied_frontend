@@ -1,75 +1,96 @@
 <script setup lang="ts">
-import {defineProps, defineEmits, reactive, watchEffect, ref} from 'vue'
-import axios from 'axios';
+import { defineProps, defineEmits, reactive, watchEffect, ref, onMounted } from 'vue'
+import axios from 'axios'
 
-const alvRoute = ref();
-alvRoute.value = axios.defaults.baseURL + 'users';
+const emit = defineEmits(['close', 'saved'])
+const isLoading = ref(false)
+const alvRoute = ref()
+alvRoute.value = axios.defaults.baseURL + 'users'
 
-const alvMethod = ref("POST");
+const alvMethod = ref('POST')
 
 const afterDone = (response) => {
-  console.log(response + "asasdasd")
+  console.log(response.data + ' guardado exitosamente')
+  emit('saved')
+  emit('close')
 }
 
 const afterError = (response) => {
-  console.log(response + "asdasd")
+  console.log('Error al enviar:', response.data)
 }
 
 // eslint-disable-next-line vue/valid-define-props
 const props = defineProps<{
-	show: boolean
-	data: {
-		mode: 'create' | 'edit'
-		pk: number | null
+  show: boolean
+  data: {
+    mode: 'create' | 'edit'
+    pk: number | null
     table: string
-	}
+  }
 }>()
-
-const emit = defineEmits(['close'])
 
 
 const form = reactive({
-	name: '',
-	email: '',
+  name: '',
+  email: '',
   lastname: '',
-  institucion: ''
+  id_institution: ''
+})
+
+const instituciones = ref([])
+
+const cargarInstituciones = () => {
+  axios.get('institutions')
+      .then(res => {
+        instituciones.value = res.data
+      })
+      .catch(err => {
+        console.error('Error al cargar instituciones:', err)
+      })
+}
+
+onMounted(() => {
+  cargarInstituciones()
 })
 
 watchEffect(() => {
-	if (props.show && props.data.mode === 'edit' && props.data.pk !== null) {
-		// 🔁 Aquí vamos a llamar a la api
-		form.name = `Usuario ${props.data.pk}`
-		form.email = `usuario${props.data.pk}@correo.com`
-    form.lastname = `**********`
-    form.institucion = `ITA`
-	}
+  if (props.data.mode === 'edit' && props.data.pk !== null) {
+    alvRoute.value = `${axios.defaults.baseURL}users/${props.data.pk}`
+    alvMethod.value = 'PUT'
+    isLoading.value = true
 
-	if (props.data.mode === 'create') {
-		form.name = ''
-		form.email = ''
+    axios.get(alvRoute.value).then(res => {
+      const user = res.data
+      form.name = user.name
+      form.lastname = user.lastname
+      form.email = user.email
+      form.id_institution = user.id_institution
+    }).finally(() => {
+      isLoading.value = false
+    })
+
+  } else if (props.data.mode === 'create') {
+    alvRoute.value = `${axios.defaults.baseURL}users`
+    alvMethod.value = 'POST'
+
+    form.name = ''
     form.lastname = ''
-    form.institucion= ''
+    form.email = ''
+    form.id_institution = ''
   }
 })
-
-
-const submitForm = () => {
-	if (props.data.mode === 'edit') {
-		console.log('Usuario actualizado:', form, 'ID:', props.data.pk)
-	} else {
-		console.log('Usuario creado:', form)
-	}
-
-	emit('close')
-}
 </script>
 
 <template>
 	<div v-if="show" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-		<div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg w-full max-w-md p-6">
-			<h4 class="text-lg font-semibold text-gray-800 dark:text-white mb-4">
+		<div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg w-full max-w-md p-6 min-h-[200px] relative">
+			<h4 class="text-lg font-semibold text-gray-800 dark:text-white mb-4 flex items-center justify-between">
 				{{ data.mode === 'create' ? `Crear ${data.table}` : `Editar ${data.table}` }}
+
+
+				<div v-if="isLoading" class="ml-4 w-5 h-5 border-2 border-t-2 border-gray-300 border-t-blue-600 rounded-full animate-spin" />
 			</h4>
+
 			<alv-form
 				id="UserForm"
 				:action="alvRoute"
@@ -80,46 +101,71 @@ const submitForm = () => {
 				:spinner="true"
 				@after-done="afterDone"
 				@after-error="afterError">
-				<!-- Nombre -->
 				<div class="mb-4 form-error">
 					<label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Nombre</label>
-					<input
-						v-model="form.name"
-						type="text"
-						required
-						class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring focus:ring-green-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white" />
+					<template v-if="isLoading">
+
+						<div class="h-8 bg-gray-300 rounded animate-pulse dark:bg-gray-600" />
+					</template>
+					<template v-else>
+						<input
+							v-model="form.name"
+							type="text"
+							name="name"
+							required
+							class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring focus:ring-green-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white" />
+					</template>
 				</div>
-        
+
 				<div class="mb-4 form-error">
 					<label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Apellido</label>
-					<input
-						v-model="form.lastname"
-						type="text"
-						required
-						class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring focus:ring-green-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white" />
+					<template v-if="isLoading">
+						<div class="h-8 bg-gray-300 rounded animate-pulse dark:bg-gray-600" />
+					</template>
+					<template v-else>
+						<input
+							v-model="form.lastname"
+							type="text"
+							name="lastname"
+							required
+							class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring focus:ring-green-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white" />
+					</template>
 				</div>
 
-				<!-- Correo -->
 				<div class="mb-4 form-error">
 					<label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Correo</label>
-					<input
-						v-model="form.email"
-						type="email"
-						required
-						class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring focus:ring-green-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white" />
+					<template v-if="isLoading">
+						<div class="h-8 bg-gray-300 rounded animate-pulse dark:bg-gray-600" />
+					</template>
+					<template v-else>
+						<input
+							v-model="form.email"
+							type="email"
+							name="email"
+							required
+							class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring focus:ring-green-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white" />
+					</template>
 				</div>
-        
+
 				<div class="mb-4 form-error">
 					<label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Institución</label>
-					<input
-						v-model="form.institucion"
-						type="text"
-						required
-						class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring focus:ring-green-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white" />
+					<template v-if="isLoading">
+						<div class="h-10 bg-gray-300 rounded animate-pulse dark:bg-gray-600" />
+					</template>
+					<template v-else>
+						<select
+							v-model="form.id_institution"
+							name="id_institucion"
+							required
+							class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring focus:ring-green-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+							<option value="" disabled>Selecciona una institución</option>
+							<option v-for="inst in instituciones" :key="inst.id" :value="inst.id">
+								{{ inst.name }}
+							</option>
+						</select>
+					</template>
 				</div>
 
-
-				<!-- Acciones -->
 				<div class="flex justify-end gap-2 mt-6">
 					<button
 						type="button"
