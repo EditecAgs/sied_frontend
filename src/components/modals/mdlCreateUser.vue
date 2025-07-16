@@ -32,7 +32,7 @@ const form = reactive({
 	name: '',
 	email: '',
   lastname: '',
-  institucion: ''
+  id_institution: ''
 })
 
 watchEffect(() => {
@@ -41,14 +41,14 @@ watchEffect(() => {
 		form.name = `Usuario ${props.data.pk}`
 		form.email = `usuario${props.data.pk}@correo.com`
     form.lastname = `**********`
-    form.institucion = `ITA`
+    form.id_institution = `ITA`
 	}
 
 	if (props.data.mode === 'create') {
 		form.name = ''
 		form.email = ''
     form.lastname = ''
-    form.institucion= ''
+    form.id_institution= ''
   }
 })
 
@@ -86,6 +86,7 @@ const submitForm = () => {
 					<input
 						v-model="form.name"
 						type="text"
+						name="name"
 						required
 						class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring focus:ring-green-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white" />
 				</div>
@@ -95,6 +96,7 @@ const submitForm = () => {
 					<input
 						v-model="form.lastname"
 						type="text"
+						name="lastname"
 						required
 						class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring focus:ring-green-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white" />
 				</div>
@@ -105,6 +107,7 @@ const submitForm = () => {
 					<input
 						v-model="form.email"
 						type="email"
+						name="email"
 						required
 						class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring focus:ring-green-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white" />
 				</div>
@@ -112,8 +115,9 @@ const submitForm = () => {
 				<div class="mb-4 form-error">
 					<label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Institución</label>
 					<input
-						v-model="form.institucion"
+						v-model="form.id_institution"
 						type="text"
+						name="id_institution"
 						required
 						class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring focus:ring-green-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white" />
 				</div>
