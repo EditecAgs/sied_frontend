@@ -6,77 +6,84 @@
 				<thead>
 					<tr class="border-b border-gray-200 dark:border-gray-700">
 						<th class="px-5 py-3 text-left w-3/11 sm:px-6">
-							<p class="font-medium text-gray-500 text-theme-xs dark:text-gray-400">Name</p>
+							<p
+								class="font-medium text-gray-500 text-theme-xs dark:text-gray-400">
+								Nombre
+							</p>
 						</th>
 						<th class="px-5 py-3 text-left w-2/11 sm:px-6">
-							<p class="font-medium text-gray-500 text-theme-xs dark:text-gray-400">E-mail</p>
+							<p
+								class="font-medium text-gray-500 text-theme-xs dark:text-gray-400">
+								Apellido
+							</p>
 						</th>
 						<th class="px-5 py-3 text-left w-2/11 sm:px-6">
-							<p class="font-medium text-gray-500 text-theme-xs dark:text-gray-400">Password</p>
+							<p
+								class="font-medium text-gray-500 text-theme-xs dark:text-gray-400">
+								E-mail
+							</p>
 						</th>
 						<th class="px-5 py-3 text-left w-2/11 sm:px-6">
-							<p class="font-medium text-gray-500 text-theme-xs dark:text-gray-400">Institution</p>
+							<p
+								class="font-medium text-gray-500 text-theme-xs dark:text-gray-400">
+								Institucion
+							</p>
 						</th>
 						<th class="px-5 py-3 text-left w-2/11 sm:px-6">
-							<p class="font-medium text-gray-500 text-theme-xs dark:text-gray-400">Options</p>
+							<p
+								class="font-medium text-gray-500 text-theme-xs dark:text-gray-400">
+								Opciones
+							</p>
 						</th>
 					</tr>
 				</thead>
 				<tbody class="divide-y divide-gray-200 dark:divide-gray-700">
+					<tr v-if="isLoading">
+						<td colspan="5" class="py-12 text-center">
+							<svg class="animate-spin h-8 w-8 text-blue-600 mx-auto mb-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+								<circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" />
+								<path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z" />
+							</svg>
+							<p class="text-gray-500 dark:text-gray-400">Cargando usuarios...</p>
+						</td>
+					</tr>
+
 					<tr
 						v-for="(user, index) in users"
-						:key="index"
+						v-else
+						:key="user.id ?? index"
 						class="border-t border-gray-100 dark:border-gray-800">
 						<td class="px-5 py-4 sm:px-6">
-							<div class="flex items-center gap-3">
-								<div class="w-10 h-10 overflow-hidden rounded-full">
-									<img :src="user.avatar" :alt="user.name" />
-								</div>
-								<div>
-									<span class="block font-medium text-gray-800 text-theme-sm dark:text-white/90">
-										{{ user.name }}
-									</span>
-									<span class="block text-gray-500 text-theme-xs dark:text-gray-400">
-										{{ user.role }}
-									</span>
-								</div>
-							</div>
-						</td>
-						<td class="px-5 py-4 sm:px-6">
-							<p class="text-gray-500 text-theme-sm dark:text-gray-400">{{ user.project }}</p>
-						</td>
-						<td class="px-5 py-4 sm:px-6">
-							<div class="flex -space-x-2">
-								<div
-									v-for="(member, memberIndex) in user.team"
-									:key="memberIndex"
-									class="w-6 h-6 overflow-hidden border-2 border-white rounded-full dark:border-gray-900">
-									<img :src="member" alt="team member" />
-								</div>
-							</div>
-						</td>
-						<td class="px-5 py-4 sm:px-6">
 							<span
-								:class="[
-									'rounded-full px-2 py-0.5 text-theme-xs font-medium',
-									{
-										'bg-success-50 text-success-700 dark:bg-success-500/15 dark:text-success-500':
-											user.status === 'Active',
-										'bg-warning-50 text-warning-700 dark:bg-warning-500/15 dark:text-warning-400':
-											user.status === 'Pending',
-										'bg-error-50 text-error-700 dark:bg-error-500/15 dark:text-error-500':
-											user.status === 'Cancel',
-									},
-								]">
-								{{ user.status }}
+								class="block font-medium text-gray-800 text-theme-sm dark:text-white/90">
+								{{ user.name }}
 							</span>
 						</td>
 						<td class="px-5 py-4 sm:px-6">
+							<p class="text-gray-500 text-theme-sm dark:text-gray-400">
+								{{ user.lastname }}
+							</p>
+						</td>
+						<td class="px-5 py-4 sm:px-6">
+							<p class="text-gray-500 text-theme-sm dark:text-gray-400">
+								{{ user.email }}
+							</p>
+						</td>
+						<td class="px-5 py-4 sm:px-6">
+							<p class="text-gray-500 text-theme-sm dark:text-gray-400">
+								{{ user.institution?.name }}
+							</p>
+						</td>
+						<td class="px-5 py-4 sm:px-6">
 							<div class="flex space-x-2">
-								<!-- Edit Button -->
-								<btnEdit :table="'user'" :pk="1" @open="(data) => $emit('open', data)" />
-								<!-- Delete Button -->
-								<btn-delete :table="'user'" :pk="1" />
+								<btnEdit
+									:table="'users'"
+									:pk="user.id ?? index"
+									@open="(data) => $emit('open', data)" />
+								<btnDelete
+									:table="'users'"
+									:pk="user.id ?? index"
+									@deleted="onUserDeleted" />
 							</div>
 						</td>
 					</tr>
@@ -87,71 +94,38 @@
 </template>
 
 <script setup>
-import { ref } from 'vue';
+import { ref, onMounted } from "vue";
 import btnEdit from "../../../components/buttons/btnEdit.vue";
 import btnDelete from "../../../components/buttons/btnDelete.vue";
+import axios from "axios";
+import { useAxios } from "../../../axios";
 
-const editUser = (index) => {
-	console.log('Editar usuario:', users.value[index])
-	// Aquí puedes abrir un modal o redirigir a una página de edición
-}
+useAxios();
 
-const deleteUser = (index) => {
-	if (confirm('¿Estás seguro de que deseas eliminar este usuario?')) {
-		users.value.splice(index, 1)
-	}
-}
+const users = ref([]);
+const isLoading = ref(false);
 
+const fetchUsers = async () => {
+  isLoading.value = true;
+  try {
+    const res = await axios.get("users");
+    users.value = res.data;
+  } catch (err) {
+    console.error("Error al obtener los usuarios:", err);
+  } finally {
+    isLoading.value = false;
+  }
+};
 
-const users = ref([
-  {
-    name: 'Lindsey Curtis',
-    role: 'Web Designer',
-    avatar: '/images/user/user-17.jpg',
-    project: 'Agency Website',
-    team: ['/images/user/user-22.jpg', '/images/user/user-23.jpg', '/images/user/user-24.jpg'],
-    status: 'Active',
-    budget: '3.9K',
-  },
-  {
-    name: 'Kaiya George',
-    role: 'Project Manager',
-    avatar: '/images/user/user-18.jpg',
-    project: 'Technology',
-    team: ['/images/user/user-25.jpg', '/images/user/user-26.jpg'],
-    status: 'Pending',
-    budget: '24.9K',
-  },
-  {
-    name: 'Zain Geidt',
-    role: 'Content Writer',
-    avatar: '/images/user/user-19.jpg',
-    project: 'Blog Writing',
-    team: ['/images/user/user-27.jpg'],
-    status: 'Active',
-    budget: '12.7K',
-  },
-  {
-    name: 'Abram Schleifer',
-    role: 'Digital Marketer',
-    avatar: '/images/user/user-20.jpg',
-    project: 'Social Media',
-    team: ['/images/user/user-28.jpg', '/images/user/user-29.jpg', '/images/user/user-30.jpg'],
-    status: 'Cancel',
-    budget: '2.8K',
-  },
-  {
-    name: 'Carla George',
-    role: 'Front-end Developer',
-    avatar: '/images/user/user-21.jpg',
-    project: 'Website',
-    team: ['/images/user/user-31.jpg', '/images/user/user-32.jpg', '/images/user/user-33.jpg'],
-    status: 'Active',
-    budget: '4.5K',
-  },
-])
+onMounted(() => {
+  fetchUsers();
+});
+
+const onUserDeleted = (deletedId) => {
+  users.value = users.value.filter((user) => user.id !== deletedId);
+};
+
+defineExpose({
+  fetchData: fetchUsers,
+});
 </script>
-
-<style scoped>
-/* Add any additional styles here if needed */
-</style>
