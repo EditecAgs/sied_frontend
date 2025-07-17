@@ -1,5 +1,5 @@
 <script setup>
-import { DatePicker } from '@vuepic/vue-datepicker';
+import DatePicker from '@vuepic/vue-datepicker';
 import '@vuepic/vue-datepicker/dist/main.css';
 
 defineProps({
@@ -11,7 +11,7 @@ defineEmits(['update:modelValue']);
 
 <template>
 	<div>
-		<h2 class="text-xl font-semibold mb-4">Datos de Unidad Dual</h2>
+		<h2 class="text-xl font-semibold mb-4 text-brand-900">Datos de Unidad Dual</h2>
 
 		<div class="space-y-4">
 			<div>
@@ -19,7 +19,7 @@ defineEmits(['update:modelValue']);
 				<input
 					type="text"
 					:value="modelValue.nombreEmpresa"
-					class="w-full px-3 py-2 border border-gray-300 rounded focus:ring-blue-500 focus:border-blue-500"
+					class="w-full px-3 py-2 border border-gray-300 rounded focus:ring-brand-800 focus:border-brand-800"
 					required
 					@input="$emit('update:modelValue', { ...modelValue, nombreEmpresa: $event.target.value })" />
 			</div>
@@ -31,7 +31,7 @@ defineEmits(['update:modelValue']);
 						:modelValue="modelValue.fechaInicio"
 						:enableTimePicker="false"
 						class="w-full"
-						inputClassName="w-full px-3 py-2 border border-gray-300 rounded focus:ring-blue-500 focus:border-blue-500"
+						inputClassName="w-full px-3 py-2 border border-gray-300 rounded focus:ring-brand-800 focus:border-brand-800"
 						@update:modelValue="val => $emit('update:modelValue', { ...modelValue, fechaInicio: val })" />
 				</div>
 
@@ -41,7 +41,7 @@ defineEmits(['update:modelValue']);
 						:modelValue="modelValue.fechaTermino"
 						:enableTimePicker="false"
 						class="w-full"
-						inputClassName="w-full px-3 py-2 border border-gray-300 rounded focus:ring-blue-500 focus:border-blue-500"
+						inputClassName="w-full px-3 py-2 border border-gray-300 rounded focus:ring-brand-800 focus:border-brand-800"
 						@update:modelValue="val => $emit('update:modelValue', { ...modelValue, fechaTermino: val })" />
 				</div>
 			</div>

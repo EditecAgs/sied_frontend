@@ -8,7 +8,7 @@ defineEmits(['update:modelValue']);
 
 <template>
 	<div>
-		<h2 class="text-xl font-semibold mb-4">Datos Académicos</h2>
+		<h2 class="text-xl font-semibold mb-4 text-brand-900">Datos Académicos</h2>
 
 		<div class="space-y-4">
 			<div>
@@ -16,7 +16,7 @@ defineEmits(['update:modelValue']);
 				<input
 					type="text"
 					:value="modelValue.matricula"
-					class="w-full px-3 py-2 border border-gray-300 rounded focus:ring-blue-500 focus:border-blue-500"
+					class="w-full px-3 py-2 border border-gray-300 rounded focus:ring-brand-800 focus:border-brand-800"
 					required
 					@input="$emit('update:modelValue', { ...modelValue, matricula: $event.target.value })" />
 			</div>
@@ -25,7 +25,7 @@ defineEmits(['update:modelValue']);
 				<label class="block text-sm font-medium text-gray-700 mb-1">Nivel</label>
 				<select
 					:value="modelValue.nivel"
-					class="w-full px-3 py-2 border border-gray-300 rounded focus:ring-blue-500 focus:border-blue-500"
+					class="w-full px-3 py-2 border border-gray-300 rounded focus:ring-brand-800 focus:border-brand-800"
 					@change="$emit('update:modelValue', { ...modelValue, nivel: $event.target.value })">
 					<option value="">Seleccione</option>
 					<option value="Primero">Primero</option>

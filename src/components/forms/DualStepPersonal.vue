@@ -8,32 +8,32 @@ defineEmits(['update:modelValue', 'update:reportaModeloDual']);
 </script>
 
 <template>
-	<div>
-		<h2 class="text-xl font-semibold mb-4">Información Personal</h2>
+	<div class="space-y-6">
+		<h2 class="text-xl font-semibold text-brand-900 mb-6">Información Personal</h2>
 
-		<div class="space-y-4">
+		<div class="space-y-6">
 			<div>
-				<label class="block text-sm font-medium text-gray-700 mb-1">
+				<label class="block text-sm font-medium text-gray-700 mb-2">
 					Nombre completo <span class="text-red-500">*</span>
 				</label>
 				<input
 					type="text"
 					:value="modelValue.nombre"
 					placeholder="Ej. Juan Pérez"
-					class="w-full px-3 py-2 border border-gray-300 rounded focus:ring-blue-500 focus:border-blue-500"
+					class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-brand-800 focus:border-brand-800"
 					required
 					@input="$emit('update:modelValue', { ...modelValue, nombre: $event.target.value })" />
 			</div>
 
-			<div>
-				<label class="block text-sm font-medium text-gray-700 mb-1">Tipo de Institución</label>
+			<div class="space-y-2">
+				<label class="block text-sm font-medium text-gray-700">Tipo de Institución</label>
 				<div class="flex space-x-4">
 					<button
 						type="button"
 						:class="[
-							'px-4 py-2 rounded border',
-							modelValue.tipoInstitucion === 'Publica' ? 
-								'bg-blue-100 border-blue-500' : 'border-gray-300'
+							'px-4 py-2 rounded-lg border flex-1 transition-colors',
+							modelValue.tipoInstitucion === 'Publica' ?
+								'bg-brand-800 text-white border-brand-800' : 'border-gray-300 hover:bg-gray-50'
 						]"
 						@click="$emit('update:modelValue', { ...modelValue, tipoInstitucion: 'Publica' })">
 						Pública
@@ -41,9 +41,9 @@ defineEmits(['update:modelValue', 'update:reportaModeloDual']);
 					<button
 						type="button"
 						:class="[
-							'px-4 py-2 rounded border',
-							modelValue.tipoInstitucion === 'Privada' ? 
-								'bg-blue-100 border-blue-500' : 'border-gray-300'
+							'px-4 py-2 rounded-lg border flex-1 transition-colors',
+							modelValue.tipoInstitucion === 'Privada' ?
+								'bg-brand-800 text-white border-brand-800' : 'border-gray-300 hover:bg-gray-50'
 						]"
 						@click="$emit('update:modelValue', { ...modelValue, tipoInstitucion: 'Privada' })">
 						Privada
@@ -52,10 +52,10 @@ defineEmits(['update:modelValue', 'update:reportaModeloDual']);
 			</div>
 
 			<div>
-				<label class="block text-sm font-medium text-gray-700 mb-1">Nombre de la Institución</label>
+				<label class="block text-sm font-medium text-gray-700 mb-2">Nombre de la Institución</label>
 				<select
 					:value="modelValue.institucion"
-					class="w-full px-3 py-2 border border-gray-300 rounded focus:ring-blue-500 focus:border-blue-500"
+					class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-brand-800 focus:border-brand-800 bg-white"
 					@change="$emit('update:modelValue', { ...modelValue, institucion: $event.target.value })">
 					<option value="">Seleccione una opción</option>
 					<option value="Tecnológico Nacional de México">Tecnológico Nacional de México</option>
@@ -65,35 +65,35 @@ defineEmits(['update:modelValue', 'update:reportaModeloDual']);
 			</div>
 
 			<div>
-				<label class="block text-sm font-medium text-gray-700 mb-1">Dirección</label>
+				<label class="block text-sm font-medium text-gray-700 mb-2">Dirección</label>
 				<input
 					type="text"
 					:value="modelValue.direccion"
 					placeholder="Ej. Av. Siempre Viva 742"
-					class="w-full px-3 py-2 border border-gray-300 rounded focus:ring-blue-500 focus:border-blue-500"
+					class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-brand-800 focus:border-brand-800"
 					@input="$emit('update:modelValue', { ...modelValue, direccion: $event.target.value })" />
 			</div>
 
-			<div class="pt-4 border-t">
-				<label class="block text-sm font-medium text-gray-700 mb-2">
+			<div class="pt-6 border-t space-y-4">
+				<label class="block text-sm font-medium text-gray-700">
 					¿En este seguimiento tiene información del Modelo Dual que reportar?
 				</label>
-				<div class="flex space-x-4">
-					<label class="inline-flex items-center">
+				<div class="flex space-x-6">
+					<label class="inline-flex items-center space-x-2 cursor-pointer">
 						<input
 							type="radio"
 							:checked="reportaModeloDual === true"
-							class="h-4 w-4 text-blue-600 focus:ring-blue-500"
+							class="h-5 w-5 text-brand-800 focus:ring-brand-800 border-gray-300 cursor-pointer"
 							@change="$emit('update:reportaModeloDual', true)" />
-						<span class="ml-2">Sí</span>
+						<span>Sí</span>
 					</label>
-					<label class="inline-flex items-center">
+					<label class="inline-flex items-center space-x-2 cursor-pointer">
 						<input
 							type="radio"
 							:checked="reportaModeloDual === false"
-							class="h-4 w-4 text-blue-600 focus:ring-blue-500"
+							class="h-5 w-5 text-brand-800 focus:ring-brand-800 border-gray-300 cursor-pointer"
 							@change="$emit('update:reportaModeloDual', false)" />
-						<span class="ml-2">No</span>
+						<span>No</span>
 					</label>
 				</div>
 			</div>
