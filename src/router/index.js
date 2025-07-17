@@ -3,7 +3,6 @@ import NotFound from "../views/404View.vue";
 import UnAuthRoutes from "../const/UnauthRoutes.js";
 import EcommerceView from '../views/EcommerceView.vue'
 import Profile from '../views/Others/UserProfile.vue'
-import FormElements from '../views/Forms/FormElements.vue'
 import BasicTables from '../views/Tables/BasicTables.vue'
 import LineChart from '../views/Chart/LineChart/LineChart.vue'
 import BarChart from '../views/Chart/BarChart/BarChart.vue'
@@ -103,11 +102,6 @@ const routes = [
         name: 'Blank',
         component: BlankPage
     },
-	{
-		path: '/formulario-dual',
-		name: 'FormDual',
-		component:FormDual
-	}
 ];
 export default function () {
     const router = createRouter({
