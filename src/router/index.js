@@ -3,7 +3,6 @@ import NotFound from "../views/404View.vue";
 import UnAuthRoutes from "../const/UnauthRoutes.js";
 import EcommerceView from '../views/EcommerceView.vue'
 import Profile from '../views/Others/UserProfile.vue'
-import FormElements from '../views/Forms/FormElements.vue'
 import BasicTables from '../views/Tables/BasicTables.vue'
 import LineChart from '../views/Chart/LineChart/LineChart.vue'
 import BarChart from '../views/Chart/BarChart/BarChart.vue'
@@ -16,6 +15,7 @@ import Videos from '../views/UiElements/Videos.vue'
 import BlankPage from '../views/Pages/BlankPage.vue'
 import Signin from '../views/Auth/Signin.vue'
 import Signup from '../views/Auth/Signup.vue'
+import FormDual from '../views/Forms/FormularioDualView.vue'
 
 
 const routes = [
@@ -50,7 +50,7 @@ const routes = [
     {
         path: '/form-elements',
         name: 'FormElements',
-        component: FormElements
+        component: FormDual
     },
     {
         path: '/basic-tables',
@@ -101,7 +101,7 @@ const routes = [
         path: '/blank',
         name: 'Blank',
         component: BlankPage
-    }
+    },
 ];
 export default function () {
     const router = createRouter({
