@@ -16,6 +16,7 @@ import BlankPage from '../views/Pages/BlankPage.vue'
 import Signin from '../views/Auth/Signin.vue'
 import Signup from '../views/Auth/Signup.vue'
 import FormDual from '../views/Forms/FormularioDualView.vue'
+import InstitutionsTable from '../views/Tables/InstitutionsTable.vue';
 
 
 const routes = [
@@ -57,6 +58,11 @@ const routes = [
         name: 'BasicTables',
         component: BasicTables
     },
+	{
+		path: '/institution-table',
+		name: 'InstitutionTable',
+		component: InstitutionsTable
+	},
     {
         path: '/line-chart',
         name: 'LineChart',
