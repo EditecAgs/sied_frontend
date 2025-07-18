@@ -3,6 +3,7 @@ import DatePicker from '@vuepic/vue-datepicker';
 import '@vuepic/vue-datepicker/dist/main.css';
 
 defineProps({
+  // eslint-disable-next-line vue/require-default-prop
 	modelValue: Object
 });
 

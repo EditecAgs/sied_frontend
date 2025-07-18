@@ -72,7 +72,7 @@
 							<span
 								class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium"
 								:class="getTypeClass(institution.type)">
-								{{ getTypeName(institution.type) }}
+								{{ institution.type }}
 							</span>
 						</td>
 						<td class="px-5 py-4 sm:px-6">

@@ -2,14 +2,14 @@
 	<AdminLayout>
 		<PageBreadcrumb :pageTitle="currentPageTitle" />
 		<div class="space-y-5 sm:space-y-6">
-			<ComponentCard title="Institutions Table">
-				<btn-create :table="'institution'" @open="({ mode, pk, table}) => openModal(mode, pk, table)" class="divide-error-900 hover:divide-error-800" />
-				<mdl-create-user
+        <ComponentCard title="Catálogo de Usuarios">
+				<btn-create table="user" @open="({ mode, pk, table}) => openModal(mode, pk, table)" />
+				<mdl-create-edit-user
 					:show="showModal"
 					:data="modalData"
 					@close="closeModal"
 					@saved="handleSaved" />
-				<BasicTableOne
+				<TableUsers
 					ref="tableRef"
 					@open="({ mode, pk, table }) => openModal(mode, pk, table)" />
 			</ComponentCard>
@@ -22,18 +22,18 @@ import { ref } from "vue";
 import PageBreadcrumb from "../../components/common/PageBreadcrumb.vue";
 import AdminLayout from "../../components/layouts/AdminLayout.vue";
 import ComponentCard from "../../components/common/componentCard.vue";
-import BasicTableOne from "../../components/tables/basic-tables/TableTwoInstitutions.vue";
+import TableUsers from "../../components/tables/basic-tables/TableUsers.vue";
 import btnCreate from "../../components/buttons/btnCreate.vue";
-import MdlCreateUser from '../../components/modals/mdlCreateInstitution.vue';
+import MdlCreateEditUser from '../../components/modals/mdlCreateEditUser.vue';
 import { useModal } from "../../composables/UseModal";
 
-const currentPageTitle = ref("institutions");
+const currentPageTitle = ref("Users");
 const { showModal, modalData, openModal, closeModal } = useModal();
 
 const tableRef = ref(null);
 
 const handleSaved = () => {
-	closeModal();
-	tableRef.value?.fetchData();
+  closeModal();
+  tableRef.value?.fetchData(); 
 };
 </script>
