@@ -5,6 +5,7 @@ export default [
     'Profile',
     'FormElements',
     'BasicTables',
+	'InstitutionTable',
     'LineChart',
     'BarChart',
     'Alerts',

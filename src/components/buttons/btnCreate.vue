@@ -1,8 +1,7 @@
 <template>
 	<button
-		class="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-green-600 rounded-md hover:bg-green-700"
+		class="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-brand-800 hover:bg-brand-900 rounded-lg transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-brand-800 focus:ring-opacity-50"
 		@click="handleClick">
-		<span>➕</span>
 		<span>Crear</span>
 	</button>
 </template>

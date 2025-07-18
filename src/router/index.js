@@ -3,7 +3,7 @@ import NotFound from "../views/404View.vue";
 import UnAuthRoutes from "../const/UnauthRoutes.js";
 import EcommerceView from '../views/EcommerceView.vue'
 import Profile from '../views/Others/UserProfile.vue'
-import BasicTables from '../views/Tables/BasicTables.vue'
+import UsersView from '../views/Tables/UsersView.vue'
 import LineChart from '../views/Chart/LineChart/LineChart.vue'
 import BarChart from '../views/Chart/BarChart/BarChart.vue'
 import Alerts from '../views/UiElements/Alerts.vue'
@@ -16,6 +16,7 @@ import BlankPage from '../views/Pages/BlankPage.vue'
 import Signin from '../views/Auth/Signin.vue'
 import Signup from '../views/Auth/Signup.vue'
 import FormDual from '../views/Forms/FormularioDualView.vue'
+import InstitutionsView from '../views/Tables/InstitutionsView.vue';
 
 
 const routes = [
@@ -55,8 +56,13 @@ const routes = [
     {
         path: '/basic-tables',
         name: 'BasicTables',
-        component: BasicTables
+        component: UsersView
     },
+	{
+		path: '/institution-table',
+		name: 'InstitutionTable',
+		component: InstitutionsView
+	},
     {
         path: '/line-chart',
         name: 'LineChart',
