@@ -17,6 +17,8 @@ import Signin from '../views/Auth/Signin.vue'
 import Signup from '../views/Auth/Signup.vue'
 import FormDual from '../views/Forms/FormularioDualView.vue'
 import InstitutionsView from '../views/Tables/InstitutionsView.vue';
+import SubsystemsView from '../views/Tables/SubsystemsView.vue';
+import AcademicView from '../views/Tables/AcademicView.vue';
 
 
 const routes = [
@@ -63,6 +65,16 @@ const routes = [
 		name: 'InstitutionTable',
 		component: InstitutionsView
 	},
+    {
+        path: '/subsystem-table',
+        name: 'SubsystemTable',
+        component: SubsystemsView
+    },
+    {
+        path: '/periods_Academic-table',
+        name: 'AcademicTable',
+        component: AcademicView
+    },
     {
         path: '/line-chart',
         name: 'LineChart',

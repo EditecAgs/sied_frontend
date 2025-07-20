@@ -256,6 +256,8 @@ const menuGroups = [
 			subItems: [
 				{name: "Usuarios", path: "/basic-tables", pro: false},
 				{name: "Instituciones", path: "/institution-table", pro: false},
+        {name: "Subsistemas" , path: "/subsystem-table", pro: false},
+        {name: "Periodos Academicos", path: "/periods_Academic-table", pro: false},
 			],
 		},
       {
