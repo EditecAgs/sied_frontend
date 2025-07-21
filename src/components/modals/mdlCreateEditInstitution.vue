@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { defineProps, defineEmits, reactive, watchEffect, watch, ref, onMounted } from 'vue'
 import axios from 'axios'
+import { getStates } from '../../services/location/states.js'
 
 const emit = defineEmits(['close', 'saved'])
 const isLoading = ref(false)
@@ -54,13 +55,17 @@ const periodosAcademicos = ref([])
 
 const cargarDependencias = async () => {
   try {
-    const [estadosRes, subsistemasRes, periodosRes] = await Promise.all([
-      axios.get('states'),
+    const [ subsistemasRes, periodosRes] = await Promise.all([
+      //axios.get('states'),
       axios.get('subsystems'),
       axios.get('academic-periods')
     ])
 
-    estados.value = estadosRes.data
+	  getStates().then(({data}) => {
+		  estados.value = data;
+	  });
+
+   // estados.value = estadosRes.data
     subsistemas.value = subsistemasRes.data
     periodosAcademicos.value = periodosRes.data
   } catch (err) {
@@ -292,6 +297,16 @@ watchEffect(() => {
 					<div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
 						<div class="form-error">
 							<label class="block text-sm font-medium text-gray-700 mb-1">Estado*</label>
+							<Select
+								v-model="form.id_state"
+								name="id_state"
+								:options="estados"
+								optionLabel="name"
+								optionValue="id"
+								:virtualScrollerOptions="{ itemSize: 38, showLoader: isLoading}"
+								placeholder="Selecciona un estado"
+								class="w-full px-3 py-2 !border-2 !border-gray-900 !rounded-md focus:outline-none focus:ring focus:ring-brand-800" />
+							<!--
 							<template v-if="isLoading">
 								<div class="h-8 bg-gray-300 rounded animate-pulse w-full" />
 							</template>
@@ -305,7 +320,7 @@ watchEffect(() => {
 									<option value="" disabled>Selecciona un estado</option>
 									<option v-for="estado in estados" :key="estado.id" :value="estado.id">{{ estado.name }}</option>
 								</select>
-							</template>
+							</template>-->
 						</div>
 
 						<div class="form-error">
