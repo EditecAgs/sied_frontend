@@ -191,25 +191,25 @@
 </template>
 
 <script setup>
-import {ref, computed} from "vue";
+import {computed} from "vue";
 import {useRoute} from "vue-router";
 
 import {
   GridIcon,
-  CalenderIcon,
+  // CalenderIcon,
   UserCircleIcon,
-  ChatIcon,
-  MailIcon,
-  DocsIcon,
+  // ChatIcon,
+  // MailIcon,
+  // DocsIcon,
   PieChartIcon,
   ChevronDownIcon,
   HorizontalDots,
-  PageIcon,
+  // PageIcon,
   TableIcon,
   ListIcon,
-  PlugInIcon,
+  // PlugInIcon,
 } from "../../icons";
-import BoxCubeIcon from "../../icons/BoxCubeIcon.vue";
+// import BoxCubeIcon from "../../icons/BoxCubeIcon.vue";
 import {useSidebar} from "../../composables/useSidebar";
 
 const route = useRoute();
@@ -232,11 +232,9 @@ const menuGroups = [
       },
 
       {
-        name: "Forms",
+        name: "Modelo Dual",
         icon: ListIcon,
-        subItems: [
-          {name: "Form Elements", path: "/form-elements", pro: false},
-        ],
+        path: "/form-elements",
       },
       /*{
         name: "Pages",
