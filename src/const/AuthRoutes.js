@@ -18,5 +18,8 @@ export default [
     'Error404',
     'signin',
     'signup',
+	'SubsystemTable',
+	'AcademicTable'
+
 
 ];
