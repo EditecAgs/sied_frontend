@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { defineProps, defineEmits, reactive, watchEffect, ref, onMounted } from 'vue'
 import axios from 'axios'
+import {getInstitutions} from '../../services/institutions/institutions'
 
 const emit = defineEmits(['close', 'saved'])
 const isLoading = ref(false)
@@ -28,16 +29,16 @@ const form = reactive({
 })
 
 // Instituciones
-const instituciones = ref([])
+const institutions = ref([])
 
-const cargarInstituciones = () => {
-  axios.get('institutions')
-      .then(res => { instituciones.value = res.data })
-      .catch(err => console.error('Error al cargar instituciones:', err))
+const loadInstitutions = () => {
+  getInstitutions().then(({data}) => {
+    institutions.value = data;
+  });
 }
 
 onMounted(() => {
-  cargarInstituciones()
+  loadInstitutions()
 })
 
 // Manejo de modo editar/crear
@@ -156,21 +157,15 @@ const afterError = (response) => {
 						<!-- Institución -->
 						<div class="form-error">
 							<label class="block text-sm font-medium text-gray-700 mb-1">Institución*</label>
-							<template v-if="isLoading">
-								<div class="h-10 bg-gray-300 rounded animate-pulse" />
-							</template>
-							<template v-else>
-								<select
-									v-model="form.id_institution"
-									name="id_institucion"
-									required
-									class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring focus:ring-brand-800">
-									<option value="" disabled>Selecciona una institución</option>
-									<option v-for="inst in instituciones" :key="inst.id" :value="inst.id">
-										{{ inst.name }}
-									</option>
-								</select>
-							</template>
+              <Select
+                  v-model="form.id_institution"
+                  name="id_institution"
+                  :options="institutions"
+                  optionLabel="name"
+                  optionValue="id"
+                  :virtualScrollerOptions="{ itemSize: 38, showLoader: isLoading}"
+                  placeholder="Selecciona una institucion"
+                  class="w-full px-3 py-2 !border-2 !border-gray-900 !rounded-md focus:outline-none focus:ring focus:ring-brand-800" />
 						</div>
 					</div>
 
