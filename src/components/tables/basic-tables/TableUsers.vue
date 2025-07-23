@@ -91,24 +91,17 @@
 import { ref, onMounted } from "vue";
 import btnEdit from "../../../components/buttons/btnEdit.vue";
 import btnDelete from "../../../components/buttons/btnDelete.vue";
-import axios from "axios";
-import { useAxios } from "../../../axios";
+import {getUsers} from "../../../services/users/users"
 
-useAxios();
 
 const users = ref([]);
 const isLoading = ref(false);
 
 const fetchUsers = async () => {
   isLoading.value = true;
-  try {
-    const res = await axios.get("users");
-    users.value = res.data;
-  } catch (err) {
-    console.error("Error al obtener los usuarios:", err);
-  } finally {
-    isLoading.value = false;
-  }
+  getUsers()
+      .then(({data}) =>{users.value=data})
+      .finally(() => { isLoading.value = false })
 };
 
 onMounted(() => {

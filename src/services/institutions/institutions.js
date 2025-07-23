@@ -12,3 +12,16 @@ export function getInstitutions() {
             });
     })
 }
+
+export function getInstitutionsId(pk) {
+	return new Promise((resolve, reject) => {
+		axios
+			.get(`institutions/${pk}`)
+			.then((response) => {
+				resolve(response);
+			})
+			.catch((error) => {
+				reject(error);
+			});
+	});
+}

@@ -60,24 +60,19 @@
 import { ref, onMounted } from "vue";
 import btnEdit from "../../../components/buttons/btnEdit.vue";
 import btnDelete from "../../../components/buttons/btnDelete.vue";
-import axios from "axios";
-import { useAxios } from "../../../axios";
+import {getsubsystems} from "../../../services/institutions/subsystems.js"
 
-useAxios();
+
 
 const subsystems = ref([]);
 const isLoading = ref(false);
 
-const fetchSubsystems = async () => {
+const fetchSubsystems = () => {
   isLoading.value = true;
-  try {
-    const res = await axios.get("subsystems");
-    subsystems.value = res.data;
-  } catch (err) {
-    console.error("Error al obtener los subsistemas:", err);
-  } finally {
-    isLoading.value = false;
-  }
+  isLoading.value = true;
+  getsubsystems()
+      .then(({data}) =>{subsystems.value=data})
+      .finally(() => { isLoading.value = false })
 };
 
 onMounted(() => {

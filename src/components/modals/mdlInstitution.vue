@@ -5,6 +5,7 @@ import { getStates } from '../../services/location/states.js'
 import { getMunicipalities } from '../../services/location/municipalities.js'
 import {getAcademicPeriods} from '../../services/institutions/academic-periods.js'
 import {getsubsystems} from '../../services/institutions/subsystems.js'
+import { getInstitutionsId} from "../../services/institutions/institutions"
 
 const emit = defineEmits(['close', 'saved'])
 const isLoading = ref(false)
@@ -97,7 +98,7 @@ watchEffect(() => {
     alvMethod.value = 'PUT'
     isLoading.value = true
 
-    axios.get(alvRoute.value).then(res => {
+    getInstitutionsId(props.data.pk).then(res => {
       const institution = res.data
       Object.keys(form).forEach(key => {
         if (institution[key] !== undefined) {

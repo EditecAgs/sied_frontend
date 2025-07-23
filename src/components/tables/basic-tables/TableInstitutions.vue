@@ -72,7 +72,7 @@
 							<span
 								class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium"
 								:class="getTypeClass(institution.type)">
-								{{ institution.type }}
+								{{ getTypeName(institution.type) }}
 							</span>
 						</td>
 						<td class="px-5 py-4 sm:px-6">
@@ -121,31 +121,23 @@
 import { ref, onMounted } from "vue";
 import btnEdit from "../../../components/buttons/btnEdit.vue";
 import btnDelete from "../../../components/buttons/btnDelete.vue";
-import axios from "axios";
-import { useAxios } from "../../../axios";
-
-useAxios();
+import {getInstitutions} from '../../../services/institutions/institutions'
 
 const institutions = ref([]);
 const isLoading = ref(false);
 
-// Mapeo de tipos de institución
+
 const institutionTypes = {
 	1: { name: 'Pública', class: 'bg-blue-100 text-blue-800' },
 	2: { name: 'Privada', class: 'bg-purple-100 text-purple-800' },
 	3: { name: 'Mixta', class: 'bg-green-100 text-green-800' }
 };
 
-const fetchInstitutions = async () => {
+const fetchInstitutions =  () => {
 	isLoading.value = true;
-	try {
-		const res = await axios.get("institutions?include=state,subsystem");
-		institutions.value = res.data;
-	} catch (err) {
-		console.error("Error al obtener las instituciones:", err);
-	} finally {
-		isLoading.value = false;
-	}
+getInstitutions()
+    .then(({data}) =>{institutions.value=data})
+    .finally(() => { isLoading.value = false })
 };
 
 const getTypeName = (type) => {
