@@ -10,7 +10,6 @@ defineEmits(['update:modelValue', 'update:reportaModeloDual']);
 
 <template>
 	<div class="space-y-6">
-
 		<h2 class="text-xl font-semibold text-brand-900 mb-6">Información Personal</h2>
 
 		<div class="space-y-6">
