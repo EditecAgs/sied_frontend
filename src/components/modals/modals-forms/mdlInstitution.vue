@@ -1,11 +1,11 @@
 <script setup lang="ts">
 import { defineProps, defineEmits, reactive, watchEffect, watch, ref, onMounted } from 'vue'
 import axios from 'axios'
-import { getStates } from '../../services/location/states.js'
-import { getMunicipalities } from '../../services/location/municipalities.js'
-import {getAcademicPeriods} from '../../services/institutions/academic-periods.js'
-import {getsubsystems} from '../../services/institutions/subsystems.js'
-import { showInstitutions} from "../../services/institutions/institutions.js"
+import { getStates } from '../../../services/location/states.js'
+import { getMunicipalities } from '../../../services/location/municipalities.js'
+import {getAcademicPeriods} from '../../../services/institutions/academic-periods.js'
+import {getsubsystems} from '../../../services/institutions/subsystems.js'
+import { showInstitutions} from "../../../services/institutions/institutions.js"
 
 const emit = defineEmits(['close', 'saved'])
 const isLoading = ref(false)

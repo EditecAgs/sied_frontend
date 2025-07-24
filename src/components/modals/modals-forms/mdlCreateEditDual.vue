@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import { defineProps, defineEmits, reactive, watchEffect, ref, onMounted } from 'vue';
 import axios from 'axios';
-import DualStepPersonal from '../forms/DualStepPersonal.vue';
-import DualStepAcademico from '../forms/DualStepAcademico.vue';
-import DualStepUnidad from '../forms/DualStepUnidad.vue';
+import DualStepPersonal from '../../forms/DualStepPersonal.vue';
+import DualStepAcademico from '../../forms/DualStepAcademico.vue';
+import DualStepUnidad from '../../forms/DualStepUnidad.vue';
 
 const emit = defineEmits(['close', 'saved']);
 

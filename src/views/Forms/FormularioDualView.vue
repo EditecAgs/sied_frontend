@@ -27,7 +27,7 @@ import AdminLayout from "../../components/layouts/AdminLayout.vue";
 import PageBreadcrumb from "../../components/common/PageBreadcrumb.vue";
 import ComponentCard from "../../components/common/componentCard.vue";
 import btnCreate from "../../components/buttons/btnCreate.vue";
-import mdlCreateEditDual from "../../components/modals/mdlCreateEditDual.vue";
+import mdlCreateEditDual from "../../components/modals/modals-forms/mdlCreateEditDual.vue";
 import TableModeloDual from "../../components/tables/basic-tables/TableModeloDual.vue";
 import { useModal } from "../../composables/UseModal";
 

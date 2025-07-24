@@ -100,8 +100,7 @@
 								<btnDelete
 									:table="'institutions'"
 									:pk="institution.id ?? index"
-									class="text-brand-800 hover:text-brand-900"
-									@deleted="onInstitutionDeleted" />
+									@open-confirm="(payload) => $emit('open-confirm', payload)" />
 							</div>
 						</td>
 					</tr>
@@ -133,7 +132,7 @@ const institutionTypes = {
 	3: { name: 'Mixta', class: 'bg-green-100 text-green-800' }
 };
 
-const fetchInstitutions =  () => {
+const fetchData =  () => {
 	isLoading.value = true;
 getInstitutions()
     .then(({data}) =>{institutions.value=data})
@@ -153,11 +152,11 @@ const onInstitutionDeleted = (deletedId) => {
 };
 
 onMounted(() => {
-	fetchInstitutions();
+  fetchData();
 });
 
 defineExpose({
-	fetchData: fetchInstitutions,
+	fetchData: fetchData,
 });
 </script>
 

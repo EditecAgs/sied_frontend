@@ -54,9 +54,9 @@
 									:pk="period.id ?? index"
 									@open="(data) => $emit('open', data)" />
 								<btnDelete
-									:table="'academic-periods'"
+									:table="'academic_periods'"
 									:pk="period.id ?? index"
-									@deleted="onPeriodDeleted" />
+									@open-confirm="(payload) => $emit('open-confirm', payload)" />
 							</div>
 						</td>
 					</tr>
@@ -76,7 +76,7 @@ import {getAcademicPeriods} from "../../../services/institutions/academic-period
 const academicPeriods = ref([]);
 const isLoading = ref(false);
 
-const fetchAcademicPeriods = async () => {
+const fetchData = async () => {
   isLoading.value = true;
   getAcademicPeriods()
       .then(({data})=>{academicPeriods.value=data})
@@ -84,7 +84,7 @@ const fetchAcademicPeriods = async () => {
 };
 
 onMounted(() => {
-  fetchAcademicPeriods();
+  fetchData();
 });
 
 const onPeriodDeleted = (deletedId) => {
@@ -92,6 +92,6 @@ const onPeriodDeleted = (deletedId) => {
 };
 
 defineExpose({
-  fetchData: fetchAcademicPeriods,
+  fetchData: fetchData,
 });
 </script>
