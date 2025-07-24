@@ -2,7 +2,7 @@
 	<AdminLayout>
 		<PageBreadcrumb :pageTitle="currentPageTitle" />
 		<div class="space-y-5 sm:space-y-6">
-        <ComponentCard title="Catálogo de Usuarios">
+			<ComponentCard title="Catálogo de Usuarios">
 				<btn-create table="user" @open="({ mode, pk, table}) => openModal(mode, pk, table)" />
 				<mdl-create-edit-user
 					:show="showModal"

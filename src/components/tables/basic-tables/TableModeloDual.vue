@@ -95,9 +95,8 @@
 							<div class="flex space-x-2">
 								<btnEdit
 									:table="'dual_projects'"
-									:pk="project.id ?? index"
-									class="text-brand-800 hover:text-brand-900"
-									@open="(data) => $emit('open', data)" />
+									:pk="project.id"
+									@open="() => $emit('open', { mode: 'edit', pk: project.id, table: 'modelo dual' })" />
 								<btnDelete
 									:table="'dual_projects'"
 									:pk="project.id ?? index"
