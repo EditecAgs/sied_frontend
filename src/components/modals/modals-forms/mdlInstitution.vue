@@ -1,7 +1,11 @@
 <script setup lang="ts">
 import { defineProps, defineEmits, reactive, watchEffect, watch, ref, onMounted } from 'vue'
 import axios from 'axios'
-import { getStates } from '../../services/location/states.js'
+import { getStates } from '../../../services/location/states.js'
+import { getMunicipalities } from '../../../services/location/municipalities.js'
+import {getAcademicPeriods} from '../../../services/institutions/academic-periods.js'
+import {getsubsystems} from '../../../services/institutions/subsystems.js'
+import { showInstitutions} from "../../../services/institutions/institutions.js"
 
 const emit = defineEmits(['close', 'saved'])
 const isLoading = ref(false)
@@ -40,61 +44,52 @@ const form = reactive({
   id_state: '',
   id_municipality: '',
   city: '',
-  type: 1,
+  type: 'Pública' ,
   id_subsystem: '',
   id_academic_period: ''
 })
 
-const estados = ref([])
-const municipios = ref([]) // municipios filtrados
-const todosMunicipios = ref([]) // todos los municipios sin filtrar
-const subsistemas = ref([])
-const periodosAcademicos = ref([])
+const states = ref([])
+const municipalities = ref([])
+const allMunicipalities = ref([])
+const subsystems = ref([])
+const academic_periods = ref([])
 
-const cargarDependencias = async () => {
+const LoadDependence = async() => {
   try {
-    const [ subsistemasRes, periodosRes] = await Promise.all([
-      //axios.get('states'),
-      axios.get('subsystems'),
-      axios.get('academic-periods')
-    ])
 
 	  getStates().then(({data}) => {
-		  estados.value = data;
+		  states.value = data;
 	  });
+    getsubsystems().then(({data}) =>{
+      subsystems.value=data
+    })
+    getAcademicPeriods().then(({data}) =>{
+      academic_periods.value=data
+    })
+    const municipalitiesResp = await getMunicipalities()
+    allMunicipalities.value = municipalitiesResp.data
 
-   // estados.value = estadosRes.data
-    subsistemas.value = subsistemasRes.data
-    periodosAcademicos.value = periodosRes.data
   } catch (err) {
-    console.error('Error al cargar dependencias:', err)
+    console.error('Error load dependences:', err)
   }
 }
 
-const cargarTodosLosMunicipios = async () => {
-  try {
-    const response = await axios.get('municipalities')
-    todosMunicipios.value = response.data
-  } catch (err) {
-    console.error('Error al cargar todos los municipios:', err)
-    todosMunicipios.value = []
-  }
-}
 
-watch(() => form.id_state, (nuevoEstado) => {
-  if (!nuevoEstado) {
-    municipios.value = []
+
+watch(() => form.id_state, (newState) => {
+  if (!newState) {
+    municipalities.value = []
     return
   }
 
-  municipios.value = todosMunicipios.value.filter(
-      (m) => m.id_state === nuevoEstado
+  municipalities.value = allMunicipalities.value.filter(
+      (m) => m.id_state === newState
   )
 })
 
 onMounted(() => {
-  cargarDependencias()
-  cargarTodosLosMunicipios()
+  LoadDependence()
 })
 
 watchEffect(() => {
@@ -103,7 +98,7 @@ watchEffect(() => {
     alvMethod.value = 'PUT'
     isLoading.value = true
 
-    axios.get(alvRoute.value).then(res => {
+    showInstitutions(props.data.pk).then(res => {
       const institution = res.data
       Object.keys(form).forEach(key => {
         if (institution[key] !== undefined) {
@@ -111,8 +106,8 @@ watchEffect(() => {
         }
       })
 
-      if (institution.id_state && todosMunicipios.value.length > 0) {
-        municipios.value = todosMunicipios.value.filter(
+      if (institution.id_state && allMunicipalities.value.length > 0) {
+        municipalities.value = allMunicipalities.value.filter(
             (m) => m.id_state === institution.id_state
         )
       }
@@ -125,10 +120,10 @@ watchEffect(() => {
     alvMethod.value = 'POST'
 
     Object.keys(form).forEach(key => {
-      form[key] = key === 'type' ? 1 : ''
+      form[key] = key === 'Pública' ? 1 : ''
     })
 
-    municipios.value = []
+    municipalities.value = []
   }
 })
 </script>
@@ -142,6 +137,15 @@ watchEffect(() => {
 					{{ data.mode === 'create' ? `Crear ${data.table}` : `Editar ${data.table}` }}
 					<div v-if="isLoading" class="ml-4 w-6 h-6 border-4 border-t-4 border-gray-300 border-t-brand-800 rounded-full animate-spin" />
 				</h4>
+
+				<button
+					@click="emit('close')"
+					class="absolute top-4 right-4 text-gray-500 hover:text-gray-700"
+					aria-label="Cerrar modal">
+					<svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+					</svg>
+				</button>
 
 				<alv-form
 					id="InstitutionForm"
@@ -294,81 +298,52 @@ watchEffect(() => {
 							<Select
 								v-model="form.id_state"
 								name="id_state"
-								:options="estados"
+								:options="states"
 								optionLabel="name"
 								optionValue="id"
 								:virtualScrollerOptions="{ itemSize: 38, showLoader: isLoading}"
 								placeholder="Selecciona un estado"
 								class="w-full px-3 py-2 !border-2 !border-gray-900 !rounded-md focus:outline-none focus:ring focus:ring-brand-800" />
-							<!--
-							<template v-if="isLoading">
-								<div class="h-8 bg-gray-300 rounded animate-pulse w-full" />
-							</template>
-							<template v-else>
-								<select
-									v-model="form.id_state"
-									name="id_state"
-									required
-									class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring focus:ring-brand-800"
-									:disabled="isLoading">
-									<option value="" disabled>Selecciona un estado</option>
-									<option v-for="estado in estados" :key="estado.id" :value="estado.id">{{ estado.name }}</option>
-								</select>
-							</template>-->
 						</div>
 
 						<div class="form-error">
 							<label class="block text-sm font-medium text-gray-700 mb-1">Municipio*</label>
-							<template v-if="isLoading">
-								<div class="h-8 bg-gray-300 rounded animate-pulse w-full" />
-							</template>
-							<template v-else>
-								<select
-									v-model="form.id_municipality"
-									name="id_municipality"
-									required
-									class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring focus:ring-brand-800"
-									:disabled="isLoading">
-									<option value="" disabled>Selecciona un municipio</option>
-									<option v-for="municipio in municipios" :key="municipio.id" :value="municipio.id">
-										{{ municipio.name }}
-									</option>
-								</select>
-							</template>
+							<Select
+								v-model="form.id_municipality"
+								name="id_municipality"
+								:options="municipalities"
+								optionLabel="name"
+								optionValue="id"
+								:virtualScrollerOptions="{ itemSize: 38, showLoader: isLoading}"
+								placeholder="Selecciona un municipio"
+								class="w-full px-3 py-2 !border-2 !border-gray-900 !rounded-md focus:outline-none focus:ring focus:ring-brand-800" />
 						</div>
+					
 
 						<div>
 							<label class="block text-sm font-medium text-gray-700 mb-1">Subsistema</label>
-							<template v-if="isLoading">
-								<div class="h-8 bg-gray-300 rounded animate-pulse w-full" />
-							</template>
-							<template v-else>
-								<select
-									v-model="form.id_subsystem"
-									name="id_subsystem"
-									class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring focus:ring-brand-800"
-									:disabled="isLoading">
-									<option value="">Selecciona un subsistema</option>
-									<option v-for="s in subsistemas" :key="s.id" :value="s.id">{{ s.name }}</option>
-								</select>
-							</template>
+							<Select
+								v-model="form.id_subsystem"
+								name="id_subsystem"
+								:options="subsystems"
+								optionLabel="name"
+								optionValue="id"
+								:virtualScrollerOptions="{ itemSize: 38, showLoader: isLoading}"
+								placeholder="Selecciona un subsistema"
+								class="w-full px-3 py-2 !border-2 !border-gray-900 !rounded-md focus:outline-none focus:ring focus:ring-brand-800" />
 						</div>
 
 						<div>
 							<label class="block text-sm font-medium text-gray-700 mb-1">Periodo Académico</label>
-							<template v-if="isLoading">
-								<div class="h-8 bg-gray-300 rounded animate-pulse w-full" />
-							</template>
-							<template v-else>
-								<select
-									v-model="form.id_academic_period"
-									name="id_academic_period"
-									class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring focus:ring-brand-800"
-									:disabled="isLoading">
-									<option value="">Selecciona un periodo</option>
-									<option v-for="p in periodosAcademicos" :key="p.id" :value="p.id">{{ p.name }}</option>
-								</select>
-							</template>
+							<Select
+								v-model="form.id_academic_period"
+								name="id_academic_period"
+								:options="academic_periods"
+								optionLabel="name"
+								optionValue="id"
+								:virtualScrollerOptions="{ itemSize: 38, showLoader: isLoading}"
+								placeholder="Selecciona un periodo academico"
+								class="w-full px-3 py-2 !border-2 !border-gray-900 !rounded-md focus:outline-none focus:ring focus:ring-brand-800" />
 						</div>
 					</div>
 

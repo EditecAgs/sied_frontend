@@ -38,7 +38,7 @@
 								<circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" />
 								<path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z" />
 							</svg>
-							<p class="text-gray-500">Cargando Instituciones...</p>
+							<p class="text-gray-500">Cargando Usuarios...</p>
 						</td>
 					</tr>
 
@@ -77,7 +77,7 @@
 								<btnDelete
 									:table="'users'"
 									:pk="user.id ?? index"
-									@deleted="onUserDeleted" />
+									@open-confirm="(payload) => $emit('open-confirm', payload)" />
 							</div>
 						</td>
 					</tr>
@@ -91,35 +91,27 @@
 import { ref, onMounted } from "vue";
 import btnEdit from "../../../components/buttons/btnEdit.vue";
 import btnDelete from "../../../components/buttons/btnDelete.vue";
-import axios from "axios";
-import { useAxios } from "../../../axios";
+import {getUsers} from "../../../services/users/users"
 
-useAxios();
+
 
 const users = ref([]);
 const isLoading = ref(false);
 
-const fetchUsers = async () => {
+const fetchData = async () => {
   isLoading.value = true;
-  try {
-    const res = await axios.get("users");
-    users.value = res.data;
-  } catch (err) {
-    console.error("Error al obtener los usuarios:", err);
-  } finally {
-    isLoading.value = false;
-  }
+  getUsers()
+      .then(({data}) =>{users.value=data})
+      .finally(() => { isLoading.value = false })
 };
 
 onMounted(() => {
-  fetchUsers();
+  fetchData();
 });
 
-const onUserDeleted = (deletedId) => {
-  users.value = users.value.filter((user) => user.id !== deletedId);
-};
+
 
 defineExpose({
-  fetchData: fetchUsers,
+  fetchData: fetchData,
 });
 </script>

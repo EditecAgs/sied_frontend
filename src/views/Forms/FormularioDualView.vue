@@ -1,145 +1,42 @@
+<template>
+	<AdminLayout>
+		<PageBreadcrumb :pageTitle="currentPageTitle" />
+		<div class="space-y-5 sm:space-y-6">
+			<ComponentCard title="Registro de Modelo Dual">
+				<btnCreate
+					table="modelo dual"
+					@open="({ mode, pk, table }) => openModal(mode, pk, table)" />
+
+				<mdlCreateEditDual
+					:show="showModal"
+					:data="modalData"
+					@close="closeModal"
+					@saved="handleSaved" />
+
+				<TableModeloDual
+					ref="tableRef"
+					@open="({ mode, pk, table }) => openModal(mode, pk, table)" />
+			</ComponentCard>
+		</div>
+	</AdminLayout>
+</template>
+
 <script setup>
-import { ref, reactive } from 'vue';
-import { useRouter } from 'vue-router';
-import PersonalStep from '../../components/forms/DualStepPersonal.vue';
-import AcademicoStep from '../../components/forms/DualStepAcademico.vue';
-import UnidadDualStep from '../../components/forms/DualStepUnidad.vue';
+import { ref } from "vue";
+import AdminLayout from "../../components/layouts/AdminLayout.vue";
+import PageBreadcrumb from "../../components/common/PageBreadcrumb.vue";
+import ComponentCard from "../../components/common/componentCard.vue";
+import btnCreate from "../../components/buttons/btnCreate.vue";
+import mdlCreateEditDual from "../../components/modals/modals-forms/mdlCreateEditDual.vue";
+import TableModeloDual from "../../components/tables/basic-tables/TableModeloDual.vue";
+import { useModal } from "../../composables/UseModal";
 
-const router = useRouter();
-const currentStep = ref(0);
-const reportaModeloDual = ref(null);
+const currentPageTitle = ref("Modelo Dual");
+const { showModal, modalData, openModal, closeModal } = useModal();
+const tableRef = ref(null);
 
-const formData = reactive({
-	personal: {
-		nombre: '',
-		tipoInstitucion: '',
-		institucion: '',
-		direccion: ''
-	},
-	academico: {
-		matricula: '',
-		nivel: ''
-	},
-	unidadDual: {
-		nombreEmpresa: '',
-		fechaInicio: '',
-		fechaTermino: ''
-	}
-});
-
-const steps = [
-	{ title: 'Información Personal', icon: 'user' },
-	{ title: 'Datos Académicos', icon: 'academic-cap' },
-	{ title: 'Datos de Unidad Dual', icon: 'building' }
-];
-
-const nextStep = () => {
-	if (currentStep.value === 0 && reportaModeloDual.value === false) {
-		submitForm();
-	} else if (currentStep.value < steps.length - 1) {
-		currentStep.value++;
-	}
-};
-
-const prevStep = () => {
-	if (currentStep.value > 0) {
-		currentStep.value--;
-	}
-};
-
-const submitForm = () => {
-	console.log('Formulario enviado:', {
-		...formData,
-		reportaModeloDual: reportaModeloDual.value
-	});
-	router.push('/formulario/exito');
+const handleSaved = () => {
+	closeModal();
+	tableRef.value?.fetchData();
 };
 </script>
-
-<template>
-	<div class="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-		<div class="max-w-3xl w-full bg-white rounded-lg shadow-md overflow-hidden">
-			<!-- Encabezado -->
-			<div class="bg-brand-900 px-6 py-4">
-				<h1 class="text-2xl font-bold text-center text-white">Formulario Multi-Sección</h1>
-			</div>
-
-			<!-- Contenido principal -->
-			<div class="p-8">
-				<!-- Stepper -->
-				<div class="flex justify-between mb-10">
-					<div
-						v-for="(step, index) in steps" :key="index"
-						class="flex flex-col items-center flex-1">
-						<div
-							:class="[
-								'w-10 h-10 rounded-full flex items-center justify-center mb-2',
-								currentStep === index ? 'bg-brand-800 text-white' :
-								currentStep > index ? 'bg-brand-900 text-white' : 'bg-gray-200'
-							]">
-							{{ currentStep > index ? '✓' : index + 1 }}
-						</div>
-						<span
-							:class="[
-								'text-sm',
-								currentStep === index ? 'font-bold text-brand-800' : 'text-gray-600'
-							]">
-							{{ step.title }}
-						</span>
-					</div>
-				</div>
-
-				<!-- Contenido del paso actual -->
-				<div class="mb-8">
-					<PersonalStep
-						v-if="currentStep === 0"
-						v-model="formData.personal"
-						v-model:reportaModeloDual="reportaModeloDual" />
-
-					<AcademicoStep
-						v-else-if="currentStep === 1"
-						v-model="formData.academico" />
-
-					<UnidadDualStep
-						v-else-if="currentStep === 2 && reportaModeloDual"
-						v-model="formData.unidadDual" />
-
-					<div v-else-if="currentStep === 2 && !reportaModeloDual" class="text-center py-8">
-						<p class="text-gray-600 mb-6">No se requieren datos de Unidad Dual para este seguimiento</p>
-						<button
-							class="px-6 py-3 bg-brand-800 text-white rounded-lg hover:bg-brand-900 transition-colors"
-							@click="submitForm">
-							Enviar Formulario
-						</button>
-					</div>
-				</div>
-
-				<!-- Navegación -->
-				<div class="flex justify-between border-t pt-6">
-					<button
-						:disabled="currentStep === 0"
-						:class="[
-							'px-6 py-2 rounded-lg',
-							currentStep === 0 ? 'bg-gray-200 text-gray-500 cursor-not-allowed' :
-							'bg-gray-200 hover:bg-gray-300'
-						]"
-						@click="prevStep">
-						Anterior
-					</button>
-
-					<button
-						:class="[
-							'px-6 py-2 rounded-lg text-white',
-							(currentStep === 0 && reportaModeloDual === null) ?
-								'bg-gray-400 cursor-not-allowed' : 'bg-brand-900 hover:bg-brand-800'
-						]"
-						:disabled="currentStep === 0 && reportaModeloDual === null"
-						@click="nextStep">
-						{{ currentStep === steps.length - 1 ||
-							(currentStep === 0 && reportaModeloDual === false) ? 'Enviar' : 'Siguiente' }}
-					</button>
-				</div>
-			</div>
-		</div>
-	</div>
-</template>

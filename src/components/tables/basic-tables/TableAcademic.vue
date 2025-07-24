@@ -54,9 +54,9 @@
 									:pk="period.id ?? index"
 									@open="(data) => $emit('open', data)" />
 								<btnDelete
-									:table="'academic-periods'"
+									:table="'academic_periods'"
 									:pk="period.id ?? index"
-									@deleted="onPeriodDeleted" />
+									@open-confirm="(payload) => $emit('open-confirm', payload)" />
 							</div>
 						</td>
 					</tr>
@@ -70,28 +70,21 @@
 import { ref, onMounted } from "vue";
 import btnEdit from "../../../components/buttons/btnEdit.vue";
 import btnDelete from "../../../components/buttons/btnDelete.vue";
-import axios from "axios";
-import { useAxios } from "../../../axios";
+import {getAcademicPeriods} from "../../../services/institutions/academic-periods"
 
-useAxios();
 
 const academicPeriods = ref([]);
 const isLoading = ref(false);
 
-const fetchAcademicPeriods = async () => {
+const fetchData = async () => {
   isLoading.value = true;
-  try {
-    const res = await axios.get("academic-periods");
-    academicPeriods.value = res.data;
-  } catch (err) {
-    console.error("Error al obtener los periodos académicos:", err);
-  } finally {
-    isLoading.value = false;
-  }
+  getAcademicPeriods()
+      .then(({data})=>{academicPeriods.value=data})
+      .finally(() => { isLoading.value = false })
 };
 
 onMounted(() => {
-  fetchAcademicPeriods();
+  fetchData();
 });
 
 const onPeriodDeleted = (deletedId) => {
@@ -99,6 +92,6 @@ const onPeriodDeleted = (deletedId) => {
 };
 
 defineExpose({
-  fetchData: fetchAcademicPeriods,
+  fetchData: fetchData,
 });
 </script>

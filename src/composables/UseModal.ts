@@ -24,4 +24,5 @@ export function useModal() {
         openModal,
         closeModal,
     }
+
 }

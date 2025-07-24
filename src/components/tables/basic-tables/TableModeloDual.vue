@@ -6,12 +6,12 @@
 					<tr class="border-b border-gray-200 bg-brand-50">
 						<th class="px-5 py-3 text-left w-2/12 sm:px-6">
 							<p class="font-medium text-brand-900 text-theme-xs">
-								Nombre
+								Nombre del Proyecto
 							</p>
 						</th>
 						<th class="px-5 py-3 text-left w-2/12 sm:px-6">
 							<p class="font-medium text-brand-900 text-theme-xs">
-								Dirección
+								Institución
 							</p>
 						</th>
 						<th class="px-5 py-3 text-left w-1/12 sm:px-6">
@@ -19,19 +19,19 @@
 								Tipo
 							</p>
 						</th>
+						<th class="px-5 py-3 text-left w-2/12 sm:px-6">
+							<p class="font-medium text-brand-900 text-theme-xs">
+								Fechas
+							</p>
+						</th>
 						<th class="px-5 py-3 text-left w-1/12 sm:px-6">
 							<p class="font-medium text-brand-900 text-theme-xs">
-								Subsistema
+								Estado
 							</p>
 						</th>
 						<th class="px-5 py-3 text-left w-2/12 sm:px-6">
 							<p class="font-medium text-brand-900 text-theme-xs">
-								Ciudad/Estado
-							</p>
-						</th>
-						<th class="px-5 py-3 text-left w-2/12 sm:px-6">
-							<p class="font-medium text-brand-900 text-theme-xs">
-								Código Postal
+								Área
 							</p>
 						</th>
 						<th class="px-5 py-3 text-left w-2/12 sm:px-6">
@@ -48,66 +48,67 @@
 								<circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" />
 								<path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z" />
 							</svg>
-							<p class="text-gray-500">Cargando Instituciones...</p>
+							<p class="text-gray-500">Cargando Proyectos Duales...</p>
 						</td>
 					</tr>
 
 					<tr
-						v-for="(institution, index) in institutions"
+						v-for="(project, index) in dualProjects"
 						v-else
-						:key="institution.id ?? index"
+						:key="project.id ?? index"
 						class="border-t border-gray-100 hover:bg-brand-50/50 transition-colors">
 						<td class="px-5 py-4 sm:px-6">
 							<span class="block font-medium text-brand-900 text-theme-sm">
-								{{ institution.name }}
+								{{ project.project_name }}
 							</span>
 						</td>
 						<td class="px-5 py-4 sm:px-6">
 							<p class="text-gray-700 text-theme-sm">
-								{{ institution.street }} {{ institution.external_number }} {{ institution.internal_number ? `Int. ${institution.internal_number}` : '' }}
+								{{ project.institution?.name || 'N/A' }}
 							</p>
-							<p class="text-gray-500 text-xs mt-1">{{ institution.neighborhood }}</p>
 						</td>
 						<td class="px-5 py-4 sm:px-6">
 							<span
 								class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium"
-								:class="getTypeClass(institution.type)">
-								{{ getTypeName(institution.type) }}
+								:class="getTypeClass(project.project_type)">
+								{{ getTypeName(project.project_type) }}
+							</span>
+						</td>
+						<td class="px-5 py-4 sm:px-6">
+							<p class="text-gray-700 text-theme-sm">
+								{{ formatDate(project.start_date) }} - {{ formatDate(project.end_date) }}
+							</p>
+						</td>
+						<td class="px-5 py-4 sm:px-6">
+							<span
+								class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium"
+								:class="getStatusClass(project.status)">
+								{{ getStatusName(project.status) }}
 							</span>
 						</td>
 						<td class="px-5 py-4 sm:px-6">
 							<p class="text-gray-500 text-theme-sm">
-								{{ institution.subsystem?.name || 'N/A' }}
-							</p>
-						</td>
-						<td class="px-5 py-4 sm:px-6">
-							<p class="text-gray-700 text-theme-sm">
-								{{ institution.city }}, {{ institution.state?.name }}
-							</p>
-						</td>
-						<td class="px-5 py-4 sm:px-6">
-							<p class="text-gray-500 text-theme-sm">
-								{{ institution.postal_code }}
+								{{ project.area || 'N/A' }}
 							</p>
 						</td>
 						<td class="px-5 py-4 sm:px-6">
 							<div class="flex space-x-2">
 								<btnEdit
-									:table="'institutions'"
-									:pk="institution.id ?? index"
-									class="text-brand-800 hover:text-brand-900"
-									@open="(data) => $emit('open', data)" />
+									:table="'dual_projects'"
+									:pk="project.id"
+									@open="() => $emit('open', { mode: 'edit', pk: project.id, table: 'modelo dual' })" />
 								<btnDelete
-									:table="'institutions'"
-									:pk="institution.id ?? index"
-									@open-confirm="(payload) => $emit('open-confirm', payload)" />
+									:table="'dual_projects'"
+									:pk="project.id ?? index"
+									class="text-brand-800 hover:text-brand-900"
+									@deleted="onProjectDeleted" />
 							</div>
 						</td>
 					</tr>
 
-					<tr v-if="!isLoading && institutions.length === 0">
+					<tr v-if="!isLoading && dualProjects.length === 0">
 						<td colspan="7" class="px-5 py-8 text-center sm:px-6">
-							<p class="text-gray-500">No se encontraron instituciones registradas</p>
+							<p class="text-gray-500">No se encontraron proyectos duales registrados</p>
 						</td>
 					</tr>
 				</tbody>
@@ -120,43 +121,72 @@
 import { ref, onMounted } from "vue";
 import btnEdit from "../../../components/buttons/btnEdit.vue";
 import btnDelete from "../../../components/buttons/btnDelete.vue";
-import {getInstitutions} from '../../../services/institutions/institutions'
+import axios from "axios";
+import { useAxios } from "../../../axios";
 
-const institutions = ref([]);
+useAxios();
+
+const dualProjects = ref([]);
 const isLoading = ref(false);
 
-
-const institutionTypes = {
-	1: { name: 'Pública', class: 'bg-blue-100 text-blue-800' },
-	2: { name: 'Privada', class: 'bg-purple-100 text-purple-800' },
-	3: { name: 'Mixta', class: 'bg-green-100 text-green-800' }
+// Mapeo de tipos de proyecto
+const projectTypes = {
+	1: { name: 'Educativo', class: 'bg-blue-100 text-blue-800' },
+	2: { name: 'Empresarial', class: 'bg-purple-100 text-purple-800' },
+	3: { name: 'Gubernamental', class: 'bg-green-100 text-green-800' }
 };
 
-const fetchData =  () => {
+// Mapeo de estados
+const projectStatuses = {
+	1: { name: 'Activo', class: 'bg-green-100 text-green-800' },
+	2: { name: 'Concluido', class: 'bg-blue-100 text-blue-800' },
+	3: { name: 'Cancelado', class: 'bg-red-100 text-red-800' }
+};
+
+const fetchDualProjects = async () => {
 	isLoading.value = true;
-getInstitutions()
-    .then(({data}) =>{institutions.value=data})
-    .finally(() => { isLoading.value = false })
+	try {
+		const res = await axios.get("dual-projects?include=institution");
+		dualProjects.value = res.data;
+	} catch (err) {
+		console.error("Error al obtener los proyectos duales:", err);
+	} finally {
+		isLoading.value = false;
+	}
+};
+
+const formatDate = (dateString) => {
+	if (!dateString) return 'N/A';
+	const options = { year: 'numeric', month: 'short', day: 'numeric' };
+	return new Date(dateString).toLocaleDateString('es-MX', options);
 };
 
 const getTypeName = (type) => {
-	return institutionTypes[type]?.name || 'Desconocido';
+	return projectTypes[type]?.name || 'Desconocido';
 };
 
 const getTypeClass = (type) => {
-	return institutionTypes[type]?.class || 'bg-gray-100 text-gray-800';
+	return projectTypes[type]?.class || 'bg-gray-100 text-gray-800';
 };
 
-const onInstitutionDeleted = (deletedId) => {
-	institutions.value = institutions.value.filter((inst) => inst.id !== deletedId);
+const getStatusName = (status) => {
+	return projectStatuses[status]?.name || 'Desconocido';
+};
+
+const getStatusClass = (status) => {
+	return projectStatuses[status]?.class || 'bg-gray-100 text-gray-800';
+};
+
+const onProjectDeleted = (deletedId) => {
+	dualProjects.value = dualProjects.value.filter((project) => project.id !== deletedId);
 };
 
 onMounted(() => {
-  fetchData();
+	fetchDualProjects();
 });
 
 defineExpose({
-	fetchData: fetchData,
+	fetchData: fetchDualProjects,
 });
 </script>
 
