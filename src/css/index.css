@@ -5,6 +5,24 @@
 @tailwind utilities;
 @custom-variant dark (&:is(.dark *));
 
+.p-virtualscroller {
+    background-color: white !important;
+
+}
+
+.p-select-option{
+   padding:10px !important;
+}
+.p-select-option:hover{
+    background-color: #d1d5db !important;
+}
+
+.p-inputwrapper{
+    border: 1px solid #d1d5db !important;
+}
+
+
+
 @theme {
     --font-*: initial;
     --font-outfit: Outfit, sans-serif;
