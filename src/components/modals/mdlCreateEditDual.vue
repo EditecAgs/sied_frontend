@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { defineProps, defineEmits, reactive, watchEffect, ref, onMounted } from 'vue';
 import axios from 'axios';
+
 import DualStepPersonal from '../forms/DualStepPersonal.vue';
 import DualStepAcademico from '../forms/DualStepAcademico.vue';
 import DualStepUnidad from '../forms/DualStepUnidad.vue';
@@ -19,26 +20,27 @@ const props = defineProps<{
 
 const isLoading = ref(false);
 const currentStep = ref(0);
-const reportaModeloDual = ref(null);
+const reportaModeloDual = ref<boolean | null>(null);
 
 const steps = [
-	{ title: 'Información Personal' },
+	{ title: 'Información de Institución' },
 	{ title: 'Datos Académicos' },
 	{ title: 'Unidad Dual' }
 ];
 
-// Formulario reactivo
 const formData = reactive({
 	personal: {
-		nombre: '',
-		direccion: '',
-		tipoInstitucion: '',
-		institucion: ''
-	},
-	academico: {
 		matricula: '',
 		carrera: '',
 		periodo: ''
+	},
+	academico: {
+		nombre: '',
+		direccion: '',
+		tipoInstitucion: '',
+		institucion: '',
+		subsistema: '',
+		periodoAcademico: ''
 	},
 	unidadDual: {
 		nombreEmpresa: '',
@@ -49,18 +51,19 @@ const formData = reactive({
 	}
 });
 
-// Limpiar datos si es modo creación
 const resetForm = () => {
 	formData.personal = {
-		nombre: '',
-		direccion: '',
-		tipoInstitucion: '',
-		institucion: ''
-	};
-	formData.academico = {
 		matricula: '',
 		carrera: '',
 		periodo: ''
+	};
+	formData.academico = {
+		nombre: '',
+		direccion: '',
+		tipoInstitucion: '',
+		institucion: '',
+		subsistema: '',
+		periodoAcademico: ''
 	};
 	formData.unidadDual = {
 		nombreEmpresa: '',
@@ -73,22 +76,23 @@ const resetForm = () => {
 	currentStep.value = 0;
 };
 
-// Cargar si modo edición
 watchEffect(() => {
 	if (props.data.mode === 'edit' && props.data.pk !== null) {
 		isLoading.value = true;
 		axios.get(`dual-projects/${props.data.pk}`).then((res) => {
 			const project = res.data;
 			formData.personal = {
-				nombre: project.student_name,
-				direccion: project.student_address,
-				tipoInstitucion: project.institution_type,
-				institucion: project.institution_id
-			};
-			formData.academico = {
 				matricula: project.student_id,
 				carrera: project.career,
 				periodo: project.academic_period
+			};
+			formData.academico = {
+				nombre: project.student_name,
+				direccion: project.student_address,
+				tipoInstitucion: project.institution_type,
+				institucion: project.institution_id,
+				subsistema: project.subsystem_id,
+				periodoAcademico: project.academic_period_id
 			};
 			if (project.has_dual_unit) {
 				formData.unidadDual = {
@@ -112,7 +116,7 @@ watchEffect(() => {
 
 const nextStep = () => {
 	if (currentStep.value === 0 && reportaModeloDual.value === false) {
-		submitForm();
+		imprimirYGuardar();
 	} else if (currentStep.value < steps.length - 1) {
 		currentStep.value++;
 	}
@@ -143,30 +147,28 @@ const submitForm = async () => {
 		console.error("Error al enviar el formulario:", err);
 	}
 };
+
+const imprimirYGuardar = () => {
+	console.log("Formulario completo:", JSON.stringify(formData, null, 2));
+	submitForm();
+};
 </script>
 
 <template>
 	<transition name="fade-scale">
-		<div
-			v-if="show"
-			class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm" style="margin-top: 0px;"
-			@click.self="emit('close')">
+		<div v-if="show" class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm" style="margin-top: 0px;" @click.self="emit('close')">
 			<div class="bg-white rounded-2xl shadow-2xl w-full max-w-4xl p-8 relative max-h-[90vh] flex flex-col overflow-hidden">
-				<button
-					@click="emit('close')"
-					class="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition text-xl font-bold"
-					title="Cerrar">
+				<button class="absolute top-4 right-4 text-gray-400 hover:text-gray-600 text-xl font-bold" @click="emit('close')">
 					&times;
 				</button>
+
 				<h4 class="text-2xl font-bold text-brand-900 mb-6">
 					{{ props.data.mode === 'create' ? 'Crear Proyecto Dual' : 'Editar Proyecto Dual' }}
 				</h4>
 
+				<!-- Steps -->
 				<div class="flex justify-between mb-6">
-					<div
-						v-for="(step, index) in steps"
-						:key="index"
-						class="flex-1 flex flex-col items-center">
+					<div v-for="(step, index) in steps" :key="index" class="flex-1 flex flex-col items-center">
 						<div
 							:class="[
 								'w-8 h-8 flex items-center justify-center rounded-full mb-1 text-sm font-semibold',
@@ -181,15 +183,17 @@ const submitForm = async () => {
 					</div>
 				</div>
 
+				<!-- Secciones -->
 				<div class="flex-grow overflow-y-auto pr-2 mb-4">
-					<DualStepPersonal
-						v-if="currentStep === 0"
-						v-model="formData.personal"
-						v-model:reportaModeloDual="reportaModeloDual" />
-
 					<DualStepAcademico
+						v-if="currentStep === 0"
+						v-model="formData.academico"
+						v-model:reportaModeloDual="reportaModeloDual"
+						@submitSinUnidadDual="imprimirYGuardar" />
+
+					<DualStepPersonal
 						v-else-if="currentStep === 1"
-						v-model="formData.academico" />
+						v-model="formData.personal" />
 
 					<DualStepUnidad
 						v-else-if="currentStep === 2 && reportaModeloDual"
@@ -205,15 +209,11 @@ const submitForm = async () => {
 					</div>
 				</div>
 
+				<!-- Botones -->
 				<div class="flex justify-between pt-4 border-t">
+					<button :disabled="currentStep === 0" class="btn" @click="prevStep">Anterior</button>
 					<button
-						:disabled="currentStep === 0"
-						class="px-5 py-2 rounded-lg bg-gray-200 text-gray-700 font-medium hover:bg-gray-300 disabled:opacity-50"
-						@click="prevStep">
-						Anterior
-					</button>
-					<button
-						class="px-5 py-2 rounded-lg bg-brand-800 text-white font-medium hover:bg-brand-900"
+						class="btn bg-brand-800 text-white hover:bg-brand-900"
 						:disabled="currentStep === 0 && reportaModeloDual === null"
 						@click="nextStep">
 						{{ currentStep === steps.length - 1 || (currentStep === 0 && reportaModeloDual === false) ? 'Enviar' : 'Siguiente' }}
@@ -225,6 +225,9 @@ const submitForm = async () => {
 </template>
 
 <style scoped>
+.btn {
+	@apply px-5 py-2 rounded-lg font-medium transition;
+}
 .fade-scale-enter-active,
 .fade-scale-leave-active {
 	transition: all 0.3s ease;
