@@ -33,7 +33,6 @@ import { useModal } from "../../composables/UseModal";
 
 const currentPageTitle = ref("Modelo Dual");
 const { showModal, modalData, openModal, closeModal } = useModal();
-
 const tableRef = ref(null);
 
 const handleSaved = () => {
