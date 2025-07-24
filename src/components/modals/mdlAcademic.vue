@@ -2,7 +2,7 @@
 <script setup lang="ts">
 import { defineProps, defineEmits, reactive, watchEffect, ref, onMounted } from 'vue'
 import axios from 'axios'
-import {getAcademicPeriodById} from "../../services/institutions/academic-periods"
+import {showAcademicPeriods} from "../../services/institutions/academic-periods.js"
 
 const emit = defineEmits(['close', 'saved'])
 const isLoading = ref(false)
@@ -31,7 +31,7 @@ watchEffect(() => {
     alvMethod.value = 'PUT'
     isLoading.value = true
 
-    getAcademicPeriodById(props.data.pk)
+    showAcademicPeriods(props.data.pk)
         .then(res =>{
           const period = res.data
           form.name = period.name

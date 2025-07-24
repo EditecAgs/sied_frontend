@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { defineProps, defineEmits, reactive, watchEffect, ref, onMounted } from 'vue'
 import axios from 'axios'
+import {showSubsysyems} from "../../services/institutions/subsystems.js"
 
 const emit = defineEmits(['close', 'saved'])
 const isLoading = ref(false)
@@ -28,7 +29,7 @@ watchEffect(() => {
 		alvMethod.value = 'PUT'
 		isLoading.value = true
 
-		axios.get(alvRoute.value)
+    showSubsysyems(props.data.pk)
 			.then(res => {
 				const subsystem = res.data
 				form.name = subsystem.name

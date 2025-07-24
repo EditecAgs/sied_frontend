@@ -2,6 +2,7 @@
 import { defineProps, defineEmits, reactive, watchEffect, ref, onMounted } from 'vue'
 import axios from 'axios'
 import {getInstitutions} from '../../services/institutions/institutions'
+import {showUsers} from "../../services/users/users.js"
 
 const emit = defineEmits(['close', 'saved'])
 const isLoading = ref(false)
@@ -48,7 +49,7 @@ watchEffect(() => {
     alvMethod.value = 'PUT'
     isLoading.value = true
 
-    axios.get(alvRoute.value)
+    showUsers(props.data.pk)
         .then(res => {
           const user = res.data
           form.name = user.name

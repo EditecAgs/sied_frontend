@@ -3,7 +3,7 @@
 		<PageBreadcrumb :pageTitle="currentPageTitle" />
 		<div class="space-y-5 sm:space-y-6">
 			<ComponentCard title="Catálogo de Subsistemas">
-				<btn-create table="user" @open="({ mode, pk, table}) => openModal(mode, pk, table)" />
+				<btn-create table="subsystems" @open="({ mode, pk, table}) => openModal(mode, pk, table)" />
 				<mdl-subsystems :show="showModal" :data="modalData" @close="closeModal" @saved="handleSaved" />
 				<TableSubsystems
 					ref="tableRef"
