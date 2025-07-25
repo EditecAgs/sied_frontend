@@ -5,6 +5,8 @@ import axios from 'axios';
 import DualStepPersonal from '../forms/DualStepPersonal.vue';
 import DualStepAcademico from '../forms/DualStepAcademico.vue';
 import DualStepUnidad from '../forms/DualStepUnidad.vue';
+import MdlInstitution from '../modals/mdlInstitution.vue';
+import { useModal } from '../../composables/UseModal';
 
 const emit = defineEmits(['close', 'saved']);
 
@@ -18,6 +20,7 @@ const props = defineProps<{
 	};
 }>();
 
+const { showModal, modalData, openModal, closeModal } = useModal();
 const isLoading = ref(false);
 const currentStep = ref(0);
 const reportaModeloDual = ref<boolean | null>(null);
@@ -35,9 +38,6 @@ const formData = reactive({
 		periodo: ''
 	},
 	academico: {
-		nombre: '',
-		direccion: '',
-		tipoInstitucion: '',
 		institucion: '',
 		subsistema: '',
 		periodoAcademico: ''
@@ -58,9 +58,6 @@ const resetForm = () => {
 		periodo: ''
 	};
 	formData.academico = {
-		nombre: '',
-		direccion: '',
-		tipoInstitucion: '',
 		institucion: '',
 		subsistema: '',
 		periodoAcademico: ''
@@ -87,9 +84,6 @@ watchEffect(() => {
 				periodo: project.academic_period
 			};
 			formData.academico = {
-				nombre: project.student_name,
-				direccion: project.student_address,
-				tipoInstitucion: project.institution_type,
 				institucion: project.institution_id,
 				subsistema: project.subsystem_id,
 				periodoAcademico: project.academic_period_id
@@ -152,15 +146,17 @@ const imprimirYGuardar = () => {
 	console.log("Formulario completo:", JSON.stringify(formData, null, 2));
 	submitForm();
 };
+
+const handleInstitutionSaved = () => {
+	closeModal(); // Cierra modal de crear institución
+};
 </script>
 
 <template>
 	<transition name="fade-scale">
 		<div v-if="show" class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm" style="margin-top: 0px;" @click.self="emit('close')">
 			<div class="bg-white rounded-2xl shadow-2xl w-full max-w-4xl p-8 relative max-h-[90vh] flex flex-col overflow-hidden">
-				<button class="absolute top-4 right-4 text-gray-400 hover:text-gray-600 text-xl font-bold" @click="emit('close')">
-					&times;
-				</button>
+				<button class="absolute top-4 right-4 text-gray-400 hover:text-gray-600 text-xl font-bold" @click="emit('close')">&times;</button>
 
 				<h4 class="text-2xl font-bold text-brand-900 mb-6">
 					{{ props.data.mode === 'create' ? 'Crear Proyecto Dual' : 'Editar Proyecto Dual' }}
@@ -183,14 +179,13 @@ const imprimirYGuardar = () => {
 					</div>
 				</div>
 
-				<!-- Secciones -->
+				<!-- Form Steps -->
 				<div class="flex-grow overflow-y-auto pr-2 mb-4">
 					<DualStepAcademico
 						v-if="currentStep === 0"
 						v-model="formData.academico"
 						v-model:reportaModeloDual="reportaModeloDual"
-						@submitSinUnidadDual="imprimirYGuardar" />
-
+						@submitSinUnidadDual="imprimirYGuardar"/>
 					<DualStepPersonal
 						v-else-if="currentStep === 1"
 						v-model="formData.personal" />
@@ -201,15 +196,13 @@ const imprimirYGuardar = () => {
 
 					<div v-else-if="currentStep === 2 && reportaModeloDual === false" class="text-center py-8">
 						<p class="text-gray-600 mb-4">No se requieren datos de Unidad Dual</p>
-						<button
-							class="bg-brand-800 text-white px-6 py-2 rounded-lg hover:bg-brand-900"
-							@click="submitForm">
+						<button class="bg-brand-800 text-white px-6 py-2 rounded-lg hover:bg-brand-900" @click="submitForm">
 							Enviar Formulario
 						</button>
 					</div>
 				</div>
 
-				<!-- Botones -->
+				<!-- Navegación -->
 				<div class="flex justify-between pt-4 border-t">
 					<button :disabled="currentStep === 0" class="btn" @click="prevStep">Anterior</button>
 					<button
@@ -219,6 +212,13 @@ const imprimirYGuardar = () => {
 						{{ currentStep === steps.length - 1 || (currentStep === 0 && reportaModeloDual === false) ? 'Enviar' : 'Siguiente' }}
 					</button>
 				</div>
+
+				<!-- Modal de Institución (anidada) -->
+				<mdlInstitution
+					:show="showModal"
+					:data="modalData"
+					@close="closeModal"
+					@saved="handleInstitutionSaved" />
 			</div>
 		</div>
 	</transition>

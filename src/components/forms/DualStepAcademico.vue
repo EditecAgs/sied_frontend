@@ -1,22 +1,17 @@
 <script setup>
 import { ref, onMounted, defineProps, defineEmits } from 'vue';
 import { getInstitutions } from '../../services/institutions/institutions';
-import { getAcademicPeriods } from '../../services/institutions/academic-periods';
-import { getsubsystems } from '../../services/institutions/subsystems';
+
+import btnCreate from '../../components/buttons/btnCreate.vue';
+import mdlInstitution from '../../components/modals/mdlInstitution.vue';
+import { useModal } from '../../composables/UseModal';
 
 const institutions = ref([]);
-const subsystems = ref([]);
-const academicPeriods = ref([]);
+const { showModal, modalData, openModal, closeModal } = useModal();
 
 onMounted(async () => {
-	const [resInstitutions, resSubsystems, resPeriods] = await Promise.all([
-		getInstitutions(),
-		getsubsystems(),
-		getAcademicPeriods()
-	]);
-	institutions.value = resInstitutions.data;
-	subsystems.value = resSubsystems.data;
-	academicPeriods.value = resPeriods.data;
+	const res = await getInstitutions();
+	institutions.value = res.data;
 });
 
 defineProps({
@@ -30,68 +25,44 @@ const buttonClass = (isSelected) => [
 	'px-4 py-2 rounded-lg border flex-1 transition',
 	isSelected ? 'bg-brand-800 text-white border-brand-800' : 'border-gray-300 hover:bg-gray-50'
 ];
+
+const handleSaved = async () => {
+	closeModal();
+	const res = await getInstitutions();
+	institutions.value = res.data;
+};
 </script>
 
 <template>
 	<div class="space-y-6">
 		<h2 class="text-xl font-semibold text-brand-900 mb-6">Información de la Institución</h2>
 
-		<!-- Nombre -->
+		<!-- Select de institución existente -->
 		<div>
-			<label class="label">Nombre de la institución</label>
-			<input
-				type="text" :value="modelValue.nombre" class="input"
-				@input="$emit('update:modelValue', { ...modelValue, nombre: $event.target.value })" />
-		</div>
-
-		<!-- Tipo de Institución -->
-		<div>
-			<label class="label">Tipo de Institución</label>
-			<div class="flex space-x-4">
-				<button
-					type="button" :class="buttonClass(modelValue.tipoInstitucion === 'Publica')"
-					@click="$emit('update:modelValue', { ...modelValue, tipoInstitucion: 'Publica' })">
-					Pública
-				</button>
-				<button
-					type="button" :class="buttonClass(modelValue.tipoInstitucion === 'Privada')"
-					@click="$emit('update:modelValue', { ...modelValue, tipoInstitucion: 'Privada' })">
-					Privada
-				</button>
-			</div>
-		</div>
-
-		<!-- Institución -->
-
-		<!-- Subsistema -->
-		<div>
-			<label class="label">Subsistema</label>
+			<label class="label">Selecciona una institución</label>
 			<select
-				:value="modelValue.subsistema" class="select"
-				@change="$emit('update:modelValue', { ...modelValue, subsistema: $event.target.value })">
-				<option value="">Seleccione una opción</option>
-				<option v-for="sub in subsystems" :key="sub.id" :value="sub.id">{{ sub.name }}</option>
+				:value="modelValue.id_institution"
+				class="select"
+				@change="$emit('update:modelValue', { ...modelValue, id_institution: $event.target.value })">
+				<option value="">Seleccione una institución</option>
+				<option v-for="inst in institutions" :key="inst.id" :value="inst.id">{{ inst.name }}</option>
 			</select>
 		</div>
 
-		<!-- Periodo Académico -->
-		<div>
-			<label class="label">Periodo Académico</label>
-			<select
-				:value="modelValue.periodoAcademico" class="select"
-				@change="$emit('update:modelValue', { ...modelValue, periodoAcademico: $event.target.value })">
-				<option value="">Seleccione una opción</option>
-				<option v-for="period in academicPeriods" :key="period.id" :value="period.id">{{ period.name }}</option>
-			</select>
+		<!-- Botón para abrir modal de nueva institución -->
+		<div class="mt-2">
+			<btn-create
+				:table="'institution'"
+				@open="({ mode, pk, table }) => openModal(mode, pk, table)"
+				class="divide-error-900 hover:divide-error-800" />
 		</div>
 
-		<!-- Dirección -->
-		<div>
-			<label class="label">Dirección</label>
-			<input
-				type="text" :value="modelValue.direccion" class="input"
-				@input="$emit('update:modelValue', { ...modelValue, direccion: $event.target.value })" />
-		</div>
+		<!-- Modal para crear institución -->
+		<mdl-institution
+			:show="showModal"
+			:data="modalData"
+			@close="closeModal"
+			@saved="handleSaved" />
 
 		<!-- ¿Tiene modelo dual? -->
 		<div class="pt-6 border-t space-y-4">
