@@ -24,50 +24,69 @@ const { showModal, modalData, openModal, closeModal } = useModal();
 const isLoading = ref(false);
 const currentStep = ref(0);
 const reportaModeloDual = ref<boolean | null>(null);
+const stepAcademicoRef = ref();
+const stepPersonalRef = ref();
+const stepUnidadDualRef = ref(null);
+
+
 
 const steps = [
 	{ title: 'Información de Institución' },
-	{ title: 'Datos Académicos' },
+	{ title: 'Datos Personales' },
 	{ title: 'Unidad Dual' }
 ];
 
 const formData = reactive({
 	personal: {
 		matricula: '',
-		carrera: '',
-		periodo: ''
+		nombre: '',
+		apellidos: '',
+		genero: '',
+		semestre: '',
+		carrera: ''
 	},
 	academico: {
-		institucion: '',
-		subsistema: '',
-		periodoAcademico: ''
+		institucion: ''
 	},
 	unidadDual: {
-		nombreEmpresa: '',
-		tipoEmpresa: '',
+		nombreProyecto: '',
+		tipoUnidad: '',
+		sectorUnidad: '',
+		tamanoUnidad: '',
+		clusterAfiliado: '',
+		domicilio: {
+			calle: '',
+			numeroExterno: '',
+			numeroInterno: '',
+			colonia: '',
+			codigoPostal: '',
+			estado: '',
+			municipio: '',
+			pais: '',
+			ciudad: '',
+			googleMaps: ''
+		},
+		areaProyecto: '',
 		fechaInicio: '',
 		fechaTermino: '',
-		areaProyecto: ''
+		estadoConvenio: '',
+		apoyoEconomico: ''
 	}
 });
 
 const resetForm = () => {
 	formData.personal = {
-		matricula: '',
-		carrera: '',
-		periodo: ''
+		matricula: '', nombre: '', apellidos: '', genero: '', semestre: '', carrera: ''
 	};
 	formData.academico = {
-		institucion: '',
-		subsistema: '',
-		periodoAcademico: ''
+		institucion: ''
 	};
 	formData.unidadDual = {
-		nombreEmpresa: '',
-		tipoEmpresa: '',
-		fechaInicio: '',
-		fechaTermino: '',
-		areaProyecto: ''
+		nombreProyecto: '', tipoUnidad: '', sectorUnidad: '', tamanoUnidad: '', clusterAfiliado: '',
+		domicilio: {
+			calle: '', numeroExterno: '', numeroInterno: '', colonia: '', codigoPostal: '', estado: '', municipio: '', pais: '', ciudad: '', googleMaps: ''
+		},
+		areaProyecto: '', fechaInicio: '', fechaTermino: '', estadoConvenio: '', apoyoEconomico: ''
 	};
 	reportaModeloDual.value = null;
 	currentStep.value = 0;
@@ -80,21 +99,39 @@ watchEffect(() => {
 			const project = res.data;
 			formData.personal = {
 				matricula: project.student_id,
-				carrera: project.career,
-				periodo: project.academic_period
+				nombre: project.first_name,
+				apellidos: project.last_name,
+				genero: project.gender,
+				semestre: project.semester,
+				carrera: project.career
 			};
 			formData.academico = {
 				institucion: project.institution_id,
-				subsistema: project.subsystem_id,
-				periodoAcademico: project.academic_period_id
 			};
 			if (project.has_dual_unit) {
 				formData.unidadDual = {
-					nombreEmpresa: project.company_name,
-					tipoEmpresa: project.company_type,
+					nombreProyecto: project.project_name,
+					tipoUnidad: project.unit_type_id,
+					sectorUnidad: project.sector_id,
+					tamanoUnidad: project.unit_size,
+					clusterAfiliado: project.cluster_id,
+					domicilio: {
+						calle: project.address_street,
+						numeroExterno: project.address_ext,
+						numeroInterno: project.address_int,
+						colonia: project.address_neighborhood,
+						codigoPostal: project.address_postal_code,
+						estado: project.address_state,
+						municipio: project.address_municipality,
+						pais: project.address_country,
+						ciudad: project.address_city,
+						googleMaps: project.address_google_maps
+					},
+					areaProyecto: project.project_area_id,
 					fechaInicio: project.start_date,
 					fechaTermino: project.end_date,
-					areaProyecto: project.project_area
+					estadoConvenio: project.dual_status_id,
+					apoyoEconomico: project.support_type_id
 				};
 				reportaModeloDual.value = true;
 			} else {
@@ -108,10 +145,51 @@ watchEffect(() => {
 	}
 });
 
-const nextStep = () => {
-	if (currentStep.value === 0 && reportaModeloDual.value === false) {
+const validarDatosAcademicos = () => {
+	const { institucion } = formData.academico;
+	return institucion;
+};
+
+const validarDatosPersonales = () => {
+	const { matricula, nombre, apellidos, genero, semestre, carrera } = formData.personal;
+	return matricula && nombre && apellidos && genero && semestre && carrera;
+};
+
+const validarDatosUnidadDual = () => {
+	if (!reportaModeloDual.value) return true;
+	const unidad = formData.unidadDual;
+	const d = unidad.domicilio;
+	return unidad.nombreProyecto && unidad.tipoUnidad && unidad.sectorUnidad && unidad.tamanoUnidad &&
+		unidad.clusterAfiliado && d.calle && d.numeroExterno && d.colonia && d.codigoPostal &&
+		d.estado && d.municipio && d.pais && d.ciudad && unidad.areaProyecto && unidad.fechaInicio &&
+		unidad.fechaTermino && unidad.estadoConvenio && unidad.apoyoEconomico;
+};
+
+const handleNextOrSubmit = async () => {
+	if (currentStep.value === 0) {
+		const isValid = await stepAcademicoRef.value?.validate?.();
+		if (!isValid) return;
+
+		if (reportaModeloDual.value === false) {
+			imprimirYGuardar();
+			return;
+		}
+		nextStep();
+	} else if (currentStep.value === 1) {
+			const isValid = await stepPersonalRef.value?.validate?.();
+			if (!isValid) return;
+		nextStep();
+	} else if (currentStep.value === 2) {
+		const isValid = await stepUnidadDualRef.value?.validate?.();
+		if (!isValid) return;
+
 		imprimirYGuardar();
-	} else if (currentStep.value < steps.length - 1) {
+	}
+};
+
+
+const nextStep = () => {
+	if (currentStep.value < steps.length - 1) {
 		currentStep.value++;
 	}
 };
@@ -148,9 +226,10 @@ const imprimirYGuardar = () => {
 };
 
 const handleInstitutionSaved = () => {
-	closeModal(); // Cierra modal de crear institución
+	closeModal();
 };
 </script>
+
 
 <template>
 	<transition name="fade-scale">
@@ -182,17 +261,21 @@ const handleInstitutionSaved = () => {
 				<!-- Form Steps -->
 				<div class="flex-grow overflow-y-auto pr-2 mb-4">
 					<DualStepAcademico
+						ref="stepAcademicoRef"
 						v-if="currentStep === 0"
 						v-model="formData.academico"
 						v-model:reportaModeloDual="reportaModeloDual"
-						@submitSinUnidadDual="imprimirYGuardar"/>
+						@submitSinUnidadDual="imprimirYGuardar" />
+
 					<DualStepPersonal
+						ref="stepPersonalRef"
 						v-else-if="currentStep === 1"
 						v-model="formData.personal" />
 
 					<DualStepUnidad
 						v-else-if="currentStep === 2 && reportaModeloDual"
-						v-model="formData.unidadDual" />
+						v-model="formData.unidadDual"
+						ref="stepUnidadDualRef" />
 
 					<div v-else-if="currentStep === 2 && reportaModeloDual === false" class="text-center py-8">
 						<p class="text-gray-600 mb-4">No se requieren datos de Unidad Dual</p>
@@ -202,18 +285,17 @@ const handleInstitutionSaved = () => {
 					</div>
 				</div>
 
-				<!-- Navegación -->
+				<!-- Botón de navegación -->
 				<div class="flex justify-between pt-4 border-t">
 					<button :disabled="currentStep === 0" class="btn" @click="prevStep">Anterior</button>
 					<button
 						class="btn bg-brand-800 text-white hover:bg-brand-900"
 						:disabled="currentStep === 0 && reportaModeloDual === null"
-						@click="nextStep">
+						@click="handleNextOrSubmit">
 						{{ currentStep === steps.length - 1 || (currentStep === 0 && reportaModeloDual === false) ? 'Enviar' : 'Siguiente' }}
 					</button>
 				</div>
 
-				<!-- Modal de Institución (anidada) -->
 				<mdlInstitution
 					:show="showModal"
 					:data="modalData"

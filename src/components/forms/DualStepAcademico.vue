@@ -1,7 +1,6 @@
-<script setup>
-import { ref, onMounted, defineProps, defineEmits } from 'vue';
+<script setup lang="ts">
+import { ref, onMounted, defineProps, defineEmits, watch } from 'vue';
 import { getInstitutions } from '../../services/institutions/institutions';
-
 import btnCreate from '../../components/buttons/btnCreate.vue';
 import mdlInstitution from '../../components/modals/mdlInstitution.vue';
 import { useModal } from '../../composables/UseModal';
@@ -9,19 +8,48 @@ import { useModal } from '../../composables/UseModal';
 const institutions = ref([]);
 const { showModal, modalData, openModal, closeModal } = useModal();
 
+const props = defineProps({
+	modelValue: Object,
+	reportaModeloDual: Boolean
+});
+
+
+const emit = defineEmits(['update:modelValue', 'update:reportaModeloDual', 'submitSinUnidadDual']);
+
+const errors = ref<{ institucion?: string }>({});
+
 onMounted(async () => {
 	const res = await getInstitutions();
 	institutions.value = res.data;
 });
 
-defineProps({
-	modelValue: Object,
-	reportaModeloDual: Boolean
-});
+watch(() => props.modelValue, () => {
+	if (props.modelValue?.institucion) {
+		errors.value.institucion = '';
+	}
+}, { deep: true });
 
-defineEmits(['update:modelValue', 'update:reportaModeloDual', 'submitSinUnidadDual']);
+const updateField = (field: string, value: any) => {
+	emit('update:modelValue', {
+		...props.modelValue,
+		[field]: value
+	});
+	if (field === 'institucion' && value) {
+		errors.value.institucion = '';
+	}
+};
 
-const buttonClass = (isSelected) => [
+const validate = () => {
+	if (!props.modelValue?.institucion) {
+		errors.value.institucion = 'Este campo es obligatorio';
+		return false;
+	}
+	return true;
+};
+
+defineExpose({ validate });
+
+const buttonClass = (isSelected: boolean) => [
 	'px-4 py-2 rounded-lg border flex-1 transition',
 	isSelected ? 'bg-brand-800 text-white border-brand-800' : 'border-gray-300 hover:bg-gray-50'
 ];
@@ -37,53 +65,53 @@ const handleSaved = async () => {
 	<div class="space-y-6">
 		<h2 class="text-xl font-semibold text-brand-900 mb-6">Información de la Institución</h2>
 
-		<!-- Select de institución existente -->
 		<div>
 			<label class="label">Selecciona una institución</label>
 			<select
-				:value="modelValue.id_institution"
+				:value="modelValue.institucion"
 				class="select"
-				@change="$emit('update:modelValue', { ...modelValue, id_institution: $event.target.value })">
+				:class="{ 'border-red-500': errors.institucion }"
+				@change="updateField('institucion', $event.target.value)">
 				<option value="">Seleccione una institución</option>
 				<option v-for="inst in institutions" :key="inst.id" :value="inst.id">{{ inst.name }}</option>
 			</select>
+			<p v-if="errors.institucion" class="text-red-500 text-sm mt-1">{{ errors.institucion }}</p>
 		</div>
 
-		<!-- Botón para abrir modal de nueva institución -->
 		<div class="mt-2">
 			<btn-create
 				:table="'institution'"
-				@open="({ mode, pk, table }) => openModal(mode, pk, table)"
-				class="divide-error-900 hover:divide-error-800" />
+				@open="({ mode, pk, table }) => openModal(mode, pk, table)" />
 		</div>
 
-		<!-- Modal para crear institución -->
 		<mdl-institution
 			:show="showModal"
 			:data="modalData"
 			@close="closeModal"
 			@saved="handleSaved" />
 
-		<!-- ¿Tiene modelo dual? -->
 		<div class="pt-6 border-t space-y-4">
 			<label class="label">¿Este seguimiento tiene información del Modelo Dual?</label>
 			<div class="flex space-x-6">
 				<label class="inline-flex items-center space-x-2 cursor-pointer">
 					<input
-						type="radio" :checked="reportaModeloDual === true" class="radio"
+						type="radio"
+						:checked="reportaModeloDual === true"
+						class="radio"
 						@change="$emit('update:reportaModeloDual', true)" />
 					<span>Sí</span>
 				</label>
 				<label class="inline-flex items-center space-x-2 cursor-pointer">
 					<input
-						type="radio" :checked="reportaModeloDual === false" class="radio"
+						type="radio"
+						:checked="reportaModeloDual === false"
+						class="radio"
 						@change="$emit('update:reportaModeloDual', false)" />
 					<span>No</span>
 				</label>
 			</div>
 		</div>
 
-		<!-- Botón si no hay unidad dual -->
 		<div v-if="reportaModeloDual === false" class="text-center pt-4">
 			<button
 				class="bg-brand-800 text-white px-6 py-2 rounded-lg hover:bg-brand-900"
