@@ -20,29 +20,16 @@ export function getReportedDualProjects() {
 	});
 }
 
-// Crear proyecto dual SIN reporte
-export function createDualProjectUnreport(params) {
+export function createDualProject(params) {
 	return new Promise((resolve, reject) => {
 		axios
-			.post('dual-projects', {
-				...params,
-				has_report: 0 // asegúrate de mandar este campo para diferenciarlo
+			.post('dual-projects', params)
+			.then((response) => {
+				resolve(response);
 			})
-			.then(resolve)
-			.catch(reject);
-	});
-}
-
-// Crear proyecto dual CON reporte
-export function createDualProjectReported(params) {
-	return new Promise((resolve, reject) => {
-		axios
-			.post('dual-projects', {
-				...params,
-				has_report: 1 // asegúrate de mandar este campo para diferenciarlo
-			})
-			.then(resolve)
-			.catch(reject);
+			.catch((error) => {
+				reject(error);
+			});
 	});
 }
 

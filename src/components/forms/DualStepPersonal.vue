@@ -1,11 +1,17 @@
 <script setup>
-import { ref, onMounted, defineProps, defineEmits, watch } from 'vue';
+import { ref, onMounted, defineProps, defineEmits } from 'vue';
 import { getCareers } from '../../services/institutions/careers';
+import { getSpecialties } from '../../services/institutions/specialties';
 
 const careers = ref([]);
+const specialties = ref([]);
+
 onMounted(async () => {
-	const res = await getCareers();
-	careers.value = res.data;
+	const resCareers = await getCareers();
+	careers.value = resCareers.data;
+
+	const resSpecialties = await getSpecialties();
+	specialties.value = resSpecialties.data;
 });
 
 const props = defineProps({
@@ -13,45 +19,50 @@ const props = defineProps({
 });
 const emit = defineEmits(['update:modelValue']);
 
+const errors = ref({
+	control_number: '',
+	name_student: '',
+	lastname: '',
+	gender: '',
+	semester: '',
+	id_career: '',
+	id_specialty: ''
+});
+
 const update = (field, value) => {
 	emit('update:modelValue', { ...props.modelValue, [field]: value });
-	if (errors.value[field]) errors.value[field] = ''; // limpiar error al escribir
+	if (errors.value[field]) errors.value[field] = '';
 };
-
-const errors = ref({
-	matricula: '',
-	nombre: '',
-	apellidos: '',
-	genero: '',
-	semestre: '',
-	carrera: ''
-});
 
 const validate = () => {
 	let valid = true;
 
-	if (!props.modelValue?.matricula) {
-		errors.value.matricula = 'Este campo es obligatorio';
+	if (!props.modelValue?.control_number) {
+		errors.value.control_number = 'Este campo es obligatorio';
 		valid = false;
 	}
-	if (!props.modelValue?.nombre) {
-		errors.value.nombre = 'Este campo es obligatorio';
+	if (!props.modelValue?.name_student) {
+		errors.value.name_student = 'Este campo es obligatorio';
 		valid = false;
 	}
-	if (!props.modelValue?.apellidos) {
-		errors.value.apellidos = 'Este campo es obligatorio';
+	if (!props.modelValue?.lastname) {
+		errors.value.lastname = 'Este campo es obligatorio';
 		valid = false;
 	}
-	if (!props.modelValue?.genero) {
-		errors.value.genero = 'Este campo es obligatorio';
+	if (!props.modelValue?.gender) {
+		errors.value.gender = 'Este campo es obligatorio';
 		valid = false;
 	}
-	if (!props.modelValue?.semestre) {
-		errors.value.semestre = 'Este campo es obligatorio';
+	if (!props.modelValue?.semester) {
+		errors.value.semester = 'Este campo es obligatorio';
 		valid = false;
 	}
-	if (!props.modelValue?.carrera) {
-		errors.value.carrera = 'Este campo es obligatorio';
+	if (!props.modelValue?.id_career) {
+		errors.value.id_career = 'Este campo es obligatorio';
+		valid = false;
+	}
+	if (!props.modelValue?.id_specialty) {
+		errors.value.id_specialty = 'Este campo es obligatorio';
 		valid = false;
 	}
 
@@ -65,16 +76,16 @@ defineExpose({ validate });
 	<div class="space-y-6">
 		<h2 class="text-xl font-semibold text-brand-900 mb-6">Datos del Estudiante</h2>
 
-		<!-- Matrícula -->
+		<!-- No. de control / Matrícula -->
 		<div>
 			<label class="label">No. de control / Matrícula</label>
 			<input
 				type="text"
-				:value="modelValue.matricula"
+				:value="modelValue.control_number"
 				class="input"
-				:class="{ 'border-red-500': errors.matricula }"
-				@input="update('matricula', $event.target.value)" />
-			<p v-if="errors.matricula" class="text-red-500 text-sm mt-1">{{ errors.matricula }}</p>
+				:class="{ 'border-red-500': errors.control_number }"
+				@input="update('control_number', $event.target.value)" />
+			<p v-if="errors.control_number" class="text-red-500 text-sm mt-1">{{ errors.control_number }}</p>
 		</div>
 
 		<!-- Nombre -->
@@ -82,11 +93,11 @@ defineExpose({ validate });
 			<label class="label">Nombre</label>
 			<input
 				type="text"
-				:value="modelValue.nombre"
+				:value="modelValue.name_student"
 				class="input"
-				:class="{ 'border-red-500': errors.nombre }"
-				@input="update('nombre', $event.target.value)" />
-			<p v-if="errors.nombre" class="text-red-500 text-sm mt-1">{{ errors.nombre }}</p>
+				:class="{ 'border-red-500': errors.name_student }"
+				@input="update('name_student', $event.target.value)" />
+			<p v-if="errors.name_student" class="text-red-500 text-sm mt-1">{{ errors.name_student }}</p>
 		</div>
 
 		<!-- Apellidos -->
@@ -94,11 +105,11 @@ defineExpose({ validate });
 			<label class="label">Apellidos</label>
 			<input
 				type="text"
-				:value="modelValue.apellidos"
+				:value="modelValue.lastname"
 				class="input"
-				:class="{ 'border-red-500': errors.apellidos }"
-				@input="update('apellidos', $event.target.value)" />
-			<p v-if="errors.apellidos" class="text-red-500 text-sm mt-1">{{ errors.apellidos }}</p>
+				:class="{ 'border-red-500': errors.lastname }"
+				@input="update('lastname', $event.target.value)" />
+			<p v-if="errors.lastname" class="text-red-500 text-sm mt-1">{{ errors.lastname }}</p>
 		</div>
 
 		<!-- Género -->
@@ -109,20 +120,20 @@ defineExpose({ validate });
 					<input
 						type="radio"
 						class="radio"
-						:checked="modelValue.genero === 'Masculino'"
-						@change="update('genero', 'Masculino')" />
+						:checked="modelValue.gender === 'Masculino'"
+						@change="update('gender', 'Masculino')" />
 					<span>Masculino</span>
 				</label>
 				<label class="inline-flex items-center space-x-2">
 					<input
 						type="radio"
 						class="radio"
-						:checked="modelValue.genero === 'Femenino'"
-						@change="update('genero', 'Femenino')" />
+						:checked="modelValue.gender === 'Femenino'"
+						@change="update('gender', 'Femenino')" />
 					<span>Femenino</span>
 				</label>
 			</div>
-			<p v-if="errors.genero" class="text-red-500 text-sm mt-1">{{ errors.genero }}</p>
+			<p v-if="errors.gender" class="text-red-500 text-sm mt-1">{{ errors.gender }}</p>
 		</div>
 
 		<!-- Semestre -->
@@ -133,10 +144,10 @@ defineExpose({ validate });
 				min="1"
 				max="12"
 				class="input"
-				:value="modelValue.semestre"
-				:class="{ 'border-red-500': errors.semestre }"
-				@input="update('semestre', $event.target.value)" />
-			<p v-if="errors.semestre" class="text-red-500 text-sm mt-1">{{ errors.semestre }}</p>
+				:value="modelValue.semester"
+				:class="{ 'border-red-500': errors.semester }"
+				@input="update('semester', $event.target.value)" />
+			<p v-if="errors.semester" class="text-red-500 text-sm mt-1">{{ errors.semester }}</p>
 		</div>
 
 		<!-- Carrera -->
@@ -144,15 +155,31 @@ defineExpose({ validate });
 			<label class="label">Carrera</label>
 			<select
 				class="select"
-				:value="modelValue.carrera"
-				:class="{ 'border-red-500': errors.carrera }"
-				@change="update('carrera', $event.target.value)">
+				:value="modelValue.id_career"
+				:class="{ 'border-red-500': errors.id_career }"
+				@change="update('id_career', $event.target.value)">
 				<option value="">Seleccione una opción</option>
 				<option v-for="carrera in careers" :key="carrera.id" :value="carrera.id">
 					{{ carrera.name }}
 				</option>
 			</select>
-			<p v-if="errors.carrera" class="text-red-500 text-sm mt-1">{{ errors.carrera }}</p>
+			<p v-if="errors.id_career" class="text-red-500 text-sm mt-1">{{ errors.id_career }}</p>
+		</div>
+
+		<!-- Especialidad -->
+		<div>
+			<label class="label">Especialidad</label>
+			<select
+				class="select"
+				:value="modelValue.id_specialty"
+				:class="{ 'border-red-500': errors.id_specialty }"
+				@change="update('id_specialty', $event.target.value)">
+				<option value="">Seleccione una opción</option>
+				<option v-for="specialty in specialties" :key="specialty.id" :value="specialty.id">
+					{{ specialty.name }}
+				</option>
+			</select>
+			<p v-if="errors.id_specialty" class="text-red-500 text-sm mt-1">{{ errors.id_specialty }}</p>
 		</div>
 	</div>
 </template>

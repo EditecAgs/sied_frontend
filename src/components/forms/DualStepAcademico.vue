@@ -13,10 +13,9 @@ const props = defineProps({
 	reportaModeloDual: Boolean
 });
 
-
 const emit = defineEmits(['update:modelValue', 'update:reportaModeloDual', 'submitSinUnidadDual']);
 
-const errors = ref<{ institucion?: string }>({});
+const errors = ref<{ id_institution?: string }>({});
 
 onMounted(async () => {
 	const res = await getInstitutions();
@@ -24,8 +23,8 @@ onMounted(async () => {
 });
 
 watch(() => props.modelValue, () => {
-	if (props.modelValue?.institucion) {
-		errors.value.institucion = '';
+	if (props.modelValue?.id_institution) {
+		errors.value.id_institution = '';
 	}
 }, { deep: true });
 
@@ -34,14 +33,14 @@ const updateField = (field: string, value: any) => {
 		...props.modelValue,
 		[field]: value
 	});
-	if (field === 'institucion' && value) {
-		errors.value.institucion = '';
+	if (field === 'id_institution' && value) {
+		errors.value.id_institution = '';
 	}
 };
 
 const validate = () => {
-	if (!props.modelValue?.institucion) {
-		errors.value.institucion = 'Este campo es obligatorio';
+	if (!props.modelValue?.id_institution) {
+		errors.value.id_institution = 'Este campo es obligatorio';
 		return false;
 	}
 	return true;
@@ -68,14 +67,14 @@ const handleSaved = async () => {
 		<div>
 			<label class="label">Selecciona una institución</label>
 			<select
-				:value="modelValue.institucion"
+				:value="modelValue.id_institution"
 				class="select"
-				:class="{ 'border-red-500': errors.institucion }"
-				@change="updateField('institucion', $event.target.value)">
+				:class="{ 'border-red-500': errors.id_institution }"
+				@change="updateField('id_institution', $event.target.value)">
 				<option value="">Seleccione una institución</option>
 				<option v-for="inst in institutions" :key="inst.id" :value="inst.id">{{ inst.name }}</option>
 			</select>
-			<p v-if="errors.institucion" class="text-red-500 text-sm mt-1">{{ errors.institucion }}</p>
+			<p v-if="errors.id_institution" class="text-red-500 text-sm mt-1">{{ errors.id_institution }}</p>
 		</div>
 
 		<div class="mt-2">
@@ -110,14 +109,6 @@ const handleSaved = async () => {
 					<span>No</span>
 				</label>
 			</div>
-		</div>
-
-		<div v-if="reportaModeloDual === false" class="text-center pt-4">
-			<button
-				class="bg-brand-800 text-white px-6 py-2 rounded-lg hover:bg-brand-900"
-				@click="$emit('submitSinUnidadDual')">
-				Guardar e Imprimir
-			</button>
 		</div>
 	</div>
 </template>

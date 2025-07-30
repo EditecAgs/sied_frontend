@@ -8,7 +8,7 @@
 							<p class="font-medium text-brand-900 text-theme-xs">Nombre del Proyecto</p>
 						</th>
 						<th class="px-5 py-3 text-left w-3/12 sm:px-6">
-							<p class="font-medium text-brand-900 text-theme-xs">¿Tiene Reporte?</p>
+							<p class="font-medium text-brand-900 text-theme-xs">Estatus</p>
 						</th>
 						<th class="px-5 py-3 text-left w-4/12 sm:px-6">
 							<p class="font-medium text-brand-900 text-theme-xs">Opciones</p>
@@ -37,16 +37,29 @@
 							</span>
 						</td>
 						<td class="px-5 py-4 sm:px-6">
-							<p class="text-theme-sm text-gray-700">
-								{{ project.has_report ? 'Sí' : 'No' }}
-							</p>
+							<span
+								:class="project.has_report ? 'text-green-600 font-semibold' : 'text-yellow-600 font-semibold'"
+								class="text-theme-sm">
+								{{ project.has_report ? 'Completado' : 'Incompleto' }}
+							</span>
 						</td>
 						<td class="px-5 py-4 sm:px-6">
 							<div class="flex space-x-2">
-								<btnEdit
-									:table="'dual_projects'"
-									:pk="project.id"
-									@open="() => $emit('open', { mode: 'edit', pk: project.id, table: 'modelo dual' })" />
+								<template v-if="project.has_report">
+									<btnEdit
+										:table="'dual_projects'"
+										:pk="project.id"
+										@open="() => $emit('open', { mode: 'edit', pk: project.id, table: 'modelo dual' })" />
+								</template>
+
+								<template v-else>
+									<button
+										class="text-theme-xs font-medium text-brand-800 hover:text-brand-900 underline underline-offset-2"
+										@click="$emit('open', { mode: 'edit', pk: project.id, table: 'modelo dual' })">
+										Completar
+									</button>
+								</template>
+
 								<btnDelete
 									:table="'dual_projects'"
 									:pk="project.id ?? index"
@@ -66,6 +79,7 @@
 		</div>
 	</div>
 </template>
+
 
 <script setup>
 import { ref, onMounted } from "vue";

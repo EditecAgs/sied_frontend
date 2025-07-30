@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { defineProps, defineEmits, reactive, watchEffect, ref, onMounted } from 'vue';
+import { defineProps, defineEmits, reactive, watchEffect, ref } from 'vue';
 import axios from 'axios';
 
 import DualStepPersonal from '../forms/DualStepPersonal.vue';
@@ -7,9 +7,9 @@ import DualStepAcademico from '../forms/DualStepAcademico.vue';
 import DualStepUnidad from '../forms/DualStepUnidad.vue';
 import MdlInstitution from '../modals/mdlInstitution.vue';
 import { useModal } from '../../composables/UseModal';
+import { createDualProject } from '../../services/dual_projects/dual_projects';
 
 const emit = defineEmits(['close', 'saved']);
-
 // eslint-disable-next-line vue/valid-define-props
 const props = defineProps<{
 	show: boolean;
@@ -28,8 +28,6 @@ const stepAcademicoRef = ref();
 const stepPersonalRef = ref();
 const stepUnidadDualRef = ref(null);
 
-
-
 const steps = [
 	{ title: 'Información de Institución' },
 	{ title: 'Datos Personales' },
@@ -38,55 +36,53 @@ const steps = [
 
 const formData = reactive({
 	personal: {
-		matricula: '',
-		nombre: '',
-		apellidos: '',
-		genero: '',
-		semestre: '',
-		carrera: ''
+		control_number: '',
+		name_student: '',
+		lastname: '',
+		gender: '',
+		semester: '',
+		id_career: '',
+		id_specialty: '',
+		number_men: '1',
+		number_women: '1'
 	},
 	academico: {
-		institucion: ''
+		id_institution: ''
 	},
 	unidadDual: {
-		nombreProyecto: '',
-		tipoUnidad: '',
-		sectorUnidad: '',
-		tamanoUnidad: '',
-		clusterAfiliado: '',
-		domicilio: {
-			calle: '',
-			numeroExterno: '',
-			numeroInterno: '',
-			colonia: '',
-			codigoPostal: '',
-			estado: '',
-			municipio: '',
-			pais: '',
-			ciudad: '',
-			googleMaps: ''
-		},
-		areaProyecto: '',
-		fechaInicio: '',
-		fechaTermino: '',
-		estadoConvenio: '',
-		apoyoEconomico: ''
+		name_report: '',
+		id_organization: '',
+		id_dual_area: '',
+		period_start: '',
+		period_end: '',
+		status_document: '',
+		economic_support: '',
+		amount: '1500'
 	}
 });
 
+const formatDate = (date: string | Date): string => {
+	if (!date) return '';
+	const d = new Date(date);
+	return d.toISOString().slice(0, 10);
+};
+
 const resetForm = () => {
 	formData.personal = {
-		matricula: '', nombre: '', apellidos: '', genero: '', semestre: '', carrera: ''
+		control_number: '', name_student: '', lastname: '', gender: '', semester: '', id_career: '', id_specialty: '', number_men: '1', number_women: '1'
 	};
 	formData.academico = {
-		institucion: ''
+		id_institution: ''
 	};
 	formData.unidadDual = {
-		nombreProyecto: '', tipoUnidad: '', sectorUnidad: '', tamanoUnidad: '', clusterAfiliado: '',
-		domicilio: {
-			calle: '', numeroExterno: '', numeroInterno: '', colonia: '', codigoPostal: '', estado: '', municipio: '', pais: '', ciudad: '', googleMaps: ''
-		},
-		areaProyecto: '', fechaInicio: '', fechaTermino: '', estadoConvenio: '', apoyoEconomico: ''
+		name_report: '',
+		id_organization: '',
+		id_dual_area: '',
+		period_start: '',
+		period_end: '',
+		status_document: '',
+		economic_support: '',
+		amount: '1500'
 	};
 	reportaModeloDual.value = null;
 	currentStep.value = 0;
@@ -98,40 +94,29 @@ watchEffect(() => {
 		axios.get(`dual-projects/${props.data.pk}`).then((res) => {
 			const project = res.data;
 			formData.personal = {
-				matricula: project.student_id,
-				nombre: project.first_name,
-				apellidos: project.last_name,
-				genero: project.gender,
-				semestre: project.semester,
-				carrera: project.career
+				control_number: project.student_id,
+				name_student: project.first_name,
+				lastname: project.last_name,
+				gender: project.gender,
+				semester: project.semester,
+				id_career: project.career,
+				id_specialty: project.id_specialty,
+				number_men: '1',
+				number_women: '1'
 			};
 			formData.academico = {
-				institucion: project.institution_id,
+				id_institution: project.institution_id
 			};
 			if (project.has_dual_unit) {
 				formData.unidadDual = {
-					nombreProyecto: project.project_name,
-					tipoUnidad: project.unit_type_id,
-					sectorUnidad: project.sector_id,
-					tamanoUnidad: project.unit_size,
-					clusterAfiliado: project.cluster_id,
-					domicilio: {
-						calle: project.address_street,
-						numeroExterno: project.address_ext,
-						numeroInterno: project.address_int,
-						colonia: project.address_neighborhood,
-						codigoPostal: project.address_postal_code,
-						estado: project.address_state,
-						municipio: project.address_municipality,
-						pais: project.address_country,
-						ciudad: project.address_city,
-						googleMaps: project.address_google_maps
-					},
-					areaProyecto: project.project_area_id,
-					fechaInicio: project.start_date,
-					fechaTermino: project.end_date,
-					estadoConvenio: project.dual_status_id,
-					apoyoEconomico: project.support_type_id
+					name_report: project.project_name,
+					id_organization: project.organization_id,
+					id_dual_area: project.project_area_id,
+					period_start: project.start_date,
+					period_end: project.end_date,
+					status_document: project.dual_status_id,
+					economic_support: project.support_type_id,
+					amount: '1500'
 				};
 				reportaModeloDual.value = true;
 			} else {
@@ -145,26 +130,6 @@ watchEffect(() => {
 	}
 });
 
-const validarDatosAcademicos = () => {
-	const { institucion } = formData.academico;
-	return institucion;
-};
-
-const validarDatosPersonales = () => {
-	const { matricula, nombre, apellidos, genero, semestre, carrera } = formData.personal;
-	return matricula && nombre && apellidos && genero && semestre && carrera;
-};
-
-const validarDatosUnidadDual = () => {
-	if (!reportaModeloDual.value) return true;
-	const unidad = formData.unidadDual;
-	const d = unidad.domicilio;
-	return unidad.nombreProyecto && unidad.tipoUnidad && unidad.sectorUnidad && unidad.tamanoUnidad &&
-		unidad.clusterAfiliado && d.calle && d.numeroExterno && d.colonia && d.codigoPostal &&
-		d.estado && d.municipio && d.pais && d.ciudad && unidad.areaProyecto && unidad.fechaInicio &&
-		unidad.fechaTermino && unidad.estadoConvenio && unidad.apoyoEconomico;
-};
-
 const handleNextOrSubmit = async () => {
 	if (currentStep.value === 0) {
 		const isValid = await stepAcademicoRef.value?.validate?.();
@@ -176,8 +141,8 @@ const handleNextOrSubmit = async () => {
 		}
 		nextStep();
 	} else if (currentStep.value === 1) {
-			const isValid = await stepPersonalRef.value?.validate?.();
-			if (!isValid) return;
+		const isValid = await stepPersonalRef.value?.validate?.();
+		if (!isValid) return;
 		nextStep();
 	} else if (currentStep.value === 2) {
 		const isValid = await stepUnidadDualRef.value?.validate?.();
@@ -186,7 +151,6 @@ const handleNextOrSubmit = async () => {
 		imprimirYGuardar();
 	}
 };
-
 
 const nextStep = () => {
 	if (currentStep.value < steps.length - 1) {
@@ -200,29 +164,55 @@ const prevStep = () => {
 	}
 };
 
-const submitForm = async () => {
-	const payload = {
-		student_data: formData.personal,
-		academic_data: formData.academico,
-		dual_unit_data: reportaModeloDual.value ? formData.unidadDual : null
-	};
-
+const imprimirYGuardar = async () => {
 	try {
-		if (props.data.mode === 'edit' && props.data.pk !== null) {
-			await axios.put(`dual-projects/${props.data.pk}`, payload);
+		let payload: Record<string, any>;
+
+		if (reportaModeloDual.value === false) {
+			payload = {
+				has_report: 0,
+				id_institution: Number(formData.academico.id_institution)
+			};
 		} else {
-			await axios.post('dual-projects', payload);
+			payload = {
+				// Datos académicos
+				has_report: 1,
+				id_institution: Number(formData.academico.id_institution),
+
+				// Datos personales
+				control_number: formData.personal.control_number,
+				name_student: formData.personal.name_student,
+				lastname: formData.personal.lastname,
+				gender: formData.personal.gender,
+				semester: Number(formData.personal.semester),
+				id_career: Number(formData.personal.id_career),
+				id_specialty: Number(formData.personal.id_specialty),
+				number_men: Number(formData.personal.number_men),
+				number_women: Number(formData.personal.number_women),
+
+				// Unidad dual
+				name_report: formData.unidadDual.name_report,
+				id_organization: Number(formData.unidadDual.id_organization),
+				id_dual_area: Number(formData.unidadDual.id_dual_area),
+				period_start: formatDate(formData.unidadDual.period_start),
+				period_end: formatDate(formData.unidadDual.period_end),
+				status_document: Number(formData.unidadDual.status_document),
+				economic_support: Number(formData.unidadDual.economic_support),
+				amount: Number(formData.unidadDual.amount)
+			};
 		}
+
+		console.log('Payload a enviar:', payload);
+		await createDualProject(payload);
 		emit('saved');
 		emit('close');
-	} catch (err) {
-		console.error("Error al enviar el formulario:", err);
+	} catch (err: any) {
+		if (axios.isAxiosError(err) && err.response) {
+			console.error("422 Response data:", err.response.data);
+		} else {
+			console.error("Error al enviar el formulario:", err);
+		}
 	}
-};
-
-const imprimirYGuardar = () => {
-	console.log("Formulario completo:", JSON.stringify(formData, null, 2));
-	submitForm();
 };
 
 const handleInstitutionSaved = () => {
@@ -230,10 +220,9 @@ const handleInstitutionSaved = () => {
 };
 </script>
 
-
 <template>
 	<transition name="fade-scale">
-		<div v-if="show" class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm" style="margin-top: 0px;" @click.self="emit('close')">
+		<div v-if="show" class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm" @click.self="emit('close')">
 			<div class="bg-white rounded-2xl shadow-2xl w-full max-w-4xl p-8 relative max-h-[90vh] flex flex-col overflow-hidden">
 				<button class="absolute top-4 right-4 text-gray-400 hover:text-gray-600 text-xl font-bold" @click="emit('close')">&times;</button>
 
@@ -245,8 +234,7 @@ const handleInstitutionSaved = () => {
 				<div class="flex justify-between mb-6">
 					<div v-for="(step, index) in steps" :key="index" class="flex-1 flex flex-col items-center">
 						<div
-							:class="[
-								'w-8 h-8 flex items-center justify-center rounded-full mb-1 text-sm font-semibold',
+							:class="[ 'w-8 h-8 flex items-center justify-center rounded-full mb-1 text-sm font-semibold',
 								currentStep === index ? 'bg-brand-800 text-white' :
 								currentStep > index ? 'bg-brand-600 text-white' : 'bg-gray-200 text-gray-600'
 							]">
@@ -285,7 +273,7 @@ const handleInstitutionSaved = () => {
 					</div>
 				</div>
 
-				<!-- Botón de navegación -->
+				<!-- Botones -->
 				<div class="flex justify-between pt-4 border-t">
 					<button :disabled="currentStep === 0" class="btn" @click="prevStep">Anterior</button>
 					<button
