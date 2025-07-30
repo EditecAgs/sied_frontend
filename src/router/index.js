@@ -19,6 +19,7 @@ import FormDual from '../views/Forms/FormularioDualView.vue'
 import InstitutionsView from '../views/Tables/InstitutionsView.vue';
 import SubsystemsView from '../views/Tables/SubsystemsView.vue';
 import AcademicView from '../views/Tables/AcademicView.vue';
+import DataTable from '../components/tables/data-tables/DataTableComponent.vue';
 
 
 const routes = [
@@ -120,6 +121,11 @@ const routes = [
         name: 'Blank',
         component: BlankPage
     },
+	{
+		path: '/datatable',
+		name: 'datatable',
+		component: DataTable
+	},
 ];
 export default function () {
     const router = createRouter({
