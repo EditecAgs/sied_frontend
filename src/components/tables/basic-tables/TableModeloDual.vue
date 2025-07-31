@@ -1,6 +1,14 @@
 <template>
 	<div class="overflow-hidden rounded-xl border border-gray-200 bg-white">
 		<div class="max-w-full overflow-x-auto custom-scrollbar">
+			<div class="flex justify-end p-4">
+				<button
+					@click="clearFilters"
+					class="text-sm bg-brand-100 hover:bg-brand-200 text-brand-900 font-semibold py-1 px-3 rounded-lg shadow">
+					Limpiar Filtros
+				</button>
+			</div>
+
 			<table class="min-w-full">
 				<thead>
 					<tr class="border-b border-gray-200 bg-brand-50">
@@ -123,6 +131,17 @@ const filters = ref({
 	organization_name: '',
 	status_document: ''
 });
+const clearFilters = () => {
+	filters.value = {
+		project_name: '',
+		has_report: '',
+		institution_name: '',
+		area: '',
+		organization_name: '',
+		status_document: ''
+	};
+};
+
 
 const rowsPerPage = 10;
 const currentPage = ref(1);
@@ -164,12 +183,12 @@ const fetchDualProjects = async () => {
 
 		const reported = reportedRes.data.map(project => ({
 			id: project.id,
-			project_name: project.dual_project_reports?.[0]?.name || 'Por definir',
+			project_name: project.dual_project_reports.name || 'Por definir',
 			has_report: true,
-			institution_name: project.institution?.name || 'Por definir',
-			area: project.dual_project_reports?.[0]?.dual_area?.name || 'Por definir',
-			organization_name: project.organization_dual_projects?.[0]?.organization?.name || 'Por definir',
-			status_document: project.dual_project_reports?.[0]?.status_document?.name || 'Por definir'
+			institution_name: project.institution.name || 'Por definir',
+			area: project.dual_project_reports.dual_area?.name || 'Por definir',
+			organization_name: project.organization_dual_projects.organization?.name || 'Por definir',
+			status_document: project.dual_project_reports.status_document?.name || 'Por definir'
 		}));
 
 		const unreported = unreportedRes.data.map(project => ({
