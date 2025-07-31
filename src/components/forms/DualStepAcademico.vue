@@ -1,26 +1,23 @@
 <script setup lang="ts">
-import { ref, onMounted, defineProps, defineEmits, watch } from 'vue';
-import { getInstitutions } from '../../services/institutions/institutions';
+import { ref, defineProps, defineEmits, watch } from 'vue';
 import btnCreate from '../../components/buttons/btnCreate.vue';
 import mdlInstitution from '../../components/modals/mdlInstitution.vue';
 import { useModal } from '../../composables/UseModal';
+import {getInstitutions} from '../../services/institutions/institutions.js'
 
-const institutions = ref([]);
+
 const { showModal, modalData, openModal, closeModal } = useModal();
 
 const props = defineProps({
 	modelValue: Object,
-	reportaModeloDual: Boolean
+	reportaModeloDual: Boolean,
+	institutions: Array
 });
-
 const emit = defineEmits(['update:modelValue', 'update:reportaModeloDual', 'submitSinUnidadDual']);
 
 const errors = ref<{ id_institution?: string }>({});
 
-onMounted(async () => {
-	const res = await getInstitutions();
-	institutions.value = res.data;
-});
+
 
 watch(() => props.modelValue, () => {
 	if (props.modelValue?.id_institution) {
@@ -56,7 +53,7 @@ const buttonClass = (isSelected: boolean) => [
 const handleSaved = async () => {
 	closeModal();
 	const res = await getInstitutions();
-	institutions.value = res.data;
+	emit('update:institutions', res.data); 
 };
 </script>
 
@@ -72,7 +69,9 @@ const handleSaved = async () => {
 				:class="{ 'border-red-500': errors.id_institution }"
 				@change="updateField('id_institution', $event.target.value)">
 				<option value="">Seleccione una institución</option>
-				<option v-for="inst in institutions" :key="inst.id" :value="inst.id">{{ inst.name }}</option>
+				<option v-for="inst in institutions" :key="inst.id" :value="inst.id">
+					{{ inst.name }}
+				</option>
 			</select>
 			<p v-if="errors.id_institution" class="text-red-500 text-sm mt-1">{{ errors.id_institution }}</p>
 		</div>

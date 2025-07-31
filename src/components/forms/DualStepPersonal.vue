@@ -1,21 +1,10 @@
 <script setup>
 import { ref, onMounted, defineProps, defineEmits } from 'vue';
-import { getCareers } from '../../services/institutions/careers';
-import { getSpecialties } from '../../services/institutions/specialties';
-
-const careers = ref([]);
-const specialties = ref([]);
-
-onMounted(async () => {
-	const resCareers = await getCareers();
-	careers.value = resCareers.data;
-
-	const resSpecialties = await getSpecialties();
-	specialties.value = resSpecialties.data;
-});
 
 const props = defineProps({
-	modelValue: Object
+	modelValue: Object,
+	careers: Array,
+	specialties: Array
 });
 const emit = defineEmits(['update:modelValue']);
 

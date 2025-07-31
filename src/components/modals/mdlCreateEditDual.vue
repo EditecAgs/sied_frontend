@@ -1,13 +1,21 @@
 <script setup lang="ts">
-import { defineProps, defineEmits, reactive, watchEffect, ref } from 'vue';
+import { defineProps, defineEmits, reactive, watch, ref, onMounted } from 'vue';
 import axios from 'axios';
-
 import DualStepPersonal from '../forms/DualStepPersonal.vue';
 import DualStepAcademico from '../forms/DualStepAcademico.vue';
 import DualStepUnidad from '../forms/DualStepUnidad.vue';
-import MdlInstitution from '../modals/mdlInstitution.vue';
+import mdlInstitution from '../modals/mdlInstitution.vue';
 import { useModal } from '../../composables/UseModal';
-import { createDualProject } from '../../services/dual_projects/dual_projects';
+import { createDualProject, updateDualProject, showDualProject } from '../../services/dual_projects/dual_projects';
+import {getInstitutions} from '../../services/institutions/institutions.js'
+import { getCareers } from '../../services/institutions/careers.js';
+import { getSpecialties } from '../../services/institutions/specialties.js';
+import { getClusters } from '../../services/organizations/clusters.js';
+import { getDualAreas } from '../../services/dual_projects/dual-areas.js';
+import { getOrganizations } from '../../services/organizations/organizations.js';
+import { getDocumentStatuses } from '../../services/dual_projects/documents-statuses.js';
+import { getEconomicSupports }from '../../services/dual_projects/economic-supports.js';
+
 
 const emit = defineEmits(['close', 'saved']);
 // eslint-disable-next-line vue/valid-define-props
@@ -27,6 +35,44 @@ const reportaModeloDual = ref<boolean | null>(null);
 const stepAcademicoRef = ref();
 const stepPersonalRef = ref();
 const stepUnidadDualRef = ref(null);
+const institutions = ref([]);
+const careers = ref([]);
+const specialties = ref([]);
+const clusters = ref([]);
+const areas = ref([]);
+const agreementStatuses = ref([]);
+const supportTypes = ref([]);
+const organizations = ref([]);
+const noChangesDetected = ref(false);
+const originalFormData = ref<any>(null);
+
+const LoadDependence = async () => {
+  const [institutionsRes, careersRes, specialtiesRes, clustersRes, statusesRes, areasRes, supportsRes, orgsRes] = await Promise.all([
+    getInstitutions(),
+    getCareers(),
+    getSpecialties(),
+    getClusters(),
+    getDocumentStatuses(),
+    getDualAreas(),
+    getEconomicSupports(),
+    getOrganizations()
+  ]);
+  institutions.value = institutionsRes.data;
+  careers.value = careersRes.data;
+  specialties.value = specialtiesRes.data;
+  clusters.value = clustersRes.data;
+  agreementStatuses.value = statusesRes.data;
+  areas.value = areasRes.data;
+  supportTypes.value = supportsRes.data;
+  organizations.value = orgsRes.data;
+};
+
+
+
+onMounted(() => {
+  LoadDependence();
+});
+
 
 const steps = [
 	{ title: 'Información de Institución' },
@@ -71,64 +117,68 @@ const resetForm = () => {
 	formData.personal = {
 		control_number: '', name_student: '', lastname: '', gender: '', semester: '', id_career: '', id_specialty: '', number_men: '1', number_women: '1'
 	};
-	formData.academico = {
-		id_institution: ''
-	};
+	formData.academico = { id_institution: '' };
 	formData.unidadDual = {
-		name_report: '',
-		id_organization: '',
-		id_dual_area: '',
-		period_start: '',
-		period_end: '',
-		status_document: '',
-		economic_support: '',
-		amount: '1500'
+		name_report: '', id_organization: '', id_dual_area: '',
+		period_start: '', period_end: '', status_document: '',
+		economic_support: '', amount: '1500'
 	};
 	reportaModeloDual.value = null;
 	currentStep.value = 0;
 };
 
-watchEffect(() => {
-	if (props.data.mode === 'edit' && props.data.pk !== null) {
-		isLoading.value = true;
-		axios.get(`dual-projects/${props.data.pk}`).then((res) => {
-			const project = res.data;
-			formData.personal = {
-				control_number: project.student_id,
-				name_student: project.first_name,
-				lastname: project.last_name,
-				gender: project.gender,
-				semester: project.semester,
-				id_career: project.career,
-				id_specialty: project.id_specialty,
-				number_men: '1',
-				number_women: '1'
-			};
-			formData.academico = {
-				id_institution: project.institution_id
-			};
-			if (project.has_dual_unit) {
-				formData.unidadDual = {
-					name_report: project.project_name,
-					id_organization: project.organization_id,
-					id_dual_area: project.project_area_id,
-					period_start: project.start_date,
-					period_end: project.end_date,
-					status_document: project.dual_status_id,
-					economic_support: project.support_type_id,
-					amount: '1500'
-				};
-				reportaModeloDual.value = true;
-			} else {
-				reportaModeloDual.value = false;
-			}
-		}).finally(() => {
-			isLoading.value = false;
-		});
-	} else if (props.data.mode === 'create') {
-		resetForm();
-	}
-});
+watch(
+  () => props.data,
+  async (newData) => {
+    if (newData.mode === 'edit' && newData.pk !== null) {
+      isLoading.value = true;
+      try {
+        const res = await showDualProject(newData.pk);
+        const project = res.data;
+        formData.personal = {
+          control_number: project.students?.[0]?.control_number ?? '',
+          name_student: project.students?.[0]?.name ?? '',
+          lastname: project.students?.[0]?.lastname ?? '',
+          gender: project.students?.[0]?.gender ?? '',
+          semester: project.students?.[0]?.semester ?? '',
+          id_career: project.students?.[0]?.career?.id ?? '',
+          id_specialty: project.students?.[0]?.specialty?.id ?? '',
+          number_men: String(project.dual_project_reports?.number_men ?? '1'),
+          number_women: String(project.dual_project_reports?.number_women ?? '1')
+        };
+
+        formData.academico = {
+          id_institution: project.id_institution ?? ''
+        };
+
+        if (project.has_report === 1) {
+          formData.unidadDual = {
+            name_report: project.dual_project_reports?.name ?? '',
+            id_organization: project.organization_dual_projects?.organization?.id ?? '',
+            id_dual_area: project.dual_project_reports?.dual_area?.id ?? '',
+            period_start: project.dual_project_reports?.period_start ?? '',
+            period_end: project.dual_project_reports?.period_end ?? '',
+            status_document: project.dual_project_reports?.status_document?.id ?? '',
+            economic_support: project.dual_project_reports?.economic_support?.id ?? '',
+            amount: String(project.dual_project_reports?.amount ?? '1500')
+          };
+          reportaModeloDual.value = true;
+        } else {
+          reportaModeloDual.value = false;
+        }
+      } catch (error) {
+        console.error("Error al cargar el proyecto dual:", error);
+      } finally {
+        isLoading.value = false;
+		originalFormData.value = JSON.stringify(formData);
+      }
+    } else if (newData.mode === 'create') {
+      resetForm();
+    }
+  },
+  { immediate: true }
+);
+
 
 const handleNextOrSubmit = async () => {
 	if (currentStep.value === 0) {
@@ -175,11 +225,8 @@ const imprimirYGuardar = async () => {
 			};
 		} else {
 			payload = {
-				// Datos académicos
 				has_report: 1,
 				id_institution: Number(formData.academico.id_institution),
-
-				// Datos personales
 				control_number: formData.personal.control_number,
 				name_student: formData.personal.name_student,
 				lastname: formData.personal.lastname,
@@ -189,8 +236,6 @@ const imprimirYGuardar = async () => {
 				id_specialty: Number(formData.personal.id_specialty),
 				number_men: Number(formData.personal.number_men),
 				number_women: Number(formData.personal.number_women),
-
-				// Unidad dual
 				name_report: formData.unidadDual.name_report,
 				id_organization: Number(formData.unidadDual.id_organization),
 				id_dual_area: Number(formData.unidadDual.id_dual_area),
@@ -201,9 +246,19 @@ const imprimirYGuardar = async () => {
 				amount: Number(formData.unidadDual.amount)
 			};
 		}
-
-		console.log('Payload a enviar:', payload);
-		await createDualProject(payload);
+		const currentData = JSON.stringify(formData);
+		if (props.data.mode === 'create') {
+			console.log('Payload a enviar create:', payload);
+			await createDualProject(payload);
+		} else {
+			if (currentData === originalFormData.value) {
+				noChangesDetected.value = true;
+				return;
+			}
+			noChangesDetected.value = false;
+			console.log('Payload a enviar update:', payload);
+			await updateDualProject(props.data.pk, payload);
+		}
 		emit('saved');
 		emit('close');
 	} catch (err: any) {
@@ -218,15 +273,25 @@ const imprimirYGuardar = async () => {
 const handleInstitutionSaved = () => {
 	closeModal();
 };
+
+const closeModalAndReset = () => {
+  noChangesDetected.value = false;
+  emit('close');
+}
 </script>
+
 
 <template>
 	<transition name="fade-scale">
 		<div v-if="show" class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm" @click.self="emit('close')">
 			<div class="bg-white rounded-2xl shadow-2xl w-full max-w-4xl p-8 relative max-h-[90vh] flex flex-col overflow-hidden">
-				<button class="absolute top-4 right-4 text-gray-400 hover:text-gray-600 text-xl font-bold" @click="emit('close')">&times;</button>
+				<button
+					class="absolute top-4 right-4 text-gray-400 hover:text-gray-600 text-xl font-bold"
+					@click="closeModalAndReset">
+					&times;
+				</button>
 
-				<h4 class="text-2xl font-bold text-brand-900 mb-6">
+				<h4 class="text-2xl font-bold text-brand-900 mb-6 flex items-center justify-between">
 					{{ props.data.mode === 'create' ? 'Crear Proyecto Dual' : 'Editar Proyecto Dual' }}
 				</h4>
 
@@ -248,32 +313,46 @@ const handleInstitutionSaved = () => {
 
 				<!-- Form Steps -->
 				<div class="flex-grow overflow-y-auto pr-2 mb-4">
-					<DualStepAcademico
-						ref="stepAcademicoRef"
-						v-if="currentStep === 0"
-						v-model="formData.academico"
-						v-model:reportaModeloDual="reportaModeloDual"
-						@submitSinUnidadDual="imprimirYGuardar" />
+					<template v-if="!isLoading">
+						<DualStepAcademico
+							v-if="currentStep === 0"
+							ref="stepAcademicoRef"
+							v-model="formData.academico"
+							v-model:reportaModeloDual="reportaModeloDual"
+							v-model:institutions="institutions"
+							@submitSinUnidadDual="imprimirYGuardar" />
 
-					<DualStepPersonal
-						ref="stepPersonalRef"
-						v-else-if="currentStep === 1"
-						v-model="formData.personal" />
+						<DualStepPersonal
+							v-else-if="currentStep === 1"
+							ref="stepPersonalRef"
+							v-model="formData.personal"
+							:careers="careers"
+							:specialties="specialties" />
 
-					<DualStepUnidad
-						v-else-if="currentStep === 2 && reportaModeloDual"
-						v-model="formData.unidadDual"
-						ref="stepUnidadDualRef" />
+						<DualStepUnidad
+							v-else-if="currentStep === 2 && reportaModeloDual"
+							ref="stepUnidadDualRef"
+							v-model="formData.unidadDual"
+							:areas="areas"
+							:clusters="clusters"
+							:agreementStatuses="agreementStatuses"
+							:supportTypes="supportTypes"
+							:organizations="organizations" />
 
-					<div v-else-if="currentStep === 2 && reportaModeloDual === false" class="text-center py-8">
-						<p class="text-gray-600 mb-4">No se requieren datos de Unidad Dual</p>
-						<button class="bg-brand-800 text-white px-6 py-2 rounded-lg hover:bg-brand-900" @click="submitForm">
-							Enviar Formulario
-						</button>
-					</div>
+
+					</template>
+					<template v-else>
+						<div class="flex justify-center items-center h-full">
+							<div class="w-10 h-10 border-4 border-gray-300 border-t-brand-800 rounded-full animate-spin" />
+							<span class="ml-4 text-gray-500 font-medium">Cargando información...</span>
+						</div>
+					</template>
 				</div>
 
-				<!-- Botones -->
+
+				<p v-if="noChangesDetected" class="text-red-500 mt-2">
+					No se detectaron cambios en el formulario.
+				</p>
 				<div class="flex justify-between pt-4 border-t">
 					<button :disabled="currentStep === 0" class="btn" @click="prevStep">Anterior</button>
 					<button

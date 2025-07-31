@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-// Obtener proyectos duales que NO tienen reporte
+
 export function getUnreportedDualProjects() {
 	return new Promise((resolve, reject) => {
 		axios
@@ -10,7 +10,7 @@ export function getUnreportedDualProjects() {
 	});
 }
 
-// Obtener proyectos duales que SÍ tienen reporte
+
 export function getReportedDualProjects() {
 	return new Promise((resolve, reject) => {
 		axios
@@ -33,7 +33,7 @@ export function createDualProject(params) {
 	});
 }
 
-// Mostrar un proyecto dual por ID
+
 export function showDualProject(pk) {
 	return new Promise((resolve, reject) => {
 		axios
@@ -43,7 +43,7 @@ export function showDualProject(pk) {
 	});
 }
 
-// Actualizar un proyecto dual
+
 export function updateDualProject(pk, params) {
 	return new Promise((resolve, reject) => {
 		axios
@@ -53,7 +53,7 @@ export function updateDualProject(pk, params) {
 	});
 }
 
-// Eliminar un proyecto dual
+
 export function removeDualProject(pk) {
 	return new Promise((resolve, reject) => {
 		axios

@@ -1,18 +1,16 @@
 <script setup>
-import { ref, onMounted, defineProps, defineEmits, watch } from 'vue';
+import { ref, defineProps, defineEmits, watch } from 'vue';
 import Datepicker from '@vuepic/vue-datepicker';
 import '@vuepic/vue-datepicker/dist/main.css';
 
-import { getTypes } from '../../services/organizations/types';
-import { getSectors } from '../../services/organizations/sectors';
-import { getDualAreas } from '../../services/dual_projects/dual-areas';
-import { getClusters } from '../../services/organizations/clusters';
-import { getDocumentStatuses } from '../../services/dual_projects/documents-statuses';
-import { getEconomicSupports } from '../../services/dual_projects/economic-supports';
-import { getOrganizations } from '../../services/organizations/organizations';
 
 const props = defineProps({
-	modelValue: Object
+	modelValue: Object,
+	areas : Array,
+	clusters : Array,
+	agreementStatuses : Array,
+	supportTypes : Array,
+	organizations : Array
 });
 const emit = defineEmits(['update:modelValue']);
 
@@ -47,8 +45,6 @@ const validate = () => {
 
 defineExpose({ validate });
 
-const tiposUnidad = ref([]);
-const sectores = ref([]);
 const tamanos = [
 	'Micro (1 a 10 trabajadores)',
 	'Pequeña (11 a 50 trabajadores)',
@@ -62,23 +58,6 @@ const tiposApoyo = ref([]);
 const organizaciones = ref([]);
 
 const isLoading = ref(false);
-
-onMounted(async () => {
-	try {
-		isLoading.value = true;
-		tiposUnidad.value = (await getTypes()).data;
-		sectores.value = (await getSectors()).data;
-		clusters.value = (await getClusters()).data;
-		areas.value = (await getDualAreas()).data;
-		estadosConvenio.value = (await getDocumentStatuses()).data;
-		tiposApoyo.value = (await getEconomicSupports()).data;
-		organizaciones.value = (await getOrganizations()).data;
-	} catch (err) {
-		console.error('Error al cargar datos:', err);
-	} finally {
-		isLoading.value = false;
-	}
-});
 
 const period_start = ref(props.modelValue.period_start || null);
 const period_end = ref(props.modelValue.period_end || null);
@@ -124,7 +103,7 @@ watch(period_end, (val) => {
 				<label class="label">Organización</label>
 				<select class="select" :value="modelValue.id_organization" @change="update('id_organization', $event.target.value)">
 					<option value="">Seleccione una organización</option>
-					<option v-for="org in organizaciones" :key="org.id" :value="org.id">{{ org.name }}</option>
+					<option v-for="org in organizations" :key="org.id" :value="org.id">{{ org.name }}</option>
 				</select>
 				<p v-if="errors.id_organization" class="text-red-500 text-sm mt-1">{{ errors.id_organization }}</p>
 			</div>
@@ -150,7 +129,7 @@ watch(period_end, (val) => {
 				<label class="label">Estado del Convenio Dual</label>
 				<select class="select" :value="modelValue.status_document" @change="update('status_document', $event.target.value)">
 					<option value="">Seleccione una opción</option>
-					<option v-for="estado in estadosConvenio" :key="estado.id" :value="estado.id">{{ estado.name }}</option>
+					<option v-for="estado in agreementStatuses" :key="estado.id" :value="estado.id">{{ estado.name }}</option>
 				</select>
 				<p v-if="errors.status_document" class="text-red-500 text-sm mt-1">{{ errors.status_document }}</p>
 			</div>
@@ -158,7 +137,7 @@ watch(period_end, (val) => {
 				<label class="label">Tipo de Apoyo Económico</label>
 				<select class="select" :value="modelValue.economic_support" @change="update('economic_support', $event.target.value)">
 					<option value="">Seleccione una opción</option>
-					<option v-for="apoyo in tiposApoyo" :key="apoyo.id" :value="apoyo.id">{{ apoyo.name }}</option>
+					<option v-for="apoyo in supportTypes" :key="apoyo.id" :value="apoyo.id">{{ apoyo.name }}</option>
 				</select>
 				<p v-if="errors.economic_support" class="text-red-500 text-sm mt-1">{{ errors.economic_support }}</p>
 			</div>
