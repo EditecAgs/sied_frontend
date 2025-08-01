@@ -1,0 +1,23 @@
+export default [
+    'home',
+    '404',
+    'dashboard',
+    'Profile',
+    'FormElements',
+    'BasicTables',
+	'InstitutionTable',
+    'LineChart',
+    'BarChart',
+    'Alerts',
+    'Avatars',
+    'Badge',
+    'Buttons',
+    'Images',
+    'Videos',
+    'Blank',
+    'Error404',
+    'signin',
+    'signup',
+	'SubsystemTable',
+	'AcademicTable'
+];
