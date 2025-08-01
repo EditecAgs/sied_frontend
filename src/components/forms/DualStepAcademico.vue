@@ -1,42 +1,125 @@
-<script setup>
-defineProps({
-	// eslint-disable-next-line vue/require-default-prop
-	modelValue: Object
-});
+<script setup lang="ts">
+import { ref, defineProps, defineEmits, watch } from 'vue';
+import btnCreate from '../../components/buttons/btnCreate.vue';
+import mdlInstitution from '../modals/modals-forms/mdlInstitution.vue';
+import { useModal } from '../../composables/UseModal';
+import {getInstitutions} from '../../services/institutions/institutions.js'
 
-defineEmits(['update:modelValue']);
+
+const { showModal, modalData, openModal, closeModal } = useModal();
+
+const props = defineProps({
+	modelValue: Object,
+	reportaModeloDual: Boolean,
+	institutions: Array
+});
+const emit = defineEmits(['update:modelValue', 'update:reportaModeloDual', 'submitSinUnidadDual']);
+
+const errors = ref<{ id_institution?: string }>({});
+
+
+
+watch(() => props.modelValue, () => {
+	if (props.modelValue?.id_institution) {
+		errors.value.id_institution = '';
+	}
+}, { deep: true });
+
+const updateField = (field: string, value: any) => {
+	emit('update:modelValue', {
+		...props.modelValue,
+		[field]: value
+	});
+	if (field === 'id_institution' && value) {
+		errors.value.id_institution = '';
+	}
+};
+
+const validate = () => {
+	if (!props.modelValue?.id_institution) {
+		errors.value.id_institution = 'Este campo es obligatorio';
+		return false;
+	}
+	return true;
+};
+
+defineExpose({ validate });
+
+const buttonClass = (isSelected: boolean) => [
+	'px-4 py-2 rounded-lg border flex-1 transition',
+	isSelected ? 'bg-brand-800 text-white border-brand-800' : 'border-gray-300 hover:bg-gray-50'
+];
+
+const handleSaved = async () => {
+	closeModal();
+	const res = await getInstitutions();
+	emit('update:institutions', res.data); 
+};
 </script>
 
 <template>
-	<div>
-		<h2 class="text-xl font-semibold mb-4 text-brand-900">Datos Académicos</h2>
+	<div class="space-y-6">
+		<h2 class="text-xl font-semibold text-brand-900 mb-6">Información de la Institución</h2>
 
-		<div class="space-y-4">
-			<div>
-				<label class="block text-sm font-medium text-gray-700 mb-1">Matrícula</label>
-				<input
-					type="text"
-					:value="modelValue.matricula"
-					class="w-full px-3 py-2 border border-gray-300 rounded focus:ring-brand-800 focus:border-brand-800"
-					required
-					@input="$emit('update:modelValue', { ...modelValue, matricula: $event.target.value })" />
-			</div>
+		<div>
+			<label class="label">Selecciona una institución</label>
+			<select
+				:value="modelValue.id_institution"
+				class="select"
+				:class="{ 'border-red-500': errors.id_institution }"
+				@change="updateField('id_institution', $event.target.value)">
+				<option value="">Seleccione una institución</option>
+				<option v-for="inst in institutions" :key="inst.id" :value="inst.id">
+					{{ inst.name }}
+				</option>
+			</select>
+			<p v-if="errors.id_institution" class="text-red-500 text-sm mt-1">{{ errors.id_institution }}</p>
+		</div>
 
-			<div>
-				<label class="block text-sm font-medium text-gray-700 mb-1">Nivel</label>
-				<select
-					:value="modelValue.nivel"
-					class="w-full px-3 py-2 border border-gray-300 rounded focus:ring-brand-800 focus:border-brand-800"
-					@change="$emit('update:modelValue', { ...modelValue, nivel: $event.target.value })">
-					<option value="">Seleccione</option>
-					<option value="Primero">Primero</option>
-					<option value="Segundo">Segundo</option>
-					<option value="Tercero">Tercero</option>
-					<option value="Cuarto">Cuarto</option>
-					<option value="Quinto">Quinto</option>
-					<option value="Sexto">Sexto</option>
-				</select>
+		<div class="mt-2">
+			<btn-create
+				:table="'institution'"
+				@open="({ mode, pk, table }) => openModal(mode, pk, table)" />
+		</div>
+
+		<mdl-institution
+			:show="showModal"
+			:data="modalData"
+			@close="closeModal"
+			@saved="handleSaved" />
+
+		<div class="pt-6 border-t space-y-4">
+			<label class="label">¿Este seguimiento tiene información del Modelo Dual?</label>
+			<div class="flex space-x-6">
+				<label class="inline-flex items-center space-x-2 cursor-pointer">
+					<input
+						type="radio"
+						:checked="reportaModeloDual === true"
+						class="radio"
+						@change="$emit('update:reportaModeloDual', true)" />
+					<span>Sí</span>
+				</label>
+				<label class="inline-flex items-center space-x-2 cursor-pointer">
+					<input
+						type="radio"
+						:checked="reportaModeloDual === false"
+						class="radio"
+						@change="$emit('update:reportaModeloDual', false)" />
+					<span>No</span>
+				</label>
 			</div>
 		</div>
 	</div>
 </template>
+
+<style scoped>
+.label {
+	@apply block text-sm font-medium text-gray-700 mb-2;
+}
+.input, .select {
+	@apply w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-brand-800 focus:border-brand-800;
+}
+.radio {
+	@apply h-5 w-5 text-brand-800 focus:ring-brand-800 border-gray-300;
+}
+</style>
