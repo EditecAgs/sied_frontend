@@ -1,66 +1,67 @@
 <template>
-	<div class="overflow-hidden rounded-xl border border-gray-200 bg-white">
-		<div class="max-w-full overflow-x-auto custom-scrollbar">
-			<div class="flex justify-end p-4">
+	<div class="bg-white rounded-xl shadow-lg overflow-hidden">
+		<div class="px-6 py-4 bg-gradient-to-r from-brand-800 to-brand-900">
+			<div class="flex justify-between items-center">
+				<h2 class="text-xl font-bold text-white">Gestión de Proyectos Duales</h2>
 				<button
-					@click="clearFilters"
-					class="text-sm bg-brand-100 hover:bg-brand-200 text-brand-900 font-semibold py-1 px-3 rounded-lg shadow">
-					Limpiar Filtros
+					class="flex items-center gap-1 px-4 py-2 bg-white/10 hover:bg-white/20 text-white rounded-lg backdrop-blur-sm transition-all"
+					@click="clearFilters">
+					<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+					</svg>
+					Limpiar
 				</button>
 			</div>
+		</div>
 
+		<div class="overflow-x-auto">
 			<table class="min-w-full">
 				<thead>
-					<tr class="border-b border-gray-200 bg-brand-50">
-						<th class="px-5 py-3 text-left sm:px-6">
+					<tr class="bg-brand-800/80 text-white">
+						<th class="px-5 py-3 text-left text-sm font-semibold border-b border-brand-700/50 border-r border-brand-700/30">Nombre</th>
+						<th class="px-5 py-3 text-left text-sm font-semibold border-b border-brand-700/50 border-r border-brand-700/30">Estatus</th>
+						<th class="px-5 py-3 text-left text-sm font-semibold border-b border-brand-700/50 border-r border-brand-700/30">Institución</th>
+						<th class="px-5 py-3 text-left text-sm font-semibold border-b border-brand-700/50 border-r border-brand-700/30">Área</th>
+						<th class="px-5 py-3 text-left text-sm font-semibold border-b border-brand-700/50 border-r border-brand-700/30">Organización</th>
+						<th class="px-5 py-3 text-left text-sm font-semibold border-b border-brand-700/50 border-r border-brand-700/30">Estado Convenio</th>
+						<th class="px-5 py-3 text-left text-sm font-semibold border-b border-brand-700/50">Opciones</th>
+					</tr>
+					<tr class="bg-brand-800/60 text-white">
+						<th class="px-5 py-2 border-b border-brand-700/50 border-r border-brand-700/30">
 							<input
 								v-model="filters.project_name"
-								type="text"
-								placeholder="Nombre del Proyecto"
-								class="w-full bg-transparent border-none outline-none text-brand-900 text-theme-xs placeholder:text-gray-400" />
+								class="w-full bg-white/10 border-none text-white placeholder-white/60 rounded px-3 py-1 text-xs focus:outline-none focus:ring-1 focus:ring-white/50" />
 						</th>
-						<th class="px-5 py-3 text-left sm:px-6">
+						<th class="px-5 py-2 border-b border-brand-700/50 border-r border-brand-700/30">
 							<input
 								v-model="filters.has_report"
-								type="text"
-								placeholder="Estatus"
-								class="w-full bg-transparent border-none outline-none text-brand-900 text-theme-xs placeholder:text-gray-400" />
+								class="w-full bg-white/10 border-none text-white placeholder-white/60 rounded px-3 py-1 text-xs focus:outline-none focus:ring-1 focus:ring-white/50" />
 						</th>
-						<th class="px-5 py-3 text-left sm:px-6">
+						<th class="px-5 py-2 border-b border-brand-700/50 border-r border-brand-700/30">
 							<input
 								v-model="filters.institution_name"
-								type="text"
-								placeholder="Institución"
-								class="w-full bg-transparent border-none outline-none text-brand-900 text-theme-xs placeholder:text-gray-400" />
+								class="w-full bg-white/10 border-none text-white placeholder-white/60 rounded px-3 py-1 text-xs focus:outline-none focus:ring-1 focus:ring-white/50" />
 						</th>
-						<th class="px-5 py-3 text-left sm:px-6">
+						<th class="px-5 py-2 border-b border-brand-700/50 border-r border-brand-700/30">
 							<input
 								v-model="filters.area"
-								type="text"
-								placeholder="Área"
-								class="w-full bg-transparent border-none outline-none text-brand-900 text-theme-xs placeholder:text-gray-400" />
+								class="w-full bg-white/10 border-none text-white placeholder-white/60 rounded px-3 py-1 text-xs focus:outline-none focus:ring-1 focus:ring-white/50" />
 						</th>
-						<th class="px-5 py-3 text-left sm:px-6">
+						<th class="px-5 py-2 border-b border-brand-700/50 border-r border-brand-700/30">
 							<input
 								v-model="filters.organization_name"
-								type="text"
-								placeholder="Organización"
-								class="w-full bg-transparent border-none outline-none text-brand-900 text-theme-xs placeholder:text-gray-400" />
+								class="w-full bg-white/10 border-none text-white placeholder-white/60 rounded px-3 py-1 text-xs focus:outline-none focus:ring-1 focus:ring-white/50" />
 						</th>
-						<th class="px-5 py-3 text-left sm:px-6">
+						<th class="px-5 py-2 border-b border-brand-700/50 border-r border-brand-700/30">
 							<input
 								v-model="filters.status_document"
-								type="text"
-								placeholder="Estado Convenio"
-								class="w-full bg-transparent border-none outline-none text-brand-900 text-theme-xs placeholder:text-gray-400" />
+								class="w-full bg-white/10 border-none text-white placeholder-white/60 rounded px-3 py-1 text-xs focus:outline-none focus:ring-1 focus:ring-white/50" />
 						</th>
-						<th class="px-5 py-3 text-left sm:px-6">
-							<p class="font-medium text-brand-900 text-theme-xs">Opciones</p>
-						</th>
+						<th class="px-5 py-2 border-b border-brand-700/50" />
 					</tr>
 				</thead>
 
-				<tbody class="divide-y divide-gray-200">
+				<tbody>
 					<tr v-if="isLoading">
 						<td colspan="7" class="py-12 text-center">
 							<svg class="animate-spin h-8 w-8 text-brand-800 mx-auto mb-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
@@ -71,34 +72,41 @@
 						</td>
 					</tr>
 
-					<tr v-for="(project, index) in paginatedProjects" :key="project.id ?? index" class="border-t border-gray-100 hover:bg-brand-50/50 transition-colors">
-						<td class="px-5 py-4 sm:px-6">{{ project.project_name }}</td>
-						<td class="px-5 py-4 sm:px-6">
+					<tr
+						v-for="(project, index) in paginatedProjects" :key="project.id ?? index"
+						class="border-b border-gray-100 hover:bg-brand-50/30 transition-colors even:bg-gray-50">
+						<td class="px-5 py-3 text-sm border-r border-gray-100">{{ project.project_name }}</td>
+						<td class="px-5 py-3 text-sm border-r border-gray-100">
 							<span :class="project.has_report ? 'text-green-600 font-semibold' : 'text-yellow-600 font-semibold'">
 								{{ project.has_report ? 'Completado' : 'Incompleto' }}
 							</span>
 						</td>
-						<td class="px-5 py-4 sm:px-6">{{ project.institution_name }}</td>
-						<td class="px-5 py-4 sm:px-6">{{ project.area }}</td>
-						<td class="px-5 py-4 sm:px-6">{{ project.organization_name }}</td>
-						<td class="px-5 py-4 sm:px-6">{{ project.status_document }}</td>
-						<td class="px-5 py-4 sm:px-6">
+						<td class="px-5 py-3 text-sm border-r border-gray-100">{{ project.institution_name }}</td>
+						<td class="px-5 py-3 text-sm border-r border-gray-100">{{ project.area }}</td>
+						<td class="px-5 py-3 text-sm border-r border-gray-100">{{ project.organization_name }}</td>
+						<td class="px-5 py-3 text-sm border-r border-gray-100">{{ project.status_document }}</td>
+						<td class="px-5 py-3 text-sm">
 							<div class="flex space-x-2">
 								<template v-if="project.has_report">
 									<btnEdit :table="'dual_projects'" :pk="project.id" @open="() => $emit('open', { mode: 'edit', pk: project.id, table: 'modelo dual' })" />
 								</template>
 								<template v-else>
-									<button class="text-theme-xs font-medium text-brand-800 hover:text-brand-900 underline underline-offset-2" @click="$emit('open', { mode: 'edit', pk: project.id, table: 'modelo dual' })">
+									<button
+										class="text-xs font-medium text-brand-800 hover:text-brand-900 underline underline-offset-2"
+										@click="$emit('open', { mode: 'complete', pk: project.id, table: 'modelo dual' })">
 										Completar
 									</button>
 								</template>
-								<btnDelete :table="'dual_projects'" :pk="project.id ?? index" class="text-brand-800 hover:text-brand-900" @deleted="onProjectDeleted" />
+								<btnDelete
+									:table="'dual_projects'"
+									:pk="project.id ?? index"
+									@open-confirm="(payload) => $emit('open-confirm', payload)" />
 							</div>
 						</td>
 					</tr>
 
 					<tr v-if="!isLoading && filteredProjects.length === 0">
-						<td colspan="7" class="px-5 py-8 text-center sm:px-6">
+						<td colspan="7" class="px-5 py-8 text-center">
 							<p class="text-gray-500">No se encontraron proyectos duales registrados</p>
 						</td>
 					</tr>
@@ -106,10 +114,33 @@
 			</table>
 		</div>
 
-		<div v-if="filteredProjects.length > rowsPerPage" class="flex justify-end px-4 py-3 border-t border-gray-200">
-			<button class="px-3 py-1 text-sm border rounded-l-md" :disabled="currentPage === 1" @click="currentPage--">Anterior</button>
-			<span class="px-4 py-1 text-sm">{{ currentPage }} / {{ totalPages }}</span>
-			<button class="px-3 py-1 text-sm border rounded-r-md" :disabled="currentPage === totalPages" @click="currentPage++">Siguiente</button>
+		<div class="px-6 py-3 bg-gray-50 border-t border-gray-200 flex justify-between items-center">
+			<span class="text-xs text-gray-600">
+				Mostrando {{ paginatedProjects.length }} de {{ filteredProjects.length }} registros
+			</span>
+			<div class="flex items-center space-x-2">
+				<select
+					v-model="rowsPerPage"
+					class="text-xs border border-gray-300 rounded px-2 py-1 text-gray-700">
+					<option value="10">10 por página</option>
+					<option value="25">25 por página</option>
+					<option value="50">50 por página</option>
+				</select>
+				<button
+					:disabled="currentPage === 1" class="p-1 rounded-full text-brand-800 hover:bg-brand-100 disabled:opacity-30"
+					@click="currentPage--">
+					<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+					</svg>
+				</button>
+				<button
+					:disabled="currentPage === totalPages" class="p-1 rounded-full text-brand-800 hover:bg-brand-100 disabled:opacity-30"
+					@click="currentPage++">
+					<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+					</svg>
+				</button>
+			</div>
 		</div>
 	</div>
 </template>
@@ -131,6 +162,7 @@ const filters = ref({
 	organization_name: '',
 	status_document: ''
 });
+
 const clearFilters = () => {
 	filters.value = {
 		project_name: '',
@@ -141,7 +173,6 @@ const clearFilters = () => {
 		status_document: ''
 	};
 };
-
 
 const rowsPerPage = 10;
 const currentPage = ref(1);
@@ -209,17 +240,23 @@ const fetchDualProjects = async () => {
 	}
 };
 
-const onProjectDeleted = deletedId => {
-	dualProjects.value = dualProjects.value.filter(project => project.id !== deletedId);
-};
-
 onMounted(fetchDualProjects);
 defineExpose({ fetchData: fetchDualProjects });
 </script>
 
 <style scoped>
-.custom-scrollbar::-webkit-scrollbar { height: 8px; }
-.custom-scrollbar::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 4px; }
-.custom-scrollbar::-webkit-scrollbar-thumb { background: #82181a; border-radius: 4px; }
-.custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #460809; }
+.custom-scrollbar::-webkit-scrollbar {
+	height: 8px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+	background: #f1f1f1;
+	border-radius: 4px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+	background: #82181a;
+	border-radius: 4px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+	background: #460809;
+}
 </style>

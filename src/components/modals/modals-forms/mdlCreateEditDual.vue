@@ -57,6 +57,7 @@ const LoadDependence = async () => {
 		getEconomicSupports(),
 		getOrganizations()
 	]);
+		console.log('Áreas duales:', areasRes);
 	institutions.value = institutionsRes.data;
 	careers.value = careersRes.data;
 	specialties.value = specialtiesRes.data;
@@ -130,7 +131,8 @@ const resetForm = () => {
 watch(
 	() => props.data,
 	async (newData) => {
-		if (newData.mode === 'edit' && newData.pk !== null) {
+		currentStep.value = 0;
+		if ((newData.mode === 'edit' || newData.mode === 'complete') && newData.pk !== null) {
 			isLoading.value = true;
 			try {
 				const res = await showDualProject(newData.pk);
@@ -151,7 +153,7 @@ watch(
 					id_institution: project.id_institution ?? ''
 				};
 
-				if (project.has_report === 1) {
+
 					formData.unidadDual = {
 						name_report: project.dual_project_reports?.name ?? '',
 						id_organization: project.organization_dual_projects?.organization?.id ?? '',
@@ -162,10 +164,12 @@ watch(
 						economic_support: project.dual_project_reports?.economic_support?.id ?? '',
 						amount: String(project.dual_project_reports?.amount ?? '1500')
 					};
+					if (newData.mode === 'complete') {
 					reportaModeloDual.value = true;
-				} else {
-					reportaModeloDual.value = false;
-				}
+					} else {
+					reportaModeloDual.value = project.dual_project_reports ? true : false; 
+					}
+
 			} catch (error) {
 				console.error("Error al cargar el proyecto dual:", error);
 			} finally {
@@ -283,7 +287,7 @@ const closeModalAndReset = () => {
 
 <template>
 	<transition name="fade-scale">
-		<div v-if="show" class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm" @click.self="emit('close')">
+		<div v-if="show" class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm" style="margin-top: 0px" @click.self="emit('close')">
 			<div class="bg-white rounded-2xl shadow-2xl w-full max-w-4xl p-8 relative max-h-[90vh] flex flex-col overflow-hidden">
 				<button
 					class="absolute top-4 right-4 text-gray-400 hover:text-gray-600 text-xl font-bold"
@@ -292,7 +296,7 @@ const closeModalAndReset = () => {
 				</button>
 
 				<h4 class="text-2xl font-bold text-brand-900 mb-6 flex items-center justify-between">
-					{{ props.data.mode === 'create' ? 'Crear Proyecto Dual' : 'Editar Proyecto Dual' }}
+					{{ props.data.mode === 'create' ? 'Crear Proyecto Dual' : (props.data.mode === 'complete' ? 'Completar Proyecto Dual' : 'Editar Proyecto Dual') }}
 				</h4>
 
 				<!-- Steps -->
@@ -320,6 +324,7 @@ const closeModalAndReset = () => {
 							v-model="formData.academico"
 							v-model:reportaModeloDual="reportaModeloDual"
 							v-model:institutions="institutions"
+							:mode="props.data.mode"
 							@submitSinUnidadDual="imprimirYGuardar" />
 
 						<DualStepPersonal

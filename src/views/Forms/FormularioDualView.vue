@@ -15,7 +15,14 @@
 
 				<TableModeloDual
 					ref="tableRef"
-					@open="({ mode, pk, table }) => openModal(mode, pk, table)" />
+					@open="({ mode, pk, table }) => openModal(mode, pk, table)"
+					@open-confirm="openDeleteModal"/>
+				<mdlDeleteModelDual
+					:show="showDeleteModal"
+					:table="deleteTarget.table"
+					:pk="deleteTarget.pk"
+					@close="showDeleteModal = false"
+					@deleted="handleDeleted" />
 			</ComponentCard>
 		</div>
 	</AdminLayout>
@@ -29,11 +36,24 @@ import ComponentCard from "../../components/common/componentCard.vue";
 import btnCreate from "../../components/buttons/btnCreate.vue";
 import mdlCreateEditDual from "../../components/modals/modals-forms/mdlCreateEditDual.vue";
 import TableModeloDual from "../../components/tables/basic-tables/TableModeloDual.vue";
+import mdlDeleteModelDual from "../../components/modals/delete-only/mdlDeleteModelDual.vue"
 import { useModal } from "../../composables/UseModal";
 
 const currentPageTitle = ref("Modelo Dual");
 const { showModal, modalData, openModal, closeModal } = useModal();
+
 const tableRef = ref(null);
+const showDeleteModal = ref(false)
+const deleteTarget = ref({ table: '', pk: null })
+
+function openDeleteModal({ table, pk }) {
+	deleteTarget.value = { table, pk }
+	showDeleteModal.value = true
+}
+function handleDeleted() {
+	tableRef.value?.fetchData()
+	showDeleteModal.value = false
+}
 
 const handleSaved = () => {
 	closeModal();
