@@ -5,29 +5,33 @@
 				<div>
 					<h4 class="text-lg font-semibold text-gray-800 dark:text-white/90 lg:mb-6">Address</h4>
 
-					<div class="grid grid-cols-1 gap-4 lg:grid-cols-2 lg:gap-7 2xl:gap-x-32">
+					<div class="grid grid-cols-1 gap-4 lg:grid-cols-2 lg:gap-7 2xl:gap-x-32" v-if="user?.institution">
 						<div>
-							<p class="mb-2 text-xs leading-normal text-gray-500 dark:text-gray-400">Country</p>
-							<p class="text-sm font-medium text-gray-800 dark:text-white/90">United States</p>
-						</div>
-
-						<div>
-							<p class="mb-2 text-xs leading-normal text-gray-500 dark:text-gray-400">City/State</p>
+							<p class="mb-2 text-xs leading-normal text-gray-500 dark:text-gray-400">País</p>
 							<p class="text-sm font-medium text-gray-800 dark:text-white/90">
-								Phoenix, United States
+								{{ user.institution.country }}
 							</p>
 						</div>
 
 						<div>
-							<p class="mb-2 text-xs leading-normal text-gray-500 dark:text-gray-400">
-								Postal Code
+							<p class="mb-2 text-xs leading-normal text-gray-500 dark:text-gray-400">Ciudad/Estado</p>
+							<p class="text-sm font-medium text-gray-800 dark:text-white/90">
+								{{ user.institution.city }}, {{ user.institution.state.name }}
 							</p>
-							<p class="text-sm font-medium text-gray-800 dark:text-white/90">ERT 2489</p>
 						</div>
 
 						<div>
-							<p class="mb-2 text-xs leading-normal text-gray-500 dark:text-gray-400">TAX ID</p>
-							<p class="text-sm font-medium text-gray-800 dark:text-white/90">AS4568384</p>
+							<p class="mb-2 text-xs leading-normal text-gray-500 dark:text-gray-400">Codigo Postal</p>
+							<p class="text-sm font-medium text-gray-800 dark:text-white/90">
+								{{ user.institution.postal_code }}
+							</p>
+						</div>
+
+						<div>
+							<p class="mb-2 text-xs leading-normal text-gray-500 dark:text-gray-400">Calle</p>
+							<p class="text-sm font-medium text-gray-800 dark:text-white/90">
+								{{ user.institution.street }} {{ user.institution.external_number }}
+							</p>
 						</div>
 					</div>
 				</div>
@@ -35,13 +39,7 @@
 				<button
 					class="flex w-full items-center justify-center gap-2 rounded-full border border-gray-300 bg-white px-4 py-3 text-sm font-medium text-gray-700 shadow-theme-xs hover:bg-gray-50 hover:text-gray-800 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-white/[0.03] dark:hover:text-gray-200 lg:inline-flex lg:w-auto"
 					@click="isProfileAddressModal = true">
-					<svg
-						class="fill-current"
-						width="18"
-						height="18"
-						viewBox="0 0 18 18"
-						fill="none"
-						xmlns="http://www.w3.org/2000/svg">
+					<svg class="fill-current" width="18" height="18" viewBox="0 0 18 18" fill="none">
 						<path
 							fill-rule="evenodd"
 							clip-rule="evenodd"
@@ -52,21 +50,15 @@
 				</button>
 			</div>
 		</div>
+
+		<!-- MODAL -->
 		<Modal v-if="isProfileAddressModal" @close="isProfileAddressModal = false">
 			<template #body>
-				<div
-					class="no-scrollbar relative w-full max-w-[700px] overflow-y-auto rounded-3xl bg-white p-4 dark:bg-gray-900 lg:p-11">
-					<!-- close btn -->
+				<div class="relative w-full max-w-[700px] overflow-y-auto rounded-3xl bg-white p-4 dark:bg-gray-900 lg:p-11">
 					<button
-						class="transition-color absolute right-5 top-5 z-999 flex h-11 w-11 items-center justify-center rounded-full bg-gray-100 text-gray-400 hover:bg-gray-200 hover:text-gray-600 dark:bg-gray-700 dark:bg-white/[0.05] dark:text-gray-400 dark:hover:bg-white/[0.07] dark:hover:text-gray-300"
+						class="absolute right-5 top-5 flex h-11 w-11 items-center justify-center rounded-full bg-gray-100 text-gray-400 hover:bg-gray-200 hover:text-gray-600 dark:bg-gray-700 dark:hover:bg-white/[0.07] dark:hover:text-gray-300"
 						@click="isProfileAddressModal = false">
-						<svg
-							class="fill-current"
-							width="24"
-							height="24"
-							viewBox="0 0 24 24"
-							fill="none"
-							xmlns="http://www.w3.org/2000/svg">
+						<svg class="fill-current" width="24" height="24" viewBox="0 0 24 24">
 							<path
 								fill-rule="evenodd"
 								clip-rule="evenodd"
@@ -74,71 +66,40 @@
 								fill="" />
 						</svg>
 					</button>
+
 					<div class="px-2 pr-14">
-						<h4 class="mb-2 text-2xl font-semibold text-gray-800 dark:text-white/90">
-							Edit Address
-						</h4>
-						<p class="mb-6 text-sm text-gray-500 dark:text-gray-400 lg:mb-7">
-							Update your details to keep your profile up-to-date.
-						</p>
+						<h4 class="mb-2 text-2xl font-semibold text-gray-800 dark:text-white/90">Edit Address</h4>
+						<p class="mb-6 text-sm text-gray-500 dark:text-gray-400 lg:mb-7">Update your details to keep your profile up-to-date.</p>
 					</div>
+
 					<form class="flex flex-col">
 						<div class="px-2 overflow-y-auto custom-scrollbar">
-							<div class="grid grid-cols-1 gap-x-6 gap-y-5 lg:grid-cols-2">
+							<div class="grid grid-cols-1 gap-x-6 gap-y-5 lg:grid-cols-2" v-if="user?.institution">
 								<div>
-									<label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
-										Country
-									</label>
-									<input
-										type="text"
-										value="United States"
-										class="dark:bg-dark-900 h-11 w-full appearance-none rounded-lg border border-gray-300 bg-transparent bg-none px-4 py-2.5 text-sm text-gray-800 shadow-theme-xs placeholder:text-gray-400 focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30 dark:focus:border-brand-800" />
+									<label class="block text-sm font-medium mb-1.5 text-gray-700 dark:text-gray-400">Country</label>
+									<input type="text" :value="user.institution.country" class="input" />
 								</div>
 
 								<div>
-									<label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
-										City/State
-									</label>
-									<input
-										type="text"
-										value="Poenix, Arizona, United States"
-										class="dark:bg-dark-900 h-11 w-full appearance-none rounded-lg border border-gray-300 bg-transparent bg-none px-4 py-2.5 text-sm text-gray-800 shadow-theme-xs placeholder:text-gray-400 focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30 dark:focus:border-brand-800" />
+									<label class="block text-sm font-medium mb-1.5 text-gray-700 dark:text-gray-400">City/State</label>
+									<input :value="user.institution.city + ', ' + user.institution.state.name" type="text" class="input" />
 								</div>
 
 								<div>
-									<label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
-										Postal Code
-									</label>
-									<input
-										type="text"
-										value="ERT 2489"
-										class="dark:bg-dark-900 h-11 w-full appearance-none rounded-lg border border-gray-300 bg-transparent bg-none px-4 py-2.5 text-sm text-gray-800 shadow-theme-xs placeholder:text-gray-400 focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30 dark:focus:border-brand-800" />
+									<label class="block text-sm font-medium mb-1.5 text-gray-700 dark:text-gray-400">Postal Code</label>
+									<input type="text" :value="user.institution.postal_code" class="input" />
 								</div>
 
 								<div>
-									<label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
-										TAX ID
-									</label>
-									<input
-										type="text"
-										value="AS4568384"
-										class="dark:bg-dark-900 h-11 w-full appearance-none rounded-lg border border-gray-300 bg-transparent bg-none px-4 py-2.5 text-sm text-gray-800 shadow-theme-xs placeholder:text-gray-400 focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30 dark:focus:border-brand-800" />
+									<label class="block text-sm font-medium mb-1.5 text-gray-700 dark:text-gray-400">Street</label>
+									<input :value="user.institution.street + ' ' + user.institution.external_number" type="text" class="input" />
 								</div>
 							</div>
 						</div>
+
 						<div class="flex items-center gap-3 mt-6 lg:justify-end">
-							<button
-								type="button"
-								class="flex w-full justify-center rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-white/[0.03] sm:w-auto"
-								@click="isProfileAddressModal = false">
-								Close
-							</button>
-							<button
-								type="button"
-								class="flex w-full justify-center rounded-lg bg-brand-500 px-4 py-2.5 text-sm font-medium text-white hover:bg-brand-600 sm:w-auto"
-								@click="saveProfile">
-								Save Changes
-							</button>
+							<button type="button" class="btn-secondary" @click="isProfileAddressModal = false">Close</button>
+							<button type="button" class="btn-primary" @click="saveProfile">Save Changes</button>
 						</div>
 					</form>
 				</div>
@@ -148,17 +109,56 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
 import Modal from './Modal.vue'
+import { showUsers } from '../../services/users/users.js'
 
 const isProfileAddressModal = ref(false)
+const user = ref({
+  name: '',
+  lastname: '',
+  email: '',
+  institution: {
+    country: '',
+    city: '',
+    postal_code: '',
+    street: '',
+    external_number: '',
+    state: {
+      name: ''
+    }
+  }
+})
+
+
 
 const saveProfile = () => {
-  // Implement save profile logic here
-  console.log('Profile saved')
-  // eslint-disable-next-line no-undef
-  isProfileInfoModal.value = false
+	console.log('Profile saved')
+	isProfileAddressModal.value = false
 }
+
+const fetchData = async () => {
+	try {
+		const userRes = await showUsers(1)
+		user.value = userRes.data
+	} catch (err) {
+		console.error('Error loading user:', err)
+	}
+}
+
+onMounted(() => {
+	fetchData()
+})
 </script>
 
-<style></style>
+<style scoped>
+.input {
+	@apply h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 shadow-sm focus:border-brand-300 focus:outline-none focus:ring focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90;
+}
+.btn-primary {
+	@apply w-full sm:w-auto justify-center rounded-lg bg-brand-500 px-4 py-2.5 text-sm font-medium text-white hover:bg-brand-600;
+}
+.btn-secondary {
+	@apply w-full sm:w-auto justify-center rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-white/[0.03];
+}
+</style>
