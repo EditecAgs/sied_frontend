@@ -10,12 +10,12 @@
 					<div class="grid grid-cols-1 gap-4 lg:grid-cols-2 lg:gap-7 2xl:gap-x-32">
 						<div>
 							<p class="mb-2 text-xs leading-normal text-gray-500 dark:text-gray-400">First Name</p>
-							<p class="text-sm font-medium text-gray-800 dark:text-white/90">Musharof</p>
+							<p class="text-sm font-medium text-gray-800 dark:text-white/90">{{ user.name }}</p>
 						</div>
 
 						<div>
 							<p class="mb-2 text-xs leading-normal text-gray-500 dark:text-gray-400">Last Name</p>
-							<p class="text-sm font-medium text-gray-800 dark:text-white/90">Chowdhury</p>
+							<p class="text-sm font-medium text-gray-800 dark:text-white/90">{{ user.lastname }}</p>
 						</div>
 
 						<div>
@@ -23,18 +23,13 @@
 								Email address
 							</p>
 							<p class="text-sm font-medium text-gray-800 dark:text-white/90">
-								randomuser@pimjo.com
+								{{ user.email }}
 							</p>
 						</div>
 
 						<div>
-							<p class="mb-2 text-xs leading-normal text-gray-500 dark:text-gray-400">Phone</p>
-							<p class="text-sm font-medium text-gray-800 dark:text-white/90">+09 363 398 46</p>
-						</div>
-
-						<div>
-							<p class="mb-2 text-xs leading-normal text-gray-500 dark:text-gray-400">Bio</p>
-							<p class="text-sm font-medium text-gray-800 dark:text-white/90">Team Manager</p>
+							<p class="mb-2 text-xs leading-normal text-gray-500 dark:text-gray-400">Institucion</p>
+							<p class="text-sm font-medium text-gray-800 dark:text-white/90">{{ user.institution.name }}</p>
 						</div>
 					</div>
 				</div>
@@ -81,7 +76,7 @@
 					</button>
 					<div class="px-2 pr-14">
 						<h4 class="mb-2 text-2xl font-semibold text-gray-800 dark:text-white/90">
-							Edit Personal Information
+							Editar Informacion Personal
 						</h4>
 						<p class="mb-6 text-sm text-gray-500 dark:text-gray-400 lg:mb-7">
 							Update your details to keep your profile up-to-date.
@@ -89,60 +84,9 @@
 					</div>
 					<form class="flex flex-col">
 						<div class="custom-scrollbar h-[458px] overflow-y-auto p-2">
-							<div>
-								<h5 class="mb-5 text-lg font-medium text-gray-800 dark:text-white/90 lg:mb-6">
-									Social Links
-								</h5>
-
-								<div class="grid grid-cols-1 gap-x-6 gap-y-5 lg:grid-cols-2">
-									<div>
-										<label
-											class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
-											Facebook
-										</label>
-										<input
-											type="text"
-											value="https://www.facebook.com/PimjoHQ"
-											class="dark:bg-dark-900 h-11 w-full appearance-none rounded-lg border border-gray-300 bg-transparent bg-none px-4 py-2.5 text-sm text-gray-800 shadow-theme-xs placeholder:text-gray-400 focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30 dark:focus:border-brand-800" />
-									</div>
-
-									<div>
-										<label
-											class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
-											X.com
-										</label>
-										<input
-											type="text"
-											value="https://x.com/PimjoHQ"
-											class="dark:bg-dark-900 h-11 w-full appearance-none rounded-lg border border-gray-300 bg-transparent bg-none px-4 py-2.5 text-sm text-gray-800 shadow-theme-xs placeholder:text-gray-400 focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30 dark:focus:border-brand-800" />
-									</div>
-
-									<div>
-										<label
-											class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
-											Linkedin
-										</label>
-										<input
-											type="text"
-											value="https://www.linkedin.com/company/pimjo/posts/?feedView=all"
-											class="dark:bg-dark-900 h-11 w-full appearance-none rounded-lg border border-gray-300 bg-transparent bg-none px-4 py-2.5 text-sm text-gray-800 shadow-theme-xs placeholder:text-gray-400 focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30 dark:focus:border-brand-800" />
-									</div>
-
-									<div>
-										<label
-											class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
-											Instagram
-										</label>
-										<input
-											type="text"
-											value="https://instagram.com/PimjoHQ"
-											class="dark:bg-dark-900 h-11 w-full appearance-none rounded-lg border border-gray-300 bg-transparent bg-none px-4 py-2.5 text-sm text-gray-800 shadow-theme-xs placeholder:text-gray-400 focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30 dark:focus:border-brand-800" />
-									</div>
-								</div>
-							</div>
 							<div class="mt-7">
 								<h5 class="mb-5 text-lg font-medium text-gray-800 dark:text-white/90 lg:mb-6">
-									Personal Information
+									Informacion Personal
 								</h5>
 
 								<div class="grid grid-cols-1 gap-x-6 gap-y-5 lg:grid-cols-2">
@@ -153,7 +97,7 @@
 										</label>
 										<input
 											type="text"
-											value="Musharof"
+											v-model="user.name"
 											class="dark:bg-dark-900 h-11 w-full rounded-lg border border-gray-300 bg-transparent bg-none px-4 py-2.5 text-sm text-gray-800 shadow-theme-xs placeholder:text-gray-400 focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30 dark:focus:border-brand-800" />
 									</div>
 
@@ -164,7 +108,7 @@
 										</label>
 										<input
 											type="text"
-											value="Chowdhury"
+											v-model="user.lastname"
 											class="dark:bg-dark-900 h-11 w-full appearance-none rounded-lg border border-gray-300 bg-transparent bg-none px-4 py-2.5 text-sm text-gray-800 shadow-theme-xs placeholder:text-gray-400 focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30 dark:focus:border-brand-800" />
 									</div>
 
@@ -175,29 +119,20 @@
 										</label>
 										<input
 											type="text"
-											value="emirhanboruch55@gmail.com"
+											v-model="user.email"
 											class="dark:bg-dark-900 h-11 w-full appearance-none rounded-lg border border-gray-300 bg-transparent bg-none px-4 py-2.5 text-sm text-gray-800 shadow-theme-xs placeholder:text-gray-400 focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30 dark:focus:border-brand-800" />
 									</div>
 
-									<div class="col-span-2 lg:col-span-1">
-										<label
-											class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
-											Phone
-										</label>
-										<input
-											type="text"
-											value="+09 363 398 46"
-											class="dark:bg-dark-900 h-11 w-full appearance-none rounded-lg border border-gray-300 bg-transparent bg-none px-4 py-2.5 text-sm text-gray-800 shadow-theme-xs placeholder:text-gray-400 focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30 dark:focus:border-brand-800" />
-									</div>
+
 
 									<div class="col-span-2">
 										<label
 											class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
-											Bio
+											Institucion
 										</label>
 										<input
 											type="text"
-											value="Team Manager"
+											v-model="user.institution.name"
 											class="dark:bg-dark-900 h-11 w-full appearance-none rounded-lg border border-gray-300 bg-transparent bg-none px-4 py-2.5 text-sm text-gray-800 shadow-theme-xs placeholder:text-gray-400 focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30 dark:focus:border-brand-800" />
 									</div>
 								</div>
@@ -225,14 +160,37 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
 import Modal from './Modal.vue'
+import { showUsers } from '../../services/users/users.js'
 
 const isProfileInfoModal = ref(false)
+const user = ref({
+  name: '',
+  lastname: '',
+  email: '',
+  institution: {
+    name: ''
+  }
+})
 
 const saveProfile = () => {
-  // Implement save profile logic here
   console.log('Profile saved')
   isProfileInfoModal.value = false
 }
+
+const fetchData = async () => {
+	try {
+		const userRes = await showUsers(1) 
+		user.value = userRes.data
+		console.log('user', user.value.data )
+	} catch (err) {
+		console.error('Error load user:', err)
+	}
+}
+
+onMounted(() => {
+	fetchData()
+	
+})
 </script>

@@ -56,7 +56,7 @@ const series = ref([
 ]);
 
 const chartOptions = ref({
-	colors: ['#465fff'],
+	colors: ['#82181aff'],
 	chart: {
 		fontFamily: 'Outfit, sans-serif',
 		type: 'bar',
