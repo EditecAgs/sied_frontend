@@ -51,11 +51,7 @@ const tamanos = [
 	'Mediana (51 a 100 trabajadores)',
 	'Grande (Más de 100 trabajadores)'
 ];
-const clusters = ref([]);
-const areas = ref([]);
-const estadosConvenio = ref([]);
-const tiposApoyo = ref([]);
-const organizaciones = ref([]);
+
 
 const isLoading = ref(false);
 
@@ -82,7 +78,7 @@ watch(period_end, (val) => {
 	<div class="space-y-8">
 		<h2 class="text-xl font-semibold text-brand-900">Unidad Dual</h2>
 
-		<!-- Información general -->
+
 		<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
 			<div>
 				<label class="label">Nombre del Proyecto</label>
@@ -109,7 +105,7 @@ watch(period_end, (val) => {
 			</div>
 		</div>
 
-		<!-- Periodo del Proyecto Dual -->
+
 		<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
 			<div>
 				<label class="label">Fecha de Inicio del Proyecto Dual</label>
@@ -123,7 +119,7 @@ watch(period_end, (val) => {
 			</div>
 		</div>
 
-		<!-- Convenio y Apoyo -->
+
 		<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
 			<div>
 				<label class="label">Estado del Convenio Dual</label>

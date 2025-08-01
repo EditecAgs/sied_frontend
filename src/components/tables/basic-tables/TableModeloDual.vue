@@ -93,7 +93,7 @@
 								<template v-else>
 									<button
 										class="text-xs font-medium text-brand-800 hover:text-brand-900 underline underline-offset-2"
-										@click="$emit('open', { mode: 'edit', pk: project.id, table: 'modelo dual' })">
+										@click="$emit('open', { mode: 'complete', pk: project.id, table: 'modelo dual' })">
 										Completar
 									</button>
 								</template>

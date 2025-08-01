@@ -11,9 +11,11 @@ const { showModal, modalData, openModal, closeModal } = useModal();
 const props = defineProps({
 	modelValue: Object,
 	reportaModeloDual: Boolean,
-	institutions: Array
+  // eslint-disable-next-line vue/require-default-prop
+	institutions: Array,
+	mode: String
 });
-const emit = defineEmits(['update:modelValue', 'update:reportaModeloDual', 'submitSinUnidadDual']);
+const emit = defineEmits(['update:modelValue', 'update:reportaModeloDual', 'submitSinUnidadDual', 'update:institutions']);
 
 const errors = ref<{ id_institution?: string }>({});
 
@@ -88,7 +90,9 @@ const handleSaved = async () => {
 			@close="closeModal"
 			@saved="handleSaved" />
 
-		<div class="pt-6 border-t space-y-4">
+		<div
+			v-if="mode === 'create' || (mode !== 'create' && reportaModeloDual !== true)"
+			class="pt-6 border-t space-y-4">
 			<label class="label">¿Este seguimiento tiene información del Modelo Dual?</label>
 			<div class="flex space-x-6">
 				<label class="inline-flex items-center space-x-2 cursor-pointer">
