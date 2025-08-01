@@ -287,7 +287,7 @@ const closeModalAndReset = () => {
 
 <template>
 	<transition name="fade-scale">
-		<div v-if="show" class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm" @click.self="emit('close')">
+		<div v-if="show" class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm" style="margin-top: 0px" @click.self="emit('close')">
 			<div class="bg-white rounded-2xl shadow-2xl w-full max-w-4xl p-8 relative max-h-[90vh] flex flex-col overflow-hidden">
 				<button
 					class="absolute top-4 right-4 text-gray-400 hover:text-gray-600 text-xl font-bold"
