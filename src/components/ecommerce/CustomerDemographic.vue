@@ -2,7 +2,7 @@
 	<div class="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03] sm:p-6">
 		<div class="flex justify-between">
 			<div>
-				<h3 class="text-lg font-semibold text-gray-800 dark:text-white/90">Proyectos por Insitutción</h3>
+				<h3 class="text-lg font-semibold text-gray-800 dark:text-white/90">Proyectos por Institución</h3>
 				<p class="mt-1 text-gray-500 text-theme-sm dark:text-gray-400">Porcentaje de Proyectos de modelo dual por institución</p>
 			</div>
 		</div>
