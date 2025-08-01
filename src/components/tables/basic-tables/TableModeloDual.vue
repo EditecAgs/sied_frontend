@@ -97,7 +97,10 @@
 										Completar
 									</button>
 								</template>
-								<btnDelete :table="'dual_projects'" :pk="project.id ?? index" class="text-brand-800 hover:text-brand-900" @deleted="onProjectDeleted" />
+								<btnDelete
+									:table="'dual_projects'"
+									:pk="project.id ?? index"
+									@open-confirm="(payload) => $emit('open-confirm', payload)" />
 							</div>
 						</td>
 					</tr>
@@ -235,10 +238,6 @@ const fetchDualProjects = async () => {
 	} finally {
 		isLoading.value = false;
 	}
-};
-
-const onProjectDeleted = deletedId => {
-	dualProjects.value = dualProjects.value.filter(project => project.id !== deletedId);
 };
 
 onMounted(fetchDualProjects);

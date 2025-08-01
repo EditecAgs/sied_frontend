@@ -53,7 +53,7 @@ const buttonClass = (isSelected: boolean) => [
 const handleSaved = async () => {
 	closeModal();
 	const res = await getInstitutions();
-	emit('update:institutions', res.data); 
+	emit('update:institutions', res.data);
 };
 </script>
 
@@ -63,23 +63,28 @@ const handleSaved = async () => {
 
 		<div>
 			<label class="label">Selecciona una institución</label>
-			<select
-				:value="modelValue.id_institution"
-				class="select"
-				:class="{ 'border-red-500': errors.id_institution }"
-				@change="updateField('id_institution', $event.target.value)">
-				<option value="">Seleccione una institución</option>
-				<option v-for="inst in institutions" :key="inst.id" :value="inst.id">
-					{{ inst.name }}
-				</option>
-			</select>
-			<p v-if="errors.id_institution" class="text-red-500 text-sm mt-1">{{ errors.id_institution }}</p>
-		</div>
+			<div class="flex gap-3 items-stretch">
+				<!-- Select con estilo mejorado -->
+				<div class="flex-1">
+					<select
+						:value="modelValue.id_institution"
+						class="w-full h-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-brand-800 focus:border-brand-800"
+						:class="{ 'border-red-500': errors.id_institution }"
+						@change="updateField('id_institution', $event.target.value)">
+						<option value="">Seleccione una institución</option>
+						<option v-for="inst in institutions" :key="inst.id" :value="inst.id">
+							{{ inst.name }}
+						</option>
+					</select>
+				</div>
 
-		<div class="mt-2">
-			<btn-create
-				:table="'institution'"
-				@open="({ mode, pk, table }) => openModal(mode, pk, table)" />
+				<!-- Botón crear (componente original) -->
+				<btn-create
+					:table="'institution'"
+					class="h-auto"
+					@open="({ mode, pk, table }) => openModal(mode, pk, table)" />
+			</div>
+			<p v-if="errors.id_institution" class="text-red-500 text-sm mt-1">{{ errors.id_institution }}</p>
 		</div>
 
 		<mdl-institution
