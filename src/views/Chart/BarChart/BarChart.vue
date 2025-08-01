@@ -13,5 +13,5 @@ import ComponentCard from "../../../components/common/componentCard.vue";
 import PageBreadcrumb from "../../../components/common/PageBreadcrumb.vue";
 import AdminLayout from "../../../components/layouts/AdminLayout.vue";
 import { ref } from "vue";
-const currentPageTitle = ref("Bar Chart");
+const currentPageTitle = ref("Gráficas de barras");
 </script>

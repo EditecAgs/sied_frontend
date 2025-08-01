@@ -174,7 +174,7 @@ const clearFilters = () => {
 	};
 };
 
-const rowsPerPage = 10;
+const rowsPerPage = ref(10);
 const currentPage = ref(1);
 
 const filteredProjects = computed(() => {
@@ -198,11 +198,11 @@ const filteredProjects = computed(() => {
 	});
 });
 
-const totalPages = computed(() => Math.ceil(filteredProjects.value.length / rowsPerPage));
+const totalPages = computed(() => Math.ceil(filteredProjects.value.length / rowsPerPage.value));
 const paginatedProjects = computed(() => {
-	const start = (currentPage.value - 1) * rowsPerPage;
-	return filteredProjects.value.slice(start, start + rowsPerPage);
-});
+	const start = (currentPage.value - 1) * rowsPerPage.value;
+	return filteredProjects.value.slice(start, start + rowsPerPage.value);
+})
 
 const fetchDualProjects = async () => {
 	isLoading.value = true;

@@ -36,7 +36,6 @@ import { ref } from 'vue';
 import { getProjectsByIntitution } from '../../services/statistics/dashboard';
 
 const dual_projects_by_institution = ref([]);
-
 getProjectsByIntitution().then((data) => {
 	dual_projects_by_institution.value = data.data.data;
 });
