@@ -38,7 +38,7 @@
 								<circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" />
 								<path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z" />
 							</svg>
-							<p class="text-gray-500">Cargando Instituciones...</p>
+							<p class="text-gray-500">Cargando Usuarios...</p>
 						</td>
 					</tr>
 
@@ -77,7 +77,7 @@
 								<btnDelete
 									:table="'users'"
 									:pk="user.id ?? index"
-									@deleted="onUserDeleted" />
+									@open-confirm="(payload) => $emit('open-confirm', payload)" />
 							</div>
 						</td>
 					</tr>
@@ -94,10 +94,11 @@ import btnDelete from "../../../components/buttons/btnDelete.vue";
 import {getUsers} from "../../../services/users/users"
 
 
+
 const users = ref([]);
 const isLoading = ref(false);
 
-const fetchUsers = async () => {
+const fetchData = async () => {
   isLoading.value = true;
   getUsers()
       .then(({data}) =>{users.value=data})
@@ -105,14 +106,12 @@ const fetchUsers = async () => {
 };
 
 onMounted(() => {
-  fetchUsers();
+  fetchData();
 });
 
-const onUserDeleted = (deletedId) => {
-  users.value = users.value.filter((user) => user.id !== deletedId);
-};
+
 
 defineExpose({
-  fetchData: fetchUsers,
+  fetchData: fetchData,
 });
 </script>

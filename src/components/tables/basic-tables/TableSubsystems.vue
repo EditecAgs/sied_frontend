@@ -46,7 +46,7 @@
 								<btnDelete
 									:table="'subsystems'"
 									:pk="subsystem.id ?? index"
-									@deleted="onSubsystemDeleted" />
+									@open-confirm="(payload) => $emit('open-confirm', payload)" />
 							</div>
 						</td>
 					</tr>
@@ -67,7 +67,7 @@ import {getsubsystems} from "../../../services/institutions/subsystems.js"
 const subsystems = ref([]);
 const isLoading = ref(false);
 
-const fetchSubsystems = () => {
+const fetchData = () => {
   isLoading.value = true;
   isLoading.value = true;
   getsubsystems()
@@ -76,7 +76,7 @@ const fetchSubsystems = () => {
 };
 
 onMounted(() => {
-  fetchSubsystems();
+  fetchData();
 });
 
 const onSubsystemDeleted = (deletedId) => {
@@ -84,6 +84,6 @@ const onSubsystemDeleted = (deletedId) => {
 };
 
 defineExpose({
-  fetchData: fetchSubsystems,
+  fetchData: fetchData,
 });
 </script>

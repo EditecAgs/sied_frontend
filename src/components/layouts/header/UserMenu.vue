@@ -7,7 +7,7 @@
 				<img src="/images/user/owner.jpg" alt="User" />
 			</span>
 
-			<span class="block mr-1 font-medium text-theme-sm">Musharof </span>
+			<span class="block mr-1 font-medium text-theme-sm">Institututo Tecnológico de Aguascalientes </span>
 
 			<ChevronDownIcon :class="{ 'rotate-180': dropdownOpen }" />
 		</button>
@@ -16,14 +16,6 @@
 		<div
 			v-if="dropdownOpen"
 			class="absolute right-0 mt-[17px] flex w-[260px] flex-col rounded-2xl border border-gray-200 bg-white p-3 shadow-theme-lg dark:border-gray-800 dark:bg-gray-dark">
-			<div>
-				<span class="block font-medium text-gray-700 text-theme-sm dark:text-gray-400">
-					Musharof Chowdhury
-				</span>
-				<span class="mt-0.5 block text-theme-xs text-gray-500 dark:text-gray-400">
-					randomuser@pimjo.com
-				</span>
-			</div>
 
 			<ul class="flex flex-col gap-1 pt-4 pb-3 border-b border-gray-200 dark:border-gray-800">
 				<li v-for="item in menuItems" :key="item.href">

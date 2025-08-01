@@ -1,20 +1,20 @@
 <script setup lang="ts">
 import { defineProps, defineEmits, reactive, watch, ref, onMounted } from 'vue';
 import axios from 'axios';
-import DualStepPersonal from '../forms/DualStepPersonal.vue';
-import DualStepAcademico from '../forms/DualStepAcademico.vue';
-import DualStepUnidad from '../forms/DualStepUnidad.vue';
-import mdlInstitution from '../modals/mdlInstitution.vue';
-import { useModal } from '../../composables/UseModal';
-import { createDualProject, updateDualProject, showDualProject } from '../../services/dual_projects/dual_projects';
-import {getInstitutions} from '../../services/institutions/institutions.js'
-import { getCareers } from '../../services/institutions/careers.js';
-import { getSpecialties } from '../../services/institutions/specialties.js';
-import { getClusters } from '../../services/organizations/clusters.js';
-import { getDualAreas } from '../../services/dual_projects/dual-areas.js';
-import { getOrganizations } from '../../services/organizations/organizations.js';
-import { getDocumentStatuses } from '../../services/dual_projects/documents-statuses.js';
-import { getEconomicSupports }from '../../services/dual_projects/economic-supports.js';
+import DualStepPersonal from '../../forms/DualStepPersonal.vue';
+import DualStepAcademico from '../../forms/DualStepAcademico.vue';
+import DualStepUnidad from '../../forms/DualStepUnidad.vue';
+import mdlInstitution from '../modals-forms/mdlInstitution.vue';
+import { useModal } from '../../../composables/UseModal';
+import { createDualProject, updateDualProject, showDualProject } from '../../../services/dual_projects/dual_projects';
+import {getInstitutions} from '../../../services/institutions/institutions.js'
+import { getCareers } from '../../../services/institutions/careers.js';
+import { getSpecialties } from '../../../services/institutions/specialties.js';
+import { getClusters } from '../../../services/organizations/clusters.js';
+import { getDualAreas } from '../../../services/dual_projects/dual-areas.js';
+import { getOrganizations } from '../../../services/organizations/organizations.js';
+import { getDocumentStatuses } from '../../../services/dual_projects/documents-statuses.js';
+import { getEconomicSupports }from '../../../services/dual_projects/economic-supports.js';
 
 
 const emit = defineEmits(['close', 'saved']);
@@ -47,30 +47,30 @@ const noChangesDetected = ref(false);
 const originalFormData = ref<any>(null);
 
 const LoadDependence = async () => {
-  const [institutionsRes, careersRes, specialtiesRes, clustersRes, statusesRes, areasRes, supportsRes, orgsRes] = await Promise.all([
-    getInstitutions(),
-    getCareers(),
-    getSpecialties(),
-    getClusters(),
-    getDocumentStatuses(),
-    getDualAreas(),
-    getEconomicSupports(),
-    getOrganizations()
-  ]);
-  institutions.value = institutionsRes.data;
-  careers.value = careersRes.data;
-  specialties.value = specialtiesRes.data;
-  clusters.value = clustersRes.data;
-  agreementStatuses.value = statusesRes.data;
-  areas.value = areasRes.data;
-  supportTypes.value = supportsRes.data;
-  organizations.value = orgsRes.data;
+	const [institutionsRes, careersRes, specialtiesRes, clustersRes, statusesRes, areasRes, supportsRes, orgsRes] = await Promise.all([
+		getInstitutions(),
+		getCareers(),
+		getSpecialties(),
+		getClusters(),
+		getDocumentStatuses(),
+		getDualAreas(),
+		getEconomicSupports(),
+		getOrganizations()
+	]);
+	institutions.value = institutionsRes.data;
+	careers.value = careersRes.data;
+	specialties.value = specialtiesRes.data;
+	clusters.value = clustersRes.data;
+	agreementStatuses.value = statusesRes.data;
+	areas.value = areasRes.data;
+	supportTypes.value = supportsRes.data;
+	organizations.value = orgsRes.data;
 };
 
 
 
 onMounted(() => {
-  LoadDependence();
+	LoadDependence();
 });
 
 
@@ -128,55 +128,55 @@ const resetForm = () => {
 };
 
 watch(
-  () => props.data,
-  async (newData) => {
-    if (newData.mode === 'edit' && newData.pk !== null) {
-      isLoading.value = true;
-      try {
-        const res = await showDualProject(newData.pk);
-        const project = res.data;
-        formData.personal = {
-          control_number: project.students?.[0]?.control_number ?? '',
-          name_student: project.students?.[0]?.name ?? '',
-          lastname: project.students?.[0]?.lastname ?? '',
-          gender: project.students?.[0]?.gender ?? '',
-          semester: project.students?.[0]?.semester ?? '',
-          id_career: project.students?.[0]?.career?.id ?? '',
-          id_specialty: project.students?.[0]?.specialty?.id ?? '',
-          number_men: String(project.dual_project_reports?.number_men ?? '1'),
-          number_women: String(project.dual_project_reports?.number_women ?? '1')
-        };
+	() => props.data,
+	async (newData) => {
+		if (newData.mode === 'edit' && newData.pk !== null) {
+			isLoading.value = true;
+			try {
+				const res = await showDualProject(newData.pk);
+				const project = res.data;
+				formData.personal = {
+					control_number: project.students?.[0]?.control_number ?? '',
+					name_student: project.students?.[0]?.name ?? '',
+					lastname: project.students?.[0]?.lastname ?? '',
+					gender: project.students?.[0]?.gender ?? '',
+					semester: project.students?.[0]?.semester ?? '',
+					id_career: project.students?.[0]?.career?.id ?? '',
+					id_specialty: project.students?.[0]?.specialty?.id ?? '',
+					number_men: String(project.dual_project_reports?.number_men ?? '1'),
+					number_women: String(project.dual_project_reports?.number_women ?? '1')
+				};
 
-        formData.academico = {
-          id_institution: project.id_institution ?? ''
-        };
+				formData.academico = {
+					id_institution: project.id_institution ?? ''
+				};
 
-        if (project.has_report === 1) {
-          formData.unidadDual = {
-            name_report: project.dual_project_reports?.name ?? '',
-            id_organization: project.organization_dual_projects?.organization?.id ?? '',
-            id_dual_area: project.dual_project_reports?.dual_area?.id ?? '',
-            period_start: project.dual_project_reports?.period_start ?? '',
-            period_end: project.dual_project_reports?.period_end ?? '',
-            status_document: project.dual_project_reports?.status_document?.id ?? '',
-            economic_support: project.dual_project_reports?.economic_support?.id ?? '',
-            amount: String(project.dual_project_reports?.amount ?? '1500')
-          };
-          reportaModeloDual.value = true;
-        } else {
-          reportaModeloDual.value = false;
-        }
-      } catch (error) {
-        console.error("Error al cargar el proyecto dual:", error);
-      } finally {
-        isLoading.value = false;
-		originalFormData.value = JSON.stringify(formData);
-      }
-    } else if (newData.mode === 'create') {
-      resetForm();
-    }
-  },
-  { immediate: true }
+				if (project.has_report === 1) {
+					formData.unidadDual = {
+						name_report: project.dual_project_reports?.name ?? '',
+						id_organization: project.organization_dual_projects?.organization?.id ?? '',
+						id_dual_area: project.dual_project_reports?.dual_area?.id ?? '',
+						period_start: project.dual_project_reports?.period_start ?? '',
+						period_end: project.dual_project_reports?.period_end ?? '',
+						status_document: project.dual_project_reports?.status_document?.id ?? '',
+						economic_support: project.dual_project_reports?.economic_support?.id ?? '',
+						amount: String(project.dual_project_reports?.amount ?? '1500')
+					};
+					reportaModeloDual.value = true;
+				} else {
+					reportaModeloDual.value = false;
+				}
+			} catch (error) {
+				console.error("Error al cargar el proyecto dual:", error);
+			} finally {
+				isLoading.value = false;
+				originalFormData.value = JSON.stringify(formData);
+			}
+		} else if (newData.mode === 'create') {
+			resetForm();
+		}
+	},
+	{ immediate: true }
 );
 
 
@@ -275,8 +275,8 @@ const handleInstitutionSaved = () => {
 };
 
 const closeModalAndReset = () => {
-  noChangesDetected.value = false;
-  emit('close');
+	noChangesDetected.value = false;
+	emit('close');
 }
 </script>
 

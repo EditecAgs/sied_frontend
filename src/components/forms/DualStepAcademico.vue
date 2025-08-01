@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, defineProps, defineEmits, watch } from 'vue';
 import btnCreate from '../../components/buttons/btnCreate.vue';
-import mdlInstitution from '../../components/modals/mdlInstitution.vue';
+import mdlInstitution from '../modals/modals-forms/mdlInstitution.vue';
 import { useModal } from '../../composables/UseModal';
 import {getInstitutions} from '../../services/institutions/institutions.js'
 

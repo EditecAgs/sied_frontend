@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { defineProps, defineEmits, reactive, watchEffect, ref, onMounted } from 'vue'
 import axios from 'axios'
-import {showSubsysyems} from "../../services/institutions/subsystems.js"
+import {showSubsysyems} from "../../../services/institutions/subsystems.js"
 
 const emit = defineEmits(['close', 'saved'])
 const isLoading = ref(false)
