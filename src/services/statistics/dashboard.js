@@ -25,10 +25,10 @@ export function getTotalStudents() {
 	});
 }
 
-export function getProjectsBySector() {
+export function getProjectsBySector(page = 1) {
 	return new Promise((resolve, reject) => {
 		axios
-			.get('projects/sectors')
+			.get(`projects/sectors?page=${page}`)
 			.then((response) => {
 				resolve(response);
 			})
@@ -42,6 +42,32 @@ export function getProjectsByIntitution() {
 	return new Promise((resolve, reject) => {
 		axios
 			.get('dual-projects/percetange/institutions')
+			.then((response) => {
+				resolve(response);
+			})
+			.catch((error) => {
+				reject(error);
+			});
+	});
+}
+
+export function getProjectsCountByMonth() {
+	return new Promise((resolve, reject) => {
+		axios
+			.get('projects/by-month')
+			.then((response) => {
+				resolve(response);
+			})
+			.catch((error) => {
+				reject(error);
+			});
+	});
+}
+
+export function getProjectsByArea(page = 1) {
+	return new Promise((resolve, reject) => {
+		axios
+			.get(`projects/dual-area?page=${page}`)
 			.then((response) => {
 				resolve(response);
 			})
