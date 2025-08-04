@@ -1,41 +1,46 @@
 <script setup lang="ts">
-import { ref, defineProps, defineEmits, watch } from 'vue';
+import { ref, computed, watch, defineProps, defineEmits } from 'vue';
 import btnCreate from '../../components/buttons/btnCreate.vue';
 import mdlInstitution from '../modals/modals-forms/mdlInstitution.vue';
 import { useModal } from '../../composables/UseModal';
-import {getInstitutions} from '../../services/institutions/institutions.js'
-
+import { getInstitutions } from '../../services/institutions/institutions.js';
 
 const { showModal, modalData, openModal, closeModal } = useModal();
 
 const props = defineProps({
 	modelValue: Object,
 	reportaModeloDual: Boolean,
-  // eslint-disable-next-line vue/require-default-prop
 	institutions: Array,
 	mode: String
 });
 const emit = defineEmits(['update:modelValue', 'update:reportaModeloDual', 'submitSinUnidadDual', 'update:institutions']);
 
 const errors = ref<{ id_institution?: string }>({});
+const searchTerm = ref('');
+const showDropdown = ref(false);
 
 
+const filteredInstitutions = computed(() => {
+	if (!searchTerm.value) return props.institutions || [];
+	return (props.institutions || []).filter(inst =>
+		inst.name.toLowerCase().includes(searchTerm.value.toLowerCase())
+	);
+});
 
-watch(() => props.modelValue, () => {
-	if (props.modelValue?.id_institution) {
-		errors.value.id_institution = '';
-	}
-}, { deep: true });
 
 const updateField = (field: string, value: any) => {
 	emit('update:modelValue', {
 		...props.modelValue,
 		[field]: value
 	});
-	if (field === 'id_institution' && value) {
+	if (field === 'id_institution') {
 		errors.value.id_institution = '';
+		const selected = props.institutions?.find(i => i.id === value);
+		searchTerm.value = selected?.name || '';
+		showDropdown.value = false;
 	}
 };
+
 
 const validate = () => {
 	if (!props.modelValue?.id_institution) {
@@ -46,11 +51,6 @@ const validate = () => {
 };
 
 defineExpose({ validate });
-
-const buttonClass = (isSelected: boolean) => [
-	'px-4 py-2 rounded-lg border flex-1 transition',
-	isSelected ? 'bg-brand-800 text-white border-brand-800' : 'border-gray-300 hover:bg-gray-50'
-];
 
 const handleSaved = async () => {
 	closeModal();
@@ -65,22 +65,30 @@ const handleSaved = async () => {
 
 		<div>
 			<label class="label">Selecciona una institución</label>
-			<div class="flex gap-3 items-stretch">
-				<!-- Select con estilo mejorado -->
-				<div class="flex-1">
-					<select
-						:value="modelValue.id_institution"
-						class="w-full h-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-brand-800 focus:border-brand-800"
+			<div class="flex gap-3 relative">
+				<!-- Campo de texto con filtro -->
+				<div class="flex-1 relative">
+					<input
+						v-model="searchTerm"
+						@focus="showDropdown = true"
+						@input="showDropdown = true"
+						placeholder="Buscar institución..."
+						class="input"
 						:class="{ 'border-red-500': errors.id_institution }"
-						@change="updateField('id_institution', $event.target.value)">
-						<option value="">Seleccione una institución</option>
-						<option v-for="inst in institutions" :key="inst.id" :value="inst.id">
+					/>
+					<ul
+						v-if="showDropdown && filteredInstitutions.length"
+						class="absolute z-10 bg-white border border-gray-300 rounded-lg mt-1 w-full max-h-48 overflow-y-auto shadow-md">
+						<li
+							v-for="inst in filteredInstitutions"
+							:key="inst.id"
+							@click="updateField('id_institution', inst.id)"
+							class="px-4 py-2 hover:bg-gray-100 cursor-pointer">
 							{{ inst.name }}
-						</option>
-					</select>
+						</li>
+					</ul>
 				</div>
 
-				<!-- Botón crear (componente original) -->
 				<btn-create
 					:table="'institution'"
 					class="h-auto"
@@ -125,7 +133,7 @@ const handleSaved = async () => {
 .label {
 	@apply block text-sm font-medium text-gray-700 mb-2;
 }
-.input, .select {
+.input {
 	@apply w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-brand-800 focus:border-brand-800;
 }
 .radio {

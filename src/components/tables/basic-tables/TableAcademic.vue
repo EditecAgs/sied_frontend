@@ -119,7 +119,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from "vue";
+import { ref, computed, onMounted, watch } from 'vue';
 import btnEdit from "../../../components/buttons/btnEdit.vue";
 import btnDelete from "../../../components/buttons/btnDelete.vue";
 import { getAcademicPeriods } from "../../../services/institutions/academic-periods";
@@ -163,6 +163,12 @@ const totalPages = computed(() => Math.ceil(filteredPeriods.value.length / rowsP
 const paginatedPeriods = computed(() => {
 	const start = (currentPage.value - 1) * rowsPerPage.value;
 	return filteredPeriods.value.slice(start, start + rowsPerPage.value);
+});
+
+watch([rowsPerPage, filteredPeriods], () => {
+	if (currentPage.value > totalPages.value) {
+		currentPage.value = 1;
+	}
 });
 
 const fetchData = async () => {

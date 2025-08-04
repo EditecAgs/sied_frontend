@@ -219,6 +219,7 @@ const menuGroups = [
 					{ name: 'Instituciones', path: '/institution-table', pro: false },
 					{ name: 'Subsistemas', path: '/subsystem-table', pro: false },
 					{ name: 'Periodos Academicos', path: '/periods_Academic-table', pro: false },
+					{ name: 'Organizaciones', path: '/Organization-table', pro: false },
 				],
 			},
 			{
