@@ -63,7 +63,7 @@ const chartOptions = ref({
     position: 'top',
     horizontalAlign: 'left',
   },
-  colors: ['#465FFF', '#9CB9FF'],
+ colors: ['#800000', '#A52A2A'],
   chart: {
     fontFamily: 'Outfit, sans-serif',
     type: 'area',
