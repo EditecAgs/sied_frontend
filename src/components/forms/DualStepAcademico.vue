@@ -57,6 +57,18 @@ const handleSaved = async () => {
 	const res = await getInstitutions();
 	emit('update:institutions', res.data);
 };
+
+watch(
+  () => props.modelValue?.id_institution,
+  (newId) => {
+    if (!newId || !props.institutions?.length) return;
+
+    const selected = props.institutions.find(i => i.id === newId);
+    searchTerm.value = selected?.name || '';
+  },
+  { immediate: true }
+);
+
 </script>
 
 <template>

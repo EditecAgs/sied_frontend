@@ -1,7 +1,10 @@
 <template>
-	<div class="overflow-hidden rounded-2xl border border-gray-200 bg-white px-5 pt-5 dark:border-gray-800 dark:bg-white/[0.03] sm:px-6 sm:pt-6">
-		<div class="flex items-center justify-between">
-			<h3 class="text-lg font-semibold text-gray-800 dark:text-white/90">Proyectos por mes</h3>
+	<div
+		class="overflow-hidden rounded-2xl border border-gray-200 bg-white px-6 pt-6 shadow-md dark:border-gray-700 dark:bg-gray-900 sm:px-8 sm:pt-8">
+		<div class="flex items-center justify-between mb-5">
+			<h3 class="text-xl font-semibold text-gray-900 dark:text-white">
+				Proyectos por mes
+			</h3>
 
 			<div class="relative h-fit">
 				<DropdownMenu :menu-items="menuItems">
@@ -11,7 +14,8 @@
 							height="24"
 							viewBox="0 0 24 24"
 							fill="none"
-							xmlns="http://www.w3.org/2000/svg">
+							xmlns="http://www.w3.org/2000/svg"
+							class="text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white cursor-pointer transition-colors duration-200">
 							<path
 								fill-rule="evenodd"
 								clip-rule="evenodd"
@@ -24,10 +28,10 @@
 		</div>
 
 		<div class="max-w-full overflow-x-auto custom-scrollbar">
-			<div id="chartOne" class="-ml-5 min-w-[650px] xl:min-w-full pl-2">
+			<div id="chartOne" class="-ml-4 min-w-[650px] xl:min-w-full pl-2">
 				<VueApexCharts
 					type="bar"
-					height="180"
+					height="200"
 					:options="chartOptions"
 					:series="series" />
 			</div>
@@ -36,113 +40,130 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue';
-import DropdownMenu from '../common/DropdownMenu.vue';
-import VueApexCharts from 'vue3-apexcharts';
-import { getProjectsCountByMonth } from '../../services/statistics/dashboard';
+import { ref, onMounted } from 'vue'
+import DropdownMenu from '../common/DropdownMenu.vue'
+import VueApexCharts from 'vue3-apexcharts'
+import { getProjectsCountByMonth } from '../../services/statistics/dashboard'
 
 const menuItems = [
-	{ label: 'View More', onClick: () => console.log('View More clicked') },
-	{ label: 'Delete', onClick: () => console.log('Delete clicked') },
-];
+  { label: 'View More', onClick: () => console.log('View More clicked') },
+  { label: 'Delete', onClick: () => console.log('Delete clicked') },
+]
 
 const series = ref([
-	{
-		name: 'Proyectos creados',
-		data: Array(12).fill(0), // Inicializar con ceros
-	},
-]);
+  {
+    name: 'Proyectos creados',
+    data: Array(12).fill(0),
+  },
+])
 
 const monthLabels = [
-	'January', 'February', 'March', 'April', 'May', 'June',
-	'July', 'August', 'September', 'October', 'November', 'December',
-];
+  'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
+  'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre',
+]
 
 const chartOptions = ref({
-	colors: ['#82181aff'],
-	chart: {
-		fontFamily: 'Outfit, sans-serif',
-		type: 'bar',
-		toolbar: {
-			show: false,
-		},
-	},
-	plotOptions: {
-		bar: {
-			horizontal: false,
-			columnWidth: '39%',
-			borderRadius: 5,
-			borderRadiusApplication: 'end',
-		},
-	},
-	dataLabels: {
-		enabled: false,
-	},
-	stroke: {
-		show: true,
-		width: 4,
-		colors: ['transparent'],
-	},
-	xaxis: {
-		categories: monthLabels,
-		axisBorder: {
-			show: false,
-		},
-		axisTicks: {
-			show: false,
-		},
-	},
-	legend: {
-		show: true,
-		position: 'top',
-		horizontalAlign: 'left',
-		fontFamily: 'Outfit',
-		markers: {
-			radius: 99,
-		},
-	},
-	yaxis: {
-		title: false,
-	},
-	grid: {
-		yaxis: {
-			lines: {
-				show: true,
-			},
-		},
-	},
-	fill: {
-		opacity: 1,
-	},
-	tooltip: {
-		x: {
-			show: false,
-		},
-		y: {
-			formatter: function (val) {
-				return val.toString();
-			},
-		},
-	},
-});
+  colors: ['#82181aff'],
+  chart: {
+    fontFamily: 'Outfit, sans-serif',
+    type: 'bar',
+    toolbar: {
+      show: false,
+    },
+  },
+  plotOptions: {
+    bar: {
+      horizontal: false,
+      columnWidth: '50%',
+      borderRadius: 8,
+      borderRadiusApplication: 'end',
+    },
+  },
+  dataLabels: {
+    enabled: false,
+  },
+  stroke: {
+    show: true,
+    width: 3,
+    colors: ['transparent'],
+  },
+  xaxis: {
+    categories: monthLabels,
+    axisBorder: {
+      show: false,
+    },
+    axisTicks: {
+      show: false,
+    },
+    labels: {
+      style: {
+        colors: '#6b7280',
+        fontSize: '12px',
+        fontWeight: 500,
+      },
+    },
+  },
+  legend: {
+    show: true,
+    position: 'top',
+    horizontalAlign: 'left',
+    fontFamily: 'Outfit',
+    markers: {
+      radius: 99,
+    },
+    labels: {
+      colors: '#374151',
+      fontWeight: 600,
+    },
+  },
+  yaxis: {
+    title: false,
+    labels: {
+      style: {
+        colors: '#6b7280',
+        fontSize: '12px',
+        fontWeight: 500,
+      },
+    },
+  },
+  grid: {
+    yaxis: {
+      lines: {
+        show: true,
+        strokeDashArray: 4,
+      },
+    },
+  },
+  fill: {
+    opacity: 1,
+  },
+  tooltip: {
+    x: {
+      show: false,
+    },
+    y: {
+      formatter: val => val.toString(),
+    },
+  },
+})
 
 onMounted(async () => {
-	try {
-		const response = await getProjectsCountByMonth();
-		const data = response.data.data;
+  try {
+    const response = await getProjectsCountByMonth()
+    const data = response.data.data
 
-		const monthlyData = Array(12).fill(0);
+    const monthlyData = Array(12).fill(0)
 
-		data.forEach((item) => {
-			const index = item.month_number - 1; // Enero = 0
-			if (index >= 0 && index < 12) {
-				monthlyData[index] = item.project_count;
-			}
-		});
+    data.forEach(item => {
+      const index = item.month_number - 1
+      if (index >= 0 && index < 12) {
+        monthlyData[index] = item.project_count
+      }
+    })
 
-		series.value[0].data = monthlyData;
-	} catch (error) {
-		console.error('Error al cargar proyectos por mes:', error);
-	}
-});
+    series.value[0].data = monthlyData
+  } catch (error) {
+    console.error('Error al cargar proyectos por mes:', error)
+  }
+})
 </script>
