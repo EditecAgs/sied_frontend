@@ -3,57 +3,25 @@ import { ref, defineProps, defineEmits, watch } from 'vue';
 import Datepicker from '@vuepic/vue-datepicker';
 import '@vuepic/vue-datepicker/dist/main.css';
 
-
 const props = defineProps({
 	modelValue: Object,
-	areas : Array,
-	clusters : Array,
-	agreementStatuses : Array,
-	supportTypes : Array,
-	organizations : Array
+	areas: Array,
+	clusters: Array,
+	agreementStatuses: Array,
+	supportTypes: Array,
+	organizations: Array
 });
 const emit = defineEmits(['update:modelValue']);
+
+const errors = ref({});
 
 const update = (field, value) => {
 	emit('update:modelValue', {
 		...props.modelValue,
 		[field]: value
 	});
-
-	if (errors.value[field]) {
-		errors.value[field] = '';
-	}
+	if (errors.value[field]) errors.value[field] = '';
 };
-
-const errors = ref({});
-const validate = () => {
-	const requiredFields = [
-		'name_report', 'id_organization', 'id_dual_area', 'period_start', 'period_end', 'status_document', 'economic_support'
-	];
-
-	let isValid = true;
-	errors.value = {};
-	for (const field of requiredFields) {
-		const value = props.modelValue?.[field];
-		if (!value) {
-			errors.value[field] = 'Este campo es obligatorio';
-			isValid = false;
-		}
-	}
-	return isValid;
-};
-
-defineExpose({ validate });
-
-const tamanos = [
-	'Micro (1 a 10 trabajadores)',
-	'Pequeña (11 a 50 trabajadores)',
-	'Mediana (51 a 100 trabajadores)',
-	'Grande (Más de 100 trabajadores)'
-];
-
-
-const isLoading = ref(false);
 
 const period_start = ref(props.modelValue.period_start || null);
 const period_end = ref(props.modelValue.period_end || null);
@@ -72,20 +40,60 @@ watch(period_end, (val) => {
 	}
 });
 
+// Validación general
+const validate = () => {
+	const requiredFields = [
+		'name_report',
+		'id_organization',
+		'id_dual_area',
+		'period_start',
+		'period_end',
+		'status_document',
+		'economic_support'
+	];
+
+	let isValid = true;
+	errors.value = {};
+
+	for (const field of requiredFields) {
+		if (!props.modelValue?.[field]) {
+			errors.value[field] = 'Este campo es obligatorio';
+			isValid = false;
+		}
+	}
+
+	// Validar que fecha fin sea mayor a fecha inicio
+	const start = new Date(props.modelValue?.period_start);
+	const end = new Date(props.modelValue?.period_end);
+	if (start && end && start > end) {
+		errors.value.period_end = 'La fecha de fin debe ser posterior a la fecha de inicio';
+		isValid = false;
+	}
+
+	return isValid;
+};
+
+defineExpose({ validate });
 </script>
+
 
 <template>
 	<div class="space-y-8">
 		<h2 class="text-xl font-semibold text-brand-900">Unidad Dual</h2>
 
-
 		<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+			<!-- Nombre del Proyecto -->
 			<div>
 				<label class="label">Nombre del Proyecto</label>
-				<input type="text" class="input" :value="modelValue.name_report" @input="update('name_report', $event.target.value)" />
+				<input
+					type="text"
+					class="input"
+					:value="modelValue.name_report"
+					@input="update('name_report', $event.target.value)" />
 				<p v-if="errors.name_report" class="text-red-500 text-sm mt-1">{{ errors.name_report }}</p>
 			</div>
 
+			<!-- Área del Proyecto Dual -->
 			<div>
 				<label class="label">Área del Proyecto Dual</label>
 				<select class="select" :value="modelValue.id_dual_area" @change="update('id_dual_area', $event.target.value)">
@@ -95,6 +103,7 @@ watch(period_end, (val) => {
 				<p v-if="errors.id_dual_area" class="text-red-500 text-sm mt-1">{{ errors.id_dual_area }}</p>
 			</div>
 
+			<!-- Organización -->
 			<div>
 				<label class="label">Organización</label>
 				<select class="select" :value="modelValue.id_organization" @change="update('id_organization', $event.target.value)">
@@ -105,21 +114,34 @@ watch(period_end, (val) => {
 			</div>
 		</div>
 
-
-		<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-			<div>
+		<!-- Fechas -->
+		<div class="grid grid-cols-1 md:grid-cols-2 gap-6 z-50 relative overflow-visible">
+			<!-- Fecha de Inicio -->
+			<div class="relative z-40">
 				<label class="label">Fecha de Inicio del Proyecto Dual</label>
-				<Datepicker v-model="period_start" placeholder="Seleccione la fecha de inicio" class="input" />
+				<Datepicker
+					v-model="period_start"
+					placeholder="Seleccione la fecha de inicio"
+					:teleport="true"
+					class="input z-40"
+				/>
 				<p v-if="errors.period_start" class="text-red-500 text-sm mt-1">{{ errors.period_start }}</p>
 			</div>
-			<div>
+
+			<!-- Fecha de Fin -->
+			<div class="relative z-40">
 				<label class="label">Fecha de Fin del Proyecto Dual</label>
-				<Datepicker v-model="period_end" placeholder="Seleccione la fecha de fin" class="input" />
+				<Datepicker
+					v-model="period_end"
+					placeholder="Seleccione la fecha de fin"
+					:teleport="true"
+					class="input z-40"
+				/>
 				<p v-if="errors.period_end" class="text-red-500 text-sm mt-1">{{ errors.period_end }}</p>
 			</div>
 		</div>
 
-
+		<!-- Estado y Apoyo -->
 		<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
 			<div>
 				<label class="label">Estado del Convenio Dual</label>
@@ -129,6 +151,7 @@ watch(period_end, (val) => {
 				</select>
 				<p v-if="errors.status_document" class="text-red-500 text-sm mt-1">{{ errors.status_document }}</p>
 			</div>
+
 			<div>
 				<label class="label">Tipo de Apoyo Económico</label>
 				<select class="select" :value="modelValue.economic_support" @change="update('economic_support', $event.target.value)">
@@ -150,3 +173,4 @@ watch(period_end, (val) => {
 	@apply w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-brand-800 focus:border-brand-800;
 }
 </style>
+

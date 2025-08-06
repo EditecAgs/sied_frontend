@@ -19,6 +19,7 @@ import FormDual from '../views/Forms/FormularioDualView.vue'
 import InstitutionsView from '../views/Tables/InstitutionsView.vue';
 import SubsystemsView from '../views/Tables/SubsystemsView.vue';
 import AcademicView from '../views/Tables/AcademicView.vue';
+import OrganizationsView from '../views/Tables/OrganizationsView.vue';
 
 
 const routes = [
@@ -75,6 +76,11 @@ const routes = [
         name: 'AcademicTable',
         component: AcademicView
     },
+	{
+		path: '/Organization-table',
+		name: 'OrganizationTable',
+		component: OrganizationsView
+	},
     {
         path: '/line-chart',
         name: 'LineChart',

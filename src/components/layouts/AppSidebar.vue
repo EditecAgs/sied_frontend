@@ -150,6 +150,7 @@
 			<SidebarWidget v-if="isExpanded || isHovered || isMobileOpen" />
 		</div>
 	</aside>
+	
 </template>
 
 <script setup>
@@ -189,7 +190,7 @@ const menuGroups = [
 			},
 			{
 				icon: UserCircleIcon,
-				name: 'User Profile',
+				name: 'Perfil de Usuario',
 				path: '/profile',
 			},
 
@@ -218,14 +219,15 @@ const menuGroups = [
 					{ name: 'Instituciones', path: '/institution-table', pro: false },
 					{ name: 'Subsistemas', path: '/subsystem-table', pro: false },
 					{ name: 'Periodos Academicos', path: '/periods_Academic-table', pro: false },
+					{ name: 'Organizaciones', path: '/Organization-table', pro: false },
 				],
 			},
 			{
 				icon: PieChartIcon,
-				name: 'Charts',
+				name: 'Estadísticas',
 				subItems: [
-					{ name: 'Line Chart', path: '/line-chart', pro: false },
-					{ name: 'Bar Chart', path: '/bar-chart', pro: false },
+					{ name: 'Gráficas de líneas', path: '/line-chart', pro: false },
+					{ name: 'Gráficas de barras', path: '/bar-chart', pro: false },
 				],
 			},
 			/*{

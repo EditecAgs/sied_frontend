@@ -19,7 +19,8 @@ export default [
     'signin',
     'signup',
 	'SubsystemTable',
-	'AcademicTable'
+	'AcademicTable',
+	'OrganizationTable'
 
 
 ];
