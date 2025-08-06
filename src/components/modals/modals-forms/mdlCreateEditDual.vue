@@ -22,7 +22,7 @@ const emit = defineEmits(['close', 'saved']);
 const props = defineProps<{
 	show: boolean;
 	data: {
-		mode: 'create' | 'edit';
+		mode: 'create' | 'edit'| 'complete';
 		pk: number | null;
 		table: string;
 	};

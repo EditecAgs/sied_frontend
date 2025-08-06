@@ -180,21 +180,18 @@ watch(
 				<div class="relative">
 					<input
 						v-model="searchArea"
-						@focus="showAreaDropdown = true"
-						@input="showAreaDropdown = true"
 						class="input"
 						placeholder="Buscar área..."
-					/>
+						@focus="showAreaDropdown = true"
+						@input="showAreaDropdown = true" />
 					<ul
 						v-if="showAreaDropdown && filteredAreas.length"
-						class="absolute z-[9999] bg-white border border-gray-300 rounded-lg mt-1 w-full max-h-48 overflow-y-auto shadow-md"
-					>
+						class="absolute z-[9999] bg-white border border-gray-300 rounded-lg mt-1 w-full max-h-48 overflow-y-auto shadow-md">
 						<li
 							v-for="area in filteredAreas"
 							:key="area.id"
-							@click="update('id_dual_area', area.id)"
 							class="px-4 py-2 hover:bg-gray-100 cursor-pointer"
-						>
+							@click="update('id_dual_area', area.id)">
 							{{ area.name }}
 						</li>
 					</ul>
@@ -207,21 +204,18 @@ watch(
 				<div class="relative">
 					<input
 						v-model="searchOrganization"
-						@focus="showOrganizationDropdown = true"
-						@input="showOrganizationDropdown = true"
 						class="input"
 						placeholder="Buscar organización..."
-					/>
+						@focus="showOrganizationDropdown = true"
+						@input="showOrganizationDropdown = true" />
 					<ul
 						v-if="showOrganizationDropdown && filteredOrganizations.length"
-						class="absolute z-[9999] bg-white border border-gray-300 rounded-lg mt-1 w-full max-h-48 overflow-y-auto shadow-md"
-					>
+						class="absolute z-[9999] bg-white border border-gray-300 rounded-lg mt-1 w-full max-h-48 overflow-y-auto shadow-md">
 						<li
 							v-for="org in filteredOrganizations"
 							:key="org.id"
-							@click="update('id_organization', org.id)"
 							class="px-4 py-2 hover:bg-gray-100 cursor-pointer"
-						>
+							@click="update('id_organization', org.id)">
 							{{ org.name }}
 						</li>
 					</ul>
@@ -239,9 +233,8 @@ watch(
 					:teleport="true"
 					class="input z-50"
 					placement="bottom-start"   
-  					:adaptivePosition="true"
-					:enable-time-picker="false"
-				/>
+					:adaptivePosition="true"
+					:enable-time-picker="false" />
 				<p v-if="errors.period_start" class="text-red-500 text-sm mt-1">{{ errors.period_start }}</p>
 			</div>
 			<div class="relative z-50">
@@ -252,10 +245,8 @@ watch(
 					:teleport="true"
 					class="input z-50"
 					placement="bottom-start"   
-  					:adaptivePosition="true"
-					:enable-time-picker="false"
-					
-				/>
+					:adaptivePosition="true"
+					:enable-time-picker="false" />
 				<p v-if="errors.period_end" class="text-red-500 text-sm mt-1">{{ errors.period_end }}</p>
 			</div>
 		</div>
@@ -265,21 +256,18 @@ watch(
 			<div class="relative">
 				<input
 					v-model="searchStatus"
-					@focus="showStatusDropdown = true"
-					@input="showStatusDropdown = true"
 					class="input"
 					placeholder="Buscar estado..."
-				/>
+					@focus="showStatusDropdown = true"
+					@input="showStatusDropdown = true" />
 				<ul
 					v-if="showStatusDropdown && filteredStatuses.length"
-					class="absolute z-[9999] bg-white border border-gray-300 rounded-lg mt-1 w-full max-h-48 overflow-y-auto shadow-md"
-				>
+					class="absolute z-[9999] bg-white border border-gray-300 rounded-lg mt-1 w-full max-h-48 overflow-y-auto shadow-md">
 					<li
 						v-for="estado in filteredStatuses"
 						:key="estado.id"
-						@click="update('status_document', estado.id)"
 						class="px-4 py-2 hover:bg-gray-100 cursor-pointer"
-					>
+						@click="update('status_document', estado.id)">
 						{{ estado.name }}
 					</li>
 				</ul>
@@ -292,21 +280,18 @@ watch(
 			<div class="relative">
 				<input
 					v-model="searchSupport"
-					@focus="showSupportDropdown = true"
-					@input="showSupportDropdown = true"
 					class="input"
 					placeholder="Buscar apoyo económico..."
-				/>
+					@focus="showSupportDropdown = true"
+					@input="showSupportDropdown = true" />
 				<ul
 					v-if="showSupportDropdown && filteredSupports.length"
-					class="absolute z-[9999] bg-white border border-gray-300 rounded-lg mt-1 w-full max-h-48 overflow-y-auto shadow-md"
-				>
+					class="absolute z-[9999] bg-white border border-gray-300 rounded-lg mt-1 w-full max-h-48 overflow-y-auto shadow-md">
 					<li
 						v-for="apoyo in filteredSupports"
 						:key="apoyo.id"
-						@click="update('economic_support', apoyo.id)"
 						class="px-4 py-2 hover:bg-gray-100 cursor-pointer"
-					>
+						@click="update('economic_support', apoyo.id)">
 						{{ apoyo.name }}
 					</li>
 				</ul>

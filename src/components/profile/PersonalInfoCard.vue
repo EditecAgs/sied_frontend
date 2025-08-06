@@ -4,23 +4,23 @@
 			<div class="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
 				<div>
 					<h4 class="text-lg font-semibold text-gray-800 dark:text-white/90 lg:mb-6">
-						Personal Information
+						Información Personal
 					</h4>
 
 					<div class="grid grid-cols-1 gap-4 lg:grid-cols-2 lg:gap-7 2xl:gap-x-32">
 						<div>
-							<p class="mb-2 text-xs leading-normal text-gray-500 dark:text-gray-400">First Name</p>
+							<p class="mb-2 text-xs leading-normal text-gray-500 dark:text-gray-400">Nombre</p>
 							<p class="text-sm font-medium text-gray-800 dark:text-white/90">{{ user.name }}</p>
 						</div>
 
 						<div>
-							<p class="mb-2 text-xs leading-normal text-gray-500 dark:text-gray-400">Last Name</p>
+							<p class="mb-2 text-xs leading-normal text-gray-500 dark:text-gray-400">Apellido</p>
 							<p class="text-sm font-medium text-gray-800 dark:text-white/90">{{ user.lastname }}</p>
 						</div>
 
 						<div>
 							<p class="mb-2 text-xs leading-normal text-gray-500 dark:text-gray-400">
-								Email address
+								Dirección de Email
 							</p>
 							<p class="text-sm font-medium text-gray-800 dark:text-white/90">
 								{{ user.email }}
@@ -56,7 +56,6 @@
 			<template #body>
 				<div
 					class="no-scrollbar relative w-full max-w-[700px] overflow-y-auto rounded-3xl bg-white p-4 dark:bg-gray-900 lg:p-11">
-					<!-- close btn -->
 					<button
 						class="transition-color absolute right-5 top-5 z-999 flex h-11 w-11 items-center justify-center rounded-full bg-gray-100 text-gray-400 hover:bg-gray-200 hover:text-gray-600 dark:bg-gray-700 dark:bg-white/[0.05] dark:text-gray-400 dark:hover:bg-white/[0.07] dark:hover:text-gray-300"
 						@click="isProfileInfoModal = false">
@@ -76,7 +75,7 @@
 					</button>
 					<div class="px-2 pr-14">
 						<h4 class="mb-2 text-2xl font-semibold text-gray-800 dark:text-white/90">
-							Editar Informacion Personal
+							Editar Información Personal
 						</h4>
 						<p class="mb-6 text-sm text-gray-500 dark:text-gray-400 lg:mb-7">
 							Update your details to keep your profile up-to-date.
@@ -86,14 +85,14 @@
 						<div class="custom-scrollbar h-[458px] overflow-y-auto p-2">
 							<div class="mt-7">
 								<h5 class="mb-5 text-lg font-medium text-gray-800 dark:text-white/90 lg:mb-6">
-									Informacion Personal
+									Información Personal
 								</h5>
 
 								<div class="grid grid-cols-1 gap-x-6 gap-y-5 lg:grid-cols-2">
 									<div class="col-span-2 lg:col-span-1">
 										<label
 											class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
-											First Name
+											Nombre
 										</label>
 										<input
 											type="text"
@@ -104,7 +103,7 @@
 									<div class="col-span-2 lg:col-span-1">
 										<label
 											class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
-											Last Name
+											Apellido
 										</label>
 										<input
 											type="text"
@@ -115,7 +114,7 @@
 									<div class="col-span-2 lg:col-span-1">
 										<label
 											class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
-											Email Address
+											Dirección de Email
 										</label>
 										<input
 											type="text"

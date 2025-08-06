@@ -96,25 +96,28 @@ watch(
 		<!-- No. de control / Matrícula -->
 		<div>
 			<label class="label">No. de control / Matrícula</label>
-			<input type="text" :value="modelValue.control_number" class="input"
-				   :class="{ 'border-red-500': errors.control_number }"
-				   @input="update('control_number', $event.target.value)" />
+			<input
+				type="text" :value="modelValue.control_number" class="input"
+				:class="{ 'border-red-500': errors.control_number }"
+				@input="update('control_number', $event.target.value)" />
 			<p v-if="errors.control_number" class="text-red-500 text-sm mt-1">{{ errors.control_number }}</p>
 		</div>
 
 		<div>
 			<label class="label">Nombre</label>
-			<input type="text" :value="modelValue.name_student" class="input"
-				   :class="{ 'border-red-500': errors.name_student }"
-				   @input="update('name_student', $event.target.value)" />
+			<input
+				type="text" :value="modelValue.name_student" class="input"
+				:class="{ 'border-red-500': errors.name_student }"
+				@input="update('name_student', $event.target.value)" />
 			<p v-if="errors.name_student" class="text-red-500 text-sm mt-1">{{ errors.name_student }}</p>
 		</div>
 
 		<div>
 			<label class="label">Apellidos</label>
-			<input type="text" :value="modelValue.lastname" class="input"
-				   :class="{ 'border-red-500': errors.lastname }"
-				   @input="update('lastname', $event.target.value)" />
+			<input
+				type="text" :value="modelValue.lastname" class="input"
+				:class="{ 'border-red-500': errors.lastname }"
+				@input="update('lastname', $event.target.value)" />
 			<p v-if="errors.lastname" class="text-red-500 text-sm mt-1">{{ errors.lastname }}</p>
 		</div>
 
@@ -122,13 +125,15 @@ watch(
 			<label class="label">Género</label>
 			<div class="flex space-x-4">
 				<label class="inline-flex items-center space-x-2">
-					<input type="radio" class="radio" :checked="modelValue.gender === 'Masculino'"
-						   @change="update('gender', 'Masculino')" />
+					<input
+						type="radio" class="radio" :checked="modelValue.gender === 'Masculino'"
+						@change="update('gender', 'Masculino')" />
 					<span>Masculino</span>
 				</label>
 				<label class="inline-flex items-center space-x-2">
-					<input type="radio" class="radio" :checked="modelValue.gender === 'Femenino'"
-						   @change="update('gender', 'Femenino')" />
+					<input
+						type="radio" class="radio" :checked="modelValue.gender === 'Femenino'"
+						@change="update('gender', 'Femenino')" />
 					<span>Femenino</span>
 				</label>
 			</div>
@@ -137,23 +142,27 @@ watch(
 
 		<div>
 			<label class="label">Semestre que cursa</label>
-			<input type="number" min="1" max="12" class="input" :value="modelValue.semester"
-				   :class="{ 'border-red-500': errors.semester }"
-				   @input="update('semester', $event.target.value)" />
+			<input
+				type="number" min="1" max="12" class="input" :value="modelValue.semester"
+				:class="{ 'border-red-500': errors.semester }"
+				@input="update('semester', $event.target.value)" />
 			<p v-if="errors.semester" class="text-red-500 text-sm mt-1">{{ errors.semester }}</p>
 		</div>
 
 		<div>
 			<label class="label">Carrera</label>
 			<div class="relative">
-				<input v-model="searchCareer" @focus="showCareerDropdown = true" @input="showCareerDropdown = true"
-					   class="input" placeholder="Buscar carrera..."
-					   :class="{ 'border-red-500': errors.id_career }" />
-				<ul v-if="showCareerDropdown && filteredCareers.length"
+				<input
+					v-model="searchCareer" class="input" placeholder="Buscar carrera..."
+					:class="{ 'border-red-500': errors.id_career }" @focus="showCareerDropdown = true"
+					@input="showCareerDropdown = true" />
+				<ul
+					v-if="showCareerDropdown && filteredCareers.length"
 					class="absolute z-10 bg-white border border-gray-300 rounded-lg mt-1 w-full max-h-48 overflow-y-auto shadow-md">
-					<li v-for="carrera in filteredCareers" :key="carrera.id"
-						@click="update('id_career', carrera.id)"
-						class="px-4 py-2 hover:bg-gray-100 cursor-pointer">
+					<li
+						v-for="carrera in filteredCareers" :key="carrera.id"
+						class="px-4 py-2 hover:bg-gray-100 cursor-pointer"
+						@click="update('id_career', carrera.id)">
 						{{ carrera.name }}
 					</li>
 				</ul>
@@ -164,14 +173,17 @@ watch(
 		<div>
 			<label class="label">Especialidad</label>
 			<div class="relative">
-				<input v-model="searchSpecialty" @focus="showSpecialtyDropdown = true"
-					   @input="showSpecialtyDropdown = true" class="input" placeholder="Buscar especialidad..."
-					   :class="{ 'border-red-500': errors.id_specialty }" />
-				<ul v-if="showSpecialtyDropdown && filteredSpecialties.length"
+				<input
+					v-model="searchSpecialty" class="input"
+					placeholder="Buscar especialidad..." :class="{ 'border-red-500': errors.id_specialty }" @focus="showSpecialtyDropdown = true"
+					@input="showSpecialtyDropdown = true" />
+				<ul
+					v-if="showSpecialtyDropdown && filteredSpecialties.length"
 					class="absolute z-10 bg-white border border-gray-300 rounded-lg mt-1 w-full max-h-48 overflow-y-auto shadow-md">
-					<li v-for="specialty in filteredSpecialties" :key="specialty.id"
-						@click="update('id_specialty', specialty.id)"
-						class="px-4 py-2 hover:bg-gray-100 cursor-pointer">
+					<li
+						v-for="specialty in filteredSpecialties" :key="specialty.id"
+						class="px-4 py-2 hover:bg-gray-100 cursor-pointer"
+						@click="update('id_specialty', specialty.id)">
 						{{ specialty.name }}
 					</li>
 				</ul>
