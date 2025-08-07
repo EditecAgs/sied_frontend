@@ -71,12 +71,12 @@
 
 <script setup>
 import { ref, watch } from 'vue'
-import { removeInstitutions } from "../../../services/institutions/institutions.js"
+import { removeOrganization } from "../../../services/organizations/organizations"
 
 const props = defineProps({
-  show: Boolean,
-  table: String,
-  pk: Number
+	show: Boolean,
+	table: String,
+	pk: Number
 })
 const emit = defineEmits(['close', 'deleted'])
 
@@ -85,66 +85,66 @@ const success = ref('')
 const loading = ref(false)
 
 watch(() => props.show, (newVal) => {
-  if (newVal) {
-    error.value = ''
-    success.value = ''
-    loading.value = false
-  }
+	if (newVal) {
+		error.value = ''
+		success.value = ''
+		loading.value = false
+	}
 })
 
 function deleteItem() {
-  error.value = ''
-  success.value = ''
-  loading.value = true
+	error.value = ''
+	success.value = ''
+	loading.value = true
 
-  removeInstitutions(props.pk)
-      .then(() => {
-        success.value = 'Eliminación realizada con éxito.'
-        loading.value = false
-        setTimeout(() => {
-          emit('deleted', props.pk)
-          emit('close')
-        }, 1500)
-      })
-      .catch(() => {
-        error.value = 'Hubo un error al eliminar. Por favor, intenta nuevamente.'
-        loading.value = false
-      })
+	removeOrganization(props.pk)
+		.then(() => {
+			success.value = 'Eliminación realizada con éxito.'
+			loading.value = false
+			setTimeout(() => {
+				emit('deleted', props.pk)
+				emit('close')
+			}, 1500)
+		})
+		.catch(() => {
+			error.value = 'Hubo un error al eliminar. Por favor, intenta nuevamente.'
+			loading.value = false
+		})
 }
 
 function close() {
-  if (!loading.value) {
-    emit('close')
-  }
+	if (!loading.value) {
+		emit('close')
+	}
 }
 </script>
 
 <style scoped>
 .fade-scale-enter-active,
 .fade-scale-leave-active {
-  transition: all 0.3s ease;
+	transition: all 0.3s ease;
 }
 .fade-scale-enter-from,
 .fade-scale-leave-to {
-  opacity: 0;
-  transform: scale(0.95);
+	opacity: 0;
+	transform: scale(0.95);
 }
 .fade-scale-enter-to,
 .fade-scale-leave-from {
-  opacity: 1;
-  transform: scale(1);
+	opacity: 1;
+	transform: scale(1);
 }
 
 /* Spinner */
 @keyframes spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+	from {
+		transform: rotate(0deg);
+	}
+	to {
+		transform: rotate(360deg);
+	}
 }
 .animate-spin {
-  animation: spin 1s linear infinite;
+	animation: spin 1s linear infinite;
 }
 </style>

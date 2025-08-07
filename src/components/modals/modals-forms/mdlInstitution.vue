@@ -158,7 +158,7 @@ watchEffect(() => {
 					class="flex-grow overflow-y-auto pr-2"
 					@after-done="afterDone"
 					@after-error="afterError">
-					<!-- Información general -->
+
 					<div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
 						<div class="form-error">
 							<label class="block text-sm font-medium text-gray-700 mb-1">Nombre*</label>
@@ -196,7 +196,7 @@ watchEffect(() => {
 						</div>
 					</div>
 
-					<!-- Dirección -->
+
 					<div class="border-t pt-4 mb-6">
 						<h5 class="text-md font-semibold text-brand-800 mb-3">Dirección</h5>
 						<div class="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -291,7 +291,7 @@ watchEffect(() => {
 						</div>
 					</div>
 
-					<!-- Estado y Municipio -->
+
 					<div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
 						<div class="form-error">
 							<label class="block text-sm font-medium text-gray-700 mb-1">Estado*</label>
@@ -347,7 +347,7 @@ watchEffect(() => {
 						</div>
 					</div>
 
-					<!-- Botones -->
+
 					<div class="flex justify-end gap-3 mt-6 pt-4 border-t border-gray-200 sticky bottom-0 bg-white z-10">
 						<button
 							type="button"
