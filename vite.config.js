@@ -9,7 +9,6 @@ export default defineConfig({
 				target: 'http://edutech.aguascalientes.tecnm:50000',
 				changeOrigin: true,
 				pathRewrite: (path) => path.replace(/^\/api/, ''),
-				secure: false,
 			},
 		},
 	},
