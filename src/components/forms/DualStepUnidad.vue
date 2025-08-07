@@ -1,7 +1,21 @@
 <script setup>
-import { ref, computed, defineProps, defineEmits, watch } from 'vue';
+import { ref, computed, defineProps, defineEmits, watch, onMounted, onBeforeUnmount } from 'vue';
 import Datepicker from '@vuepic/vue-datepicker';
 import '@vuepic/vue-datepicker/dist/main.css';
+import btnCreate from '../../components/buttons/btnCreate.vue';
+import mdlOrganization from '../modals/modals-forms/mdlOrganization.vue';
+import { useModal } from '../../composables/UseModal';
+import { getOrganizations } from '../../services/organizations/organizations.js';
+
+const { showModal, modalData, openModal, closeModal } = useModal();
+const handleSavedOrganization = async () => {
+	closeModal();
+	const res = await getOrganizations();
+	emit('update:modelValue', {
+		...props.modelValue,
+		id_organization: res.data?.[res.data.length - 1]?.id // opcional: selecciona la nueva
+	});
+};
 
 const props = defineProps({
 	modelValue: Object,
@@ -17,15 +31,44 @@ const errors = ref({});
 
 const searchArea = ref('');
 const showAreaDropdown = ref(false);
+const areaDropdownRef = ref(null);
 
 const searchOrganization = ref('');
 const showOrganizationDropdown = ref(false);
+const organizationDropdownRef = ref(null);
 
 const searchStatus = ref('');
 const showStatusDropdown = ref(false);
+const statusDropdownRef = ref(null);
 
 const searchSupport = ref('');
 const showSupportDropdown = ref(false);
+const supportDropdownRef = ref(null);
+
+// Función para manejar clicks fuera de los dropdowns
+const handleClickOutside = (event) => {
+	if (areaDropdownRef.value && !areaDropdownRef.value.contains(event.target)) {
+		showAreaDropdown.value = false;
+	}
+	if (organizationDropdownRef.value && !organizationDropdownRef.value.contains(event.target)) {
+		showOrganizationDropdown.value = false;
+	}
+	if (statusDropdownRef.value && !statusDropdownRef.value.contains(event.target)) {
+		showStatusDropdown.value = false;
+	}
+	if (supportDropdownRef.value && !supportDropdownRef.value.contains(event.target)) {
+		showSupportDropdown.value = false;
+	}
+};
+
+// Agregar y remover event listener
+onMounted(() => {
+	document.addEventListener('click', handleClickOutside);
+});
+
+onBeforeUnmount(() => {
+	document.removeEventListener('click', handleClickOutside);
+});
 
 const filteredAreas = computed(() => {
 	if (!searchArea.value) return props.areas || [];
@@ -46,7 +89,6 @@ const filteredSupports = computed(() => {
 
 const period_start = ref(props.modelValue.period_start ? new Date(props.modelValue.period_start) : null);
 const period_end = ref(props.modelValue.period_end ? new Date(props.modelValue.period_end) : null);
-
 
 const update = (field, value) => {
 	emit('update:modelValue', {
@@ -175,7 +217,7 @@ watch(
 				<p v-if="errors.name_report" class="text-red-500 text-sm mt-1">{{ errors.name_report }}</p>
 			</div>
 
-			<div>
+			<div ref="areaDropdownRef">
 				<label class="label">Área del Proyecto Dual</label>
 				<div class="relative">
 					<input
@@ -199,28 +241,34 @@ watch(
 				<p v-if="errors.id_dual_area" class="text-red-500 text-sm mt-1">{{ errors.id_dual_area }}</p>
 			</div>
 
-			<div>
-				<label class="label">Organización</label>
-				<div class="relative">
-					<input
-						v-model="searchOrganization"
-						class="input"
-						placeholder="Buscar organización..."
-						@focus="showOrganizationDropdown = true"
-						@input="showOrganizationDropdown = true" />
-					<ul
-						v-if="showOrganizationDropdown && filteredOrganizations.length"
-						class="absolute z-[9999] bg-white border border-gray-300 rounded-lg mt-1 w-full max-h-48 overflow-y-auto shadow-md">
-						<li
-							v-for="org in filteredOrganizations"
-							:key="org.id"
-							class="px-4 py-2 hover:bg-gray-100 cursor-pointer"
-							@click="update('id_organization', org.id)">
-							{{ org.name }}
-						</li>
-					</ul>
+			<div class="flex items-end gap-2" ref="organizationDropdownRef">
+				<div class="flex-1">
+					<label class="label">Organización</label>
+					<div class="relative">
+						<input
+							v-model="searchOrganization"
+							class="input"
+							placeholder="Buscar organización..."
+							@focus="showOrganizationDropdown = true"
+							@input="showOrganizationDropdown = true" />
+						<ul
+							v-if="showOrganizationDropdown && filteredOrganizations.length"
+							class="absolute z-[9999] bg-white border border-gray-300 rounded-lg mt-1 w-full max-h-48 overflow-y-auto shadow-md">
+							<li
+								v-for="org in filteredOrganizations"
+								:key="org.id"
+								class="px-4 py-2 hover:bg-gray-100 cursor-pointer"
+								@click="update('id_organization', org.id)">
+								{{ org.name }}
+							</li>
+						</ul>
+					</div>
+					<p v-if="errors.id_organization" class="text-red-500 text-sm mt-1">{{ errors.id_organization }}</p>
 				</div>
-				<p v-if="errors.id_organization" class="text-red-500 text-sm mt-1">{{ errors.id_organization }}</p>
+				<btn-create
+					:table="'organization'"
+					class="h-auto mb-[9px]"
+					@open="({ mode, pk, table }) => openModal(mode, pk, table)" />
 			</div>
 		</div>
 
@@ -232,7 +280,7 @@ watch(
 					placeholder="Seleccione la fecha de inicio"
 					:teleport="true"
 					class="input z-50"
-					placement="bottom-start"   
+					placement="bottom-start"
 					:adaptivePosition="true"
 					:enable-time-picker="false" />
 				<p v-if="errors.period_start" class="text-red-500 text-sm mt-1">{{ errors.period_start }}</p>
@@ -244,14 +292,14 @@ watch(
 					placeholder="Seleccione la fecha de fin"
 					:teleport="true"
 					class="input z-50"
-					placement="bottom-start"   
+					placement="bottom-start"
 					:adaptivePosition="true"
 					:enable-time-picker="false" />
 				<p v-if="errors.period_end" class="text-red-500 text-sm mt-1">{{ errors.period_end }}</p>
 			</div>
 		</div>
 
-		<div>
+		<div ref="statusDropdownRef">
 			<label class="label">Estado del Convenio Dual</label>
 			<div class="relative">
 				<input
@@ -275,7 +323,7 @@ watch(
 			<p v-if="errors.status_document" class="text-red-500 text-sm mt-1">{{ errors.status_document }}</p>
 		</div>
 
-		<div>
+		<div ref="supportDropdownRef">
 			<label class="label">Tipo de Apoyo Económico</label>
 			<div class="relative">
 				<input
@@ -299,6 +347,12 @@ watch(
 			<p v-if="errors.economic_support" class="text-red-500 text-sm mt-1">{{ errors.economic_support }}</p>
 		</div>
 	</div>
+
+	<mdl-organization
+		:show="showModal"
+		:data="modalData"
+		@close="closeModal"
+		@saved="handleSavedOrganization" />
 </template>
 
 <style >
@@ -309,59 +363,52 @@ watch(
 	@apply w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-brand-800 focus:border-brand-800;
 }
 
-
 .dp__menu {
-  background-color: #ffffff;
-  border-radius: 10px;
-  border: 1px solid #d1d1d1;
-  color: #333;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
+	background-color: #ffffff;
+	border-radius: 10px;
+	border: 1px solid #d1d1d1;
+	color: #333;
+	font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+	box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
 }
-
 
 .dp__calendar_header {
-  background-color: #fff;
-  color: #5b2245;
-  font-weight: bold;
-  border-bottom: 1px solid #e0e0e0;
+	background-color: #fff;
+	color: #5b2245;
+	font-weight: bold;
+	border-bottom: 1px solid #e0e0e0;
 }
-
 
 .dp__calendar_header_item {
-  color: #82181a;
+	color: #82181a;
 }
 .dp__today {
-  background-color: #800033;
-  color: white;
-  font-weight: bold;
+	background-color: #800033;
+	color: white;
+	font-weight: bold;
 }
 
 .dp__cell_inner {
-  background-color: transparent;
-  border-radius: 6px;
-  padding: 5px;
-  color: #333;
-  transition: background-color 0.2s ease;
+	background-color: transparent;
+	border-radius: 6px;
+	padding: 5px;
+	color: #333;
+	transition: background-color 0.2s ease;
 }
-
 
 .dp__today {
-  background-color: #f7e6f1;
-  color: #82181a;
-  font-weight: bold;
+	background-color: #f7e6f1;
+	color: #82181a;
+	font-weight: bold;
 }
 
-
 .dp__cell_inner:hover {
-  background-color: #f2e5ed;
-  cursor: pointer;
+	background-color: #f2e5ed;
+	cursor: pointer;
 }
 
 .dp__cell_inner.dp__active_date {
-  background-color: #82181a;
-  color: #fff;
+	background-color: #82181a;
+	color: #fff;
 }
-
-
 </style>

@@ -4,16 +4,16 @@
 		<div class="space-y-5 sm:space-y-6">
 			<ComponentCard title="Catálogo de Organizaciones">
 				<btn-create :table="'organization'" @open="({ mode, pk, table}) => openModal(mode, pk, table)" class="divide-error-900 hover:divide-error-800" />
-				<mdl-institution
+				<mdlOrganization
 					:show="showModal"
 					:data="modalData"
 					@close="closeModal"
 					@saved="handleSaved" />
-				<TableInstitutions
+				<TableOrganization
 					ref="tableRef"
 					@open="({ mode, pk, table }) => openModal(mode, pk, table)"
-					@open-confirm="openDeleteModal"/>
-				<mdlDeleteInstitution
+					@open-confirm="openDeleteModal" />
+				<mdlDeleteOrganization
 					:show="showDeleteModal"
 					:table="deleteTarget.table"
 					:pk="deleteTarget.pk"
@@ -29,13 +29,13 @@ import { ref } from "vue";
 import PageBreadcrumb from "../../components/common/PageBreadcrumb.vue";
 import AdminLayout from "../../components/layouts/AdminLayout.vue";
 import ComponentCard from "../../components/common/componentCard.vue";
-import TableInstitutions from "../../components/tables/basic-tables/TableOrganizations.vue";
+import TableOrganization from "../../components/tables/basic-tables/TableOrganizations.vue";
 import btnCreate from "../../components/buttons/btnCreate.vue";
-import MdlInstitution from '../../components/modals/modals-forms/mdlInstitution.vue';
+import mdlOrganization from '../../components/modals/modals-forms/mdlOrganization.vue';
 import { useModal } from "../../composables/UseModal";
-import mdlDeleteInstitution from "../../components/modals/delete-only/mdlDeleteInstitution.vue"
+import mdlDeleteOrganization from "../../components/modals/delete-only/mdlDeleteOrganization.vue"
 
-const currentPageTitle = ref("Instituciones");
+const currentPageTitle = ref("Organizaciones");
 const { showModal, modalData, openModal, closeModal } = useModal();
 
 const tableRef = ref(null);
