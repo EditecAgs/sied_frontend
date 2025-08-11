@@ -20,5 +20,11 @@ export default [
     'signup',
 	'SubsystemTable',
 	'AcademicTable',
-	'OrganizationTable'
+	'OrganizationTable',
+	'Dual_AreaTable',
+	'CareersTable',
+	'ClustersTable',
+	'DocumentTable',
+	'EconomicTable',
+	'SectorsTable'
 ];
