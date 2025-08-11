@@ -112,7 +112,7 @@ const afterError = (res: any) => {
 
 <template>
 	<transition name="fade-scale">
-		<div v-if="show" class="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm" @click.self="emit('close')">
+		<div v-if="show" class="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm" style="margin-top: 0px" @click.self="emit('close')">
 			<div class="bg-white rounded-2xl shadow-2xl w-full max-w-4xl p-8 relative max-h-[90vh] flex flex-col overflow-hidden">
 				<h4 class="text-2xl font-extrabold text-brand-900 mb-6 flex items-center justify-between">
 					{{ data.mode === 'create' ? `Crear Organización` : `Editar Organización` }}

@@ -3,6 +3,7 @@
 		<div
 			v-if="show"
 			class="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm"
+			style="margin-top: 0px"
 			@click.self="close">
 			<div class="bg-white rounded-3xl shadow-2xl w-full max-w-lg p-8 relative max-h-[85vh] flex flex-col overflow-hidden">
 				<div class="flex justify-center mb-4">

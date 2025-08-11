@@ -72,7 +72,7 @@
 
 <script setup>
 import { ref, watch } from 'vue'
-import { removeDualProject } from "../../../services/dual_projects/dual_projects.js"
+import { removeDualArea } from "../../../services/dual_projects/dual-areas"
 
 const props = defineProps({
 	show: Boolean,
@@ -98,7 +98,7 @@ function deleteItem() {
 	success.value = ''
 	loading.value = true
 
-	removeDualProject(props.pk)
+	removeDualArea(props.pk)
 		.then(() => {
 			success.value = 'Eliminación realizada con éxito.'
 			loading.value = false
