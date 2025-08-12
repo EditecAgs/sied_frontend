@@ -226,8 +226,8 @@ const menuGroups = [
 					{ name: 'Estatus de Documentos', path: '/document-table', pro: false },
 					{ name: 'Apoyo Económico', path: '/economic-table', pro: false },
 					{ name: 'Sectores', path: '/sectors-table', pro: false },
-					{ name: 'Organizaciones', path: '/Organization-table', pro: false },
-					{ name: 'Organizaciones', path: '/Organization-table', pro: false },
+					{ name: 'Especialidades', path: '/specialties-table', pro: false },
+					{ name: 'Tipo', path: '/type-table', pro: false },
 				],
 			},
 			{

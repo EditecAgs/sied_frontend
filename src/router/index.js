@@ -26,6 +26,8 @@ import ClustersView from '../views/Tables/ClustersView.vue';
 import DocumentView from '../views/Tables/DocumentView.vue';
 import EconomicView from '../views/Tables/EconomicView.vue';
 import SectorsView from '../views/Tables/SectorsView.vue';
+import SpecialtiesView from '../views/Tables/SpecialtiesView.vue';
+import TypesView from '../views/Tables/TypesView.vue';
 
 
 const routes = [
@@ -116,6 +118,16 @@ const routes = [
 		path: '/sectors-table',
 		name: 'SectorsTable',
 		component: SectorsView
+	},
+	{
+		path: '/specialties-table',
+		name: 'SpecialtiesTable',
+		component: SpecialtiesView
+	},
+	{
+		path: '/type-table',
+		name: 'TypeTable',
+		component: TypesView
 	},
     {
         path: '/line-chart',

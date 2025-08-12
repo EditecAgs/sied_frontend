@@ -1,13 +1,12 @@
 <script setup lang="ts">
-import { defineProps, defineEmits, reactive, watchEffect, ref, onMounted } from 'vue'
+import { defineProps, defineEmits, reactive, watchEffect, ref } from 'vue'
 import axios from 'axios'
-import { getInstitutions } from '../../../services/institutions/institutions.js'
-import { showCareer } from "../../../services/institutions/careers.js"
+import { showType } from "../../../services/organizations/types.js"
 
 const emit = defineEmits(['close', 'saved'])
 const isLoading = ref(false)
 const alvRoute = ref()
-alvRoute.value = axios.defaults.baseURL + 'careers'
+alvRoute.value = axios.defaults.baseURL + 'types'
 
 const alvMethod = ref('POST')
 
@@ -17,8 +16,8 @@ const afterDone = (response) => {
 	emit('close')
 }
 
-const afterError = (response) => {
-	console.log('Error al enviar:', response.data)
+const afterError = (error) => {
+	console.log('Error al enviar:', error.response?.data || error.message)
 }
 
 // eslint-disable-next-line vue/valid-define-props
@@ -32,46 +31,34 @@ const props = defineProps<{
 }>()
 
 const form = reactive({
-	name: '',
-	id_institution: ''
-})
-
-const institutions = ref([])
-
-const loadDependencies = async() => {
-	try {
-		const response = await getInstitutions()
-		institutions.value = response.data
-	} catch (err) {
-		console.error('Error al cargar instituciones:', err)
-	}
-}
-
-onMounted(() => {
-	loadDependencies()
+	id: '',
+	name: ''
 })
 
 watchEffect(() => {
 	if (props.data.mode === 'edit' && props.data.pk !== null) {
-		alvRoute.value = `${axios.defaults.baseURL}careers/${props.data.pk}`
+		alvRoute.value = `${axios.defaults.baseURL}types/${props.data.pk}`
 		alvMethod.value = 'PUT'
 		isLoading.value = true
 
-		showCareer(props.data.pk).then(res => {
-			const career = res.data
+		showType(props.data.pk).then(res => {
+			const type = res.data
 			Object.keys(form).forEach(key => {
-				if (career[key] !== undefined) {
-					form[key] = career[key]
+				if (type[key] !== undefined) {
+					form[key] = type[key]
 				}
 			})
+		}).catch(error => {
+			console.error('Error al cargar el tipo:', error)
 		}).finally(() => {
 			isLoading.value = false
 		})
 
 	} else if (props.data.mode === 'create') {
-		alvRoute.value = `${axios.defaults.baseURL}careers`
+		alvRoute.value = `${axios.defaults.baseURL}types`
 		alvMethod.value = 'POST'
 
+		// Resetear el formulario
 		Object.keys(form).forEach(key => {
 			form[key] = ''
 		})
@@ -98,7 +85,7 @@ watchEffect(() => {
 				</button>
 
 				<alv-form
-					id="CareerForm"
+					id="TypeForm"
 					:action="alvRoute"
 					:data-object="form"
 					:input-parent-selector="'.form-error'"
@@ -110,8 +97,26 @@ watchEffect(() => {
 					@after-error="afterError">
 
 					<div class="grid grid-cols-1 gap-4 mb-6">
+						<!-- Campo ID (solo visible en edición) -->
+						<div v-if="data.mode === 'edit'" class="form-error">
+							<label class="block text-sm font-medium text-gray-700 mb-1">ID</label>
+							<template v-if="isLoading">
+								<div class="h-8 bg-gray-300 rounded animate-pulse w-full" />
+							</template>
+							<template v-else>
+								<input
+									v-model="form.id"
+									type="text"
+									name="id"
+									readonly
+									class="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-100 cursor-not-allowed"
+									:disabled="isLoading" />
+							</template>
+						</div>
+
+						<!-- Campo Nombre -->
 						<div class="form-error">
-							<label class="block text-sm font-medium text-gray-700 mb-1">Nombre de la carrera*</label>
+							<label class="block text-sm font-medium text-gray-700 mb-1">Nombre*</label>
 							<template v-if="isLoading">
 								<div class="h-8 bg-gray-300 rounded animate-pulse w-full" />
 							</template>
@@ -125,25 +130,6 @@ watchEffect(() => {
 									:disabled="isLoading" />
 							</template>
 						</div>
-
-						<div class="form-error">
-							<label class="block text-sm font-medium text-gray-700 mb-1">Institución*</label>
-							<template v-if="isLoading">
-								<div class="h-8 bg-gray-300 rounded animate-pulse w-full" />
-							</template>
-							<template v-else>
-								<Select
-									v-model="form.id_institution"
-									name="id_institution"
-									:options="institutions"
-									optionLabel="name"
-									optionValue="id"
-									:virtualScrollerOptions="{ itemSize: 38, showLoader: isLoading}"
-									placeholder="Selecciona una institución"
-									class="w-full px-3 py-2 !border-2 !border-gray-900 !rounded-md focus:outline-none focus:ring focus:ring-brand-800"
-									required />
-							</template>
-						</div>
 					</div>
 
 					<div class="flex justify-end gap-3 mt-6 pt-4 border-t border-gray-200 sticky bottom-0 bg-white z-10">
@@ -155,7 +141,7 @@ watchEffect(() => {
 							Cancelar
 						</button>
 						<button
-							form="CareerForm"
+							form="TypeForm"
 							class="flex items-center gap-2 px-6 py-2 rounded-lg bg-gradient-to-r from-brand-700 to-brand-900 text-white font-semibold hover:brightness-110 transition shadow-md"
 							:disabled="isLoading">
 							<span v-if="data.mode !== 'create'">💾</span>
