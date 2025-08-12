@@ -1,24 +1,26 @@
 <script setup lang="ts">
 import { defineProps, defineEmits, reactive, watchEffect, ref, onMounted } from 'vue'
 import axios from 'axios'
-import { getInstitutions } from '../../../services/institutions/institutions.js'
-import { showCareer } from "../../../services/institutions/careers.js"
+import { getCareers } from '../../../services/institutions/careers'
+import { getInstitutions } from '../../../services/institutions/institutions'
+import { showSpecialty } from '../../../services/institutions/specialties'
 
 const emit = defineEmits(['close', 'saved'])
 const isLoading = ref(false)
-const alvRoute = ref()
-alvRoute.value = axios.defaults.baseURL + 'careers'
+const alvRoute = ref('')
+const alvMethod = ref<'POST' | 'PUT'>('POST')
 
-const alvMethod = ref('POST')
+const careers = ref<any[]>([])
+const institutions = ref<any[]>([])
 
-const afterDone = (response) => {
+const afterDone = (response: any) => {
 	console.log(response.data + ' guardado exitosamente')
 	emit('saved')
 	emit('close')
 }
 
-const afterError = (response) => {
-	console.log('Error al enviar:', response.data)
+const afterError = (error: any) => {
+	console.log('Error al enviar:', error.response?.data || error.message)
 }
 
 // eslint-disable-next-line vue/valid-define-props
@@ -32,50 +34,56 @@ const props = defineProps<{
 }>()
 
 const form = reactive({
+	id: '',
 	name: '',
-	id_institution: ''
+	id_institution: '',
+	id_career: ''
 })
 
-const institutions = ref([])
-
-const loadDependencies = async() => {
+const loadSelectData = async () => {
 	try {
-		const response = await getInstitutions()
-		institutions.value = response.data
-	} catch (err) {
-		console.error('Error al cargar instituciones:', err)
+		const [{ data: careersData }, { data: institutionsData }] = await Promise.all([
+			getCareers(),
+			getInstitutions()
+		])
+		careers.value = careersData
+		institutions.value = institutionsData
+	} catch (error) {
+		console.error('Error cargando opciones:', error)
 	}
 }
 
-onMounted(() => {
-	loadDependencies()
-})
-
 watchEffect(() => {
 	if (props.data.mode === 'edit' && props.data.pk !== null) {
-		alvRoute.value = `${axios.defaults.baseURL}careers/${props.data.pk}`
+		alvRoute.value = `${axios.defaults.baseURL}specialties/${props.data.pk}`
 		alvMethod.value = 'PUT'
 		isLoading.value = true
 
-		showCareer(props.data.pk).then(res => {
-			const career = res.data
+		showSpecialty(props.data.pk).then(res => {
+			const specialty = res.data
 			Object.keys(form).forEach(key => {
-				if (career[key] !== undefined) {
-					form[key] = career[key]
+				if (specialty[key] !== undefined) {
+					form[key] = specialty[key]
 				}
 			})
+		}).catch(error => {
+			console.error('Error al cargar la especialidad:', error)
 		}).finally(() => {
 			isLoading.value = false
 		})
 
 	} else if (props.data.mode === 'create') {
-		alvRoute.value = `${axios.defaults.baseURL}careers`
+		alvRoute.value = `${axios.defaults.baseURL}specialties`
 		alvMethod.value = 'POST'
 
 		Object.keys(form).forEach(key => {
 			form[key] = ''
 		})
 	}
+})
+
+onMounted(() => {
+	loadSelectData()
 })
 </script>
 
@@ -98,7 +106,7 @@ watchEffect(() => {
 				</button>
 
 				<alv-form
-					id="CareerForm"
+					id="SpecialtyForm"
 					:action="alvRoute"
 					:data-object="form"
 					:input-parent-selector="'.form-error'"
@@ -109,9 +117,10 @@ watchEffect(() => {
 					@after-done="afterDone"
 					@after-error="afterError">
 
-					<div class="grid grid-cols-1 gap-4 mb-6">
+					<div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+						<!-- Nombre -->
 						<div class="form-error">
-							<label class="block text-sm font-medium text-gray-700 mb-1">Nombre de la carrera*</label>
+							<label class="block text-sm font-medium text-gray-700 mb-1">Nombre*</label>
 							<template v-if="isLoading">
 								<div class="h-8 bg-gray-300 rounded animate-pulse w-full" />
 							</template>
@@ -126,22 +135,45 @@ watchEffect(() => {
 							</template>
 						</div>
 
+						<!-- Carrera -->
 						<div class="form-error">
+							<label class="block text-sm font-medium text-gray-700 mb-1">Carrera*</label>
+							<template v-if="isLoading">
+								<div class="h-8 bg-gray-300 rounded animate-pulse w-full" />
+							</template>
+							<template v-else>
+								<select
+									v-model="form.id_career"
+									name="id_career"
+									required
+									class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring focus:ring-brand-800"
+									:disabled="isLoading">
+									<option value="">Seleccione carrera</option>
+									<option v-for="career in careers" :key="career.id" :value="career.id">
+										{{ career.name }}
+									</option>
+								</select>
+							</template>
+						</div>
+
+						<!-- Institución -->
+						<div class="form-error md:col-span-2">
 							<label class="block text-sm font-medium text-gray-700 mb-1">Institución*</label>
 							<template v-if="isLoading">
 								<div class="h-8 bg-gray-300 rounded animate-pulse w-full" />
 							</template>
 							<template v-else>
-								<Select
+								<select
 									v-model="form.id_institution"
 									name="id_institution"
-									:options="institutions"
-									optionLabel="name"
-									optionValue="id"
-									:virtualScrollerOptions="{ itemSize: 38, showLoader: isLoading}"
-									placeholder="Selecciona una institución"
-									class="w-full px-3 py-2 !border-2 !border-gray-900 !rounded-md focus:outline-none focus:ring focus:ring-brand-800"
-									required />
+									required
+									class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring focus:ring-brand-800"
+									:disabled="isLoading">
+									<option value="">Seleccione institución</option>
+									<option v-for="inst in institutions" :key="inst.id" :value="inst.id">
+										{{ inst.name }}
+									</option>
+								</select>
 							</template>
 						</div>
 					</div>
@@ -155,7 +187,7 @@ watchEffect(() => {
 							Cancelar
 						</button>
 						<button
-							form="CareerForm"
+							form="SpecialtyForm"
 							class="flex items-center gap-2 px-6 py-2 rounded-lg bg-gradient-to-r from-brand-700 to-brand-900 text-white font-semibold hover:brightness-110 transition shadow-md"
 							:disabled="isLoading">
 							<span v-if="data.mode !== 'create'">💾</span>

@@ -26,5 +26,7 @@ export default [
 	'ClustersTable',
 	'DocumentTable',
 	'EconomicTable',
-	'SectorsTable'
+	'SectorsTable',
+	'SpecialtiesTable',
+	'TypeTable'
 ];
