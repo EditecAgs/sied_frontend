@@ -22,7 +22,7 @@ const emit = defineEmits(['close', 'saved']);
 const props = defineProps<{
 	show: boolean;
 	data: {
-		mode: 'create' | 'edit';
+		mode: 'create' | 'edit'| 'complete';
 		pk: number | null;
 		table: string;
 	};
@@ -129,59 +129,59 @@ const resetForm = () => {
 };
 
 watch(
-	() => props.data,
-	async (newData) => {
-		currentStep.value = 0;
-		if ((newData.mode === 'edit' || newData.mode === 'complete') && newData.pk !== null) {
-			isLoading.value = true;
-			try {
-				const res = await showDualProject(newData.pk);
-				const project = res.data;
-				formData.personal = {
-					control_number: project.students?.[0]?.control_number ?? '',
-					name_student: project.students?.[0]?.name ?? '',
-					lastname: project.students?.[0]?.lastname ?? '',
-					gender: project.students?.[0]?.gender ?? '',
-					semester: project.students?.[0]?.semester ?? '',
-					id_career: project.students?.[0]?.career?.id ?? '',
-					id_specialty: project.students?.[0]?.specialty?.id ?? '',
-					number_men: String(project.dual_project_reports?.number_men ?? '1'),
-					number_women: String(project.dual_project_reports?.number_women ?? '1')
-				};
+  () => props.data,
+  async (newData) => {
+    currentStep.value = 0;
+    if ((newData.mode === 'edit' || newData.mode === 'complete') && newData.pk !== null) {
+      isLoading.value = true;
+      try {
 
-				formData.academico = {
-					id_institution: project.id_institution ?? ''
-				};
+        const res = await showDualProject(newData.pk);
+        const project = res.data;
 
+        formData.personal = {
+          control_number: project.students?.[0]?.control_number ?? '',
+          name_student: project.students?.[0]?.name ?? '',
+          lastname: project.students?.[0]?.lastname ?? '',
+          gender: project.students?.[0]?.gender ?? '',
+          semester: project.students?.[0]?.semester ?? '',
+          id_career: project.students?.[0]?.career?.id ?? '',
+          id_specialty: project.students?.[0]?.specialty?.id ?? '',
+          number_men: String(project.dual_project_reports?.number_men ?? '1'),
+          number_women: String(project.dual_project_reports?.number_women ?? '1')
+        };
 
-					formData.unidadDual = {
-						name_report: project.dual_project_reports?.name ?? '',
-						id_organization: project.organization_dual_projects?.organization?.id ?? '',
-						id_dual_area: project.dual_project_reports?.dual_area?.id ?? '',
-						period_start: project.dual_project_reports?.period_start ?? '',
-						period_end: project.dual_project_reports?.period_end ?? '',
-						status_document: project.dual_project_reports?.status_document?.id ?? '',
-						economic_support: project.dual_project_reports?.economic_support?.id ?? '',
-						amount: String(project.dual_project_reports?.amount ?? '1500')
-					};
-					if (newData.mode === 'complete') {
-					reportaModeloDual.value = true;
-					} else {
-					reportaModeloDual.value = project.dual_project_reports ? true : false; 
-					}
+        formData.academico = {
+          id_institution: project.id_institution ?? ''
+        };
 
-			} catch (error) {
-				console.error("Error al cargar el proyecto dual:", error);
-			} finally {
-				isLoading.value = false;
-				originalFormData.value = JSON.stringify(formData);
-			}
-		} else if (newData.mode === 'create') {
-			resetForm();
-		}
-	},
-	{ immediate: true }
+        formData.unidadDual = {
+          name_report: project.dual_project_reports?.name ?? '',
+          id_organization: project.organization_dual_projects?.organization?.id ?? '',
+          id_dual_area: project.dual_project_reports?.dual_area?.id ?? '',
+          period_start: project.dual_project_reports?.period_start ?? '',
+          period_end: project.dual_project_reports?.period_end ?? '',
+          status_document: project.dual_project_reports?.status_document?.id ?? '',
+          economic_support: project.dual_project_reports?.economic_support?.id ?? '',
+          amount: String(project.dual_project_reports?.amount ?? '1500')
+        };
+
+        reportaModeloDual.value =
+          newData.mode === 'complete' ? true : !!project.dual_project_reports;
+
+        originalFormData.value = JSON.stringify(formData);
+      } catch (error) {
+        console.error('Error al cargar el proyecto dual:', error);
+      } finally {
+        isLoading.value = false;
+      }
+    } else if (newData.mode === 'create') {
+      resetForm();
+    }
+  },
+  { immediate: true }
 );
+
 
 
 const handleNextOrSubmit = async () => {

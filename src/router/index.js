@@ -20,6 +20,14 @@ import InstitutionsView from '../views/Tables/InstitutionsView.vue';
 import SubsystemsView from '../views/Tables/SubsystemsView.vue';
 import AcademicView from '../views/Tables/AcademicView.vue';
 import OrganizationsView from '../views/Tables/OrganizationsView.vue';
+import DualAreasView from '../views/Tables/DualAreasView.vue';
+import CareersView from '../views/Tables/CareersView.vue';
+import ClustersView from '../views/Tables/ClustersView.vue';
+import DocumentView from '../views/Tables/DocumentView.vue';
+import EconomicView from '../views/Tables/EconomicView.vue';
+import SectorsView from '../views/Tables/SectorsView.vue';
+import SpecialtiesView from '../views/Tables/SpecialtiesView.vue';
+import TypesView from '../views/Tables/TypesView.vue';
 
 
 const routes = [
@@ -80,6 +88,46 @@ const routes = [
 		path: '/Organization-table',
 		name: 'OrganizationTable',
 		component: OrganizationsView
+	},
+	{
+		path: '/dual_Area-table',
+		name: 'Dual_AreaTable',
+		component: DualAreasView
+	},
+	{
+		path: '/careers-table',
+		name: 'CareersTable',
+		component: CareersView
+	},
+	{
+		path: '/clusters-table',
+		name: 'ClustersTable',
+		component: ClustersView
+	},
+	{
+		path: '/document-table',
+		name: 'DocumentTable',
+		component: DocumentView
+	},
+	{
+		path: '/economic-table',
+		name: 'EconomicTable',
+		component: EconomicView
+	},
+	{
+		path: '/sectors-table',
+		name: 'SectorsTable',
+		component: SectorsView
+	},
+	{
+		path: '/specialties-table',
+		name: 'SpecialtiesTable',
+		component: SpecialtiesView
+	},
+	{
+		path: '/type-table',
+		name: 'TypeTable',
+		component: TypesView
 	},
     {
         path: '/line-chart',

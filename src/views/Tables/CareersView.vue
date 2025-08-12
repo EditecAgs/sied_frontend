@@ -2,18 +2,18 @@
 	<AdminLayout>
 		<PageBreadcrumb :pageTitle="currentPageTitle" />
 		<div class="space-y-5 sm:space-y-6">
-			<ComponentCard title="Catálogo de Organizaciones">
-				<btn-create :table="'organization'" @open="({ mode, pk, table}) => openModal(mode, pk, table)" class="divide-error-900 hover:divide-error-800" />
-				<mdlOrganization
+			<ComponentCard title="Catálogo de Carreras">
+				<btn-create :table="'careers'" @open="({ mode, pk, table}) => openModal(mode, pk, table)" class="divide-error-900 hover:divide-error-800" />
+				<mdlCareers
 					:show="showModal"
 					:data="modalData"
 					@close="closeModal"
 					@saved="handleSaved" />
-				<TableOrganization
+				<TableCareers
 					ref="tableRef"
 					@open="({ mode, pk, table }) => openModal(mode, pk, table)"
 					@open-confirm="openDeleteModal" />
-				<mdlDeleteOrganization
+				<mdlDeleteCareers
 					:show="showDeleteModal"
 					:table="deleteTarget.table"
 					:pk="deleteTarget.pk"
@@ -29,13 +29,13 @@ import { ref } from "vue";
 import PageBreadcrumb from "../../components/common/PageBreadcrumb.vue";
 import AdminLayout from "../../components/layouts/AdminLayout.vue";
 import ComponentCard from "../../components/common/componentCard.vue";
-import TableOrganization from "../../components/tables/basic-tables/TableOrganizations.vue";
+import TableCareers from "../../components/tables/basic-tables/TableCareers.vue";
 import btnCreate from "../../components/buttons/btnCreate.vue";
-import mdlOrganization from '../../components/modals/modals-forms/mdlOrganization.vue';
+import mdlCareers from '../../components/modals/modals-forms/mdlCareers.vue';
 import { useModal } from "../../composables/UseModal";
-import mdlDeleteOrganization from "../../components/modals/delete-only/mdlDeleteOrganization.vue"
+import mdlDeleteCareers from "../../components/modals/delete-only/mdlDeleteCareers.vue"
 
-const currentPageTitle = ref("Organizaciones");
+const currentPageTitle = ref("Áreas Duales");
 const { showModal, modalData, openModal, closeModal } = useModal();
 
 const tableRef = ref(null);

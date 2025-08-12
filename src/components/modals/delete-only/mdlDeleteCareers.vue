@@ -72,7 +72,7 @@
 
 <script setup>
 import { ref, watch } from 'vue'
-import { removeDualProject } from "../../../services/dual_projects/dual_projects.js"
+import { removeCareer } from "../../../services/institutions/careers"
 
 const props = defineProps({
 	show: Boolean,
@@ -98,7 +98,7 @@ function deleteItem() {
 	success.value = ''
 	loading.value = true
 
-	removeDualProject(props.pk)
+	removeCareer(props.pk)
 		.then(() => {
 			success.value = 'Eliminación realizada con éxito.'
 			loading.value = false
@@ -136,7 +136,6 @@ function close() {
 	transform: scale(1);
 }
 
-/* Spinner */
 @keyframes spin {
 	from {
 		transform: rotate(0deg);
