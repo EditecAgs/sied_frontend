@@ -49,7 +49,7 @@
 						</td>
 						<td class="px-5 py-3 text-sm">
 							<div class="flex space-x-2">
-								<btnEdit :table="'types'" :pk="type.id ?? index" @open="(data) => $emit('open', data)" />
+								<btnEdit :table="'Tipo'" :pk="type.id ?? index" @open="(data) => $emit('open', data)" />
 								<btnDelete :table="'types'" :pk="type.id ?? index" @open-confirm="(payload) => $emit('open-confirm', payload)" />
 							</div>
 						</td>

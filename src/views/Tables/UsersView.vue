@@ -3,7 +3,7 @@
 		<PageBreadcrumb :pageTitle="currentPageTitle" />
 		<div class="space-y-5 sm:space-y-6">
 			<ComponentCard title="Catálogo de Usuarios">
-				<btn-create table="user" @open="({ mode, pk, table}) => openModal(mode, pk, table)" />
+				<btn-create table="usuario" @open="({ mode, pk, table}) => openModal(mode, pk, table)" />
 				<mdl-user :show="showModal" :data="modalData" @close="closeModal" @saved="handleSaved" />
 				<TableUsers
 					ref="tableRef"

@@ -128,10 +128,10 @@
 					</button>
 					<div class="px-2 pr-14">
 						<h4 class="mb-2 text-2xl font-semibold text-gray-800 dark:text-white/90">
-							Edit Personal Information
+							Editar Información Personal
 						</h4>
 						<p class="mb-6 text-sm text-gray-500 dark:text-gray-400 lg:mb-7">
-							Update your details to keep your profile up-to-date.
+							Actualice sus datos para mantener su perfil actualizado.
 						</p>
 					</div>
 					<form class="flex flex-col">
@@ -189,14 +189,14 @@
 							</div>
 							<div class="mt-7">
 								<h5 class="mb-5 text-lg font-medium text-gray-800 dark:text-white/90 lg:mb-6">
-									Personal Information
+									Información Personal
 								</h5>
 
 								<div class="grid grid-cols-1 gap-x-6 gap-y-5 lg:grid-cols-2">
 									<div class="col-span-2 lg:col-span-1">
 										<label
 											class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
-											First Name
+											Nombre
 										</label>
 										<input
 											type="text"
@@ -207,7 +207,7 @@
 									<div class="col-span-2 lg:col-span-1">
 										<label
 											class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
-											Last Name
+											Apellido
 										</label>
 										<input
 											type="text"
@@ -218,7 +218,7 @@
 									<div class="col-span-2 lg:col-span-1">
 										<label
 											class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
-											Email Address
+											Dirección de correo
 										</label>
 										<input
 											type="text"
@@ -229,7 +229,7 @@
 									<div class="col-span-2 lg:col-span-1">
 										<label
 											class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
-											Phone
+											Número telefónico
 										</label>
 										<input
 											type="text"
@@ -255,13 +255,13 @@
 								type="button"
 								class="flex w-full justify-center rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-white/[0.03] sm:w-auto"
 								@click="isProfileInfoModal = false">
-								Close
+								Cerrar
 							</button>
 							<button
 								type="button"
 								class="flex w-full justify-center rounded-lg bg-brand-500 px-4 py-2.5 text-sm font-medium text-white hover:bg-brand-600 sm:w-auto"
 								@click="saveProfile">
-								Save Changes
+								Guardar cambios
 							</button>
 						</div>
 					</form>

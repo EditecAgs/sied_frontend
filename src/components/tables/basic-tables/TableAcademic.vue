@@ -67,7 +67,7 @@
 						<td class="px-5 py-3 text-sm">
 							<div class="flex space-x-2">
 								<btnEdit
-									:table="'academic_periods'"
+									:table="'Período académico'"
 									:pk="period.id ?? index"
 									@open="(data) => $emit('open', data)" />
 								<btnDelete
