@@ -25,6 +25,20 @@ export function getTotalStudents() {
 	});
 }
 
+export function getRegisteredOrganizationsCount() {
+	return new Promise((resolve, reject) => {
+		axios
+			.get('organizations/registered/count')
+			.then((response) => {
+				resolve(response);
+			})
+			.catch((error) => {
+				reject(error);
+			});
+	});
+}
+
+
 export function getProjectsBySector(page = 1) {
 	return new Promise((resolve, reject) => {
 		axios

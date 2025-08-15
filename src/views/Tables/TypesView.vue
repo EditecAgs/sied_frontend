@@ -3,7 +3,7 @@
 		<PageBreadcrumb :pageTitle="currentPageTitle" />
 		<div class="space-y-5 sm:space-y-6">
 			<ComponentCard title="Catálogo de Tipos">
-				<btn-create :table="'Types'" @open="({ mode, pk, table}) => openModal(mode, pk, table)" class="divide-error-900 hover:divide-error-800" />
+				<btn-create :table="'Tipo'" @open="({ mode, pk, table}) => openModal(mode, pk, table)" class="divide-error-900 hover:divide-error-800" />
 				<mdlTypes
 					:show="showModal"
 					:data="modalData"

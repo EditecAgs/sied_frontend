@@ -56,7 +56,7 @@ const afterError = (res: any) => {
 		<div v-if="show" class="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm" style="margin-top: 0px" @click.self="emit('close')">
 			<div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg p-8 relative max-h-[90vh] flex flex-col overflow-hidden">
 				<h4 class="text-2xl font-extrabold text-brand-900 mb-6 flex items-center justify-between">
-					{{ data.mode === 'create' ? `Crear Dual Area` : `Editar Dual Area` }}
+					{{ data.mode === 'create' ? `Crear Area dual` : `Editar Area dual` }}
 					<div v-if="isLoading" class="ml-4 w-6 h-6 border-4 border-t-4 border-gray-300 border-t-brand-800 rounded-full animate-spin" />
 				</h4>
 

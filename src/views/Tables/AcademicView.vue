@@ -3,7 +3,7 @@
 		<PageBreadcrumb :pageTitle="currentPageTitle" />
 		<div class="space-y-5 sm:space-y-6">
 			<ComponentCard title="Catálogo de Periodos Academicos">
-				<btn-create table="academic-periods" @open="({ mode, pk, table}) => openModal(mode, pk, table)" />
+				<btn-create table="Período académico" @open="({ mode, pk, table}) => openModal(mode, pk, table)" />
 				<mdl-academic :show="showModal" :data="modalData" @close="closeModal" @saved="handleSaved" />
 				<TableAcademic
 					ref="tableRef"

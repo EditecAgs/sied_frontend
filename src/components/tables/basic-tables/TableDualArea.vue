@@ -17,42 +17,42 @@
 		<div class="overflow-x-auto">
 			<table class="min-w-full">
 				<thead>
-				<tr class="bg-brand-800/80 text-white">
-					<th class="px-5 py-3 text-left text-sm font-semibold border-b border-brand-700/50">Nombre</th>
-					<th class="px-5 py-3 text-left text-sm font-semibold border-b border-brand-700/50">Opciones</th>
-				</tr>
-				<tr class="bg-brand-800/60 text-white">
-					<th class="px-5 py-2 border-b border-brand-700/50">
-						<input v-model="filters.name" placeholder="Buscar..." class="w-full bg-white/10 text-white placeholder-white/60 rounded px-3 py-1 text-xs focus:outline-none focus:ring-1 focus:ring-white/50" />
-					</th>
-					<th class="px-5 py-2 border-b border-brand-700/50"></th>
-				</tr>
+					<tr class="bg-brand-800/80 text-white">
+						<th class="px-5 py-3 text-left text-sm font-semibold border-b border-brand-700/50">Nombre</th>
+						<th class="px-5 py-3 text-left text-sm font-semibold border-b border-brand-700/50">Opciones</th>
+					</tr>
+					<tr class="bg-brand-800/60 text-white">
+						<th class="px-5 py-2 border-b border-brand-700/50">
+							<input v-model="filters.name" placeholder="Buscar..." class="w-full bg-white/10 text-white placeholder-white/60 rounded px-3 py-1 text-xs focus:outline-none focus:ring-1 focus:ring-white/50" />
+						</th>
+						<th class="px-5 py-2 border-b border-brand-700/50" />
+					</tr>
 				</thead>
 				<tbody>
-				<tr v-if="isLoading">
-					<td colspan="2" class="py-12 text-center">
-						<svg class="animate-spin h-8 w-8 text-brand-800 mx-auto mb-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-							<circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" />
-							<path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z" />
-						</svg>
-						<p class="text-gray-500">Cargando áreas...</p>
-					</td>
-				</tr>
-				<tr
-					v-for="(area, index) in paginatedDualAreas"
-					:key="area.id ?? index"
-					class="border-b border-gray-100 hover:bg-brand-50/30 transition-colors even:bg-gray-50">
-					<td class="px-5 py-3 text-sm">{{ area.name }}</td>
-					<td class="px-5 py-3 text-sm">
-						<div class="flex space-x-2">
-							<btnEdit :table="'dual_areas'" :pk="area.id" @open="() => $emit('open', { mode: 'edit', pk: area.id, table: 'dual_areas' })" />
-							<btnDelete :table="'dual_areas'" :pk="area.id ?? index" @open-confirm="(payload) => $emit('open-confirm', payload)" />
-						</div>
-					</td>
-				</tr>
-				<tr v-if="!isLoading && filteredDualAreas.length === 0">
-					<td colspan="2" class="px-5 py-8 text-center text-gray-500">No se encontraron áreas registradas</td>
-				</tr>
+					<tr v-if="isLoading">
+						<td colspan="2" class="py-12 text-center">
+							<svg class="animate-spin h-8 w-8 text-brand-800 mx-auto mb-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+								<circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" />
+								<path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z" />
+							</svg>
+							<p class="text-gray-500">Cargando áreas...</p>
+						</td>
+					</tr>
+					<tr
+						v-for="(area, index) in paginatedDualAreas"
+						:key="area.id ?? index"
+						class="border-b border-gray-100 hover:bg-brand-50/30 transition-colors even:bg-gray-50">
+						<td class="px-5 py-3 text-sm">{{ area.name }}</td>
+						<td class="px-5 py-3 text-sm">
+							<div class="flex space-x-2">
+								<btnEdit :table="'Area dual'" :pk="area.id" @open="() => $emit('open', { mode: 'edit', pk: area.id, table: 'dual_areas' })" />
+								<btnDelete :table="'dual_areas'" :pk="area.id ?? index" @open-confirm="(payload) => $emit('open-confirm', payload)" />
+							</div>
+						</td>
+					</tr>
+					<tr v-if="!isLoading && filteredDualAreas.length === 0">
+						<td colspan="2" class="px-5 py-8 text-center text-gray-500">No se encontraron áreas registradas</td>
+					</tr>
 				</tbody>
 			</table>
 		</div>
@@ -65,12 +65,12 @@
 					<option value="25">25 por página</option>
 					<option value="50">50 por página</option>
 				</select>
-				<button :disabled="currentPage === 1" @click="currentPage--" class="p-1 rounded-full text-brand-800 hover:bg-brand-100 disabled:opacity-30">
+				<button :disabled="currentPage === 1" class="p-1 rounded-full text-brand-800 hover:bg-brand-100 disabled:opacity-30" @click="currentPage--">
 					<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
 						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
 					</svg>
 				</button>
-				<button :disabled="currentPage === totalPages" @click="currentPage++" class="p-1 rounded-full text-brand-800 hover:bg-brand-100 disabled:opacity-30">
+				<button :disabled="currentPage === totalPages" class="p-1 rounded-full text-brand-800 hover:bg-brand-100 disabled:opacity-30" @click="currentPage++">
 					<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
 						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
 					</svg>

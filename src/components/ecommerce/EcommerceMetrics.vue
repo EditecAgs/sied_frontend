@@ -58,29 +58,28 @@
 					viewBox="0 0 24 24"
 					stroke="currentColor"
 					stroke-width="2">
-					<path stroke-linecap="round" stroke-linejoin="round" d="M3 8l9-5 9 5v8l-9 5-9-5V8z" />
-					<path stroke-linecap="round" stroke-linejoin="round" d="M12 3v14" />
-					<path stroke-linecap="round" stroke-linejoin="round" d="M21 8l-9 5-9-5" />
+					<path stroke-linecap="round" stroke-linejoin="round" d="M3 21V7a2 2 0 012-2h4V3h6v2h4a2 2 0 012 2v14" />
+					<path stroke-linecap="round" stroke-linejoin="round" d="M3 21h18" />
+					<path stroke-linecap="round" stroke-linejoin="round" d="M9 21V10h6v11" />
 				</svg>
 			</div>
 			<h3 class="text-gray-600 dark:text-gray-300 text-sm font-medium">
-				Orders
+				Organizaciones Registradas
 			</h3>
-			<p class="mt-auto font-bold text-2xl text-gray-900 dark:text-white">5,359</p>
-			<span
-				class="inline-flex items-center mt-2 rounded-full bg-red-100 px-3 py-1 text-sm font-semibold text-red-700">
-				▲ 9.05%
-			</span>
+			<p class="mt-auto font-bold text-2xl text-gray-900 dark:text-white">
+				{{ total_Organizations.count }}
+			</p>
 		</div>
 	</div>
 </template>
 
 <script setup>
 import { ref } from 'vue'
-import { getCompletedDualProjects, getTotalStudents } from '../../services/statistics/dashboard'
+import { getCompletedDualProjects, getTotalStudents, getRegisteredOrganizationsCount } from '../../services/statistics/dashboard'
 
 const completed_dual_projects = ref({ count: 0 })
 const total_students = ref({ count: 0 })
+const total_Organizations = ref({count: 0})
 
 getCompletedDualProjects().then((data) => {
   completed_dual_projects.value = data.data
@@ -88,5 +87,9 @@ getCompletedDualProjects().then((data) => {
 
 getTotalStudents().then((data) => {
   total_students.value = data.data
+})
+
+getRegisteredOrganizationsCount().then((data) => {
+	total_Organizations.value = data.data
 })
 </script>

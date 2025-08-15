@@ -67,7 +67,7 @@
 						</td>
 						<td class="px-5 py-3 text-sm">
 							<div class="flex space-x-2">
-								<btnEdit :table="'users'" :pk="user.id ?? index" @open="(data) => $emit('open', data)" />
+								<btnEdit :table="'usuario'" :pk="user.id ?? index" @open="(data) => $emit('open', data)" />
 								<btnDelete :table="'users'" :pk="user.id ?? index" @open-confirm="(payload) => $emit('open-confirm', payload)" />
 							</div>
 						</td>

@@ -34,6 +34,7 @@ export default {
   components: {
     AdminLayout,
     EcommerceMetrics,
+	  // eslint-disable-next-line vue/no-unused-components
     MonthlyTarget,
     MonthlySale,
     CustomerDemographic,

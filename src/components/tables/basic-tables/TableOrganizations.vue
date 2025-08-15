@@ -67,7 +67,7 @@
 						<td class="px-5 py-3 text-sm">{{ org.postal_code }}</td>
 						<td class="px-5 py-3 text-sm">
 							<div class="flex space-x-2">
-								<btnEdit :table="'organizations'" :pk="org.id" @open="() => $emit('open', { mode: 'edit', pk: org.id, table: 'organizaciones' })" />
+								<btnEdit :table="'Organización'" :pk="org.id" @open="() => $emit('open', { mode: 'edit', pk: org.id, table: 'organizaciones' })" />
 								<btnDelete :table="'organizations'" :pk="org.id ?? index" @open-confirm="(payload) => $emit('open-confirm', payload)" />
 							</div>
 						</td>

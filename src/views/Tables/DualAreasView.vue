@@ -3,7 +3,7 @@
 		<PageBreadcrumb :pageTitle="currentPageTitle" />
 		<div class="space-y-5 sm:space-y-6">
 			<ComponentCard title="Catálogo de Áreas Duales">
-				<btn-create :table="'dual-area'" @open="({ mode, pk, table}) => openModal(mode, pk, table)" class="divide-error-900 hover:divide-error-800" />
+				<btn-create :table="'Area dual'" @open="({ mode, pk, table}) => openModal(mode, pk, table)" class="divide-error-900 hover:divide-error-800" />
 				<mdlDualArea
 					:show="showModal"
 					:data="modalData"
