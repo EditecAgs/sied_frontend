@@ -21,7 +21,7 @@ const props = defineProps<{
   }
 }>()
 
-// Form state
+
 const form = reactive({
   name: '',
   email: '',
@@ -29,7 +29,7 @@ const form = reactive({
   id_institution: ''
 })
 
-// Instituciones
+
 const institutions = ref([])
 
 const loadInstitutions = () => {
@@ -42,7 +42,7 @@ onMounted(() => {
   loadInstitutions()
 })
 
-// Manejo de modo editar/crear
+
 watchEffect(() => {
   if (props.data.mode === 'edit' && props.data.pk !== null) {
     alvRoute.value = `${axios.defaults.baseURL}users/${props.data.pk}`

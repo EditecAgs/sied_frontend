@@ -3,7 +3,7 @@
 		<PageBreadcrumb :pageTitle="currentPageTitle" />
 		<div class="space-y-5 sm:space-y-6">
 			<ComponentCard title="Catálogo de Clusters">
-				<btn-create :table="'dual-area'" @open="({ mode, pk, table}) => openModal(mode, pk, table)" class="divide-error-900 hover:divide-error-800" />
+				<btn-create :table="'Cluster'" @open="({ mode, pk, table}) => openModal(mode, pk, table)" class="divide-error-900 hover:divide-error-800" />
 				<mdlClusters
 					:show="showModal"
 					:data="modalData"
