@@ -4,18 +4,14 @@
 			class="relative w-full h-screen bg-cover bg-center"
 			style="background-image: url('/images/background/bg-red.jpg');">
 			<div class="relative flex items-center justify-center w-full h-full">
-				<!-- Contenedor del formulario -->
 				<div
 					class="w-full max-w-md p-8 bg-white rounded-2xl shadow-lg dark:bg-gray-900/95">
-					<!-- Logo -->
 					<div class="flex justify-center mb-6">
 						<img
 							src="/images/logo/logo_signin.jpeg"
 							alt="Logo"
 							class="w-24 h-24 object-contain" />
 					</div>
-
-					<!-- Aquí tu formulario -->
 					<div class="mb-5 sm:mb-3 text-center">
 						<h1 class="mb-2 font-semibold text-gray-800 text-title-sm dark:text-white/90 sm:text-title-md">
 							Iniciar sesión
@@ -26,7 +22,6 @@
 					</div>
 
 					<form class="space-y-5" @submit.prevent="handleSubmit">
-						<!-- Email -->
 						<div>
 							<label for="email" class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
 								Correo electrónico<span class="text-error-500">*</span>
@@ -38,8 +33,6 @@
 								placeholder="correo@ejemplo.com"
 								class="h-11 w-full rounded-lg border border-gray-300 px-4 py-2.5 text-sm text-gray-800 shadow-theme-xs placeholder:text-gray-400 focus:border-brand-300 focus:ring-3 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-800 dark:text-white/90 dark:placeholder:text-white/30" />
 						</div>
-
-						<!-- Password -->
 						<div>
 							<label for="password" class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
 								Contraseña<span class="text-error-500">*</span>
@@ -56,8 +49,6 @@
 									@click="togglePasswordVisibility" />
 							</div>
 						</div>
-
-						<!-- Checkbox y link -->
 						<div class="flex items-center justify-between">
 							<label for="keepLoggedIn" class="flex items-center text-sm text-gray-700 cursor-pointer select-none dark:text-gray-400">
 								<input id="keepLoggedIn" v-model="keepLoggedIn" type="checkbox" class="mr-2" />
@@ -67,8 +58,6 @@
 								¿Olvidaste tu contraseña?
 							</router-link>
 						</div>
-
-						<!-- Botón -->
 						<button
 							type="submit"
 							class="flex items-center justify-center w-full px-4 py-3 text-sm font-medium text-white transition rounded-lg bg-brand-500 shadow-theme-xs hover:bg-brand-600">
