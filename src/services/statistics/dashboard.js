@@ -90,3 +90,17 @@ export function getProjectsByArea(page = 1) {
 			});
 	});
 }
+
+export function getProjectsBySectorMexico() {
+	return new Promise((resolve, reject) => {
+		axios
+			.get('projects/sectors/mexico')
+			.then((response) => {
+				resolve(response);
+			})
+			.catch((error) => {
+				reject(error);
+			});
+	});
+}
+
