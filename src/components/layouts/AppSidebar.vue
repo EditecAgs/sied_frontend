@@ -1,7 +1,7 @@
 <template>
 	<aside
 		:class="[
-			'fixed mt-16 flex flex-col lg:mt-0 top-0 px-5 left-0 bg-white dark:bg-gray-900 dark:border-gray-800 text-gray-900 h-screen transition-all duration-300 ease-in-out z-99999 border-r border-gray-200',
+			'fixed mt-16 flex flex-col lg:mt-0 top-0 px-5 left-0 bg-[#621132] dark:border-gray-800 text-gray-900 h-screen transition-all duration-300 ease-in-out z-99999 border-r border-gray-200',
 			{
 				'lg:w-[290px]': isExpanded || isMobileOpen || isHovered,
 				'lg:w-[90px]': !isExpanded && !isHovered,
@@ -14,16 +14,17 @@
 		@mouseleave="isHovered = false">
 		<div :class="['py-8 flex', !isExpanded && !isHovered ? 'lg:justify-center' : 'justify-start']">
 			<router-link to="/">
-				<img
+				<h1 class="text-3xl text-white font-bo">SIED</h1>
+			<!--	<img
 					v-if="isExpanded || isHovered || isMobileOpen"
-					src="/images/logo/logo_sied.png"
+					src="/images/logo/anuies.png"
 					alt="Logo"
 					class="w-[80px]" />
 				<img
 					v-else
 					src="/images/logo/logo_sied.png"
 					alt="Logo"
-					class="w-[80px]"/>
+					class="w-[80px]" />-->
 			</router-link>
 		</div>
 		<div class="flex flex-col overflow-y-auto duration-300 ease-linear no-scrollbar">
@@ -34,7 +35,7 @@
 						:key="groupIndex">
 						<h2
 							:class="[
-								'mb-4 text-xs uppercase flex leading-[20px] text-gray-400',
+								'mb-4 text-xs uppercase flex leading-[20px] text-gray-50',
 								!isExpanded && !isHovered ? 'lg:justify-center' : 'justify-start',
 							]">
 							<template v-if="isExpanded || isHovered || isMobileOpen">
@@ -58,11 +59,11 @@
 									]"
 									@click="toggleSubmenu(groupIndex, index)">
 									<span :class="[isSubmenuOpen(groupIndex, index) ? 'menu-item-icon-active' : 'menu-item-icon-inactive']">
-										<component :is="item.icon" />
+										<component :is="item.icon" class="text-white" />
 									</span>
 									<span
 										v-if="isExpanded || isHovered || isMobileOpen"
-										class="menu-item-text">
+										class="menu-item-text text-white">
 										{{ item.name }}
 									</span>
 									<ChevronDownIcon
@@ -85,11 +86,11 @@
 										},
 									]">
 									<span :class="[isActive(item.path) ? 'menu-item-icon-active' : 'menu-item-icon-inactive']">
-										<component :is="item.icon" />
+										<component :is="item.icon" class="text-white" />
 									</span>
 									<span
 										v-if="isExpanded || isHovered || isMobileOpen"
-										class="menu-item-text">
+										class="menu-item-text text-white">
 										{{ item.name }}
 									</span>
 								</router-link>
@@ -150,7 +151,6 @@
 			<SidebarWidget v-if="isExpanded || isHovered || isMobileOpen" />
 		</div>
 	</aside>
-	
 </template>
 
 <script setup>
