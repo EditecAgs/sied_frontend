@@ -2,8 +2,8 @@
 	<div
 		class="overflow-hidden rounded-2xl border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-700 dark:bg-gray-900">
 		<div class="flex flex-col gap-4 mb-6 sm:flex-row sm:items-center sm:justify-between">
-			<h3 class="text-xl font-semibold text-gray-900 dark:text-white">
-				Sectores de Proyectos de Modelo Dual en México
+			<h3 class="text-xl font-semibold text-[#621132]">
+				Sectores de Proyectos del Plan Mexico
 			</h3>
 
 			<nav class="inline-flex rounded-md shadow-sm" role="navigation" aria-label="Pagination">

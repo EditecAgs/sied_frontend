@@ -14,11 +14,12 @@
 					</div>
 					<div class="mb-5 sm:mb-3 text-center">
 						<h1 class="mb-2 font-semibold text-gray-800 text-title-sm dark:text-white/90 sm:text-title-md">
-							Iniciar sesión
+							Sistema Integral de Educación Dual
 						</h1>
+						<!--
 						<p class="text-sm text-gray-500 dark:text-gray-400">
 							¡Introduce tu correo y contraseña para ingresar!
-						</p>
+						</p>-->
 					</div>
 
 					<form class="space-y-5" @submit.prevent="handleSubmit">
