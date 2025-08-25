@@ -47,8 +47,15 @@
 						:key="index"
 						class="hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
 						<td
-							class="py-3 px-4 text-sm font-medium text-gray-900 dark:text-white break-words max-w-[350px]"
+							class="py-3 px-4 text-sm font-medium text-gray-900 dark:text-white flex items-center gap-2 break-words max-w-[350px]"
 							style="word-break: break-word;">
+
+							<img
+								v-if="sectorLogos[item.sector_name]"
+								:src="sectorLogos[item.sector_name]"
+								alt="Logo sector"
+								class="w-6 h-6 object-contain" />
+
 							{{ item.sector_name }}
 						</td>
 						<td class="py-3 px-4 text-sm text-gray-700 dark:text-gray-300 text-right">
@@ -79,6 +86,20 @@ import { getProjectsBySectorMexico } from '../../services/statistics/dashboard'
 const projects_by_sector_mexico = ref([])
 const currentPage = ref(1)
 const lastPage = ref(1)
+
+
+const sectorLogos = {
+	"Agroindustrial": "/images/sectorsMLogo/agroindustrial.svg",
+	"Textiles, Vestuario y Cuero": "/images/sectorsMLogo/textil.svg",
+	"Química": "/images/sectorsMLogo/pertroquimica.svg",
+	"Tecnologías de la Información y Comunicaciones": "/images/sectorsMLogo/tics.svg",
+	"Farmacéutico y Dispositivos Médicos": "/images/sectorsMLogo/farmaceutico.svg",
+	"Energía": "/images/sectorsMLogo/energia.svg",
+	"Calzado": "/images/sectorsMLogo/calzado.svg",
+	"Bienes de consumo y economía circular": "/images/sectorsMLogo/economia-circular.svg",
+	"Aeroespacial": "/images/sectorsMLogo/aeroespacial.svg",
+	"Semiconductores": "/images/sectorsMLogo/semiconductores.svg",
+}
 
 const fetchPage = async (page = 1) => {
 	try {

@@ -46,7 +46,9 @@ const form = reactive({
   city: '',
   type: 'Pública' ,
   id_subsystem: '',
-  id_academic_period: ''
+  id_academic_period: '',
+	image_path: '',
+	image_file: null
 })
 
 const states = ref([])
@@ -126,6 +128,19 @@ watchEffect(() => {
     municipalities.value = []
   }
 })
+
+const onFileChange = (event: Event) => {
+	const target = event.target as HTMLInputElement
+	if (target.files && target.files.length > 0) {
+		const file = target.files[0]
+		// guardar el archivo para enviarlo al backend
+		form.image_file = file
+
+		// opcional: vista previa
+		form.image_path = URL.createObjectURL(file)
+	}
+}
+
 </script>
 
 
@@ -139,9 +154,9 @@ watchEffect(() => {
 				</h4>
 
 				<button
-					@click="emit('close')"
 					class="absolute top-4 right-4 text-gray-500 hover:text-gray-700"
-					aria-label="Cerrar modal">
+					aria-label="Cerrar modal"
+					@click="emit('close')">
 					<svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
 						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
 					</svg>
@@ -158,7 +173,6 @@ watchEffect(() => {
 					class="flex-grow overflow-y-auto pr-2"
 					@after-done="afterDone"
 					@after-error="afterError">
-
 					<div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
 						<div class="form-error">
 							<label class="block text-sm font-medium text-gray-700 mb-1">Nombre*</label>
@@ -346,6 +360,25 @@ watchEffect(() => {
 								class="w-full px-3 py-2 !border-2 !border-gray-900 !rounded-md focus:outline-none focus:ring focus:ring-brand-800" />
 						</div>
 					</div>
+
+					<div class="form-error">
+						<label class="block text-sm font-medium text-gray-700 mb-1">Imagen</label>
+						<template v-if="isLoading">
+							<div class="h-8 bg-gray-300 rounded animate-pulse w-full" />
+						</template>
+						<template v-else>
+							<input
+								type="file"
+								accept="image/*"
+								class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring focus:ring-brand-800"
+								:disabled="isLoading"
+								@change="onFileChange" />
+							<div v-if="form.image_path" class="mt-2">
+								<img :src="form.image_path" alt="Vista previa" class="h-24 object-contain border rounded-md" />
+							</div>
+						</template>
+					</div>
+
 
 
 					<div class="flex justify-end gap-3 mt-6 pt-4 border-t border-gray-200 sticky bottom-0 bg-white z-10">
