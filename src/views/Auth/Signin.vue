@@ -2,23 +2,32 @@
 	<FullScreenLayout>
 		<div
 			class="relative w-full h-screen bg-cover bg-center"
-			style="background-image: url('/images/background/bg-red.jpg');">
+			style="background-image: url('/images/background/bg-guinda.jpg');">
 			<div class="relative flex items-center justify-center w-full h-full">
 				<div
 					class="w-full max-w-md p-8 bg-white rounded-2xl shadow-lg dark:bg-gray-900/95">
-					<div class="flex justify-center mb-6">
+					<div class="flex justify-center mb-6 gap-6 flex-wrap">
 						<img
-							src="/images/logo/logo_signin.jpeg"
+							src="/images/logo/logo-tecnm-blue.png"
+							alt="Logo"
+							class="w-24 h-24 object-contain" />
+						<img
+							src="/images/logo/logo-sied.png"
+							alt="Logo"
+							class="w-24 h-24 object-contain" />
+						<img
+							src="/images/logo/logo-anuies-guinda.png"
 							alt="Logo"
 							class="w-24 h-24 object-contain" />
 					</div>
 					<div class="mb-5 sm:mb-3 text-center">
 						<h1 class="mb-2 font-semibold text-gray-800 text-title-sm dark:text-white/90 sm:text-title-md">
-							Iniciar sesión
+							Sistema Integral de Educación Dual
 						</h1>
+						<!--
 						<p class="text-sm text-gray-500 dark:text-gray-400">
 							¡Introduce tu correo y contraseña para ingresar!
-						</p>
+						</p>-->
 					</div>
 
 					<form class="space-y-5" @submit.prevent="handleSubmit">

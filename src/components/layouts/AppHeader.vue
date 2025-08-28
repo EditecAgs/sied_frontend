@@ -1,6 +1,6 @@
 <template>
 	<header
-		class="sticky top-0 flex w-full bg-white border-gray-200 z-50 dark:border-gray-800 dark:bg-gray-900 lg:border-b">
+		class="sticky top-0 flex w-full bg-white border-gray-200 z-50 dark:border-gray-800  lg:border-b">
 		<div class="flex flex-col items-center justify-between grow lg:flex-row lg:px-6">
 			<div
 				class="flex items-center justify-between w-full gap-2 px-3 py-3 border-b border-gray-200 dark:border-gray-800 sm:gap-4 lg:justify-normal lg:border-b-0 lg:px-0 lg:py-4">
@@ -41,7 +41,27 @@
 					</svg>
 				</button>
 				<HeaderLogo />
+				<img
+					src="/images/logo/anuies.png"
+					alt="Logo"
+					class="w-[100px]" />
+				<!--<router-link to="/">
+					<img
+						v-if="isExpanded || isHovered || isMobileOpen"
+						src="/images/logo/logo_sied.png"
+						alt="Logo"
+						class="w-[80px]" />
+					<img
+						v-else
+						src="/images/logo/logo_sied.png"
+						alt="Logo"
+						class="w-[80px]" />
+				</router-link>-->
+				<div>
+					<h2 class="text-xl text-gray-500">Sistema Integral de de Educación Dual</h2>
+				</div>
 			</div>
+
 
 			<div
 				:class="[isApplicationMenuOpen ? 'flex' : 'hidden']"
