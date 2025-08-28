@@ -14,8 +14,14 @@
 			<div
 				v-for="(item, index) in dual_projects_by_institution"
 				:key="index"
-				class="flex items-center justify-between">
-				<div>
+				class="flex items-center justify-between gap-4">
+				<img
+					:src="logosMap[item.id] || defaultLogo"
+					:alt="item.institution_name"
+					class="w-10 h-10 rounded-full object-contain border border-gray-200 dark:border-gray-700" />
+
+
+				<div class="flex-1">
 					<p class="font-semibold text-gray-800 dark:text-white/90 text-base">
 						{{ item.institution_name }}
 					</p>
@@ -23,6 +29,7 @@
 						{{ item.project_count }} Proyecto(s)
 					</span>
 				</div>
+
 
 				<div class="flex items-center gap-3 w-full max-w-[140px]">
 					<div class="relative w-full max-w-[100px] h-2 rounded-sm bg-gray-200 dark:bg-gray-800">
@@ -45,7 +52,17 @@ import { getProjectsByIntitution } from '../../services/statistics/dashboard'
 
 const dual_projects_by_institution = ref([])
 
+const logosMap = {
+	1: 'public/images/logo/logo_ITA.png',
+	2: 'public/images/logo/Logo_UAA.svg',
+	3: 'public/images/logo/Logo_IPN.png',
+	4: 'public/images/logo/logo_UPA.png',
+	5: 'public/images/logo/Logo_UNAM.svg'
+}
+
+const defaultLogo = ''
+
 getProjectsByIntitution().then((data) => {
-  dual_projects_by_institution.value = data.data.data
+	dual_projects_by_institution.value = data.data.data
 })
 </script>
