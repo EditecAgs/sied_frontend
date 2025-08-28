@@ -91,10 +91,10 @@ export function getProjectsByArea(page = 1) {
 	});
 }
 
-export function getProjectsBySectorMexico() {
+export function getProjectsBySectorMexico(page = 1) {
 	return new Promise((resolve, reject) => {
 		axios
-			.get('projects/sectors/mexico')
+			.get(`projects/sectors/mexico?page=${page}`)
 			.then((response) => {
 				resolve(response);
 			})
@@ -103,4 +103,5 @@ export function getProjectsBySectorMexico() {
 			});
 	});
 }
+
 

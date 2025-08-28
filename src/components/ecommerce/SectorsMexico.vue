@@ -10,7 +10,6 @@
 				<button
 					:disabled="currentPage === 1"
 					class="relative inline-flex items-center rounded-l-md border border-gray-300 bg-white px-3 py-1 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700"
-					aria-label="Página anterior"
 					@click="fetchPage(currentPage - 1)">
 					Anterior
 				</button>
@@ -18,7 +17,6 @@
 				<button
 					:disabled="currentPage === lastPage"
 					class="relative -ml-px inline-flex items-center rounded-r-md border border-gray-300 bg-white px-3 py-1 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700"
-					aria-label="Página siguiente"
 					@click="fetchPage(currentPage + 1)">
 					Siguiente
 				</button>
@@ -49,13 +47,11 @@
 						<td
 							class="py-3 px-4 text-sm font-medium text-gray-900 dark:text-white flex items-center gap-2 break-words max-w-[350px]"
 							style="word-break: break-word;">
-
 							<img
 								v-if="sectorLogos[item.sector_name]"
 								:src="sectorLogos[item.sector_name]"
 								alt="Logo sector"
 								class="w-6 h-6 object-contain" />
-
 							{{ item.sector_name }}
 						</td>
 						<td class="py-3 px-4 text-sm text-gray-700 dark:text-gray-300 text-right">
@@ -87,7 +83,6 @@ const projects_by_sector_mexico = ref([])
 const currentPage = ref(1)
 const lastPage = ref(1)
 
-
 const sectorLogos = {
 	"Agroindustrial": "/images/sectorsMLogo/agroindustrial.svg",
 	"Textiles, Vestuario y Cuero": "/images/sectorsMLogo/textil.svg",
@@ -99,17 +94,16 @@ const sectorLogos = {
 	"Bienes de consumo y economía circular": "/images/sectorsMLogo/economia-circular.svg",
 	"Aeroespacial": "/images/sectorsMLogo/aeroespacial.svg",
 	"Semiconductores": "/images/sectorsMLogo/semiconductores.svg",
+	"Automotriz y Electromovilidad":"/images/sectorsMLogo/automotriz.svg"
 }
 
 const fetchPage = async (page = 1) => {
 	try {
 		const response = await getProjectsBySectorMexico(page)
-
-		console.log('Respuesta API Sectores México:', response.data)
-
-		projects_by_sector_mexico.value = response.data.data
-		currentPage.value = response.data.pagination.current_page
-		lastPage.value = response.data.pagination.last_page
+		const result = response.data
+		projects_by_sector_mexico.value = result.data
+		currentPage.value = result.pagination.current_page
+		lastPage.value = result.pagination.last_page
 	} catch (error) {
 		console.error('Error al cargar sectores de México:', error)
 	}

@@ -51,11 +51,11 @@ import { getProjectsByIntitution } from '../../services/statistics/dashboard'
 const dual_projects_by_institution = ref([])
 
 const logosMap = {
-	1: 'public/images/logo/logo_ITA.png',
-	2: 'public/images/logo/Logo_UAA.svg',
-	3: 'public/images/logo/Logo_IPN.png',
-	4: 'public/images/logo/logo_UPA.png',
-	5: 'public/images/logo/Logo_UNAM.svg'
+	1: '/images/logo/logo_ITA.png',
+	2: '/images/logo/Logo_UAA.svg',
+	3: '/images/logo/Logo_IPN.png',
+	4: '/images/logo/logo_UPA.png',
+	5: '/images/logo/Logo_UNAM.svg'
 }
 
 const defaultLogo = ''
