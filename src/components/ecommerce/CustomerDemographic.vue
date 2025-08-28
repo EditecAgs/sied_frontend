@@ -20,7 +20,6 @@
 					:alt="item.institution_name"
 					class="w-10 h-10 rounded-full object-contain border border-gray-200 dark:border-gray-700" />
 
-
 				<div class="flex-1">
 					<p class="font-semibold text-gray-800 dark:text-white/90 text-base">
 						{{ item.institution_name }}
@@ -29,7 +28,6 @@
 						{{ item.project_count }} Proyecto(s)
 					</span>
 				</div>
-
 
 				<div class="flex items-center gap-3 w-full max-w-[140px]">
 					<div class="relative w-full max-w-[100px] h-2 rounded-sm bg-gray-200 dark:bg-gray-800">
