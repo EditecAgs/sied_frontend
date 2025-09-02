@@ -1,5 +1,6 @@
 <template>
   <div class="min-h-screen bg-gray-50 font-outfit flex flex-col">
+    <!-- Navbar -->
     <nav class="flex justify-between items-center px-8 py-4 shadow-md bg-guindo">
       <div class="flex items-center">
         <h1 class="text-3xl text-white font-bo">SIED</h1>
@@ -11,41 +12,29 @@
       </ul>
     </nav>
 
-    <section class="py-2 bg-guindo/10">
-      <div class="max-w-6xl mx-auto overflow-hidden relative">
-        <div class="flex animate-marquee gap-12">
-          <template v-for="n in 5">
-            <img
-              v-for="(logo, index) in logos"
-              :key="`${n}-${index}`"
-              :src="logo"
-              class="h-20 object-contain flex-shrink-0"
-            />
-          </template>
-        </div>
-      </div>
-    </section>
+    <!-- Imagen principal -->
+<section class="relative min-h-screen">
+  <img
+    src="/images/landing/landing.png"
+    alt="Imagen Principal"
+    class="w-full h-full object-cover"
+  />
+  <div class="absolute inset-0 bg-black/50 flex flex-col justify-center items-center text-center text-white p-8">
+    <h1 class="text-4xl md:text-6xl font-bold mb-4">Bienvenido a Nuestra Plataforma</h1>
+    <p class="max-w-2xl text-lg md:text-xl mb-6">
+      Conectamos innovación con calidad. Descubre todo lo que tenemos para ti.
+    </p>
+    <button
+      class="px-6 py-3 text-white font-semibold rounded-lg shadow-lg transition bg-guindo hover:bg-guindo-light"
+      @click="router.push('/signin')"
+    >
+      Comenzar
+    </button>
+  </div>
+</section>
 
-    <section class="relative h-[500px]">
-      <img
-        src="/images/carousel/carousel-01.png"
-        alt="Imagen Principal"
-        class="w-full h-full object-cover"
-      />
-      <div class="absolute inset-0 bg-black/50 flex flex-col justify-center items-center text-center text-white p-8">
-        <h1 class="text-4xl md:text-6xl font-bold mb-4">Bienvenido a Nuestra Plataforma</h1>
-        <p class="max-w-2xl text-lg md:text-xl mb-6">
-          Conectamos innovación con calidad. Descubre todo lo que tenemos para ti.
-        </p>
-        <button
-          class="px-6 py-3 text-white font-semibold rounded-lg shadow-lg transition bg-guindo hover:bg-guindo-light"
-          @click="router.push('/signin')"
-        >
-          Comenzar
-        </button>
-      </div>
-    </section>
 
+    <!-- Footer -->
     <footer class="text-gray-200 mt-auto bg-guindo">
       <div class="max-w-6xl mx-auto px-6 py-10 grid grid-cols-1 md:grid-cols-3 gap-8">
         <div>
@@ -83,12 +72,6 @@
 <script setup>
 import { useRouter } from "vue-router";
 const router = useRouter();
-
-const logos = [
-  '/images/logo/anuies.png',
-  '/images/logo/logo-anuies-guinda.png',
-  '/images/logo/logo-tecnm-blue.png'
-];
 </script>
 
 <style scoped>
@@ -104,14 +87,5 @@ const logos = [
 }
 .hover\:text-guindo-light:hover {
   color: #931F44;
-}
-
-@keyframes marquee {
-  0% { transform: translateX(0%); }
-  100% { transform: translateX(-20%); }
-}
-.animate-marquee {
-  display: flex;
-  animation: marquee 30s linear infinite;
 }
 </style>
