@@ -1,4 +1,5 @@
 export default [
+    'LandingPage',
     'home',
     '404',
     'dashboard',
