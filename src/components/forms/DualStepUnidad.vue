@@ -45,7 +45,7 @@ const searchSupport = ref('');
 const showSupportDropdown = ref(false);
 const supportDropdownRef = ref(null);
 
-// Función para manejar clicks fuera de los dropdowns
+
 const handleClickOutside = (event) => {
 	if (areaDropdownRef.value && !areaDropdownRef.value.contains(event.target)) {
 		showAreaDropdown.value = false;
@@ -61,7 +61,7 @@ const handleClickOutside = (event) => {
 	}
 };
 
-// Agregar y remover event listener
+
 onMounted(() => {
 	document.addEventListener('click', handleClickOutside);
 });
@@ -241,7 +241,7 @@ watch(
 				<p v-if="errors.id_dual_area" class="text-red-500 text-sm mt-1">{{ errors.id_dual_area }}</p>
 			</div>
 
-			<div class="flex items-end gap-2" ref="organizationDropdownRef">
+			<div ref="organizationDropdownRef" class="flex items-end gap-2">
 				<div class="flex-1">
 					<label class="label">Organización</label>
 					<div class="relative">
@@ -323,36 +323,53 @@ watch(
 			<p v-if="errors.status_document" class="text-red-500 text-sm mt-1">{{ errors.status_document }}</p>
 		</div>
 
-		<div ref="supportDropdownRef">
-			<label class="label">Tipo de Apoyo Económico</label>
-			<div class="relative">
-				<input
-					v-model="searchSupport"
-					class="input"
-					placeholder="Buscar apoyo económico..."
-					@focus="showSupportDropdown = true"
-					@input="showSupportDropdown = true" />
-				<ul
-					v-if="showSupportDropdown && filteredSupports.length"
-					class="absolute z-[9999] bg-white border border-gray-300 rounded-lg mt-1 w-full max-h-48 overflow-y-auto shadow-md">
-					<li
-						v-for="apoyo in filteredSupports"
-						:key="apoyo.id"
-						class="px-4 py-2 hover:bg-gray-100 cursor-pointer"
-						@click="update('economic_support', apoyo.id)">
-						{{ apoyo.name }}
-					</li>
-				</ul>
+		<div ref="supportDropdownRef" class="flex gap-4 items-end">
+			<!-- Tipo de Apoyo Económico -->
+			<div class="flex-1">
+				<label class="label">Tipo de Apoyo Económico</label>
+				<div class="relative">
+					<input
+						v-model="searchSupport"
+						class="input"
+						placeholder="Buscar apoyo económico..."
+						@focus="showSupportDropdown = true"
+						@input="showSupportDropdown = true" />
+					<ul
+						v-if="showSupportDropdown && filteredSupports.length"
+						class="absolute z-[9999] bg-white border border-gray-300 rounded-lg mt-1 w-full max-h-48 overflow-y-auto shadow-md">
+						<li
+							v-for="apoyo in filteredSupports"
+							:key="apoyo.id"
+							class="px-4 py-2 hover:bg-gray-100 cursor-pointer"
+							@click="update('economic_support', apoyo.id)">
+							{{ apoyo.name }}
+						</li>
+					</ul>
+				</div>
+				<p v-if="errors.economic_support" class="text-red-500 text-sm mt-1">{{ errors.economic_support }}</p>
 			</div>
-			<p v-if="errors.economic_support" class="text-red-500 text-sm mt-1">{{ errors.economic_support }}</p>
-		</div>
-	</div>
 
-	<mdl-organization
-		:show="showModal"
-		:data="modalData"
-		@close="closeModal"
-		@saved="handleSavedOrganization" />
+			<!-- Cantidad -->
+			<div class="w-40 flex-shrink-0">
+				<label class="label">Cantidad</label>
+				<input
+					type="number"
+					min="0"
+					step="0.01"
+					class="input"
+					:value="modelValue.amount_support"
+					@input="update('amount_support', $event.target.value)" />
+				<p v-if="errors.amount_support" class="text-red-500 text-sm mt-1">{{ errors.amount_support }}</p>
+			</div>
+		</div>
+
+
+		<mdl-organization
+			:show="showModal"
+			:data="modalData"
+			@close="closeModal"
+			@saved="handleSavedOrganization" />
+	</div>
 </template>
 
 <style >

@@ -1,40 +1,42 @@
 <template>
 	<div
-		class="overflow-hidden rounded-2xl border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-700 dark:bg-gray-900">
+		class="overflow-hidden rounded-2xl border border-gray-200 p-6 shadow-sm dark:border-gray-700"
+		style="background: linear-gradient(to top, rgba(211, 211, 210, 0.8) 30%, rgba(159, 129, 60, 0.8) 100%);">
 		<div class="flex flex-col gap-4 mb-6 sm:flex-row sm:items-center sm:justify-between">
-			<h3 class="text-xl font-semibold text-[#621132]">
+			<h3 class="text-xl font-semibold text-brand-50">
 				Sectores de Proyectos del Plan Mexico
 			</h3>
 
 			<nav class="inline-flex rounded-md shadow-sm" role="navigation" aria-label="Pagination">
 				<button
 					:disabled="currentPage === 1"
-					class="relative inline-flex items-center rounded-l-md border border-gray-300 bg-white px-3 py-1 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700"
+					class="relative inline-flex items-center rounded-l-md border border-gray-300 bg-white/80 px-3 py-1 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50 dark:border-gray-700 dark:bg-gray-800/80 dark:text-gray-300 dark:hover:bg-gray-700"
 					@click="fetchPage(currentPage - 1)">
 					Anterior
 				</button>
 
 				<button
 					:disabled="currentPage === lastPage"
-					class="relative -ml-px inline-flex items-center rounded-r-md border border-gray-300 bg-white px-3 py-1 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700"
+					class="relative -ml-px inline-flex items-center rounded-r-md border border-gray-300 bg-white/80 px-3 py-1 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50 dark:border-gray-700 dark:bg-gray-800/80 dark:text-gray-300 dark:hover:bg-gray-700"
 					@click="fetchPage(currentPage + 1)">
 					Siguiente
 				</button>
 			</nav>
 		</div>
 
+		<!-- Tabla -->
 		<div class="overflow-x-auto">
 			<table class="min-w-full table-auto divide-y divide-gray-200 dark:divide-gray-700">
-				<thead class="bg-gray-50 dark:bg-gray-800">
+				<thead style="background-color: #9f813c; color: white;">
 					<tr>
 						<th
 							scope="col"
-							class="py-3 px-4 text-left text-xs font-semibold uppercase text-gray-500 dark:text-gray-400 max-w-[350px]">
+							class="py-3 px-4 text-left text-xs font-semibold uppercase max-w-[350px]">
 							Sector
 						</th>
 						<th
 							scope="col"
-							class="py-3 px-4 text-right text-xs font-semibold uppercase text-gray-500 dark:text-gray-400 w-40">
+							class="py-3 px-4 text-right text-xs font-semibold uppercase w-40">
 							Número de Proyectos
 						</th>
 					</tr>
@@ -74,6 +76,8 @@
 		</p>
 	</div>
 </template>
+
+
 
 <script setup>
 import { ref, onMounted } from 'vue'

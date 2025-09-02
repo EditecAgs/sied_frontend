@@ -1,6 +1,7 @@
 <template>
 	<header
-		class="sticky top-0 flex w-full bg-white border-gray-200 z-50 dark:border-gray-800  lg:border-b">
+		class="sticky top-0 flex w-full bg-[#d0d1d1]/70
+             backdrop-blur-md border-gray-200 z-50 dark:border-gray-800  lg:border-b">
 		<div class="flex flex-col items-center justify-between grow lg:flex-row lg:px-6">
 			<div
 				class="flex items-center justify-between w-full gap-2 px-3 py-3 border-b border-gray-200 dark:border-gray-800 sm:gap-4 lg:justify-normal lg:border-b-0 lg:px-0 lg:py-4">
@@ -42,9 +43,9 @@
 				</button>
 				<HeaderLogo />
 				<img
-					src="/images/logo/anuies.png"
+					src="/images/logo/anuies-75-educac.png"
 					alt="Logo"
-					class="w-[100px]" />
+					class="w-[250px]" />
 				<!--<router-link to="/">
 					<img
 						v-if="isExpanded || isHovered || isMobileOpen"

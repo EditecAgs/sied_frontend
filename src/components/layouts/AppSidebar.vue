@@ -10,10 +10,9 @@
 				'lg:translate-x-0': true,
 			},
 		]"
-		style="background-image: url('/images/background/bgl-guinda.jpg'); background-size: cover; background-position: center;"
+		style="background-image: url('/images/background/bg-guinda-pleca.png'); background-size: cover; background-position: center;"
 		@mouseenter="!isExpanded && (isHovered = true)"
 		@mouseleave="isHovered = false">
-		<div class="absolute inset-0 bg-black/60 backdrop-blur-sm" />
 		<div class="relative z-10">
 			<div :class="['py-8 flex', !isExpanded && !isHovered ? 'lg:justify-center' : 'justify-start']">
 				<router-link to="/">
