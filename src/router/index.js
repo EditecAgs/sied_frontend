@@ -28,11 +28,16 @@ import EconomicView from '../views/Tables/EconomicView.vue';
 import SectorsView from '../views/Tables/SectorsView.vue';
 import SpecialtiesView from '../views/Tables/SpecialtiesView.vue';
 import TypesView from '../views/Tables/TypesView.vue';
-
+import LandingPage from '../views/LandingPage/LandingPage.vue';
 
 const routes = [
     {
         path: '/',
+        name: 'LandingPage',
+        component: LandingPage
+    },
+    {
+        path: '/signin',
         name: 'signin',
         component: Signin
     },

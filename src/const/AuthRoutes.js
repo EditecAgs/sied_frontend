@@ -1,4 +1,5 @@
 export default [
+    'LandingPage',
     'form',
     'stats',
     'dashboard',
