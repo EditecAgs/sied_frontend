@@ -1,12 +1,12 @@
 <template>
 	<div
-		class="rounded-2xl border border-gray-200 bg-[#d0d1d1]/40 backdrop-blur-md
+		class="rounded-2xl border border-gray-200 bg-[rgb(211,211,210)]/50
                p-6 sm:p-8 shadow-md dark:border-gray-700 dark:bg-gray-900/90">
 		<div class="mb-6">
-			<h3 class="text-lg font-semibold text-gray-800 dark:text-white">
+			<h3 class="text-lg font-semibold text-gray-600 dark:text-white">
 				Proyectos por Institución
 			</h3>
-			<p class="mt-1 text-gray-600 text-sm dark:text-gray-400">
+			<p class="mt-1 text-gray-500 text-sm dark:text-gray-400">
 				Porcentaje de Proyectos de modelo dual por institución
 			</p>
 		</div>
