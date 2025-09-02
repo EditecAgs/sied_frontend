@@ -16,7 +16,7 @@
 		<div class="relative z-10">
 			<div :class="['py-8 flex', !isExpanded && !isHovered ? 'lg:justify-center' : 'justify-start']">
 				<router-link to="/">
-					<h1 class="text-3xl text-white font-bo">SIED</h1>
+					<h1 class="text-6xl text-white font-bol">SIED</h1>
 					<!--	<img
 					v-if="isExpanded || isHovered || isMobileOpen"
 					src="/images/logo/anuies.png"

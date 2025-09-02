@@ -2,11 +2,11 @@
 	<FullScreenLayout>
 		<div
 			class="relative w-full h-screen bg-cover bg-center"
-			style="background-image: url('/images/background/bg-guinda.jpg');">
+			style="background-image: url('/images/signin/bg-rigth.png');">
 			<div class="flex w-full h-full">
 				<div
 					class="hidden md:flex w-1/2 h-full bg-cover bg-center"
-					style="background-image: url('/images/carousel/carousel-01.png');" />
+					style="background-image: url('/images/signin/bg-left.png');" />
 				
 				<div class="flex items-center justify-center w-full md:w-1/2 h-full">
 					<div class="w-full max-w-md p-8 bg-white rounded-2xl shadow-lg dark:bg-gray-900/95">

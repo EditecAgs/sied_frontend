@@ -1,6 +1,5 @@
 <template>
 	<div
-
 		style="background-image: url('/images/background/bg-white-flores.png');">
 		<admin-layout>
 			<div

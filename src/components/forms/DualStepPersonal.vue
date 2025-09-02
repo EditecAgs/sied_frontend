@@ -16,7 +16,6 @@ const errors = ref({
 	semester: '',
 	id_career: '',
 	id_specialty: '',
-	modality: ''
 });
 
 
@@ -161,7 +160,6 @@ watch(
 				<option value="Residente">Residente</option>
 				<option value="Modelo Dual">Modelo Dual</option>
 			</select>
-			<p v-if="errors.modality" class="text-red-500 text-sm mt-1">{{ errors.modality }}</p>
 		</div>
 
 		<div>

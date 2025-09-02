@@ -349,7 +349,6 @@ watch(
 				<p v-if="errors.economic_support" class="text-red-500 text-sm mt-1">{{ errors.economic_support }}</p>
 			</div>
 
-			<!-- Cantidad -->
 			<div class="w-40 flex-shrink-0">
 				<label class="label">Cantidad</label>
 				<input
@@ -359,7 +358,6 @@ watch(
 					class="input"
 					:value="modelValue.amount_support"
 					@input="update('amount_support', $event.target.value)" />
-				<p v-if="errors.amount_support" class="text-red-500 text-sm mt-1">{{ errors.amount_support }}</p>
 			</div>
 		</div>
 
