@@ -57,6 +57,7 @@ module.exports = {
             },
             fontFamily: {
                 outfit: ['Outfit', 'sans-serif'],
+				montserrat: ['Montserrat', 'sans-serif'],
             },
         },
     },

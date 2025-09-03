@@ -3,7 +3,7 @@
 
 		<div
 			class="flex flex-col items-center rounded-3xl border border-gray-200
-             bg-[#d0d1d1]/40 backdrop-blur-md p-6 shadow-sm dark:border-gray-700">
+             bg-[rgb(211,211,210)]/50 p-6 shadow-sm dark:border-gray-700">
 			<img
 				src="/images/metric/project-registred.png"
 				alt="Proyectos Registrados"
@@ -18,7 +18,7 @@
 
 		<div
 			class="flex flex-col items-center rounded-3xl border border-gray-200
-             bg-[#d0d1d1]/40 backdrop-blur-md p-6 shadow-sm dark:border-gray-700">
+             bg-[rgb(211,211,210)]/50 p-6 shadow-sm dark:border-gray-700">
 			<img
 				src="/images/metric/student-registred.png"
 				alt="Estudiantes Registrados"
@@ -33,7 +33,7 @@
 
 		<div
 			class="flex flex-col items-center rounded-3xl border border-gray-200
-             bg-[#d0d1d1]/40 backdrop-blur-md p-6 shadow-sm dark:border-gray-700">
+             bg-[rgb(211,211,210)]/50 p-6 shadow-sm dark:border-gray-700">
 			<img
 				src="/images/metric/org-registred.png"
 				alt="Organizaciones Registradas"

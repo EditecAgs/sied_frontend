@@ -1,9 +1,8 @@
 <template>
 	<div
-		class="overflow-hidden rounded-2xl border border-gray-200 bg-[#d0d1d1]/40
-             backdrop-blur-md p-6 shadow-md dark:border-gray-700 dark:bg-gray-900/90">
+		class="overflow-hidden rounded-2xl border border-gray-200 bg-[rgb(211,211,210)]/50 p-6 shadow-md dark:border-gray-700 dark:bg-gray-900/90">
 		<div class="flex flex-col gap-4 mb-6 sm:flex-row sm:items-center sm:justify-between">
-			<h3 class="text-xl font-semibold text-gray-900 dark:text-white">
+			<h3 class="text-xl font-semibold text-gray-600 dark:text-white">
 				Sectores de Proyectos de Modelo Dual
 			</h3>
 
