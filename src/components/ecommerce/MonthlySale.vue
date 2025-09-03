@@ -1,8 +1,8 @@
 <template>
 	<div
-		class="overflow-hidden rounded-2xl border border-gray-200 bg-white px-6 pt-6 shadow-md dark:border-gray-700 dark:bg-gray-900 sm:px-8 sm:pt-8">
+		class="overflow-hidden rounded-2xl border border-gray-200 bg-[rgb(211,211,210)]/50 px-6 pt-6 shadow-md dark:border-gray-700 dark:bg-gray-900 sm:px-8 sm:pt-8">
 		<div class="flex items-center justify-between mb-5">
-			<h3 class="text-xl font-semibold text-gray-900 dark:text-white">
+			<h3 class="text-xl font-semibold text-gray-600 dark:text-white">
 				Proyectos por mes
 			</h3>
 
@@ -63,89 +63,70 @@ const monthLabels = [
 ]
 
 const chartOptions = ref({
-  colors: ['#82181aff'],
-  chart: {
-    fontFamily: 'Outfit, sans-serif',
-    type: 'bar',
-    toolbar: {
-      show: false,
-    },
-  },
-  plotOptions: {
-    bar: {
-      horizontal: false,
-      columnWidth: '50%',
-      borderRadius: 8,
-      borderRadiusApplication: 'end',
-    },
-  },
-  dataLabels: {
-    enabled: false,
-  },
-  stroke: {
-    show: true,
-    width: 3,
-    colors: ['transparent'],
-  },
-  xaxis: {
-    categories: monthLabels,
-    axisBorder: {
-      show: false,
-    },
-    axisTicks: {
-      show: false,
-    },
-    labels: {
-      style: {
-        colors: '#6b7280',
-        fontSize: '12px',
-        fontWeight: 500,
-      },
-    },
-  },
-  legend: {
-    show: true,
-    position: 'top',
-    horizontalAlign: 'left',
-    fontFamily: 'Outfit',
-    markers: {
-      radius: 99,
-    },
-    labels: {
-      colors: '#374151',
-      fontWeight: 600,
-    },
-  },
-  yaxis: {
-    title: false,
-    labels: {
-      style: {
-        colors: '#6b7280',
-        fontSize: '12px',
-        fontWeight: 500,
-      },
-    },
-  },
-  grid: {
-    yaxis: {
-      lines: {
-        show: true,
-        strokeDashArray: 4,
-      },
-    },
-  },
-  fill: {
-    opacity: 1,
-  },
-  tooltip: {
-    x: {
-      show: false,
-    },
-    y: {
-      formatter: val => val.toString(),
-    },
-  },
+	colors: ['#82181a'],
+	chart: {
+		fontFamily: 'Outfit, sans-serif',
+		type: 'bar',
+		toolbar: { show: false },
+		foreColor: '#374151',
+		background: 'transparent',
+	},
+	plotOptions: {
+		bar: {
+			horizontal: false,
+			columnWidth: '50%',
+			borderRadius: 8,
+			borderRadiusApplication: 'end',
+		},
+	},
+	dataLabels: { enabled: false },
+	stroke: {
+		show: true,
+		width: 2,
+		colors: ['#ffffff'],
+	},
+	xaxis: {
+		categories: monthLabels,
+		axisBorder: { show: true, color: '#9f813c' },
+		axisTicks: { show: true, color: '#9f813c' },
+		labels: {
+			style: {
+				colors: '#374151',
+				fontSize: '12px',
+				fontWeight: 500,
+			},
+		},
+	},
+	yaxis: {
+		title: false,
+		labels: {
+			style: {
+				colors: '#374151',
+				fontSize: '12px',
+				fontWeight: 500,
+			},
+		},
+	},
+	grid: {
+		borderColor: '#9f813c',
+		strokeDashArray: 4,
+		yaxis: { lines: { show: true } },
+	},
+	fill: { opacity: 1 },
+	tooltip: {
+		x: { show: false },
+		y: { formatter: val => val.toString() },
+	},
+	legend: {
+		show: true,
+		position: 'top',
+		horizontalAlign: 'left',
+		fontFamily: 'Outfit',
+		markers: { radius: 99 },
+		labels: { colors: '#374151', fontWeight: 600 },
+	},
 })
+
 
 onMounted(async () => {
   try {

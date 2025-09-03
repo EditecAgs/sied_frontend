@@ -1,9 +1,10 @@
 <template>
 	<header
-		class="sticky top-0 flex w-full bg-white border-gray-200 z-50 dark:border-gray-800  lg:border-b">
+		class="sticky top-0 flex w-full bg-[rgb(211,211,210)]/35
+             backdrop-blur-md border-gray-200 z-50 dark:border-gray-800  lg:border-b">
 		<div class="flex flex-col items-center justify-between grow lg:flex-row lg:px-6">
 			<div
-				class="flex items-center justify-between w-full gap-2 px-3 py-3 border-b border-gray-200 dark:border-gray-800 sm:gap-4 lg:justify-normal lg:border-b-0 lg:px-0 lg:py-4">
+				class="flex items-center justify-between w-full gap-2 px-3 py-3 border-b border-gray-200 dark:border-gray-800 sm:gap-4 lg:justify-normal lg:border-b-0 lg:px-0 lg:py-4 pt-0">
 				<button
 					class="flex items-center justify-center w-10 h-10 text-gray-500 border-gray-200 rounded-lg z-99999 dark:border-gray-800 dark:text-gray-400 lg:h-11 lg:w-11 lg:border"
 					:class="[
@@ -42,9 +43,22 @@
 				</button>
 				<HeaderLogo />
 				<img
-					src="/images/logo/anuies.png"
+					src="/images/logo/logo-gob-color.png"
 					alt="Logo"
-					class="w-[100px]" />
+					class="w-32" />
+				<img
+					src="/images/logo/logo-anuies-guinda.png"
+					alt="Logo"
+					class="w-9" />
+				<img
+					src="/images/logo/logo-75-anuies.png"
+					alt="Logo"
+					class="w-11" />
+				<img
+					src="/images/logo/logo-tecnm-blue.png"
+					alt="Logo"
+					class="w-28" />
+
 				<!--<router-link to="/">
 					<img
 						v-if="isExpanded || isHovered || isMobileOpen"
@@ -57,15 +71,12 @@
 						alt="Logo"
 						class="w-[80px]" />
 				</router-link>-->
-				<div>
-					<h2 class="text-xl text-gray-500">Sistema Integral de de Educación Dual</h2>
-				</div>
 			</div>
 
 
 			<div
 				:class="[isApplicationMenuOpen ? 'flex' : 'hidden']"
-				class="items-center justify-between w-full gap-4 px-5 py-4 shadow-theme-md lg:flex lg:justify-end lg:px-0 lg:shadow-none">
+				class="items-center justify-between w-full gap-4 px-5 py-4 shadow-theme-md lg:flex lg:justify-end lg:px-0 lg:shadow-none pt-0">
 				<div class="flex items-center gap-2 2xsm:gap-3">
 					<NotificationMenu />
 				</div>

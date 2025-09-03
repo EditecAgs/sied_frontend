@@ -15,7 +15,7 @@ const errors = ref({
 	gender: '',
 	semester: '',
 	id_career: '',
-	id_specialty: ''
+	id_specialty: '',
 });
 
 
@@ -93,7 +93,6 @@ watch(
 	<div class="space-y-6">
 		<h2 class="text-xl font-semibold text-brand-900 mb-6">Datos del Estudiante</h2>
 
-		<!-- No. de control / Matrícula -->
 		<div>
 			<label class="label">No. de control / Matrícula</label>
 			<input
@@ -147,6 +146,20 @@ watch(
 				:class="{ 'border-red-500': errors.semester }"
 				@input="update('semester', $event.target.value)" />
 			<p v-if="errors.semester" class="text-red-500 text-sm mt-1">{{ errors.semester }}</p>
+		</div>
+
+		<div>
+			<label class="label">Modalidad</label>
+			<select
+				class="input"
+				:class="{ 'border-red-500': errors.modality }"
+				:value="modelValue.modality"
+				@change="update('modality', $event.target.value)">
+				<option value="" disabled>Selecciona una modalidad</option>
+				<option value="Becario">Becario</option>
+				<option value="Residente">Residente</option>
+				<option value="Modelo Dual">Modelo Dual</option>
+			</select>
 		</div>
 
 		<div>

@@ -4,7 +4,7 @@
 			class="flex items-center text-gray-700 dark:text-gray-400"
 			@click.prevent="toggleDropdown">
 			<span class="mr-3 overflow-hidden rounded-full h-11 w-11">
-				<img src="/images/user/owner.jpg" alt="User" />
+				<img src="/images/institutionsLogo/logo_ITA.png" alt="User" />
 			</span>
 
 			<span class="block mr-1 font-medium text-theme-sm">Institututo Tecnológico de Aguascalientes </span>
