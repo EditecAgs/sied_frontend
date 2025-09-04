@@ -77,24 +77,12 @@ export default function () {
     });
 
     router.beforeEach((to, from, next) => {
-        const token = localStorage.getItem("token");
 
         if (UnAuthRoutes.includes(to.name)) {
-            localStorage.removeItem('token');
             return next();
         }
 
-        if (AuthRoutes.includes(to.name)) {
-            if (token) {
-                return next();
-            } else {
-                localStorage.removeItem('token');
-                return next({ name: 'signin' });
-            }
-        }
-
-        localStorage.removeItem('token');
-        return next({ name: 'signin' });
+        return next();
     });
 
     return router;

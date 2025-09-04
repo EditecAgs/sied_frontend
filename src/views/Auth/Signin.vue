@@ -129,12 +129,8 @@ const togglePasswordVisibility = () => {
 const handleSubmit = async () => {
   try {
     const data = await login(email.value, password.value);
-    if (data.token) {
-      localStorage.setItem('token', data.token);
       router.push('/dashboard');
-    } else {
-      alert('No se recibió token.');
-    }
+	  console.log(data.response)
   } catch (err) {
     console.error('Error en login:', err);
     alert('Credenciales Incorrectas');
