@@ -2,13 +2,13 @@
 	<AdminLayout>
 		<PageBreadcrumb :pageTitle="currentPageTitle" />
 		<div class="space-y-5 sm:space-y-6">
-			<ComponentCard title="Catálogo de Periodos Academicos">
-				<btn-create table="Período académico" @open="({ mode, pk, table}) => openModal(mode, pk, table)" />
+			<ComponentCard title="Catálogo de Periodos Académicos">
+				<btn-create table="Período Académico" @open="({ mode, pk, table}) => openModal(mode, pk, table)" />
 				<mdl-academic :show="showModal" :data="modalData" @close="closeModal" @saved="handleSaved" />
 				<TableAcademic
 					ref="tableRef"
 					@open="({ mode, pk, table }) => openModal(mode, pk, table)"
-					@open-confirm="openDeleteModal"/>
+					@open-confirm="openDeleteModal" />
 				<mdlDeleteAcademic
 					:show="showDeleteModal"
 					:table="deleteTarget.table"
@@ -31,7 +31,7 @@ import { useModal } from "../../composables/UseModal";
 import MdlAcademic from "../../components/modals/modals-forms/mdlAcademic.vue";
 import mdlDeleteAcademic from "../../components/modals/delete-only/mdlDeleteAcademic.vue"
 
-const currentPageTitle = ref("Periodos Academicos");
+const currentPageTitle = ref("Periodo Académicos");
 const { showModal, modalData, openModal, closeModal } = useModal();
 
 const tableRef = ref(null);

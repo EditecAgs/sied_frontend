@@ -55,19 +55,23 @@ const afterError = (res: any) => {
 	<transition name="fade-scale">
 		<div v-if="show" class="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm" style="margin-top: 0px" @click.self="emit('close')">
 			<div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg p-8 relative max-h-[90vh] flex flex-col overflow-hidden">
-				<h4 class="text-2xl font-extrabold text-brand-900 mb-6 flex items-center justify-between">
-					{{ data.mode === 'create' ? `Crear Area dual` : `Editar Area dual` }}
-					<div v-if="isLoading" class="ml-4 w-6 h-6 border-4 border-t-4 border-gray-300 border-t-brand-800 rounded-full animate-spin" />
-				</h4>
+				<div class="flex items-center justify-between bg-brand-900 -mx-8 -mt-8 px-8 py-4 rounded-t-2xl">
+					<h4 class="text-xl font-semibold text-white">
+						{{ data.mode === 'create' ? `Crear ${data.table}` : `Editar ${data.table}` }}
+					</h4>
 
-				<button
-					@click="emit('close')"
-					class="absolute top-4 right-4 text-gray-500 hover:text-gray-700"
-					aria-label="Cerrar modal">
-					<svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-					</svg>
-				</button>
+					<div class="flex items-center gap-4">
+						<div
+							v-if="isLoading"
+							class="w-6 h-6 border-4 border-white/40 border-t-white rounded-full animate-spin" />
+
+						<button
+							class="text-white/80 hover:text-white text-2xl font-bold leading-none"
+							@click="emit('close')">
+							&times;
+						</button>
+					</div>
+				</div>
 
 				<alv-form
 					id="DualAreaForm"
@@ -81,7 +85,7 @@ const afterError = (res: any) => {
 					@after-done="afterDone"
 					@after-error="afterError">
 
-					<div class="form-error mb-6">
+					<div class="form-error mb-6 mt-5">
 						<label class="block text-sm font-medium text-gray-700 mb-1">Nombre*</label>
 						<input v-model="form.name" name="name" required class="w-full px-3 py-2 border rounded-md" />
 					</div>

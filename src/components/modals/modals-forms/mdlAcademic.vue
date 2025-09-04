@@ -65,12 +65,23 @@ const afterError = (response) => {
 			style="margin-top: 0px"
 			@click.self="emit('close')">
 			<div class="bg-white rounded-2xl shadow-2xl w-full max-w-2xl p-8 relative max-h-[85vh] flex flex-col overflow-hidden">
-				<h4 class="text-2xl font-extrabold text-brand-900 mb-6 flex items-center justify-between">
-					{{ data.mode === 'create' ? `Crear ${data.table}` : `Editar ${data.table}` }}
-					<div
-						v-if="isLoading"
-						class="ml-4 w-6 h-6 border-4 border-t-4 border-gray-300 border-t-brand-800 rounded-full animate-spin" />
-				</h4>
+				<div class="flex items-center justify-between bg-brand-900 -mx-8 -mt-8 px-8 py-4 rounded-t-2xl">
+					<h4 class="text-xl font-semibold text-white">
+						{{ data.mode === 'create' ? `Crear ${data.table}` : `Editar ${data.table}` }}
+					</h4>
+
+					<div class="flex items-center gap-4">
+						<div
+							v-if="isLoading"
+							class="w-6 h-6 border-4 border-white/40 border-t-white rounded-full animate-spin" />
+
+						<button
+							class="text-white/80 hover:text-white text-2xl font-bold leading-none"
+							@click="emit('close')">
+							&times;
+						</button>
+					</div>
+				</div>
 
 				<alv-form
 					id="AcademicPeriodForm"
@@ -83,8 +94,7 @@ const afterError = (response) => {
 					class="flex-grow overflow-y-auto pr-2"
 					@after-done="afterDone"
 					@after-error="afterError">
-					<div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-						<!-- Nombre -->
+					<div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6 mt-5">
 						<div class="form-error">
 							<label class="block text-sm font-medium text-gray-700 mb-1">Nombre*</label>
 							<template v-if="isLoading">
@@ -100,7 +110,6 @@ const afterError = (response) => {
 							</template>
 						</div>
 
-						<!-- Descripción -->
 						<div class="form-error">
 							<label class="block text-sm font-medium text-gray-700 mb-1">Descripción*</label>
 							<template v-if="isLoading">
@@ -117,7 +126,6 @@ const afterError = (response) => {
 						</div>
 					</div>
 
-					<!-- Botones -->
 					<div class="flex justify-end gap-3 mt-6 pt-4 border-t border-gray-200 sticky bottom-0 bg-white">
 						<button
 							type="button"
@@ -128,7 +136,7 @@ const afterError = (response) => {
 						<button
 							form="AcademicPeriodForm"
 							class="flex items-center gap-2 px-6 py-2 rounded-lg bg-gradient-to-r from-brand-700 to-brand-900 text-white font-semibold hover:brightness-110 transition shadow-md">
-							<span v-if="data.mode === 'create'">➕</span>
+							<span v-if="data.mode === 'create'" />
 							<span v-else>💾</span>
 							<span>Guardar</span>
 						</button>
