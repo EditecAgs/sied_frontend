@@ -82,20 +82,19 @@ watch(
 				<div class="flex-1 relative">
 					<input
 						v-model="searchTerm"
-						@focus="showDropdown = true"
-						@input="showDropdown = true"
 						placeholder="Buscar institución..."
 						class="input"
 						:class="{ 'border-red-500': errors.id_institution }"
-					/>
+						@focus="showDropdown = true"
+						@input="showDropdown = true" />
 					<ul
 						v-if="showDropdown && filteredInstitutions.length"
 						class="absolute z-10 bg-white border border-gray-300 rounded-lg mt-1 w-full max-h-48 overflow-y-auto shadow-md">
 						<li
 							v-for="inst in filteredInstitutions"
 							:key="inst.id"
-							@click="updateField('id_institution', inst.id)"
-							class="px-4 py-2 hover:bg-gray-100 cursor-pointer">
+							class="px-4 py-2 hover:bg-gray-100 cursor-pointer"
+							@click="updateField('id_institution', inst.id)">
 							{{ inst.name }}
 						</li>
 					</ul>
