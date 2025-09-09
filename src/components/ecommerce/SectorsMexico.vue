@@ -24,7 +24,6 @@
 			</nav>
 		</div>
 
-		<!-- Tabla -->
 		<div class="overflow-x-auto">
 			<table class="min-w-full table-auto divide-y divide-gray-200 dark:divide-gray-700">
 				<thead style="background-color: #9f813c; color: white;">
