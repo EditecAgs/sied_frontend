@@ -1,32 +1,34 @@
 /**
- * We'll load the axios HTTP library which allows us to easily issue requests
- * to our Laravel back-end. This library automatically handles sending the
- * CSRF token as a header based on the value of the "XSRF" token cookie.
+ * Axios setup con manejo de token y expiración de sesión
  */
 import axios from 'axios';
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-export function useAxios(_router, _store) {
-	// eslint-disable-next-line @typescript-eslint/no-unused-expressions
-    axios;
+export function useAxios(router) {
 
-    axios.defaults.baseURL = import.meta.env.VITE_API_BASE_URL + '/api/'
-
+    axios.defaults.baseURL = import.meta.env.VITE_API_BASE_URL + '/api/';
     axios.defaults.headers.common['X-Requested-With'] = 'XMLHttpRequest';
 
 
+    axios.interceptors.request.use(config => {
+        const token = localStorage.getItem('token');
+        if (token) {
+            config.headers.Authorization = `Bearer ${token}`;
+        }
+        return config;
+    });
+
+
     axios.interceptors.response.use(
-        function (response) {
-            return response;
-        },
-        function (error) {
-            if (error.response.status === 401) {
-                console.log('Forbidden')
-                //localStorage.setItem('session_expired', 'true');
-                //store.dispatch('auth/logout', {router});
+        response => response,
+        error => {
+            if (error.response && error.response.status === 401) {
+                console.log('Usuario no autorizado. Sesión expirada o token inválido.');
+                localStorage.removeItem('token');
+                router.push('/signin');
             }
             return Promise.reject(error);
         }
     );
+
     return axios;
 }

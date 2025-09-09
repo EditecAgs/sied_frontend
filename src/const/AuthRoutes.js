@@ -1,12 +1,10 @@
 export default [
-    'LandingPage',
-    'form',
-    'stats',
+    'home',
     'dashboard',
     'Profile',
     'FormElements',
     'BasicTables',
-	'InstitutionTable',
+    'InstitutionTable',
     'LineChart',
     'BarChart',
     'Alerts',
@@ -16,12 +14,16 @@ export default [
     'Images',
     'Videos',
     'Blank',
-    'Error404',
-    'signin',
-    'signup',
-	'SubsystemTable',
-	'AcademicTable',
-	'OrganizationTable'
-
+    'SubsystemTable',
+    'AcademicTable',
+    'OrganizationTable',
+    'Dual_AreaTable',
+    'CareersTable',
+    'ClustersTable',
+    'DocumentTable',
+    'EconomicTable',
+    'SectorsTable',
+    'SpecialtiesTable',
+    'TypeTable'
 
 ];
