@@ -289,18 +289,18 @@ const closeModalAndReset = () => {
 	<transition name="fade-scale">
 		<div v-if="show" class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm" style="margin-top: 0px" @click.self="emit('close')">
 			<div class="bg-white rounded-2xl shadow-2xl w-full max-w-4xl p-8 relative max-h-[90vh] flex flex-col overflow-hidden">
-				<button
-					class="absolute top-4 right-4 text-gray-400 hover:text-gray-600 text-xl font-bold"
-					@click="closeModalAndReset">
-					&times;
-				</button>
+				<div class="flex items-center justify-between bg-brand-900 -mx-8 -mt-8 px-8 py-4 rounded-t-2xl">
+					<h4 class="text-xl font-semibold text-white">
+						{{ props.data.mode === 'create' ? 'Crear Proyecto Dual' : (props.data.mode === 'complete' ? 'Completar Proyecto Dual' : 'Editar Proyecto Dual') }}
+					</h4>
+					<button
+						class="text-white/80 hover:text-white text-2xl font-bold"
+						@click="closeModalAndReset">
+						&times;
+					</button>
+				</div>
 
-				<h4 class="text-2xl font-bold text-brand-900 mb-6 flex items-center justify-between">
-					{{ props.data.mode === 'create' ? 'Crear Proyecto Dual' : (props.data.mode === 'complete' ? 'Completar Proyecto Dual' : 'Editar Proyecto Dual') }}
-				</h4>
-
-				<!-- Steps -->
-				<div class="flex justify-between mb-6">
+				<div class="flex justify-between mb-6 mt-5">
 					<div v-for="(step, index) in steps" :key="index" class="flex-1 flex flex-col items-center">
 						<div
 							:class="[ 'w-8 h-8 flex items-center justify-center rounded-full mb-1 text-sm font-semibold',
@@ -315,7 +315,6 @@ const closeModalAndReset = () => {
 					</div>
 				</div>
 
-				<!-- Form Steps -->
 				<div class="flex-grow overflow-y-auto pr-2 mb-4">
 					<template v-if="!isLoading">
 						<DualStepAcademico
@@ -343,8 +342,6 @@ const closeModalAndReset = () => {
 							:agreementStatuses="agreementStatuses"
 							:supportTypes="supportTypes"
 							:organizations="organizations" />
-
-
 					</template>
 					<template v-else>
 						<div class="flex justify-center items-center h-full">

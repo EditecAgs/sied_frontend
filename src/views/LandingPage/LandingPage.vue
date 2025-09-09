@@ -3,9 +3,21 @@
 		<img
 			src="/images/landing/landing.png"
 			alt="Imagen Principal"
-			class="w-screen h-screen object-fit" />
+			class="hidden md:block w-screen h-screen object-fit" />
 
-		<div class="absolute bottom-56 right-44">
+		<img
+			src="/images/landing/landing-mobile.png"
+			alt="Imagen Principal"
+			class="block md:hidden w-screen h-screen object-fit" />
+
+		<div
+			class="
+		absolute
+		/* Mobile */
+		bottom-5 left-1/2 -translate-x-1/2
+		/* Desktop */
+		md:bottom-56 md:right-44 md:left-auto md:translate-x-0
+	">
 			<button
 				class="px-6 py-3 text-white font-semibold rounded-lg shadow-lg transition bg-guindo hover:bg-guindo-light animate-pulse-custom"
 				@click="router.push('/signin')">
@@ -47,6 +59,7 @@
 	</footer>
 </template>
 
+
 <script setup>
 import { useRouter } from "vue-router";
 const router = useRouter();
@@ -67,7 +80,6 @@ const router = useRouter();
 	color: #931F44;
 }
 
-/* Animación personalizada para resaltar el botón */
 @keyframes pulse {
 	0%, 100% {
 		transform: scale(1);

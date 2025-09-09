@@ -35,7 +35,7 @@ import mdlCareers from '../../components/modals/modals-forms/mdlCareers.vue';
 import { useModal } from "../../composables/UseModal";
 import mdlDeleteCareers from "../../components/modals/delete-only/mdlDeleteCareers.vue"
 
-const currentPageTitle = ref("Áreas Duales");
+const currentPageTitle = ref("Carreras");
 const { showModal, modalData, openModal, closeModal } = useModal();
 
 const tableRef = ref(null);
