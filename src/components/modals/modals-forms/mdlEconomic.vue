@@ -70,19 +70,23 @@ watchEffect(() => {
 	<transition name="fade-scale">
 		<div v-if="show" class="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm" style="margin-top: 0px" @click.self="emit('close')">
 			<div class="bg-white rounded-2xl shadow-2xl w-full max-w-4xl p-8 relative max-h-[85vh] flex flex-col overflow-hidden">
-				<h4 class="text-2xl font-extrabold text-brand-900 mb-6 flex items-center justify-between">
-					{{ data.mode === 'create' ? `Crear ${data.table}` : `Editar ${data.table}` }}
-					<div v-if="isLoading" class="ml-4 w-6 h-6 border-4 border-t-4 border-gray-300 border-t-brand-800 rounded-full animate-spin" />
-				</h4>
+				<div class="flex items-center justify-between bg-brand-900 -mx-8 -mt-8 px-8 py-4 rounded-t-2xl">
+					<h4 class="text-xl font-semibold text-white">
+						{{ data.mode === 'create' ? `Crear ${data.table}` : `Editar ${data.table}` }}
+					</h4>
 
-				<button
-					@click="emit('close')"
-					class="absolute top-4 right-4 text-gray-500 hover:text-gray-700"
-					aria-label="Cerrar modal">
-					<svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-					</svg>
-				</button>
+					<div class="flex items-center gap-4">
+						<div
+							v-if="isLoading"
+							class="w-6 h-6 border-4 border-white/40 border-t-white rounded-full animate-spin" />
+
+						<button
+							class="text-white/80 hover:text-white text-2xl font-bold leading-none"
+							@click="emit('close')">
+							&times;
+						</button>
+					</div>
+				</div>
 
 				<alv-form
 					id="EconomicSupportForm"
@@ -95,8 +99,7 @@ watchEffect(() => {
 					class="flex-grow overflow-y-auto pr-2"
 					@after-done="afterDone"
 					@after-error="afterError">
-
-					<div class="grid grid-cols-1 gap-4 mb-6">
+					<div class="grid grid-cols-1 gap-4 mb-6 mt-5">
 						<div class="form-error">
 							<label class="block text-sm font-medium text-gray-700 mb-1">Nombre*</label>
 							<template v-if="isLoading">
@@ -118,12 +121,12 @@ watchEffect(() => {
 								<div class="h-20 bg-gray-300 rounded animate-pulse w-full" />
 							</template>
 							<template v-else>
-                <textarea
-					v-model="form.description"
-					name="description"
-					rows="3"
-					class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring focus:ring-brand-800"
-					:disabled="isLoading" />
+								<textarea
+									v-model="form.description"
+									name="description"
+									rows="3"
+									class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring focus:ring-brand-800"
+									:disabled="isLoading" />
 							</template>
 						</div>
 					</div>

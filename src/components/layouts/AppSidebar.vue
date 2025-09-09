@@ -1,7 +1,7 @@
 <template>
 	<aside
 		:class="[
-			'fixed mt-16 flex flex-col lg:mt-0 top-0 px-5 left-0 h-screen transition-all duration-300 ease-in-out z-99999 border-r border-gray-200',
+			'fixed mt-16 flex flex-col lg:mt-0 top-0 px-5 left-0 h-screen transition-all duration-300 ease-in-out z-50 border-r border-gray-200',
 			{
 				'lg:w-[290px]': isExpanded || isMobileOpen || isHovered,
 				'lg:w-[90px]': !isExpanded && !isHovered,
@@ -14,15 +14,30 @@
 		@mouseenter="!isExpanded && (isHovered = true)"
 		@mouseleave="isHovered = false">
 		<div class="relative z-10 h-full flex flex-col">
-			<div :class="['pt-0 pb-8 flex ', !isExpanded && !isHovered ? 'lg:justify-center' : 'justify-start']">
+			<div
+				:class="[
+					'pt-0 pb-8 flex transition-all duration-300',
+					!isExpanded && !isHovered ? 'lg:justify-center' : 'justify-start',
+				]">
 				<router-link to="/">
-					<img
-						src="/images/logo/logo-gob.png"
-						alt="Logo"
-						class="w-80 pb-3" />
-					<h1 class="text-5xl text-white font-montserrat font-bold">SIED</h1>
+					<template v-if="isExpanded || isHovered || isMobileOpen">
+						<img
+							src="/images/logo/logo-gob.png"
+							alt="Logo"
+							class="w-80 pb-3" />
+						<h1 class="text-5xl text-white font-montserrat font-bold">SIED</h1>
+					</template>
+
+					<template v-else>
+						<img
+							src="/images/logo/logo-gob.png"
+							alt="Logo"
+							class="w-80 transition-all duration-300 mt-4" />
+						<h1 class="text-3xl text-white font-montserrat font-bold">SIED</h1>
+					</template>
 				</router-link>
 			</div>
+
 
 			<div class="flex-1 flex flex-col min-h-0 overflow-hidden">
 				<nav class="mb-6 flex-1 overflow-hidden">
