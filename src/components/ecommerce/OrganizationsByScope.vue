@@ -6,8 +6,7 @@
 				Organizaciones por alcance
 			</h3>
 
-			<div class="relative h-fit">
-			</div>
+			<div class="relative h-fit" />
 		</div>
 
 		<div class="max-w-full overflow-x-auto custom-scrollbar">
