@@ -27,14 +27,13 @@
 							:key="index"
 							class="flex items-center justify-between gap-4 hover:bg-gray-200/50 dark:hover:bg-gray-800/70
                        p-2 rounded-lg transition-colors">
-							<!-- Mostrar logo si existe -->
+
 							<img
 								v-if="logosMap[item.id]"
 								:src="logosMap[item.id]"
 								:alt="item.institution_name"
 								class="w-10 h-10 rounded-full object-contain border border-gray-300 dark:border-gray-600" />
 
-							<!-- Mostrar ícono si no hay logo -->
 							<div
 								v-else
 								class="w-10 h-10 flex items-center justify-center rounded-full bg-gray-300 dark:bg-gray-700 border border-gray-400 dark:border-gray-600 text-gray-700 dark:text-gray-300">
