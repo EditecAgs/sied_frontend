@@ -108,7 +108,6 @@ const formData = reactive({
 	},
 	academico: {
 		id_institution: '',
-		number_student: ''
 	},
 	unidadDual: {
 		name_report: '',
@@ -127,14 +126,14 @@ const formData = reactive({
 	}
 });
 
-const canSubmit = computed(() => {
-	if (currentStep.value !== 2) {
-		return true;
-	}
 
-	const required = Number(formData.academico.number_student) || 0;
-	const current = formData.personal.dual_project_students?.length || 0;
-	return current === required;
+const canSubmit = computed(() => {
+	// Para el paso 2, solo verificar que haya al menos 1 estudiante
+	if (currentStep.value === 2) {
+		const studentCount = formData.personal.dual_project_students?.length || 0;
+		return studentCount >= 1;
+	}
+	return true;
 });
 
 const formatDate = (date: string | Date): string => {
@@ -157,7 +156,7 @@ const resetForm = () => {
 	};
 	formData.academico = {
 		id_institution: '',
-		number_student: ''
+		// Se elimina number_student
 	};
 	formData.unidadDual = {
 		name_report: '',
@@ -215,7 +214,7 @@ watch(
 
 				formData.academico = {
 					id_institution: project.id_institution ?? '',
-					number_student: String(project.number_student ?? '')
+					// Se elimina number_student
 				};
 
 				formData.unidadDual = {
@@ -264,11 +263,11 @@ const handleNextOrSubmit = async () => {
 		if (!isValid) return;
 		nextStep();
 	} else if (currentStep.value === 2) {
-		const requiredStudents = Number(formData.academico.number_student) || 0;
-		const currentStudents = formData.personal.dual_project_students?.length || 0;
+		// Nueva validación simplificada - solo verificar que haya al menos 1 estudiante
+		const studentCount = formData.personal.dual_project_students?.length || 0;
 
-		if (currentStudents < requiredStudents) {
-			alert(`Debes agregar ${requiredStudents} estudiantes. Actualmente tienes ${currentStudents}.`);
+		if (studentCount < 1) {
+			alert('Debes agregar al menos 1 estudiante.');
 			return;
 		}
 
@@ -277,7 +276,7 @@ const handleNextOrSubmit = async () => {
 		if (!isValid) {
 			return;
 		}
-		console.log(formData.personal.dual_project_students)
+
 		imprimirYGuardar();
 	}
 };
@@ -314,7 +313,8 @@ const imprimirYGuardar = async () => {
 			payload = {
 				has_report: 0,
 				id_institution: Number(formData.academico.id_institution),
-				number_student: String(formData.academico.number_student)
+				// number_student se calcula automáticamente desde los estudiantes
+				number_student: formData.personal.dual_project_students?.length || 0
 			};
 		} else {
 			if (!formData.unidadDual.name_report || !formData.unidadDual.id_organization || !formData.unidadDual.id_dual_area) {
@@ -322,11 +322,10 @@ const imprimirYGuardar = async () => {
 				return;
 			}
 
-			const requiredStudents = Number(formData.academico.number_student) || 0;
-			const currentStudents = formData.personal.dual_project_students?.length || 0;
+			const studentCount = formData.personal.dual_project_students?.length || 0;
 
-			if (currentStudents < requiredStudents) {
-				alert(`Debes agregar ${requiredStudents} estudiantes. Actualmente tienes ${currentStudents}.`);
+			if (studentCount < 1) {
+				alert('Debes agregar al menos 1 estudiante.');
 				return;
 			}
 
@@ -341,11 +340,11 @@ const imprimirYGuardar = async () => {
 				id_institution: Number(formData.academico.id_institution)
 			}));
 
-
 			payload = {
 				has_report: 1,
 				id_institution: Number(formData.academico.id_institution),
-				number_student: Number(formData.academico.number_student),
+				// number_student se calcula automáticamente desde el array de estudiantes
+				number_student: studentCount,
 				students: studentsPayload,
 				name_report: formData.unidadDual.name_report,
 				id_organization: Number(formData.unidadDual.id_organization),
@@ -361,7 +360,6 @@ const imprimirYGuardar = async () => {
 				is_hired: formData.unidadDual.is_hired,
 				dual_type_id: Number(formData.unidadDual.dual_type_id)
 			};
-			
 		}
 
 		const currentData = JSON.stringify(formData);
@@ -404,7 +402,8 @@ const closeModalAndReset = () => {
 			style="margin-top: 0"
 			@click.self="emit('close')">
 			<div
-				class="bg-white rounded-2xl shadow-2xl w-full max-w-4xl p-8 relative max-h-[90vh] flex flex-col overflow-hidden">
+				class="bg-white rounded-2xl shadow-2xl w-full max-w-4xl p-8 relative max-h-[90vh] flex flex-col overflow-hidden"
+				style="background-image: url('/images/background/bg-white-flores.png');">
 				<div
 					class="flex items-center justify-between bg-brand-900 -mx-8 -mt-8 px-8 py-4 rounded-t-2xl">
 					<h4 class="text-xl font-semibold text-white">
@@ -480,7 +479,6 @@ const closeModalAndReset = () => {
 							v-model="formData.personal"
 							:careers="careers"
 							:specialties="specialties"
-							:number-student="Number(formData.academico.number_student)"
 							:institution="{
 								id: formData.academico.id_institution,
 								name: institutions.find(i => i.id === formData.academico.id_institution)?.name || ''

@@ -17,7 +17,7 @@
 						</div>
 
 						<div class="mb-5 sm:mb-3 text-center">
-							<h1 class="mb-2 font-semibold text-gray-800 text-title-sm dark:text-white/90 sm:text-title-md">
+							<h1 class="mb-2 font-semibold text-brand-200 text-title-sm sm:text-title-md">
 								Sistema Integral de Educación Dual
 							</h1>
 						</div>
@@ -103,8 +103,9 @@
 <script setup lang="ts">
 import { ref } from 'vue';
 import { useRouter } from 'vue-router';
-import FullScreenLayout from '../../components/layouts/FullScreenLayout.vue';
+import axios from 'axios';
 import { login } from '../../services/auth/auth.js';
+import { showInstitutions } from '../../services/institutions/institutions';
 
 const router = useRouter();
 
@@ -122,6 +123,18 @@ const handleSubmit = async () => {
 		const data = await login(email.value, password.value);
 		if (data.token) {
 			localStorage.setItem('token', data.token);
+			localStorage.setItem('user', JSON.stringify(data.user));
+
+			axios.defaults.headers.common['Authorization'] = `Bearer ${data.token}`;
+
+			try {
+				const resInst = await showInstitutions(data.user.id_institution);
+				const inst = resInst?.data?.data ?? resInst?.data ?? resInst;
+				localStorage.setItem('institution', JSON.stringify(inst));
+			} catch (errInst) {
+				console.warn('No se pudo obtener la institución:', errInst);
+			}
+
 			router.push('/dashboard');
 		} else {
 			alert('No se recibió token.');
@@ -132,3 +145,4 @@ const handleSubmit = async () => {
 	}
 };
 </script>
+

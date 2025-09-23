@@ -32,6 +32,7 @@ import SpecialtiesView from '../views/Tables/SpecialtiesView.vue';
 import TypesView from '../views/Tables/TypesView.vue';
 import MicroCredentialView from '../views/Tables/MicroCredentialView.vue';
 import StudentView from '../views/Tables/StudentView.vue';
+import DualTypesView from '../views/Tables/DualTypesView.vue';
 
 import UnAuthRoutes from "../const/UnauthRoutes.js";
 import AuthRoutes from '../const/AuthRoutes';
@@ -59,6 +60,7 @@ const routes = [
 	{ path: '/micro-credentials-table', name: 'MicroCredentialsTable', component: MicroCredentialView },
 	{ path: '/student-table', name: 'StudentsTable', component: StudentView },
     { path: '/type-table', name: 'TypeTable', component: TypesView },
+	{ path: '/dual_type-table', name: 'Dual_TypeTable', component: DualTypesView },
     { path: '/line-chart', name: 'LineChart', component: LineChart },
     { path: '/bar-chart', name: 'BarChart', component: BarChart },
     { path: '/alerts', name: 'Alerts', component: Alerts },

@@ -15,7 +15,7 @@ const props = defineProps({
 });
 const emit = defineEmits(['update:modelValue', 'update:reportaModeloDual', 'submitSinUnidadDual', 'update:institutions']);
 
-const errors = ref<{ id_institution?: string; number_student?: string }>({});
+const errors = ref<{ id_institution?: string }>({});
 const searchTerm = ref('');
 const showDropdown = ref(false);
 const isDropdownFocused = ref(false);
@@ -28,25 +28,6 @@ const filteredInstitutions = computed(() => {
 });
 
 const updateField = (field: string, value: any) => {
-	if (field === 'number_student') {
-		const intValue = parseInt(value, 10);
-
-		if (!isNaN(intValue) && intValue > 0) {
-			emit('update:modelValue', {
-				...props.modelValue,
-				[field]: intValue
-			});
-			errors.value.number_student = '';
-		} else {
-			emit('update:modelValue', {
-				...props.modelValue,
-				[field]: ''
-			});
-			errors.value.number_student = 'Ingrese un número entero válido (mayor a 0)';
-		}
-		return;
-	}
-
 	emit('update:modelValue', {
 		...props.modelValue,
 		[field]: value
@@ -74,16 +55,6 @@ const validate = () => {
 
 	if (!props.modelValue?.id_institution) {
 		errors.value.id_institution = 'Este campo es obligatorio';
-		valid = false;
-	}
-
-	const numberStudent = props.modelValue?.number_student;
-	if (
-		!numberStudent ||
-		!Number.isInteger(numberStudent) ||
-		Number(numberStudent) <= 0
-	) {
-		errors.value.number_student = 'Debe ingresar un número entero válido de estudiantes';
 		valid = false;
 	}
 
@@ -219,45 +190,11 @@ watch(searchTerm, (newValue) => {
 			</div>
 		</div>
 
-		<!-- Número de Participantes -->
-		<div class="bg-gray-50 rounded-xl p-6 border border-gray-200">
-			<h3 class="text-lg font-semibold text-brand-800 mb-4 flex items-center">
-				<span class="w-6 h-6 bg-brand-100 rounded-full flex items-center justify-center text-brand-800 text-sm mr-2">2</span>
-				Número de Participantes
-			</h3>
-
-			<div class="space-y-3">
-				<label class="label">Total de estudiantes en el proyecto</label>
-				<div class="relative max-w-xs">
-					<input
-						type="number"
-						min="1"
-						step="1"
-						class="input text-center text-lg font-semibold pr-24"
-						:class="{ 'border-red-500': errors.number_student, 'border-green-500': props.modelValue?.number_student && !errors.number_student }"
-						:value="props.modelValue?.number_student"
-						placeholder="0"
-						@input="updateField('number_student', $event.target.value)" />
-					<div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-						<span class="text-gray-500 text-sm bg-white pl-2">estudiantes</span>
-					</div>
-				</div>
-				<p v-if="errors.number_student" class="text-red-500 text-sm mt-2 flex items-center">
-					<svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
-						<path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2h-1V9z" clip-rule="evenodd" />
-					</svg>
-					{{ errors.number_student }}
-				</p>
-				<p class="text-sm text-gray-500">Ingrese el número total de estudiantes participantes en este proyecto dual</p>
-			</div>
-		</div>
-
-		<!-- Tipo de Seguimiento -->
 		<div
 			v-if="mode === 'create' || (mode !== 'create' && reportaModeloDual !== true)"
 			class="bg-gray-50 rounded-xl p-6 border border-gray-200">
 			<h3 class="text-lg font-semibold text-brand-800 mb-4 flex items-center">
-				<span class="w-6 h-6 bg-brand-100 rounded-full flex items-center justify-center text-brand-800 text-sm mr-2">3</span>
+				<span class="w-6 h-6 bg-brand-100 rounded-full flex items-center justify-center text-brand-800 text-sm mr-2">2</span>
 				Tipo de Seguimiento
 			</h3>
 
@@ -321,6 +258,34 @@ watch(searchTerm, (newValue) => {
 			</div>
 		</div>
 
+		<div class="bg-brand-100 rounded-xl p-6 border border-brand-200">
+			<h3 class="text-lg font-semibold text-brand-800 mb-4 flex items-center">
+				<span class="w-6 h-6 bg-brand-200 rounded-full flex items-center justify-center text-brand-100 text-sm mr-2">3</span>
+				Información Importante
+			</h3>
+			<div class="space-y-3">
+				<div class="flex items-start">
+					<svg class="w-5 h-5 text-brand-800 mt-0.5 mr-3 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+						<path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" />
+					</svg>
+					<div>
+						<p class="font-medium text-brand-800">Registro de Estudiantes</p>
+						<p class="text-brand-800 text-sm">En el paso 3 podrás agregar los estudiantes participantes. Debes agregar al menos 1 estudiante.</p>
+					</div>
+				</div>
+				<div class="flex items-start">
+					<svg class="w-5 h-5 text-brand-800 mt-0.5 mr-3 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+						<path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" />
+					</svg>
+					<div>
+						<p class="font-medium text-brand-800">Flexibilidad</p>
+						<p class="text-brand-800 text-sm">Puedes agregar tantos estudiantes como necesites. No hay límite máximo.</p>
+					</div>
+				</div>
+			</div>
+		</div>
+
+
 		<mdl-institution
 			:show="showModal"
 			:data="modalData"
@@ -348,14 +313,5 @@ watch(searchTerm, (newValue) => {
 .fade-leave-to {
 	opacity: 0;
 	transform: translateY(-10px);
-}
-
-input[type="number"]::-webkit-outer-spin-button,
-input[type="number"]::-webkit-inner-spin-button {
-	-webkit-appearance: none;
-	margin: 0;
-}
-input[type="number"] {
-	-moz-appearance: textfield;
 }
 </style>

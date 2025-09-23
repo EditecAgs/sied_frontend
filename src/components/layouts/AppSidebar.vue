@@ -234,6 +234,7 @@ const menuGroups = [
 					{ name: 'Instituciones', path: '/institution-table', pro: false },
 					{ name: 'Certificaciones', path: '/micro-credentials-table', pro: false },
 					{ name: 'Estudiantes', path: '/student-table', pro: false },
+					{ name: 'Tipo de Proyecto', path: '/dual_type-table', pro: false },
 					{ name: 'Subsistemas', path: '/subsystem-table', pro: false },
 					{ name: 'Periodos Académicos', path: '/periods_Academic-table', pro: false },
 					{ name: 'Organizaciones', path: '/Organization-table', pro: false },

@@ -26,6 +26,7 @@ export default [
     'SpecialtiesTable',
     'TypeTable',
 	'MicroCredentialsTable',
-	'StudentsTable'
+	'StudentsTable',
+	'Dual_TypeTable'
 
 ];
