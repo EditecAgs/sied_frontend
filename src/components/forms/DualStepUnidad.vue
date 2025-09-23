@@ -7,27 +7,54 @@ import mdlOrganization from '../modals/modals-forms/mdlOrganization.vue';
 import { useModal } from '../../composables/UseModal';
 import { getOrganizations } from '../../services/organizations/organizations.js';
 
+const emit = defineEmits(['update:modelValue']);
+const props = defineProps({
+	modelValue: { type: Object, required: true },
+	areas: Array,
+	organizations: Array,
+	agreementStatuses: Array,
+	supportTypes: Array,
+	dualTypes: Array
+});
+
 const { showModal, modalData, openModal, closeModal } = useModal();
 const handleSavedOrganization = async () => {
 	closeModal();
 	const res = await getOrganizations();
 	emit('update:modelValue', {
 		...props.modelValue,
-		id_organization: res.data?.[res.data.length - 1]?.id // opcional: selecciona la nueva
+		id_organization: res.data?.[res.data.length - 1]?.id
 	});
 };
 
-const props = defineProps({
-	modelValue: Object,
-	areas: Array,
-	clusters: Array,
-	agreementStatuses: Array,
-	supportTypes: Array,
-	organizations: Array
-});
-const emit = defineEmits(['update:modelValue']);
-
 const errors = ref({});
+
+const initializeSearchValues = () => {
+	if (props.modelValue.id_dual_area) {
+		const area = props.areas?.find(a => a.id === props.modelValue.id_dual_area);
+		searchArea.value = area?.name || '';
+	}
+
+	if (props.modelValue.id_organization) {
+		const org = props.organizations?.find(o => o.id === props.modelValue.id_organization);
+		searchOrganization.value = org?.name || '';
+	}
+
+	if (props.modelValue.status_document) {
+		const status = props.agreementStatuses?.find(s => s.id === props.modelValue.status_document);
+		searchStatus.value = status?.name || '';
+	}
+
+	if (props.modelValue.economic_support) {
+		const support = props.supportTypes?.find(s => s.id === props.modelValue.economic_support);
+		searchSupport.value = support?.name || '';
+	}
+
+	if (props.modelValue.dual_type_id) {
+		const dualType = props.dualTypes?.find(d => d.id === props.modelValue.dual_type_id);
+		searchDualType.value = dualType?.name || '';
+	}
+};
 
 const searchArea = ref('');
 const showAreaDropdown = ref(false);
@@ -45,56 +72,51 @@ const searchSupport = ref('');
 const showSupportDropdown = ref(false);
 const supportDropdownRef = ref(null);
 
+const searchDualType = ref('');
+const showDualTypeDropdown = ref(false);
+const dualTypeDropdownRef = ref(null);
 
 const handleClickOutside = (event) => {
-	if (areaDropdownRef.value && !areaDropdownRef.value.contains(event.target)) {
-		showAreaDropdown.value = false;
-	}
-	if (organizationDropdownRef.value && !organizationDropdownRef.value.contains(event.target)) {
-		showOrganizationDropdown.value = false;
-	}
-	if (statusDropdownRef.value && !statusDropdownRef.value.contains(event.target)) {
-		showStatusDropdown.value = false;
-	}
-	if (supportDropdownRef.value && !supportDropdownRef.value.contains(event.target)) {
-		showSupportDropdown.value = false;
-	}
+	if (areaDropdownRef.value && !areaDropdownRef.value.contains(event.target)) showAreaDropdown.value = false;
+	if (organizationDropdownRef.value && !organizationDropdownRef.value.contains(event.target)) showOrganizationDropdown.value = false;
+	if (statusDropdownRef.value && !statusDropdownRef.value.contains(event.target)) showStatusDropdown.value = false;
+	if (supportDropdownRef.value && !supportDropdownRef.value.contains(event.target)) showSupportDropdown.value = false;
+	if (dualTypeDropdownRef.value && !dualTypeDropdownRef.value.contains(event.target)) showDualTypeDropdown.value = false;
 };
-
 
 onMounted(() => {
 	document.addEventListener('click', handleClickOutside);
+	initializeSearchValues();
 });
 
-onBeforeUnmount(() => {
-	document.removeEventListener('click', handleClickOutside);
-});
+onBeforeUnmount(() => document.removeEventListener('click', handleClickOutside));
 
-const filteredAreas = computed(() => {
-	if (!searchArea.value) return props.areas || [];
-	return (props.areas || []).filter(a => a.name.toLowerCase().includes(searchArea.value.toLowerCase()));
-});
-const filteredOrganizations = computed(() => {
-	if (!searchOrganization.value) return props.organizations || [];
-	return (props.organizations || []).filter(o => o.name.toLowerCase().includes(searchOrganization.value.toLowerCase()));
-});
-const filteredStatuses = computed(() => {
-	if (!searchStatus.value) return props.agreementStatuses || [];
-	return (props.agreementStatuses || []).filter(s => s.name.toLowerCase().includes(searchStatus.value.toLowerCase()));
-});
-const filteredSupports = computed(() => {
-	if (!searchSupport.value) return props.supportTypes || [];
-	return (props.supportTypes || []).filter(s => s.name.toLowerCase().includes(searchSupport.value.toLowerCase()));
-});
+
+watch(() => props.modelValue, () => {
+	initializeSearchValues();
+}, { deep: true });
+
+const filteredAreas = computed(() =>
+	!searchArea.value ? props.areas || [] : (props.areas || []).filter(a => a.name.toLowerCase().includes(searchArea.value.toLowerCase()))
+);
+const filteredOrganizations = computed(() =>
+	!searchOrganization.value ? props.organizations || [] : (props.organizations || []).filter(o => o.name.toLowerCase().includes(searchOrganization.value.toLowerCase()))
+);
+const filteredStatuses = computed(() =>
+	!searchStatus.value ? props.agreementStatuses || [] : (props.agreementStatuses || []).filter(s => s.name.toLowerCase().includes(searchStatus.value.toLowerCase()))
+);
+const filteredSupports = computed(() =>
+	!searchSupport.value ? props.supportTypes || [] : (props.supportTypes || []).filter(s => s.name.toLowerCase().includes(searchSupport.value.toLowerCase()))
+);
+const filteredDualTypes = computed(() =>
+	!searchDualType.value ? props.dualTypes || [] : (props.dualTypes || []).filter(d => d.name.toLowerCase().includes(searchDualType.value.toLowerCase()))
+);
 
 const period_start = ref(props.modelValue.period_start ? new Date(props.modelValue.period_start) : null);
 const period_end = ref(props.modelValue.period_end ? new Date(props.modelValue.period_end) : null);
 
 const update = (field, value) => {
-	emit('update:modelValue', {
-		...props.modelValue,
-		[field]: value
-	});
+	emit('update:modelValue', { ...props.modelValue, [field]: value });
 	if (errors.value[field]) errors.value[field] = '';
 
 	if (field === 'id_dual_area') {
@@ -117,6 +139,11 @@ const update = (field, value) => {
 		searchSupport.value = selected?.name || '';
 		showSupportDropdown.value = false;
 	}
+	if (field === 'dual_type_id') {
+		const selected = props.dualTypes?.find(d => d.id === value);
+		searchDualType.value = selected?.name || '';
+		showDualTypeDropdown.value = false;
+	}
 };
 
 const validate = () => {
@@ -127,21 +154,36 @@ const validate = () => {
 		'period_start',
 		'period_end',
 		'status_document',
-		'economic_support'
+		'economic_support',
+		'amount',
+		'advisor',
+		'is_concluded',
+		'is_hired',
+		'dual_type_id'
 	];
 
 	let isValid = true;
 	errors.value = {};
 
 	for (const field of requiredFields) {
-		if (!props.modelValue?.[field]) {
+		if (props.modelValue[field] === null || props.modelValue[field] === undefined || props.modelValue[field] === '') {
 			errors.value[field] = 'Este campo es obligatorio';
 			isValid = false;
 		}
 	}
 
-	const start = new Date(props.modelValue?.period_start);
-	const end = new Date(props.modelValue?.period_end);
+	if (props.modelValue.amount < 0) {
+		errors.value.amount = 'El monto debe ser mayor o igual a 0';
+		isValid = false;
+	}
+
+	if (props.modelValue.qualification && (props.modelValue.qualification < 0 || props.modelValue.qualification > 100)) {
+		errors.value.qualification = 'La calificación debe estar entre 0 y 100';
+		isValid = false;
+	}
+
+	const start = new Date(props.modelValue.period_start);
+	const end = new Date(props.modelValue.period_end);
 	if (start && end && start > end) {
 		errors.value.period_end = 'La fecha de fin debe ser posterior a la fecha de inicio';
 		isValid = false;
@@ -157,273 +199,263 @@ watch(period_start, (val) => {
 		update('period_start', formatted);
 	}
 });
-
 watch(period_end, (val) => {
 	if (val) {
 		const formatted = new Date(val).toISOString().slice(0, 10);
 		update('period_end', formatted);
 	}
 });
-
-watch(
-	[
-		() => props.modelValue?.id_dual_area,
-		() => props.modelValue?.id_organization,
-		() => props.modelValue?.status_document,
-		() => props.modelValue?.economic_support
-	],
-	([newAreaId, newOrgId, newStatusId, newSupportId]) => {
-		if (newAreaId && props.areas?.length) {
-			const selected = props.areas.find(a => a.id === newAreaId);
-			searchArea.value = selected?.name || '';
-		} else {
-			searchArea.value = '';
-		}
-		if (newOrgId && props.organizations?.length) {
-			const selected = props.organizations.find(o => o.id === newOrgId);
-			searchOrganization.value = selected?.name || '';
-		} else {
-			searchOrganization.value = '';
-		}
-		if (newStatusId && props.agreementStatuses?.length) {
-			const selected = props.agreementStatuses.find(s => s.id === newStatusId);
-			searchStatus.value = selected?.name || '';
-		} else {
-			searchStatus.value = '';
-		}
-		if (newSupportId && props.supportTypes?.length) {
-			const selected = props.supportTypes.find(s => s.id === newSupportId);
-			searchSupport.value = selected?.name || '';
-		} else {
-			searchSupport.value = '';
-		}
-	},
-	{ immediate: true }
-);
 </script>
 
 <template>
 	<div class="space-y-8">
-		<h2 class="text-xl font-semibold text-brand-900">Unidad Dual</h2>
+		<div class="text-center">
+			<h2 class="text-2xl font-bold text-brand-900 mb-2">Unidad Dual</h2>
+			<p class="text-gray-600 text-sm">Complete la información del proyecto dual</p>
+		</div>
 
-		<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-			<div>
-				<label class="label">Nombre del Proyecto</label>
-				<input
-					type="text"
-					class="input"
-					:value="modelValue.name_report"
-					@input="update('name_report', $event.target.value)" />
-				<p v-if="errors.name_report" class="text-red-500 text-sm mt-1">{{ errors.name_report }}</p>
-			</div>
-
-			<div ref="areaDropdownRef">
-				<label class="label">Área del Proyecto Dual</label>
-				<div class="relative">
+		<div class="bg-gray-50 rounded-xl p-6 border border-gray-200">
+			<h3 class="text-lg font-semibold text-brand-800 mb-4 flex items-center">
+				<span class="w-6 h-6 bg-brand-100 rounded-full flex items-center justify-center text-brand-800 text-sm mr-2">1</span>
+				Proyecto Dual
+			</h3>
+			<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+				<div>
+					<label class="label">Nombre del Proyecto</label>
 					<input
-						v-model="searchArea"
+						type="text"
 						class="input"
-						placeholder="Buscar área..."
-						@focus="showAreaDropdown = true"
-						@input="showAreaDropdown = true" />
-					<ul
-						v-if="showAreaDropdown && filteredAreas.length"
-						class="absolute z-[9999] bg-white border border-gray-300 rounded-lg mt-1 w-full max-h-48 overflow-y-auto shadow-md">
-						<li
-							v-for="area in filteredAreas"
-							:key="area.id"
-							class="px-4 py-2 hover:bg-gray-100 cursor-pointer"
-							@click="update('id_dual_area', area.id)">
-							{{ area.name }}
-						</li>
-					</ul>
+						:value="modelValue.name_report"
+						@input="update('name_report', $event.target.value)" />
+					<p v-if="errors.name_report" class="error-msg">{{ errors.name_report }}</p>
 				</div>
-				<p v-if="errors.id_dual_area" class="text-red-500 text-sm mt-1">{{ errors.id_dual_area }}</p>
-			</div>
 
-			<div ref="organizationDropdownRef" class="flex items-end gap-2">
-				<div class="flex-1">
-					<label class="label">Organización</label>
+				<div ref="areaDropdownRef">
+					<label class="label">Área del Proyecto Dual</label>
 					<div class="relative">
 						<input
-							v-model="searchOrganization"
-							class="input"
-							placeholder="Buscar organización..."
-							@focus="showOrganizationDropdown = true"
-							@input="showOrganizationDropdown = true" />
+							v-model="searchArea" class="input" placeholder="Buscar área..."
+							@focus="showAreaDropdown = true" @input="showAreaDropdown = true" />
 						<ul
-							v-if="showOrganizationDropdown && filteredOrganizations.length"
-							class="absolute z-[9999] bg-white border border-gray-300 rounded-lg mt-1 w-full max-h-48 overflow-y-auto shadow-md">
+							v-if="showAreaDropdown && filteredAreas.length"
+							class="dropdown">
 							<li
-								v-for="org in filteredOrganizations"
-								:key="org.id"
-								class="px-4 py-2 hover:bg-gray-100 cursor-pointer"
-								@click="update('id_organization', org.id)">
-								{{ org.name }}
+								v-for="area in filteredAreas" :key="area.id"
+								class="dropdown-item"
+								@click="update('id_dual_area', area.id)">
+								{{ area.name }}
 							</li>
 						</ul>
 					</div>
-					<p v-if="errors.id_organization" class="text-red-500 text-sm mt-1">{{ errors.id_organization }}</p>
+					<p v-if="errors.id_dual_area" class="error-msg">{{ errors.id_dual_area }}</p>
+				</div>
+			</div>
+		</div>
+
+		<div class="bg-gray-50 rounded-xl p-6 border border-gray-200">
+			<h3 class="text-lg font-semibold text-brand-800 mb-4 flex items-center">
+				<span class="w-6 h-6 bg-brand-100 rounded-full flex items-center justify-center text-brand-800 text-sm mr-2">2</span>
+				Organización
+			</h3>
+			<div ref="organizationDropdownRef" class="flex items-end gap-2">
+				<div class="flex-1 relative">
+					<label class="label">Organización</label>
+					<input
+						v-model="searchOrganization" class="input" placeholder="Buscar organización..."
+						@focus="showOrganizationDropdown = true" @input="showOrganizationDropdown = true" />
+					<ul
+						v-if="showOrganizationDropdown && filteredOrganizations.length"
+						class="dropdown">
+						<li
+							v-for="org in filteredOrganizations" :key="org.id"
+							class="dropdown-item"
+							@click="update('id_organization', org.id)">
+							{{ org.name }}
+						</li>
+					</ul>
+					<p v-if="errors.id_organization" class="error-msg">{{ errors.id_organization }}</p>
 				</div>
 				<btn-create
-					:table="'organization'"
-					class="h-auto mb-[9px]"
+					:table="'organization'" class="h-12 px-4 flex-shrink-0"
+					tooltip="Crear nueva organización"
 					@open="({ mode, pk, table }) => openModal(mode, pk, table)" />
 			</div>
 		</div>
 
-		<div class="grid grid-cols-1 md:grid-cols-2 gap-6 z-50 relative overflow-visible">
-			<div class="relative z-50">
-				<label class="label">Fecha de Inicio del Proyecto Dual</label>
-				<Datepicker
-					v-model="period_start"
-					placeholder="Seleccione la fecha de inicio"
-					:teleport="true"
-					class="input z-50"
-					placement="bottom-start"
-					:adaptivePosition="true"
-					:enable-time-picker="false" />
-				<p v-if="errors.period_start" class="text-red-500 text-sm mt-1">{{ errors.period_start }}</p>
-			</div>
-			<div class="relative z-50">
-				<label class="label">Fecha de Fin del Proyecto Dual</label>
-				<Datepicker
-					v-model="period_end"
-					placeholder="Seleccione la fecha de fin"
-					:teleport="true"
-					class="input z-50"
-					placement="bottom-start"
-					:adaptivePosition="true"
-					:enable-time-picker="false" />
-				<p v-if="errors.period_end" class="text-red-500 text-sm mt-1">{{ errors.period_end }}</p>
+		<div class="bg-gray-50 rounded-xl p-6 border border-gray-200">
+			<h3 class="text-lg font-semibold text-brand-800 mb-4 flex items-center">
+				<span class="w-6 h-6 bg-brand-100 rounded-full flex items-center justify-center text-brand-800 text-sm mr-2">3</span>
+				Periodo
+			</h3>
+			<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+				<div>
+					<label class="label">Fecha de Inicio</label>
+					<Datepicker v-model="period_start" placeholder="Seleccione la fecha" :enable-time-picker="false" class="input" />
+					<p v-if="errors.period_start" class="error-msg">{{ errors.period_start }}</p>
+				</div>
+				<div>
+					<label class="label">Fecha de Fin</label>
+					<Datepicker v-model="period_end" placeholder="Seleccione la fecha" :enable-time-picker="false" class="input" />
+					<p v-if="errors.period_end" class="error-msg">{{ errors.period_end }}</p>
+				</div>
 			</div>
 		</div>
 
-		<div ref="statusDropdownRef">
-			<label class="label">Estado del Convenio Dual</label>
-			<div class="relative">
-				<input
-					v-model="searchStatus"
-					class="input"
-					placeholder="Buscar estado..."
-					@focus="showStatusDropdown = true"
-					@input="showStatusDropdown = true" />
-				<ul
-					v-if="showStatusDropdown && filteredStatuses.length"
-					class="absolute z-[9999] bg-white border border-gray-300 rounded-lg mt-1 w-full max-h-48 overflow-y-auto shadow-md">
-					<li
-						v-for="estado in filteredStatuses"
-						:key="estado.id"
-						class="px-4 py-2 hover:bg-gray-100 cursor-pointer"
-						@click="update('status_document', estado.id)">
-						{{ estado.name }}
-					</li>
-				</ul>
-			</div>
-			<p v-if="errors.status_document" class="text-red-500 text-sm mt-1">{{ errors.status_document }}</p>
-		</div>
+		<div class="bg-gray-50 rounded-xl p-6 border border-gray-200 space-y-6">
+			<h3 class="text-lg font-semibold text-brand-800 mb-4 flex items-center">
+				<span class="w-6 h-6 bg-brand-100 rounded-full flex items-center justify-center text-brand-800 text-sm mr-2">4</span>
+				Convenio y Apoyo
+			</h3>
 
-		<div ref="supportDropdownRef" class="flex gap-4 items-end">
-			<!-- Tipo de Apoyo Económico -->
-			<div class="flex-1">
-				<label class="label">Tipo de Apoyo Económico</label>
+			<div ref="statusDropdownRef">
+				<label class="label">Estado del Convenio Dual</label>
 				<div class="relative">
 					<input
-						v-model="searchSupport"
-						class="input"
-						placeholder="Buscar apoyo económico..."
-						@focus="showSupportDropdown = true"
-						@input="showSupportDropdown = true" />
-					<ul
-						v-if="showSupportDropdown && filteredSupports.length"
-						class="absolute z-[9999] bg-white border border-gray-300 rounded-lg mt-1 w-full max-h-48 overflow-y-auto shadow-md">
+						v-model="searchStatus" class="input" placeholder="Buscar estado..."
+						@focus="showStatusDropdown = true" @input="showStatusDropdown = true" />
+					<ul v-if="showStatusDropdown && filteredStatuses.length" class="dropdown">
 						<li
-							v-for="apoyo in filteredSupports"
-							:key="apoyo.id"
-							class="px-4 py-2 hover:bg-gray-100 cursor-pointer"
-							@click="update('economic_support', apoyo.id)">
-							{{ apoyo.name }}
+							v-for="estado in filteredStatuses" :key="estado.id"
+							class="dropdown-item"
+							@click="update('status_document', estado.id)">
+							{{ estado.name }}
 						</li>
 					</ul>
 				</div>
-				<p v-if="errors.economic_support" class="text-red-500 text-sm mt-1">{{ errors.economic_support }}</p>
+				<p v-if="errors.status_document" class="error-msg">{{ errors.status_document }}</p>
 			</div>
 
-			<div class="w-40 flex-shrink-0">
-				<label class="label">Cantidad</label>
-				<input
-					type="number"
-					min="0"
-					step="0.01"
-					class="input"
-					:value="modelValue.amount_support"
-					@input="update('amount_support', $event.target.value)" />
+			<div ref="supportDropdownRef" class="flex gap-4 items-end">
+				<div class="flex-1">
+					<label class="label">Tipo de Apoyo Económico</label>
+					<div class="relative">
+						<input
+							v-model="searchSupport" class="input" placeholder="Buscar apoyo..."
+							@focus="showSupportDropdown = true" @input="showSupportDropdown = true" />
+						<ul v-if="showSupportDropdown && filteredSupports.length" class="dropdown">
+							<li
+								v-for="apoyo in filteredSupports" :key="apoyo.id"
+								class="dropdown-item"
+								@click="update('economic_support', apoyo.id)">
+								{{ apoyo.name }}
+							</li>
+						</ul>
+					</div>
+					<p v-if="errors.economic_support" class="error-msg">{{ errors.economic_support }}</p>
+				</div>
+				<div class="w-40 flex-shrink-0">
+					<label class="label">Monto</label>
+					<input
+						type="number" min="0" step="0.01" class="input"
+						:value="modelValue.amount"
+						@input="update('amount', parseFloat($event.target.value))" />
+					<p v-if="errors.amount" class="error-msg">{{ errors.amount }}</p>
+				</div>
 			</div>
 		</div>
 
+		<div class="bg-gray-50 rounded-xl p-6 border border-gray-200 space-y-6">
+			<h3 class="text-lg font-semibold text-brand-800 mb-4 flex items-center">
+				<span class="w-6 h-6 bg-brand-100 rounded-full flex items-center justify-center text-brand-800 text-sm mr-2">5</span>
+				Información Adicional
+			</h3>
+
+			<div>
+				<label class="label">Calificación</label>
+				<input
+					type="number" min="0" max="100" step="1" class="input"
+					:value="modelValue.qualification"
+					@input="update('qualification', parseInt($event.target.value))" />
+				<p v-if="errors.qualification" class="error-msg">{{ errors.qualification }}</p>
+			</div>
+
+			<div>
+				<label class="label">Asesor</label>
+				<select
+					class="input" :value="modelValue.advisor"
+					@change="update('advisor', $event.target.value)">
+					<option value="">Seleccione...</option>
+					<option value="interno">Interno</option>
+					<option value="externo">Externo</option>
+				</select>
+				<p v-if="errors.advisor" class="error-msg">{{ errors.advisor }}</p>
+			</div>
+
+			<div class="bg-gray-50 rounded-xl p-6 border border-gray-200">
+				<h3 class="text-lg font-semibold text-brand-800 mb-4 flex items-center">
+					<span class="w-6 h-6 bg-brand-100 rounded-full flex items-center justify-center text-brand-800 text-sm mr-2">4</span>
+					Estado del Proyecto
+				</h3>
+				<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+					<div>
+						<label class="label">Proyecto Concluido</label>
+						<select
+							class="input"
+							:value="modelValue.is_concluded"
+							@change="update('is_concluded', parseInt($event.target.value))"
+						>
+							<option :value="0">No</option>
+							<option :value="1">Sí</option>
+						</select>
+					</div>
+
+					<div>
+						<label class="label">Contratado</label>
+						<select
+							class="input"
+							:value="modelValue.is_hired"
+							@change="update('is_hired', parseInt($event.target.value))"
+						>
+							<option :value="0">No</option>
+							<option :value="1">Sí</option>
+						</select>
+					</div>
+				</div>
+			</div>
+
+
+
+			<div ref="dualTypeDropdownRef">
+				<label class="label">Tipo de Proyecto Dual</label>
+				<div class="relative">
+					<input
+						v-model="searchDualType" class="input" placeholder="Buscar tipo..."
+						@focus="showDualTypeDropdown = true" @input="showDualTypeDropdown = true" />
+					<ul
+						v-if="showDualTypeDropdown && filteredDualTypes.length"
+						class="dropdown">
+						<li
+							v-for="dual in filteredDualTypes" :key="dual.id"
+							class="dropdown-item"
+							@click="update('dual_type_id', dual.id)">
+							{{ dual.name }}
+						</li>
+					</ul>
+				</div>
+				<p v-if="errors.dual_type_id" class="error-msg">{{ errors.dual_type_id }}</p>
+			</div>
+		</div>
 
 		<mdl-organization
-			:show="showModal"
-			:data="modalData"
-			@close="closeModal"
-			@saved="handleSavedOrganization" />
+			:show="showModal" :data="modalData"
+			@close="closeModal" @saved="handleSavedOrganization" />
 	</div>
 </template>
 
-<style >
+<style scoped>
 .label {
 	@apply block text-sm font-medium text-gray-700 mb-2;
 }
 .input {
-	@apply w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-brand-800 focus:border-brand-800;
+	@apply w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-600 focus:border-transparent transition-colors;
 }
-
-.dp__menu {
-	background-color: #ffffff;
-	border-radius: 10px;
-	border: 1px solid #d1d1d1;
-	color: #333;
-	font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-	box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
+.dropdown {
+	@apply absolute z-10 bg-white border border-gray-300 rounded-lg mt-1 w-full max-h-60 overflow-y-auto shadow-lg;
 }
-
-.dp__calendar_header {
-	background-color: #fff;
-	color: #5b2245;
-	font-weight: bold;
-	border-bottom: 1px solid #e0e0e0;
+.dropdown-item {
+	@apply px-4 py-3 hover:bg-brand-50 cursor-pointer transition-colors border-b border-gray-100 last:border-b-0;
 }
-
-.dp__calendar_header_item {
-	color: #82181a;
-}
-.dp__today {
-	background-color: #800033;
-	color: white;
-	font-weight: bold;
-}
-
-.dp__cell_inner {
-	background-color: transparent;
-	border-radius: 6px;
-	padding: 5px;
-	color: #333;
-	transition: background-color 0.2s ease;
-}
-
-.dp__today {
-	background-color: #f7e6f1;
-	color: #82181a;
-	font-weight: bold;
-}
-
-.dp__cell_inner:hover {
-	background-color: #f2e5ed;
-	cursor: pointer;
-}
-
-.dp__cell_inner.dp__active_date {
-	background-color: #82181a;
-	color: #fff;
+.error-msg {
+	@apply text-red-500 text-sm mt-2 flex items-center;
 }
 </style>

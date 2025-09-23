@@ -24,6 +24,9 @@ export default [
     'EconomicTable',
     'SectorsTable',
     'SpecialtiesTable',
-    'TypeTable'
+    'TypeTable',
+	'MicroCredentialsTable',
+	'StudentsTable',
+	'Dual_TypeTable'
 
 ];

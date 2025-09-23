@@ -60,7 +60,9 @@ const afterError = (response) => {
 			class="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm"
 			style="margin-top: 0px"
 			@click.self="emit('close')">
-			<div class="bg-white rounded-2xl shadow-2xl w-full max-w-xl p-8 relative max-h-[85vh] flex flex-col overflow-hidden">
+			<div
+				class="bg-white rounded-2xl shadow-2xl w-full max-w-xl p-8 relative max-h-[85vh] flex flex-col overflow-hidden"
+				style="background-image: url('/images/background/bg-white-flores.png');">
 				<div class="flex items-center justify-between bg-brand-900 -mx-8 -mt-8 px-8 py-4 rounded-t-2xl">
 					<h4 class="text-xl font-semibold text-white">
 						{{ data.mode === 'create' ? `Crear ${data.table}` : `Editar ${data.table}` }}
@@ -105,7 +107,7 @@ const afterError = (response) => {
 						</template>
 					</div>
 
-					<div class="flex justify-end gap-3 mt-6 pt-4 border-t border-gray-200 sticky bottom-0 bg-white">
+					<div class="flex justify-end gap-3 mt-6 pt-4 border-t border-gray-200 sticky bottom-0 bg-transparent">
 						<button
 							type="button"
 							class="px-5 py-2 rounded-lg bg-gray-100 text-gray-700 font-semibold hover:bg-gray-200 transition"
