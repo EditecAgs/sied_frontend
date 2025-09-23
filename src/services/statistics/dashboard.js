@@ -104,4 +104,42 @@ export function getProjectsBySectorMexico(page = 1) {
 	});
 }
 
+export function getOrganizationsByScope() {
+	return new Promise((resolve, reject) => {
+		axios
+			.get('organizations/scope/count')
+			.then((response) => {
+				resolve(response);
+			})
+			.catch((error) => {
+				reject(error);
+			});
+	});
+}
+
+export function getProjectsByEconomicSupport() {
+	return new Promise((resolve, reject) => {
+		axios
+			.get('projects/economic-support')
+			.then((response) => {
+				resolve(response);
+			})
+			.catch((error) => {
+				reject(error);
+			});
+	});
+}
+
+export function getAverageAmountByEconomicSupport() {
+	return new Promise((resolve, reject) => {
+		axios
+			.get('projects/economic-support/average')
+			.then((response) => {
+				resolve(response);
+			})
+			.catch((error) => {
+				reject(error);
+			});
+	});
+}
 

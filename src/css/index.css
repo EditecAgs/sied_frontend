@@ -206,6 +206,11 @@
 */
 
 @layer base {
+    input,
+    textarea,
+    select {
+        border: 1px solid #931f44 !important;
+    }
     *,
     ::after,
     ::before,
