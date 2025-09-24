@@ -119,6 +119,7 @@ const formData = reactive({
 		economic_support: '',
 		amount: '',
 		qualification: '',
+		max_qualification: '',
 		advisor: '',
 		is_concluded: 0,
 		is_hired: 0,
@@ -128,7 +129,6 @@ const formData = reactive({
 
 
 const canSubmit = computed(() => {
-	// Para el paso 2, solo verificar que haya al menos 1 estudiante
 	if (currentStep.value === 2) {
 		const studentCount = formData.personal.dual_project_students?.length || 0;
 		return studentCount >= 1;
@@ -156,7 +156,6 @@ const resetForm = () => {
 	};
 	formData.academico = {
 		id_institution: '',
-		// Se elimina number_student
 	};
 	formData.unidadDual = {
 		name_report: '',
@@ -168,6 +167,7 @@ const resetForm = () => {
 		economic_support: '',
 		amount: '',
 		qualification: '',
+		max_qualification: '',
 		advisor: '',
 		is_concluded: 0,
 		is_hired: 0,
@@ -214,7 +214,6 @@ watch(
 
 				formData.academico = {
 					id_institution: project.id_institution ?? '',
-					// Se elimina number_student
 				};
 
 				formData.unidadDual = {
@@ -230,7 +229,8 @@ watch(
 					advisor: project.dual_project_reports?.advisor ?? '',
 					is_concluded: project.dual_project_reports?.is_concluded ?? 0,
 					is_hired: project.dual_project_reports?.is_hired ?? 0,
-					dual_type_id: project.dual_project_reports?.dual_type?.id ?? ''
+					dual_type_id: project.dual_project_reports?.dual_type?.id ?? '',
+					max_qualification: project.dual_project_reports?.max_qualification ?? '',
 				};
 
 				reportaModeloDual.value = newData.mode === 'complete' ? true : !!project.dual_project_reports;
@@ -263,7 +263,7 @@ const handleNextOrSubmit = async () => {
 		if (!isValid) return;
 		nextStep();
 	} else if (currentStep.value === 2) {
-		// Nueva validación simplificada - solo verificar que haya al menos 1 estudiante
+
 		const studentCount = formData.personal.dual_project_students?.length || 0;
 
 		if (studentCount < 1) {
@@ -313,7 +313,6 @@ const imprimirYGuardar = async () => {
 			payload = {
 				has_report: 0,
 				id_institution: Number(formData.academico.id_institution),
-				// number_student se calcula automáticamente desde los estudiantes
 				number_student: formData.personal.dual_project_students?.length || 0
 			};
 		} else {
@@ -343,7 +342,6 @@ const imprimirYGuardar = async () => {
 			payload = {
 				has_report: 1,
 				id_institution: Number(formData.academico.id_institution),
-				// number_student se calcula automáticamente desde el array de estudiantes
 				number_student: studentCount,
 				students: studentsPayload,
 				name_report: formData.unidadDual.name_report,
@@ -355,6 +353,7 @@ const imprimirYGuardar = async () => {
 				economic_support: Number(formData.unidadDual.economic_support),
 				amount: Number(formData.unidadDual.amount),
 				qualification: formData.unidadDual.qualification,
+				max_qualification: String(formData.unidadDual.max_qualification) || 10,
 				advisor: formData.unidadDual.advisor,
 				is_concluded: formData.unidadDual.is_concluded,
 				is_hired: formData.unidadDual.is_hired,

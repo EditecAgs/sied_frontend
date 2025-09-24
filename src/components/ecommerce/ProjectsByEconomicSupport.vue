@@ -53,13 +53,13 @@ const chartOptions = ref({
 			return val + ' proyectos'
 		},
 		style: {
-			colors: ['#111827'],
+			colors: ['#fff'],
 			fontSize: '13px',
 			fontWeight: 600,
 		},
 	},
 	xaxis: {
-		categories: [], // nombres de apoyos
+		categories: [],
 		labels: { style: { fontSize: '13px' } },
 	},
 	yaxis: {

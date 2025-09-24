@@ -34,7 +34,7 @@ const menuItems = [
 const series = ref([])
 
 const chartOptions = ref({
-	colors: ['#83181b', '#a34245', '#c36b6f', '#e39499'], // degradado rojo → claro
+	colors: ['#83181b', '#a34245', '#c36b6f', '#e39499'],
 	chart: {
 		fontFamily: 'Outfit, sans-serif',
 		type: 'donut',
@@ -49,11 +49,16 @@ const chartOptions = ref({
 			return w.config.labels[seriesIndex] + ': ' + w.config.series[seriesIndex]
 		},
 		style: {
-			colors: ['#111827'],
-			fontSize: '13px',
+			colors: ['#f6f6f6'],
+			fontSize: '14px',
 			fontWeight: 600,
 		},
 		dropShadow: { enabled: false },
+		background: {
+			enabled: true,
+			foreColor: '#000',
+			borderWidth: 0,
+		}
 	},
 	plotOptions: {
 		pie: {
@@ -61,9 +66,24 @@ const chartOptions = ref({
 				size: '65%',
 				labels: {
 					show: true,
+					name: {
+						show: true,
+						color: '#374151',
+						fontSize: '14px',
+						fontWeight: 600,
+					},
+					value: {
+						show: true,
+						color: '#374151',
+						fontSize: '16px',
+						fontWeight: 700,
+					},
 					total: {
 						show: true,
 						label: 'Total',
+						color: '#374151',
+						fontSize: '14px',
+						fontWeight: 600,
 						formatter: function (w) {
 							return w.globals.seriesTotals.reduce((a, b) => a + b, 0)
 						},
@@ -76,7 +96,14 @@ const chartOptions = ref({
 		position: 'bottom',
 		horizontalAlign: 'center',
 		fontSize: '13px',
-		labels: { colors: '#374151' },
+		labels: {
+			colors: '#374151',
+			useSeriesColors: false
+		},
+		markers: {
+			width: 12,
+			height: 12,
+		}
 	},
 	tooltip: {
 		y: {

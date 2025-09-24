@@ -18,6 +18,8 @@ const props = defineProps({
 });
 
 const { showModal, modalData, openModal, closeModal } = useModal();
+
+const maxQualification = ref(props.modelValue.max_qualification || '');
 const handleSavedOrganization = async () => {
 	closeModal();
 	const res = await getOrganizations();
@@ -54,6 +56,10 @@ const initializeSearchValues = () => {
 		const dualType = props.dualTypes?.find(d => d.id === props.modelValue.dual_type_id);
 		searchDualType.value = dualType?.name || '';
 	}
+
+	if (props.modelValue.max_qualification) {
+		maxQualification.value = props.modelValue.max_qualification.toString();
+	}
 };
 
 const searchArea = ref('');
@@ -76,6 +82,9 @@ const searchDualType = ref('');
 const showDualTypeDropdown = ref(false);
 const dualTypeDropdownRef = ref(null);
 
+
+
+
 const handleClickOutside = (event) => {
 	if (areaDropdownRef.value && !areaDropdownRef.value.contains(event.target)) showAreaDropdown.value = false;
 	if (organizationDropdownRef.value && !organizationDropdownRef.value.contains(event.target)) showOrganizationDropdown.value = false;
@@ -90,7 +99,6 @@ onMounted(() => {
 });
 
 onBeforeUnmount(() => document.removeEventListener('click', handleClickOutside));
-
 
 watch(() => props.modelValue, () => {
 	initializeSearchValues();
@@ -166,19 +174,36 @@ const validate = () => {
 	errors.value = {};
 
 	for (const field of requiredFields) {
-		if (props.modelValue[field] === null || props.modelValue[field] === undefined || props.modelValue[field] === '') {
+		if (
+			props.modelValue[field] === null ||
+			props.modelValue[field] === undefined ||
+			props.modelValue[field] === ''
+		) {
 			errors.value[field] = 'Este campo es obligatorio';
 			isValid = false;
 		}
 	}
 
-	if (props.modelValue.amount < 0) {
-		errors.value.amount = 'El monto debe ser mayor o igual a 0';
-		isValid = false;
+	if (
+		props.modelValue.qualification !== null &&
+		props.modelValue.qualification !== undefined &&
+		props.modelValue.qualification !== ''
+	) {
+		if (!props.modelValue.max_qualification) {
+			errors.value.max_qualification = 'Seleccione la calificación máxima';
+			isValid = false;
+		} else if (
+			props.modelValue.qualification < 0 ||
+			props.modelValue.qualification > props.modelValue.max_qualification
+		) {
+			errors.value.qualification = `La calificación debe estar entre 0 y ${props.modelValue.max_qualification}`;
+			isValid = false;
+		}
 	}
 
-	if (props.modelValue.qualification && (props.modelValue.qualification < 0 || props.modelValue.qualification > 100)) {
-		errors.value.qualification = 'La calificación debe estar entre 0 y 100';
+
+	if (props.modelValue.amount < 0) {
+		errors.value.amount = 'El monto debe ser mayor o igual a 0';
 		isValid = false;
 	}
 
@@ -191,6 +216,9 @@ const validate = () => {
 
 	return isValid;
 };
+
+
+
 defineExpose({ validate });
 
 watch(period_start, (val) => {
@@ -205,6 +233,28 @@ watch(period_end, (val) => {
 		update('period_end', formatted);
 	}
 });
+
+watch(searchDualType, (val) => {
+	if (!val) {
+		update('dual_type_id', '');
+	}
+});
+
+watch(() => props.modelValue.max_qualification, (newVal) => {
+	if (newVal !== null && newVal !== undefined) {
+		maxQualification.value = newVal.toString();
+	} else {
+		maxQualification.value = '';
+	}
+});
+watch(maxQualification, (newVal) => {
+	if (newVal) {
+		update('max_qualification', Number(newVal));
+	} else {
+		update('max_qualification', '');
+	}
+});
+
 </script>
 
 <template>
@@ -360,13 +410,31 @@ watch(period_end, (val) => {
 				Información Adicional
 			</h3>
 
-			<div>
-				<label class="label">Calificación</label>
-				<input
-					type="number" min="0" max="100" step="1" class="input"
-					:value="modelValue.qualification"
-					@input="update('qualification', parseInt($event.target.value))" />
-				<p v-if="errors.qualification" class="error-msg">{{ errors.qualification }}</p>
+			<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+				<div>
+					<label class="label">Calificación máxima</label>
+					<select
+						v-model="modelValue.max_qualification"
+						class="input"
+						@change="update('max_qualification', Number(modelValue.max_qualification))">
+						<option value="">Seleccione...</option>
+						<option value="10">10</option>
+						<option value="100">100</option>
+					</select>
+					<p v-if="errors.max_qualification" class="error-msg">{{ errors.max_qualification }}</p>
+				</div>
+
+				<div>
+					<label class="label">Calificación</label>
+					<input
+						type="number"
+						class="input"
+						:min="0"
+						:max="modelValue.max_qualification || 100"
+						:value="modelValue.qualification"
+						@input="update('qualification', Number($event.target.value))" />
+					<p v-if="errors.qualification" class="error-msg">{{ errors.qualification }}</p>
+				</div>
 			</div>
 
 			<div>
@@ -380,42 +448,39 @@ watch(period_end, (val) => {
 				</select>
 				<p v-if="errors.advisor" class="error-msg">{{ errors.advisor }}</p>
 			</div>
+		</div>
 
-			<div class="bg-gray-50 rounded-xl p-6 border border-gray-200">
-				<h3 class="text-lg font-semibold text-brand-800 mb-4 flex items-center">
-					<span class="w-6 h-6 bg-brand-100 rounded-full flex items-center justify-center text-brand-800 text-sm mr-2">4</span>
-					Estado del Proyecto
-				</h3>
-				<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-					<div>
-						<label class="label">Proyecto Concluido</label>
-						<select
-							class="input"
-							:value="modelValue.is_concluded"
-							@change="update('is_concluded', parseInt($event.target.value))"
-						>
-							<option :value="0">No</option>
-							<option :value="1">Sí</option>
-						</select>
-					</div>
 
-					<div>
-						<label class="label">Contratado</label>
-						<select
-							class="input"
-							:value="modelValue.is_hired"
-							@change="update('is_hired', parseInt($event.target.value))"
-						>
-							<option :value="0">No</option>
-							<option :value="1">Sí</option>
-						</select>
-					</div>
+		<div class="bg-gray-50 rounded-xl p-6 border border-gray-200">
+			<h3 class="text-lg font-semibold text-brand-800 mb-4 flex items-center">
+				<span class="w-6 h-6 bg-brand-100 rounded-full flex items-center justify-center text-brand-800 text-sm mr-2">4</span>
+				Estado del Proyecto
+			</h3>
+			<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+				<div>
+					<label class="label">Proyecto Concluido</label>
+					<select
+						class="input"
+						:value="modelValue.is_concluded"
+						@change="update('is_concluded', parseInt($event.target.value))">
+						<option :value="0">No</option>
+						<option :value="1">Sí</option>
+					</select>
+				</div>
+
+				<div>
+					<label class="label">Contratado</label>
+					<select
+						class="input"
+						:value="modelValue.is_hired"
+						@change="update('is_hired', parseInt($event.target.value))">
+						<option :value="0">No</option>
+						<option :value="1">Sí</option>
+					</select>
 				</div>
 			</div>
 
-
-
-			<div ref="dualTypeDropdownRef">
+			<div ref="dualTypeDropdownRef" class="pt-3">
 				<label class="label">Tipo de Proyecto Dual</label>
 				<div class="relative">
 					<input
@@ -435,11 +500,11 @@ watch(period_end, (val) => {
 				<p v-if="errors.dual_type_id" class="error-msg">{{ errors.dual_type_id }}</p>
 			</div>
 		</div>
-
-		<mdl-organization
-			:show="showModal" :data="modalData"
-			@close="closeModal" @saved="handleSavedOrganization" />
 	</div>
+
+	<mdl-organization
+		:show="showModal" :data="modalData"
+		@close="closeModal" @saved="handleSavedOrganization" />
 </template>
 
 <style scoped>

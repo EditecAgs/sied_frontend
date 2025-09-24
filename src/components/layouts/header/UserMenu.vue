@@ -135,8 +135,6 @@ onUnmounted(() => {
 const logoUrl = computed(() => {
 	if (!institution.value) return '/images/institutionsLogo/logo_ITA.png'
 
-	// Depuración
-	console.log('institution.image:', institution.value.image)
 
 	if (institution.value.logo_url) return institution.value.logo_url
 	if (institution.value.logo) return institution.value.logo
