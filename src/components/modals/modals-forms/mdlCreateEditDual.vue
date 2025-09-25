@@ -250,15 +250,23 @@ watch(
 
 const handleNextOrSubmit = async () => {
 	if (currentStep.value === 0) {
+		if (reportaModeloDual.value === null) {
+			alert('Debes seleccionar si este seguimiento incluye información del Modelo Dual');
+			return;
+		}
+
 		const isValid = await stepAcademicoRef.value?.validate?.();
-		if (!isValid) return;
+		if (!isValid) {
+			await nextTick();
+			return;
+		}
 
 		if (reportaModeloDual.value === false) {
-			imprimirYGuardar();
+			await imprimirYGuardar();
 			return;
 		}
 		nextStep();
-	} else if (currentStep.value === 1) {
+	}  else if (currentStep.value === 1) {
 		const isValid = await stepUnidadDualRef.value?.validate?.();
 		if (!isValid) return;
 		nextStep();
@@ -501,7 +509,7 @@ const closeModalAndReset = () => {
 					</button>
 					<button
 						class="btn bg-brand-800 text-white hover:bg-brand-900"
-						:disabled="(currentStep === 0 && reportaModeloDual === null) || (currentStep === steps.length - 1 && !canSubmit)"
+						:disabled="currentStep === steps.length - 1 && !canSubmit"
 						@click="handleNextOrSubmit">
 						{{
 							currentStep === steps.length - 1 ||
