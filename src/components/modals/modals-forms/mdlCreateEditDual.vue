@@ -16,6 +16,7 @@ import { getOrganizations } from '../../../services/organizations/organizations.
 import { getDocumentStatuses } from '../../../services/dual_projects/documents-statuses.js';
 import { getEconomicSupports } from '../../../services/dual_projects/economic-supports.js';
 import { getDualTypes } from '../../../services/dual_projects/dual-types';
+import { getMicroCredentials } from '../../../services/dual_projects/micro-credentials';
 
 const emit = defineEmits(['close', 'saved']);
 // eslint-disable-next-line vue/valid-define-props
@@ -48,6 +49,7 @@ const organizations = ref([]);
 const dualTypes = ref([]);
 const noChangesDetected = ref(false);
 const originalFormData = ref<any>(null);
+const microCredentials = ref([]);
 
 const personalStepKey = ref(0);
 
@@ -61,7 +63,8 @@ const LoadDependence = async () => {
 		areasRes,
 		supportsRes,
 		orgsRes,
-		typesRes
+		typesRes,
+		microRes
 	] = await Promise.all([
 		getInstitutions(),
 		getCareers(),
@@ -71,8 +74,10 @@ const LoadDependence = async () => {
 		getDualAreas(),
 		getEconomicSupports(),
 		getOrganizations(),
-		getDualTypes()
+		getDualTypes(),
+		getMicroCredentials()
 	]);
+
 	institutions.value = institutionsRes.data;
 	careers.value = careersRes.data;
 	specialties.value = specialtiesRes.data;
@@ -82,7 +87,9 @@ const LoadDependence = async () => {
 	supportTypes.value = supportsRes.data;
 	organizations.value = orgsRes.data;
 	dualTypes.value = typesRes.data;
+	microCredentials.value = microRes.data;
 };
+
 
 onMounted(() => {
 	LoadDependence();
@@ -123,7 +130,8 @@ const formData = reactive({
 		advisor: '',
 		is_concluded: 0,
 		is_hired: 0,
-		dual_type_id: ''
+		dual_type_id: '',
+		micro_credentials: []
 	}
 });
 
@@ -171,7 +179,8 @@ const resetForm = () => {
 		advisor: '',
 		is_concluded: 0,
 		is_hired: 0,
-		dual_type_id: ''
+		dual_type_id: '',
+		micro_credentials: []
 	};
 	reportaModeloDual.value = null;
 	currentStep.value = 0;
@@ -231,6 +240,7 @@ watch(
 					is_hired: project.dual_project_reports?.is_hired ?? 0,
 					dual_type_id: project.dual_project_reports?.dual_type?.id ?? '',
 					max_qualification: project.dual_project_reports?.max_qualification ?? '',
+					micro_credentials: project.dual_project_reports?.micro_credentials?.map(m => m.id) || []
 				};
 
 				reportaModeloDual.value = newData.mode === 'complete' ? true : !!project.dual_project_reports;
@@ -365,7 +375,8 @@ const imprimirYGuardar = async () => {
 				advisor: formData.unidadDual.advisor,
 				is_concluded: formData.unidadDual.is_concluded,
 				is_hired: formData.unidadDual.is_hired,
-				dual_type_id: Number(formData.unidadDual.dual_type_id)
+				dual_type_id: Number(formData.unidadDual.dual_type_id),
+				micro_credentials: formData.unidadDual.micro_credentials
 			};
 		}
 
@@ -477,7 +488,8 @@ const closeModalAndReset = () => {
 							:agreementStatuses="agreementStatuses"
 							:supportTypes="supportTypes"
 							:organizations="organizations"
-							:dualTypes="dualTypes" />
+							:dualTypes="dualTypes"
+							:microCredentials="microCredentials" />
 
 						<DualStepPersonal
 							v-else-if="currentStep === 2"
