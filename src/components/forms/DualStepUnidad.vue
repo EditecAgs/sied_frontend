@@ -1,10 +1,10 @@
-
 <script setup>
 import { ref, computed, defineProps, defineEmits, watch, onMounted, onBeforeUnmount } from 'vue';
 import Datepicker from '@vuepic/vue-datepicker';
 import '@vuepic/vue-datepicker/dist/main.css';
 import btnCreate from '../../components/buttons/btnCreate.vue';
 import mdlOrganization from '../modals/modals-forms/mdlOrganization.vue';
+import mdlMicroCredential from '../modals/modals-forms/mdlMicroCredential.vue';
 import { useModal } from '../../composables/UseModal';
 import { getOrganizations } from '../../services/organizations/organizations.js';
 
@@ -20,8 +20,52 @@ const props = defineProps({
 });
 
 const { showModal, modalData, openModal, closeModal } = useModal();
+// Para microcredencial
+const { showModal: showMicroModal, modalData: microModalData, openModal: openMicroModal, closeModal: closeMicroModal } = useModal();
+
 
 const maxQualification = ref(props.modelValue.max_qualification || '');
+const errors = ref({});
+
+
+const searchArea = ref('');
+const showAreaDropdown = ref(false);
+const areaDropdownRef = ref(null);
+
+const searchOrganization = ref('');
+const showOrganizationDropdown = ref(false);
+const organizationDropdownRef = ref(null);
+
+const searchStatus = ref('');
+const showStatusDropdown = ref(false);
+const statusDropdownRef = ref(null);
+
+const searchSupport = ref('');
+const showSupportDropdown = ref(false);
+const supportDropdownRef = ref(null);
+
+const searchDualType = ref('');
+const showDualTypeDropdown = ref(false);
+const dualTypeDropdownRef = ref(null);
+
+const period_start = ref(props.modelValue.period_start ? new Date(props.modelValue.period_start) : null);
+const period_end = ref(props.modelValue.period_end ? new Date(props.modelValue.period_end) : null);
+
+
+const allMicroCredentials = ref(props.microCredentials || []);
+const selectedMicroCredentials = ref([]);
+const searchMicro = ref('');
+const showMicroDropdown = ref(false);
+const microDropdownRef = ref(null);
+
+
+const initializeMicroCredentials = () => {
+	selectedMicroCredentials.value = (props.modelValue.micro_credentials || [])
+		.map(id => allMicroCredentials.value.find(m => Number(m.id) === Number(id)))
+		.filter(Boolean);
+};
+
+
 const handleSavedOrganization = async () => {
 	closeModal();
 	const res = await getOrganizations();
@@ -30,8 +74,6 @@ const handleSavedOrganization = async () => {
 		id_organization: res.data?.[res.data.length - 1]?.id
 	});
 };
-
-const errors = ref({});
 
 const initializeSearchValues = () => {
 	if (props.modelValue.id_dual_area) {
@@ -57,35 +99,11 @@ const initializeSearchValues = () => {
 	if (props.modelValue.max_qualification) {
 		maxQualification.value = props.modelValue.max_qualification.toString();
 	}
+
+
+	initializeMicroCredentials();
 };
 
-// Dropdowns
-const searchArea = ref('');
-const showAreaDropdown = ref(false);
-const areaDropdownRef = ref(null);
-
-const searchOrganization = ref('');
-const showOrganizationDropdown = ref(false);
-const organizationDropdownRef = ref(null);
-
-const searchStatus = ref('');
-const showStatusDropdown = ref(false);
-const statusDropdownRef = ref(null);
-
-const searchSupport = ref('');
-const showSupportDropdown = ref(false);
-const supportDropdownRef = ref(null);
-
-const searchDualType = ref('');
-const showDualTypeDropdown = ref(false);
-const dualTypeDropdownRef = ref(null);
-
-
-const selectedMicroCredentials = ref(props.modelValue.micro_credentials || []);
-const searchMicro = ref('');
-const showMicroDropdown = ref(false);
-const microDropdownRef = ref(null);
-const allMicroCredentials = ref(props.microCredentials || []);
 
 const filteredAreas = computed(() =>
 	!searchArea.value ? props.areas || [] : (props.areas || []).filter(a => a.name.toLowerCase().includes(searchArea.value.toLowerCase()))
@@ -112,8 +130,6 @@ const filteredMicro = computed(() =>
 		)
 );
 
-const period_start = ref(props.modelValue.period_start ? new Date(props.modelValue.period_start) : null);
-const period_end = ref(props.modelValue.period_end ? new Date(props.modelValue.period_end) : null);
 
 const handleClickOutside = (event) => {
 	if (areaDropdownRef.value && !areaDropdownRef.value.contains(event.target)) showAreaDropdown.value = false;
@@ -124,16 +140,6 @@ const handleClickOutside = (event) => {
 	if (microDropdownRef.value && !microDropdownRef.value.contains(event.target)) showMicroDropdown.value = false;
 };
 
-onMounted(() => {
-	document.addEventListener('click', handleClickOutside);
-	initializeSearchValues();
-});
-
-onBeforeUnmount(() => document.removeEventListener('click', handleClickOutside));
-
-watch(() => props.modelValue, () => {
-	initializeSearchValues();
-}, { deep: true });
 
 const update = (field, value) => {
 	emit('update:modelValue', { ...props.modelValue, [field]: value });
@@ -166,72 +172,74 @@ const update = (field, value) => {
 	}
 };
 
+
 const addMicroCredential = (micro) => {
-	selectedMicroCredentials.value.push(micro);
+	if (!selectedMicroCredentials.value.some(m => m.id === micro.id)) {
+		selectedMicroCredentials.value.push(micro);
+	}
 	emit('update:modelValue', {
 		...props.modelValue,
-		micro_credentials: selectedMicroCredentials.value.map(m => m.id)
+		micro_credentials: selectedMicroCredentials.value.map(m => Number(m.id))
 	});
 	searchMicro.value = '';
 	showMicroDropdown.value = false;
 };
 
-
 const removeMicroCredential = (micro) => {
 	selectedMicroCredentials.value = selectedMicroCredentials.value.filter(m => m.id !== micro.id);
 	emit('update:modelValue', {
 		...props.modelValue,
-		micro_credentials: selectedMicroCredentials.value.map(m => m.id)
+		micro_credentials: selectedMicroCredentials.value.map(m => Number(m.id))
 	});
 };
 
-
-watch(() => props.modelValue.micro_credentials, (val) => {
-	selectedMicroCredentials.value = val || [];
+// --- Watchers ---
+watch(() => props.modelValue, () => initializeSearchValues(), { deep: true });
+watch(() => props.modelValue.micro_credentials, () => initializeMicroCredentials());
+watch(() => props.microCredentials, (val) => {
+	allMicroCredentials.value = val || [];
+	initializeMicroCredentials();
 });
 
+watch(period_start, (val) => {
+	if (val) update('period_start', new Date(val).toISOString().slice(0, 10));
+});
+watch(period_end, (val) => {
+	if (val) update('period_end', new Date(val).toISOString().slice(0, 10));
+});
+watch(searchDualType, (val) => {
+	if (!val) update('dual_type_id', '');
+});
+watch(() => props.modelValue.max_qualification, (newVal) => {
+	maxQualification.value = newVal != null ? newVal.toString() : '';
+});
+watch(maxQualification, (newVal) => {
+	update('max_qualification', newVal ? Number(newVal) : '');
+});
+
+// --- Validación ---
 const validate = () => {
 	const requiredFields = [
-		'name_report',
-		'id_organization',
-		'id_dual_area',
-		'period_start',
-		'period_end',
-		'status_document',
-		'economic_support',
-		'amount',
-		'advisor',
-		'is_concluded',
-		'is_hired',
-		'dual_type_id'
+		'name_report','id_organization','id_dual_area','period_start','period_end',
+		'status_document','economic_support','amount','advisor','is_concluded',
+		'is_hired','dual_type_id'
 	];
 
 	let isValid = true;
 	errors.value = {};
 
 	for (const field of requiredFields) {
-		if (
-			props.modelValue[field] === null ||
-			props.modelValue[field] === undefined ||
-			props.modelValue[field] === ''
-		) {
+		if (props.modelValue[field] === null || props.modelValue[field] === undefined || props.modelValue[field] === '') {
 			errors.value[field] = 'Este campo es obligatorio';
 			isValid = false;
 		}
 	}
 
-	if (
-		props.modelValue.qualification !== null &&
-		props.modelValue.qualification !== undefined &&
-		props.modelValue.qualification !== ''
-	) {
+	if (props.modelValue.qualification != null && props.modelValue.qualification !== '') {
 		if (!props.modelValue.max_qualification) {
 			errors.value.max_qualification = 'Seleccione la calificación máxima';
 			isValid = false;
-		} else if (
-			props.modelValue.qualification < 0 ||
-			props.modelValue.qualification > props.modelValue.max_qualification
-		) {
+		} else if (props.modelValue.qualification < 0 || props.modelValue.qualification > props.modelValue.max_qualification) {
 			errors.value.qualification = `La calificación debe estar entre 0 y ${props.modelValue.max_qualification}`;
 			isValid = false;
 		}
@@ -254,44 +262,14 @@ const validate = () => {
 
 defineExpose({ validate });
 
-watch(() => props.microCredentials, (val) => {
-	allMicroCredentials.value = val || [];
-});
 
-watch(period_start, (val) => {
-	if (val) {
-		const formatted = new Date(val).toISOString().slice(0, 10);
-		update('period_start', formatted);
-	}
+onMounted(() => {
+	document.addEventListener('click', handleClickOutside);
+	initializeSearchValues();
 });
-watch(period_end, (val) => {
-	if (val) {
-		const formatted = new Date(val).toISOString().slice(0, 10);
-		update('period_end', formatted);
-	}
-});
-
-watch(searchDualType, (val) => {
-	if (!val) {
-		update('dual_type_id', '');
-	}
-});
-
-watch(() => props.modelValue.max_qualification, (newVal) => {
-	if (newVal !== null && newVal !== undefined) {
-		maxQualification.value = newVal.toString();
-	} else {
-		maxQualification.value = '';
-	}
-});
-watch(maxQualification, (newVal) => {
-	if (newVal) {
-		update('max_qualification', Number(newVal));
-	} else {
-		update('max_qualification', '');
-	}
-});
+onBeforeUnmount(() => document.removeEventListener('click', handleClickOutside));
 </script>
+
 
 <template>
 	<div class="space-y-8">
@@ -537,9 +515,7 @@ watch(maxQualification, (newVal) => {
 					<p v-if="errors.dual_type_id" class="error-msg">{{ errors.dual_type_id }}</p>
 				</div>
 			</div>
-			<!-- ... mantengo las secciones Proyecto Dual, Organización, Periodo, Convenio y Apoyo, Información Adicional, Estado del Proyecto -->
 
-			<!-- NUEVO: Microcredenciales -->
 			<div class="bg-gray-50 rounded-xl p-6 border border-gray-200 space-y-4">
 				<h3 class="text-lg font-semibold text-brand-800 mb-4 flex items-center">
 					<span class="w-6 h-6 bg-brand-100 rounded-full flex items-center justify-center text-brand-800 text-sm mr-2">7</span>
@@ -547,15 +523,23 @@ watch(maxQualification, (newVal) => {
 				</h3>
 
 				<div ref="microDropdownRef" class="relative">
-					<input
-						v-model="searchMicro"
-						class="input"
-						placeholder="Buscar microcredencial..."
-						@focus="showMicroDropdown = true"
-						@input="showMicroDropdown = true" />
-					<ul v-if="showMicroDropdown && filteredMicro.length" class="dropdown">
+					<div class="flex items-center gap-2">
+						<input
+							v-model="searchMicro"
+							class="input flex-1"
+							placeholder="Buscar microcredencial..."
+							@focus="showMicroDropdown = true"
+							@input="showMicroDropdown = true" />
+
+						<btn-create
+							:table="'Certificado'"
+							@open="({ mode, pk, table}) => openMicroModal(mode, pk, table)" />
+					</div>
+
+					<ul v-if="showMicroDropdown && filteredMicro.length" class="absolute top-full left-0 w-full mt-1 dropdown z-10">
 						<li
-							v-for="micro in filteredMicro" :key="micro.id" class="dropdown-item"
+							v-for="micro in filteredMicro" :key="micro.id"
+							class="dropdown-item"
 							@click="addMicroCredential(micro)">
 							{{ micro.name }}
 						</li>
@@ -570,9 +554,14 @@ watch(maxQualification, (newVal) => {
 				</div>
 			</div>
 
+
 			<mdl-organization
 				:show="showModal" :data="modalData"
 				@close="closeModal" @saved="handleSavedOrganization" />
+
+			<mdlMicroCredential
+				:show="showMicroModal" :data="microModalData"
+				@close="closeMicroModal" @saved="handleSaved" />
 		</div>
 	</div>
 </template>
