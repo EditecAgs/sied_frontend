@@ -248,7 +248,7 @@ const menuGroups = [
 					{ name: 'Tipo', path: '/type-table', pro: false },
 				],
 			},
-			{
+			/*{
 				icon: PieChartIcon,
 				name: 'Estadísticas',
 				subItems: [

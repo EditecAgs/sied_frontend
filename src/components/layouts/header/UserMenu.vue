@@ -68,7 +68,6 @@ const institution = ref<any>(null)
 
 const menuItems = [
 	{ href: '/profile', icon: UserCircleIcon, text: 'Editar perfil' },
-	{ href: '/chat', icon: SettingsIcon, text: 'Ajustes de la cuenta' },
 	{ href: '/profile', icon: InfoCircleIcon, text: 'Soporte' }
 ]
 
@@ -135,8 +134,6 @@ onUnmounted(() => {
 const logoUrl = computed(() => {
 	if (!institution.value) return '/images/institutionsLogo/logo_ITA.png'
 
-	// Depuración
-	console.log('institution.image:', institution.value.image)
 
 	if (institution.value.logo_url) return institution.value.logo_url
 	if (institution.value.logo) return institution.value.logo

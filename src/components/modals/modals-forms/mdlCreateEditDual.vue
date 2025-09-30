@@ -16,6 +16,7 @@ import { getOrganizations } from '../../../services/organizations/organizations.
 import { getDocumentStatuses } from '../../../services/dual_projects/documents-statuses.js';
 import { getEconomicSupports } from '../../../services/dual_projects/economic-supports.js';
 import { getDualTypes } from '../../../services/dual_projects/dual-types';
+import { getMicroCredentials } from '../../../services/dual_projects/micro-credentials';
 
 const emit = defineEmits(['close', 'saved']);
 // eslint-disable-next-line vue/valid-define-props
@@ -48,6 +49,7 @@ const organizations = ref([]);
 const dualTypes = ref([]);
 const noChangesDetected = ref(false);
 const originalFormData = ref<any>(null);
+const microCredentials = ref([]);
 
 const personalStepKey = ref(0);
 
@@ -61,7 +63,8 @@ const LoadDependence = async () => {
 		areasRes,
 		supportsRes,
 		orgsRes,
-		typesRes
+		typesRes,
+		microRes
 	] = await Promise.all([
 		getInstitutions(),
 		getCareers(),
@@ -71,8 +74,10 @@ const LoadDependence = async () => {
 		getDualAreas(),
 		getEconomicSupports(),
 		getOrganizations(),
-		getDualTypes()
+		getDualTypes(),
+		getMicroCredentials()
 	]);
+
 	institutions.value = institutionsRes.data;
 	careers.value = careersRes.data;
 	specialties.value = specialtiesRes.data;
@@ -82,7 +87,9 @@ const LoadDependence = async () => {
 	supportTypes.value = supportsRes.data;
 	organizations.value = orgsRes.data;
 	dualTypes.value = typesRes.data;
+	microCredentials.value = microRes.data;
 };
+
 
 onMounted(() => {
 	LoadDependence();
@@ -119,16 +126,17 @@ const formData = reactive({
 		economic_support: '',
 		amount: '',
 		qualification: '',
+		max_qualification: '',
 		advisor: '',
 		is_concluded: 0,
 		is_hired: 0,
-		dual_type_id: ''
+		dual_type_id: '',
+		micro_credentials: []
 	}
 });
 
 
 const canSubmit = computed(() => {
-	// Para el paso 2, solo verificar que haya al menos 1 estudiante
 	if (currentStep.value === 2) {
 		const studentCount = formData.personal.dual_project_students?.length || 0;
 		return studentCount >= 1;
@@ -156,7 +164,6 @@ const resetForm = () => {
 	};
 	formData.academico = {
 		id_institution: '',
-		// Se elimina number_student
 	};
 	formData.unidadDual = {
 		name_report: '',
@@ -168,10 +175,12 @@ const resetForm = () => {
 		economic_support: '',
 		amount: '',
 		qualification: '',
+		max_qualification: '',
 		advisor: '',
 		is_concluded: 0,
 		is_hired: 0,
-		dual_type_id: ''
+		dual_type_id: '',
+		micro_credentials: []
 	};
 	reportaModeloDual.value = null;
 	currentStep.value = 0;
@@ -214,7 +223,6 @@ watch(
 
 				formData.academico = {
 					id_institution: project.id_institution ?? '',
-					// Se elimina number_student
 				};
 
 				formData.unidadDual = {
@@ -230,7 +238,9 @@ watch(
 					advisor: project.dual_project_reports?.advisor ?? '',
 					is_concluded: project.dual_project_reports?.is_concluded ?? 0,
 					is_hired: project.dual_project_reports?.is_hired ?? 0,
-					dual_type_id: project.dual_project_reports?.dual_type?.id ?? ''
+					dual_type_id: project.dual_project_reports?.dual_type?.id ?? '',
+					max_qualification: project.dual_project_reports?.max_qualification ?? '',
+					micro_credentials: project.dual_project_reports?.micro_credentials?.map(m => m.id) || []
 				};
 
 				reportaModeloDual.value = newData.mode === 'complete' ? true : !!project.dual_project_reports;
@@ -250,20 +260,28 @@ watch(
 
 const handleNextOrSubmit = async () => {
 	if (currentStep.value === 0) {
+		if (reportaModeloDual.value === null) {
+			alert('Debes seleccionar si este seguimiento incluye información del Modelo Dual');
+			return;
+		}
+
 		const isValid = await stepAcademicoRef.value?.validate?.();
-		if (!isValid) return;
+		if (!isValid) {
+			await nextTick();
+			return;
+		}
 
 		if (reportaModeloDual.value === false) {
-			imprimirYGuardar();
+			await imprimirYGuardar();
 			return;
 		}
 		nextStep();
-	} else if (currentStep.value === 1) {
+	}  else if (currentStep.value === 1) {
 		const isValid = await stepUnidadDualRef.value?.validate?.();
 		if (!isValid) return;
 		nextStep();
 	} else if (currentStep.value === 2) {
-		// Nueva validación simplificada - solo verificar que haya al menos 1 estudiante
+
 		const studentCount = formData.personal.dual_project_students?.length || 0;
 
 		if (studentCount < 1) {
@@ -313,7 +331,6 @@ const imprimirYGuardar = async () => {
 			payload = {
 				has_report: 0,
 				id_institution: Number(formData.academico.id_institution),
-				// number_student se calcula automáticamente desde los estudiantes
 				number_student: formData.personal.dual_project_students?.length || 0
 			};
 		} else {
@@ -343,7 +360,6 @@ const imprimirYGuardar = async () => {
 			payload = {
 				has_report: 1,
 				id_institution: Number(formData.academico.id_institution),
-				// number_student se calcula automáticamente desde el array de estudiantes
 				number_student: studentCount,
 				students: studentsPayload,
 				name_report: formData.unidadDual.name_report,
@@ -355,10 +371,12 @@ const imprimirYGuardar = async () => {
 				economic_support: Number(formData.unidadDual.economic_support),
 				amount: Number(formData.unidadDual.amount),
 				qualification: formData.unidadDual.qualification,
+				max_qualification: String(formData.unidadDual.max_qualification) || 10,
 				advisor: formData.unidadDual.advisor,
 				is_concluded: formData.unidadDual.is_concluded,
 				is_hired: formData.unidadDual.is_hired,
-				dual_type_id: Number(formData.unidadDual.dual_type_id)
+				dual_type_id: Number(formData.unidadDual.dual_type_id),
+				micro_credentials: formData.unidadDual.micro_credentials
 			};
 		}
 
@@ -470,7 +488,8 @@ const closeModalAndReset = () => {
 							:agreementStatuses="agreementStatuses"
 							:supportTypes="supportTypes"
 							:organizations="organizations"
-							:dualTypes="dualTypes" />
+							:dualTypes="dualTypes"
+							:microCredentials="microCredentials" />
 
 						<DualStepPersonal
 							v-else-if="currentStep === 2"
@@ -502,7 +521,7 @@ const closeModalAndReset = () => {
 					</button>
 					<button
 						class="btn bg-brand-800 text-white hover:bg-brand-900"
-						:disabled="(currentStep === 0 && reportaModeloDual === null) || (currentStep === steps.length - 1 && !canSubmit)"
+						:disabled="currentStep === steps.length - 1 && !canSubmit"
 						@click="handleNextOrSubmit">
 						{{
 							currentStep === steps.length - 1 ||
