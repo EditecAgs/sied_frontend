@@ -260,6 +260,12 @@ defineExpose({
 								value="Femenino"
 								class="mr-2" /> Femenino
 						</label>
+						<label class="flex items-center">
+							<input
+								type="radio"
+								value="Femenino"
+								class="mr-2" /> Otro
+						</label>
 					</div>
 					<p v-if="errors.gender" class="text-red-500 text-sm mt-1">{{ errors.gender }}</p>
 				</div>
