@@ -163,8 +163,9 @@ const filters = ref({
 	status_document: ''
 });
 
+// 📌 Traemos institution y user_type desde localStorage
 const institutionId = JSON.parse(localStorage.getItem("institution"))?.id;
-
+const userType = parseInt(localStorage.getItem("user_type"), 10);
 
 const clearFilters = () => {
 	filters.value = {
@@ -188,12 +189,13 @@ const filteredProjects = computed(() => {
 	const organization = filters.value.organization_name.toLowerCase();
 	const status = filters.value.status_document.toLowerCase();
 
-
 	return dualProjects.value.filter(project => {
 		const statusText = project.has_report ? 'completado' : 'incompleto';
 
+		const institutionMatch = userType === 0 ? true : project.institution_id === institutionId;
+
 		return (
-			(!institutionId || project.institution_id === institutionId) &&
+			institutionMatch &&
 			project.project_name.toLowerCase().includes(projectName) &&
 			statusText.includes(hasReport) &&
 			project.institution_name.toLowerCase().includes(institution) &&
@@ -208,7 +210,7 @@ const totalPages = computed(() => Math.ceil(filteredProjects.value.length / rows
 const paginatedProjects = computed(() => {
 	const start = (currentPage.value - 1) * rowsPerPage.value;
 	return filteredProjects.value.slice(start, start + rowsPerPage.value);
-})
+});
 
 const fetchDualProjects = async () => {
 	isLoading.value = true;
@@ -250,8 +252,8 @@ const fetchDualProjects = async () => {
 
 onMounted(fetchDualProjects);
 defineExpose({ fetchData: fetchDualProjects });
-
 </script>
+
 
 <style scoped>
 .custom-scrollbar::-webkit-scrollbar {
