@@ -57,11 +57,14 @@
 	</div>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import { getAverageAmountByEconomicSupport } from '../../services/statistics/dashboard'
+import { useLoaderNotifier } from '../../composables/useLoaderNotifier'
 
-const averageSupports = ref([])
+const { notifyLoaded } = useLoaderNotifier()
+
+const averageSupports = ref<{ support_name: string; average_amount: number }[]>([])
 const colors = ['#83181b', '#a34245', '#c36b6f', '#e39499']
 
 const maxAmount = ref(1)
@@ -71,17 +74,18 @@ onMounted(async () => {
 		const response = await getAverageAmountByEconomicSupport()
 		const data = response.data.data || []
 
-
 		const validAmounts = data.map(i => i.average_amount || 0)
 		maxAmount.value = Math.max(...validAmounts, 1)
 
 		averageSupports.value = data
 	} catch (error) {
 		console.error('Error al cargar promedios de apoyos económicos:', error)
+	} finally {
+		notifyLoaded()
 	}
 })
 
-const getPercentage = (value) => {
+const getPercentage = (value: number): number => {
 	if (!value) return 0
 	return Math.round((value / maxAmount.value) * 100)
 }

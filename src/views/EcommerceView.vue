@@ -1,39 +1,42 @@
 <template>
 	<div style="background-image: url('/images/background/bg-white-flores.png')">
 		<admin-layout>
-			<div class="min-h-screen w-full bg-cover bg-center bg-fixed">
+
+			<LoadingScreen :show="loading" message="Cargando datos..." />
+
+
+			<div v-show="!loading" class="min-h-screen w-full bg-cover bg-center bg-fixed">
 				<div class="grid grid-cols-12 gap-4 md:gap-6 p-4 md:p-6">
 					<div class="col-span-12 xl:col-span-7 grid gap-4 md:gap-6">
-						<ecommerce-metrics />
-						<monthly-sale />
+						<ecommerce-metrics @loaded="onChildLoaded" />
+						<monthly-sale @loaded="onChildLoaded" />
 					</div>
 
 					<div class="col-span-12 xl:col-span-5">
 						<div class="h-full max-h-[575px] overflow-y-auto">
-							<SectorsMexico />
+							<SectorsMexico @loaded="onChildLoaded" />
 						</div>
 					</div>
 
 					<div class="col-span-12">
-						<statistics-chart class="h-full" />
+						<statistics-chart class="h-full" @loaded="onChildLoaded" />
 					</div>
 
-
 					<div class="col-span-12 xl:col-span-8 grid gap-4 md:gap-6">
-						<recent-orders class="h-full" />
+						<recent-orders class="h-full" @loaded="onChildLoaded" />
 					</div>
 
 					<div class="col-span-12 xl:col-span-4 grid gap-4 md:gap-6">
-						<customer-demographic class="h-full" />
-						<SectorsMexicoMetric class="h-full" />
+						<customer-demographic class="h-full" @loaded="onChildLoaded" />
+						<SectorsMexicoMetric class="h-full" @loaded="onChildLoaded" />
 					</div>
 
 					<div class="col-span-12 xl:col-span-12 grid grid-cols-1 xl:grid-cols-2 gap-4 md:gap-6">
-						<OrganizationsByScope class="h-full" />
-						<ProjectsByEconomicSupport class="h-full" />
+						<OrganizationsByScope class="h-full" @loaded="onChildLoaded" />
+						<ProjectsByEconomicSupport class="h-full" @loaded="onChildLoaded" />
 					</div>
 					<div class="col-span-12 xl:col-span-12 grid grid-cols-1 xl:grid-cols-2 gap-4 md:gap-6">
-						<AverageAmountByEconomicSupport class="h-full" />
+						<AverageAmountByEconomicSupport class="h-full" @loaded="onChildLoaded" />
 					</div>
 				</div>
 			</div>
@@ -54,6 +57,7 @@ import SectorsMexicoMetric from '../components/ecommerce/SectorsMexicoMetric.vue
 import OrganizationsByScope from '../components/ecommerce/OrganizationsByScope.vue';
 import ProjectsByEconomicSupport from '../components/ecommerce/ProjectsByEconomicSupport.vue';
 import AverageAmountByEconomicSupport from '../components/ecommerce/AverageAmountByEconomicSupport.vue';
+import LoadingScreen from '../components/layouts/LoadingScreen.vue';
 
 export default {
 	name: 'Ecommerce',
@@ -71,6 +75,22 @@ export default {
 		RecentOrders,
 		SectorsMexico,
 		SectorsMexicoMetric,
+		LoadingScreen,
+	},
+	data() {
+		return {
+			loading: true,
+			loadedChildren: 0,
+			totalChildren: 1,
+		};
+	},
+	methods: {
+		onChildLoaded() {
+			this.loadedChildren++;
+			if (this.loadedChildren >= this.totalChildren) {
+				this.loading = false;
+			}
+		},
 	},
 };
 </script>

@@ -19,12 +19,21 @@ const errors = ref<{ id_institution?: string }>({});
 const searchTerm = ref('');
 const showDropdown = ref(false);
 const isDropdownFocused = ref(false);
+const hasUserInteracted = ref(false);
 
 const filteredInstitutions = computed(() => {
 	if (!searchTerm.value) return props.institutions || [];
 	return (props.institutions || []).filter(inst =>
 		inst.name.toLowerCase().includes(searchTerm.value.toLowerCase())
 	);
+});
+
+
+const isInstitutionValid = computed(() => {
+	if (!props.modelValue?.id_institution || !searchTerm.value) return false;
+
+	const selectedInstitution = props.institutions?.find(i => i.id === props.modelValue?.id_institution);
+	return selectedInstitution && selectedInstitution.name === searchTerm.value;
 });
 
 const updateField = (field: string, value: any) => {
@@ -38,27 +47,62 @@ const updateField = (field: string, value: any) => {
 		const selected = props.institutions?.find(i => i.id === value);
 		searchTerm.value = selected?.name || '';
 		showDropdown.value = false;
+		hasUserInteracted.value = true;
 	}
 };
 
 const handleSearchInput = (event: Event) => {
 	const value = (event.target as HTMLInputElement).value;
 	searchTerm.value = value;
+	hasUserInteracted.value = true;
+
 
 	if (!value.trim() && props.modelValue?.id_institution) {
 		updateField('id_institution', '');
 	}
 };
 
+const handleInstitutionSelect = (institution: any) => {
+	updateField('id_institution', institution.id);
+};
+
 const validate = () => {
 	let valid = true;
+	hasUserInteracted.value = true;
 
 	if (!props.modelValue?.id_institution) {
 		errors.value.id_institution = 'Este campo es obligatorio';
 		valid = false;
 	}
+	else if (searchTerm.value && !isInstitutionValid.value) {
+		errors.value.id_institution = 'La institución seleccionada no coincide con el texto ingresado';
+		valid = false;
+	}
+
+	// eslint-disable-next-line no-dupe-else-if
+	else if (props.modelValue?.id_institution && searchTerm.value && !isInstitutionValid.value) {
+		errors.value.id_institution = 'Debe seleccionar una institución de la lista';
+		valid = false;
+	} else {
+		errors.value.id_institution = '';
+	}
 
 	return valid;
+};
+
+
+const handleInputBlur = () => {
+	if (hasUserInteracted.value) {
+		if (searchTerm.value && !props.modelValue?.id_institution) {
+			errors.value.id_institution = 'Debe seleccionar una institución de la lista';
+		}
+
+		else if (props.modelValue?.id_institution && searchTerm.value && !isInstitutionValid.value) {
+			errors.value.id_institution = 'La institución seleccionada no coincide con el texto';
+		}
+	}
+
+	handleDropdownBlur();
 };
 
 defineExpose({ validate });
@@ -86,6 +130,7 @@ const handleDropdownBlurInternal = () => {
 	showDropdown.value = false;
 };
 
+
 watch(
 	() => props.modelValue?.id_institution,
 	(newId) => {
@@ -97,20 +142,34 @@ watch(
 		}
 
 		const selected = props.institutions.find(i => i.id === newId);
-		searchTerm.value = selected?.name || '';
+		if (selected) {
+			searchTerm.value = selected.name;
+		}
 	},
 	{ immediate: true }
 );
 
 watch(searchTerm, (newValue) => {
-	if (!newValue.trim() && props.modelValue?.id_institution) {
-		const isManualClear = !props.institutions?.some(inst =>
-			inst.name === newValue || inst.id === props.modelValue?.id_institution
-		);
+	if (hasUserInteracted.value) {
+		if (!newValue.trim() && props.modelValue?.id_institution) {
+			const isManualClear = !props.institutions?.some(inst =>
+				inst.name === newValue || inst.id === props.modelValue?.id_institution
+			);
 
-		if (isManualClear) {
-			updateField('id_institution', '');
+			if (isManualClear) {
+				updateField('id_institution', '');
+			}
 		}
+		else if (newValue.trim() && props.modelValue?.id_institution && !isInstitutionValid.value) {
+			errors.value.id_institution = 'Debe seleccionar una institución de la lista';
+		}
+	}
+});
+
+
+watch(isInstitutionValid, (newVal) => {
+	if (newVal && errors.value.id_institution) {
+		errors.value.id_institution = '';
 	}
 });
 </script>
@@ -130,7 +189,7 @@ watch(searchTerm, (newValue) => {
 
 			<div class="space-y-4">
 				<div>
-					<label class="label">Institución Educativa</label>
+					<label class="label">Institución Educativa <span class="text-red-500">*</span></label>
 					<div class="flex gap-3 items-start">
 						<div class="flex-1 relative">
 							<div class="relative">
@@ -138,12 +197,10 @@ watch(searchTerm, (newValue) => {
 									v-model="searchTerm"
 									placeholder="Buscar institución por nombre..."
 									class="input pl-10 pr-4 w-full"
-									:class="{ 'border-red-500': errors.id_institution, 'border-brand-600': props.modelValue?.id_institution }"
 									@focus="showDropdown = true; isDropdownFocused = true"
-									@blur="handleDropdownBlur"
+									@blur="handleInputBlur"
 									@input="handleSearchInput" />
 							</div>
-
 							<transition name="fade">
 								<ul
 									v-if="showDropdown && filteredInstitutions.length"
@@ -155,12 +212,22 @@ watch(searchTerm, (newValue) => {
 										:key="inst.id"
 										class="px-4 py-3 hover:bg-brand-50 cursor-pointer transition-colors border-b border-gray-100 last:border-b-0"
 										:class="{ 'bg-brand-50': props.modelValue?.id_institution === inst.id }"
-										@click="updateField('id_institution', inst.id)">
+										@click="handleInstitutionSelect(inst)">
 										<div class="font-medium text-gray-900">{{ inst.name }}</div>
 										<div v-if="inst.abbreviation" class="text-sm text-gray-500">{{ inst.abbreviation }}</div>
 									</li>
 								</ul>
 							</transition>
+
+							<div v-if="searchTerm && !filteredInstitutions.length" class="text-sm text-gray-500 mt-1">
+								No se encontraron instituciones.
+								<button
+									type="button"
+									class="text-brand-600 hover:text-brand-800 underline"
+									@click="openModal('create', null, 'institution')">
+									¿Crear nueva institución?
+								</button>
+							</div>
 						</div>
 
 						<btn-create
@@ -169,22 +236,41 @@ watch(searchTerm, (newValue) => {
 							tooltip="Crear nueva institución"
 							@open="({ mode, pk, table }) => openModal(mode, pk, table)" />
 					</div>
-					<p v-if="errors.id_institution" class="text-red-500 text-sm mt-2 flex items-center">
+
+					<div v-if="errors.id_institution" class="text-red-500 text-sm mt-2 flex items-center">
 						<svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
 							<path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2h-1V9z" clip-rule="evenodd" />
 						</svg>
 						{{ errors.id_institution }}
-					</p>
+					</div>
+
+					<div v-else-if="isInstitutionValid" class="text-green-600 text-sm mt-2 flex items-center">
+						<svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+							<path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
+						</svg>
+						Institución válida seleccionada
+					</div>
 				</div>
 
 				<div
-					v-if="props.modelValue?.id_institution && searchTerm && props.institutions?.find(i => i.id === props.modelValue?.id_institution)?.name === searchTerm"
+					v-if="isInstitutionValid"
 					class="bg-green-50 border border-green-200 rounded-lg p-4">
-					<div class="flex items-center">
-						<svg class="w-5 h-5 text-green-600 mr-2" fill="currentColor" viewBox="0 0 20 20">
-							<path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
-						</svg>
-						<span class="text-green-800 font-medium">Institución seleccionada</span>
+					<div class="flex items-center justify-between">
+						<div class="flex items-center">
+							<svg class="w-5 h-5 text-green-600 mr-2" fill="currentColor" viewBox="0 0 20 20">
+								<path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
+							</svg>
+							<div>
+								<span class="text-green-800 font-medium">Institución seleccionada</span>
+								<p class="text-green-700 text-sm">{{ searchTerm }}</p>
+							</div>
+						</div>
+						<button
+							type="button"
+							class="text-green-600 hover:text-green-800 text-sm font-medium"
+							@click="updateField('id_institution', ''); searchTerm = '';">
+							Cambiar
+						</button>
 					</div>
 				</div>
 			</div>
@@ -285,7 +371,6 @@ watch(searchTerm, (newValue) => {
 			</div>
 		</div>
 
-
 		<mdl-institution
 			:show="showModal"
 			:data="modalData"
@@ -303,15 +388,5 @@ watch(searchTerm, (newValue) => {
 }
 .radio {
 	@apply sr-only;
-}
-
-.fade-enter-active,
-.fade-leave-active {
-	transition: all 0.2s ease;
-}
-.fade-enter-from,
-.fade-leave-to {
-	opacity: 0;
-	transform: translateY(-10px);
 }
 </style>
