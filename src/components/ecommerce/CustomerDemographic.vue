@@ -18,14 +18,13 @@
 				class="flex items-center justify-between gap-4 hover:bg-gray-200/50 dark:hover:bg-gray-800/70
                        p-2 rounded-lg transition-colors">
 
-				<!-- Imagen desde el backend -->
 				<img
 					v-if="item.image"
 					:src="item.image"
 					:alt="item.institution_name"
 					class="w-10 h-10 rounded-full object-contain border border-gray-300 dark:border-gray-600" />
 
-				<!-- Placeholder si no hay imagen -->
+
 				<div
 					v-else
 					class="w-10 h-10 flex items-center justify-center rounded-full bg-gray-300 dark:bg-gray-700 border border-gray-400 dark:border-gray-600 text-gray-700 dark:text-gray-300">
@@ -73,13 +72,21 @@
 	</div>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { ref } from 'vue'
 import { getProjectsByIntitution } from '../../services/statistics/dashboard'
 
-const dual_projects_by_institution = ref([])
+interface ProjectByInstitution {
+	institution_name: string
+	project_count: number
+	percentage: number
+	image?: string
+}
+
+const dual_projects_by_institution = ref<ProjectByInstitution[]>([])
 
 getProjectsByIntitution().then((data) => {
-	dual_projects_by_institution.value = data.data.data
+	dual_projects_by_institution.value = (data.data.data || []) as ProjectByInstitution[]
 })
 </script>
+

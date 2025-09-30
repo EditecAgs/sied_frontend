@@ -68,7 +68,6 @@ const institution = ref<any>(null)
 
 const menuItems = [
 	{ href: '/profile', icon: UserCircleIcon, text: 'Editar perfil' },
-	{ href: '/chat', icon: SettingsIcon, text: 'Ajustes de la cuenta' },
 	{ href: '/profile', icon: InfoCircleIcon, text: 'Soporte' }
 ]
 
