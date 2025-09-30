@@ -163,6 +163,11 @@ const filters = ref({
 	status_document: ''
 });
 
+// 📌 obtenemos institution_id desde localStorage
+const institutionId = JSON.parse(localStorage.getItem("institution"))?.id;
+// si guardaste solo el id:
+// const institutionId = localStorage.getItem("institution_id");
+
 const clearFilters = () => {
 	filters.value = {
 		project_name: '',
@@ -185,9 +190,12 @@ const filteredProjects = computed(() => {
 	const organization = filters.value.organization_name.toLowerCase();
 	const status = filters.value.status_document.toLowerCase();
 
+	// 👇 filtramos por institución automáticamente
 	return dualProjects.value.filter(project => {
 		const statusText = project.has_report ? 'completado' : 'incompleto';
+
 		return (
+			(!institutionId || project.institution_id === institutionId) && // 👈 filtro automático
 			project.project_name.toLowerCase().includes(projectName) &&
 			statusText.includes(hasReport) &&
 			project.institution_name.toLowerCase().includes(institution) &&
@@ -216,6 +224,7 @@ const fetchDualProjects = async () => {
 			id: project.id,
 			project_name: project.dual_project_reports.name || 'Por definir',
 			has_report: true,
+			institution_id: project.institution.id, // 👈 guardamos el id
 			institution_name: project.institution.name || 'Por definir',
 			area: project.dual_project_reports.dual_area?.name || 'Por definir',
 			organization_name: project.organization_dual_projects.organization?.name || 'Por definir',
@@ -226,6 +235,7 @@ const fetchDualProjects = async () => {
 			id: project.id,
 			project_name: 'Por definir',
 			has_report: false,
+			institution_id: project.institution?.id, // 👈 guardamos el id
 			institution_name: project.institution?.name || 'Por definir',
 			area: 'Por definir',
 			organization_name: project.organization_dual_projects?.[0]?.organization?.name || 'Por definir',
@@ -242,6 +252,7 @@ const fetchDualProjects = async () => {
 
 onMounted(fetchDualProjects);
 defineExpose({ fetchData: fetchDualProjects });
+
 </script>
 
 <style scoped>
