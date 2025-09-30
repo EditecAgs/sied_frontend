@@ -124,6 +124,7 @@ const handleSubmit = async () => {
 		if (data.token) {
 			localStorage.setItem('token', data.token);
 			localStorage.setItem('user', JSON.stringify(data.user));
+			localStorage.setItem('user_type', data.user.type);
 
 			axios.defaults.headers.common['Authorization'] = `Bearer ${data.token}`;
 
