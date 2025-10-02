@@ -37,7 +37,8 @@ const form = reactive({
 	id_state: '',
 	id_municipality: '',
 	country: 'México',
-	city: ''
+	city: '',
+	scope: ''
 });
 
 const states = ref([]);
@@ -70,7 +71,6 @@ const loadDependents = async () => {
 watch(() => form.id_state, (newState) => {
 	municipalities.value = allMunicipalities.value.filter(m => m.id_state === newState);
 });
-
 
 watchEffect(() => {
 	if (props.data.mode === 'edit' && props.data.pk !== null) {
@@ -145,6 +145,7 @@ const afterError = (res: any) => {
 					class="overflow-y-auto pr-2 flex-grow"
 					@after-done="afterDone"
 					@after-error="afterError">
+
 					<div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6 mt-5">
 						<div class="form-error">
 							<label class="block text-sm font-medium text-gray-700 mb-1">Nombre*</label>
@@ -161,7 +162,6 @@ const afterError = (res: any) => {
 								<option value="Grande (Más de 100 trabajadores)">Grande (Más de 100 trabajadores)</option>
 							</select>
 						</div>
-
 
 						<div class="form-error">
 							<label class="block text-sm font-medium text-gray-700 mb-1">Tipo*</label>
@@ -184,6 +184,18 @@ const afterError = (res: any) => {
 							<select v-model="form.id_cluster" name="id_cluster" class="w-full px-3 py-2 border rounded-md">
 								<option value="">Selecciona cluster</option>
 								<option v-for="cluster in clusters" :key="cluster.id" :value="cluster.id">{{ cluster.name }}</option>
+							</select>
+						</div>
+
+
+						<div class="form-error">
+							<label class="block text-sm font-medium text-gray-700 mb-1">Alcance*</label>
+							<select v-model="form.scope" name="scope" required class="w-full px-3 py-2 border rounded-md">
+								<option value="">Selecciona alcance</option>
+								<option value="Municipal">Municipal</option>
+								<option value="Federal">Estatal</option>
+								<option value="Estatal">Federal</option>
+								<option value="Internacional">Internacional</option>
 							</select>
 						</div>
 					</div>

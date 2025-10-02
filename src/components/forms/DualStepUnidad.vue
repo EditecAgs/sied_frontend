@@ -286,7 +286,7 @@ onBeforeUnmount(() => document.removeEventListener('click', handleClickOutside))
 				</h3>
 				<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
 					<div>
-						<label class="label">Nombre del Proyecto</label>
+						<label class="label">Nombre de Actividad Dual</label>
 						<input
 							type="text"
 							class="input"
@@ -296,10 +296,10 @@ onBeforeUnmount(() => document.removeEventListener('click', handleClickOutside))
 					</div>
 
 					<div ref="areaDropdownRef">
-						<label class="label">Área del Proyecto Dual</label>
+						<label class="label">Categoría del Proyecto Dual</label>
 						<div class="relative">
 							<input
-								v-model="searchArea" class="input" placeholder="Buscar área..."
+								v-model="searchArea" class="input" placeholder="Buscar categoría..."
 								@focus="showAreaDropdown = true" @input="showAreaDropdown = true" />
 							<ul
 								v-if="showAreaDropdown && filteredAreas.length"
@@ -424,7 +424,6 @@ onBeforeUnmount(() => document.removeEventListener('click', handleClickOutside))
 					<span class="w-6 h-6 bg-brand-100 rounded-full flex items-center justify-center text-brand-800 text-sm mr-2">5</span>
 					Información Adicional
 				</h3>
-
 				<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
 					<div>
 						<label class="label">Calificación máxima</label>
@@ -519,7 +518,7 @@ onBeforeUnmount(() => document.removeEventListener('click', handleClickOutside))
 			<div class="bg-gray-50 rounded-xl p-6 border border-gray-200 space-y-4">
 				<h3 class="text-lg font-semibold text-brand-800 mb-4 flex items-center">
 					<span class="w-6 h-6 bg-brand-100 rounded-full flex items-center justify-center text-brand-800 text-sm mr-2">7</span>
-					Microcredenciales
+					Microcredenciales o Certificados
 				</h3>
 
 				<div ref="microDropdownRef" class="relative">
@@ -527,7 +526,7 @@ onBeforeUnmount(() => document.removeEventListener('click', handleClickOutside))
 						<input
 							v-model="searchMicro"
 							class="input flex-1"
-							placeholder="Buscar microcredencial..."
+							placeholder="Buscar microcredencial o certificado..."
 							@focus="showMicroDropdown = true"
 							@input="showMicroDropdown = true" />
 

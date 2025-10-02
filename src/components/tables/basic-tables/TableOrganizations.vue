@@ -23,6 +23,7 @@
 						<th class="px-5 py-3 text-left text-sm font-semibold border-b border-brand-700/50">Dirección</th>
 						<th class="px-5 py-3 text-left text-sm font-semibold border-b border-brand-700/50">País</th>
 						<th class="px-5 py-3 text-left text-sm font-semibold border-b border-brand-700/50">Código Postal</th>
+						<th class="px-5 py-3 text-left text-sm font-semibold border-b border-brand-700/50">Alcance</th>
 						<th class="px-5 py-3 text-left text-sm font-semibold border-b border-brand-700/50">Opciones</th>
 					</tr>
 					<tr class="bg-brand-800/60 text-white">
@@ -41,12 +42,15 @@
 						<th class="px-5 py-2 border-b border-brand-700/50">
 							<input v-model="filters.postal_code" placeholder="Buscar..." class="w-full bg-white/10 text-white placeholder-white/60 rounded px-3 py-1 text-xs focus:outline-none focus:ring-1 focus:ring-white/50" />
 						</th>
+						<th class="px-5 py-2 border-b border-brand-700/50">
+							<input v-model="filters.scope" placeholder="Buscar..." class="w-full bg-white/10 text-white placeholder-white/60 rounded px-3 py-1 text-xs focus:outline-none focus:ring-1 focus:ring-white/50" />
+						</th>
 						<th class="px-5 py-2 border-b border-brand-700/50" />
 					</tr>
 				</thead>
 				<tbody>
 					<tr v-if="isLoading">
-						<td colspan="6" class="py-12 text-center">
+						<td colspan="7" class="py-12 text-center">
 							<svg class="animate-spin h-8 w-8 text-brand-800 mx-auto mb-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
 								<circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" />
 								<path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z" />
@@ -65,6 +69,7 @@
 						</td>
 						<td class="px-5 py-3 text-sm">{{ org.country }}</td>
 						<td class="px-5 py-3 text-sm">{{ org.postal_code }}</td>
+						<td class="px-5 py-3 text-sm">{{ org.scope }}</td>
 						<td class="px-5 py-3 text-sm">
 							<div class="flex space-x-2">
 								<btnEdit :table="'Organización'" :pk="org.id" @open="() => $emit('open', { mode: 'edit', pk: org.id, table: 'organizaciones' })" />
@@ -73,7 +78,7 @@
 						</td>
 					</tr>
 					<tr v-if="!isLoading && filteredOrganizations.length === 0">
-						<td colspan="6" class="px-5 py-8 text-center text-gray-500">No se encontraron organizaciones registradas</td>
+						<td colspan="7" class="px-5 py-8 text-center text-gray-500">No se encontraron organizaciones registradas</td>
 					</tr>
 				</tbody>
 			</table>
@@ -87,12 +92,12 @@
 					<option value="25">25 por página</option>
 					<option value="50">50 por página</option>
 				</select>
-				<button :disabled="currentPage === 1" @click="currentPage--" class="p-1 rounded-full text-brand-800 hover:bg-brand-100 disabled:opacity-30">
+				<button :disabled="currentPage === 1" class="p-1 rounded-full text-brand-800 hover:bg-brand-100 disabled:opacity-30" @click="currentPage--">
 					<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
 						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
 					</svg>
 				</button>
-				<button :disabled="currentPage === totalPages" @click="currentPage++" class="p-1 rounded-full text-brand-800 hover:bg-brand-100 disabled:opacity-30">
+				<button :disabled="currentPage === totalPages" class="p-1 rounded-full text-brand-800 hover:bg-brand-100 disabled:opacity-30" @click="currentPage++">
 					<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
 						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
 					</svg>
@@ -116,7 +121,8 @@ const filters = ref({
 	size: '',
 	street: '',
 	country: '',
-	postal_code: ''
+	postal_code: '',
+	scope: ''
 });
 
 const clearFilters = () => {
@@ -125,7 +131,8 @@ const clearFilters = () => {
 		size: '',
 		street: '',
 		country: '',
-		postal_code: ''
+		postal_code: '',
+		scope: ''
 	};
 };
 
@@ -147,13 +154,15 @@ const filteredOrganizations = computed(() => {
 	const street = filters.value.street.toLowerCase();
 	const country = filters.value.country.toLowerCase();
 	const postal = filters.value.postal_code.toLowerCase();
+	const scope = filters.value.scope.toLowerCase();
 
 	return organizations.value.filter(org =>
-		org.name.toLowerCase().includes(name) &&
-		org.size.toLowerCase().includes(size) &&
-		org.street.toLowerCase().includes(street) &&
-		org.country.toLowerCase().includes(country) &&
-		org.postal_code.toLowerCase().includes(postal)
+		org.name?.toLowerCase().includes(name) &&
+		org.size?.toLowerCase().includes(size) &&
+		org.street?.toLowerCase().includes(street) &&
+		org.country?.toLowerCase().includes(country) &&
+		org.postal_code?.toLowerCase().includes(postal) &&
+		org.scope?.toLowerCase().includes(scope)
 	);
 });
 
