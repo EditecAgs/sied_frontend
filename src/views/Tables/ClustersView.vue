@@ -2,8 +2,8 @@
 	<AdminLayout>
 		<PageBreadcrumb :pageTitle="currentPageTitle" />
 		<div class="space-y-5 sm:space-y-6">
-			<ComponentCard title="Catálogo de Clusters">
-				<btn-create :table="'Cluster'" @open="({ mode, pk, table}) => openModal(mode, pk, table)" class="divide-error-900 hover:divide-error-800" />
+			<ComponentCard title="Catálogo de Cámaras">
+				<btn-create :table="'Cámara'" @open="({ mode, pk, table}) => openModal(mode, pk, table)" class="divide-error-900 hover:divide-error-800" />
 				<mdlClusters
 					:show="showModal"
 					:data="modalData"
@@ -35,7 +35,7 @@ import mdlClusters from '../../components/modals/modals-forms/mdlClusters.vue';
 import { useModal } from "../../composables/UseModal";
 import mdlDeleteClusters from "../../components/modals/delete-only/mdlDeleteClusters.vue"
 
-const currentPageTitle = ref("Clusters");
+const currentPageTitle = ref("Cámaras");
 const { showModal, modalData, openModal, closeModal } = useModal();
 
 const tableRef = ref(null);

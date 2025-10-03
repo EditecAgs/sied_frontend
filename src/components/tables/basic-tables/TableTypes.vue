@@ -94,6 +94,7 @@ import { ref, computed, onMounted, watch } from "vue";
 import btnEdit from "../../../components/buttons/btnEdit.vue";
 import btnDelete from "../../../components/buttons/btnDelete.vue";
 import { getTypes } from '../../../services/organizations/types';
+import { getDualTypes } from '../../../services/dual_projects/dual-types';
 
 const types = ref([]);
 const isLoading = ref(false);
