@@ -2,7 +2,7 @@
 	<div class="bg-white rounded-xl shadow-lg overflow-hidden">
 		<div class="px-6 py-4 bg-gradient-to-r from-brand-800 to-brand-900">
 			<div class="flex justify-between items-center">
-				<h2 class="text-xl font-bold text-white">Gestión de Áreas</h2>
+				<h2 class="text-xl font-bold text-white">Gestión de Categorías</h2>
 				<button
 					class="flex items-center gap-1 px-4 py-2 bg-white/10 hover:bg-white/20 text-white rounded-lg backdrop-blur-sm transition-all"
 					@click="clearFilters">
@@ -45,8 +45,8 @@
 						<td class="px-5 py-3 text-sm">{{ area.name }}</td>
 						<td class="px-5 py-3 text-sm">
 							<div class="flex space-x-2">
-								<btnEdit :table="'Area dual'" :pk="area.id" @open="() => $emit('open', { mode: 'edit', pk: area.id, table: 'dual_areas' })" />
-								<btnDelete :table="'dual_areas'" :pk="area.id ?? index" @open-confirm="(payload) => $emit('open-confirm', payload)" />
+								<btnEdit :table="'categoría dual'" :pk="area.id" @open="() => $emit('open', { mode: 'edit', pk: area.id, table: 'dual_areas' })" />
+								<btnDelete :table="'categoría dual'" :pk="area.id ?? index" @open-confirm="(payload) => $emit('open-confirm', payload)" />
 							</div>
 						</td>
 					</tr>

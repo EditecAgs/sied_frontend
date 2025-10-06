@@ -122,7 +122,6 @@ const afterError = (response) => {
 									v-model="form.description"
 									type="text"
 									name="description"
-									required
 									class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring focus:ring-brand-800" />
 							</template>
 						</div>

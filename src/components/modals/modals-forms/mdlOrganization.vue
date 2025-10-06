@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { defineProps, defineEmits, reactive, ref, onMounted, watch, watchEffect } from 'vue';
+import { defineProps, defineEmits, reactive, ref, onMounted, watch, watchEffect, computed } from 'vue';
 import axios from 'axios';
 import { getStates } from '../../../services/location/states.js';
 import { getMunicipalities } from '../../../services/location/municipalities.js';
@@ -29,6 +29,7 @@ const form = reactive({
 	id_sector: '',
 	size: '',
 	id_cluster: '',
+	id_cluster_local: '',
 	street: '',
 	external_number: '',
 	internal_number: '',
@@ -37,7 +38,8 @@ const form = reactive({
 	id_state: '',
 	id_municipality: '',
 	country: 'México',
-	city: ''
+	city: '',
+	scope: ''
 });
 
 const states = ref([]);
@@ -46,6 +48,10 @@ const allMunicipalities = ref([]);
 const types = ref([]);
 const sectors = ref([]);
 const clusters = ref([]);
+
+
+const clustersNacionales = computed(() => clusters.value.filter(c => c.type === 'Nacional'));
+const clustersLocales = computed(() => clusters.value.filter(c => c.type === 'Local'));
 
 const loadDependents = async () => {
 	try {
@@ -70,7 +76,6 @@ const loadDependents = async () => {
 watch(() => form.id_state, (newState) => {
 	municipalities.value = allMunicipalities.value.filter(m => m.id_state === newState);
 });
-
 
 watchEffect(() => {
 	if (props.data.mode === 'edit' && props.data.pk !== null) {
@@ -145,11 +150,15 @@ const afterError = (res: any) => {
 					class="overflow-y-auto pr-2 flex-grow"
 					@after-done="afterDone"
 					@after-error="afterError">
+
 					<div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6 mt-5">
+
+						<!-- Nombre -->
 						<div class="form-error">
 							<label class="block text-sm font-medium text-gray-700 mb-1">Nombre*</label>
 							<input v-model="form.name" name="name" required class="w-full px-3 py-2 border rounded-md" />
 						</div>
+
 
 						<div class="form-error">
 							<label class="block text-sm font-medium text-gray-700 mb-1">Tamaño*</label>
@@ -171,6 +180,7 @@ const afterError = (res: any) => {
 							</select>
 						</div>
 
+
 						<div class="form-error">
 							<label class="block text-sm font-medium text-gray-700 mb-1">Sector*</label>
 							<select v-model="form.id_sector" name="id_sector" required class="w-full px-3 py-2 border rounded-md">
@@ -179,15 +189,37 @@ const afterError = (res: any) => {
 							</select>
 						</div>
 
+
 						<div class="form-error">
-							<label class="block text-sm font-medium text-gray-700 mb-1">Cluster</label>
-							<select v-model="form.id_cluster" name="id_cluster" class="w-full px-3 py-2 border rounded-md">
-								<option value="">Selecciona cluster</option>
-								<option v-for="cluster in clusters" :key="cluster.id" :value="cluster.id">{{ cluster.name }}</option>
+							<label class="block text-sm font-medium text-gray-700 mb-1">Cámara (cluster) Nacional*</label>
+							<select v-model="form.id_cluster" name="id_cluster" required class="w-full px-3 py-2 border rounded-md">
+								<option value="">Selecciona cluster nacional</option>
+								<option v-for="cluster in clustersNacionales" :key="cluster.id" :value="cluster.id">{{ cluster.name }}</option>
+							</select>
+						</div>
+
+						<div class="form-error">
+							<label class="block text-sm font-medium text-gray-700 mb-1">Cámara (cluster) Local*</label>
+							<select v-model="form.id_cluster_local" name="id_cluster_local" required class="w-full px-3 py-2 border rounded-md">
+								<option value="">Selecciona cluster local</option>
+								<option v-for="cluster in clustersLocales" :key="cluster.id" :value="cluster.id">{{ cluster.name }}</option>
+							</select>
+						</div>
+
+
+						<div class="form-error">
+							<label class="block text-sm font-medium text-gray-700 mb-1">Alcance*</label>
+							<select v-model="form.scope" name="scope" required class="w-full px-3 py-2 border rounded-md">
+								<option value="">Selecciona alcance</option>
+								<option value="Municipal">Municipal</option>
+								<option value="Federal">Estatal</option>
+								<option value="Estatal">Federal</option>
+								<option value="Internacional">Internacional</option>
 							</select>
 						</div>
 					</div>
 
+					<!-- Dirección -->
 					<div class="border-t pt-4 mb-6">
 						<h5 class="text-md font-semibold text-brand-800 mb-3">Dirección</h5>
 						<div class="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -218,6 +250,7 @@ const afterError = (res: any) => {
 						</div>
 					</div>
 
+					<!-- Estado / Municipio -->
 					<div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
 						<div class="form-error">
 							<label class="block text-sm font-medium text-gray-700 mb-1">Estado*</label>
@@ -235,6 +268,7 @@ const afterError = (res: any) => {
 						</div>
 					</div>
 
+					<!-- Botones -->
 					<div class="flex justify-end gap-3 mt-6 pt-4 border-t border-gray-200 sticky bottom-0 bg-transparent z-10">
 						<button type="button" class="px-5 py-2 rounded-lg bg-gray-100 text-gray-700 font-semibold hover:bg-gray-200" :disabled="isLoading" @click="emit('close')">
 							Cancelar
@@ -248,6 +282,7 @@ const afterError = (res: any) => {
 		</div>
 	</transition>
 </template>
+
 
 <style scoped>
 .fade-scale-enter-active,

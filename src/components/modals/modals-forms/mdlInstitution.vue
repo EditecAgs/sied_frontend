@@ -20,10 +20,14 @@ const afterDone = (response) => {
 	emit('close')
 }
 
-const afterError = (response) => {
-	console.log('Error al enviar:', response.data)
+const afterError = (error) => {
+	if (error.response && error.response.data && error.response.data.errors) {
+		console.error('Errores de validación:', error.response.data.errors)
+	} else {
+		console.error('Error inesperado:', error)
+	}
 }
-// eslint-disable-next-line vue/valid-define-props
+
 const props = defineProps<{
 	show: boolean
 	data: {
@@ -40,12 +44,12 @@ const form = reactive({
 	internal_number: '',
 	neighborhood: '',
 	postal_code: '',
-	id_state: '',
-	id_municipality: '',
+	id_state: null,
+	id_municipality: null,
 	city: '',
 	type: 'Pública',
-	id_subsystem: '',
-	id_academic_period: '',
+	id_subsystem: null,
+	id_academic_period: null,
 	image: '',
 	image_path: ''
 })
@@ -69,6 +73,12 @@ const LoadDependence = async () => {
 
 		const municipalitiesResp = await getMunicipalities()
 		allMunicipalities.value = municipalitiesResp.data
+
+
+		if (props.data.mode === 'create') {
+			form.id_subsystem = subsystems.value.length ? subsystems.value[0].id : null
+			form.id_academic_period = academic_periods.value.length ? academic_periods.value[0].id : null
+		}
 	} catch (err) {
 		console.error('Error load dependences:', err)
 	}
@@ -78,6 +88,7 @@ watch(() => form.id_state, (newState) => {
 	municipalities.value = newState
 		? allMunicipalities.value.filter(m => m.id_state === newState)
 		: []
+	form.id_municipality = null
 })
 
 onMounted(() => {
@@ -112,12 +123,25 @@ watchEffect(() => {
 	} else if (props.data.mode === 'create') {
 		alvRoute.value = `${axios.defaults.baseURL}institutions`
 		alvMethod.value = 'POST'
-		Object.keys(form).forEach(key => form[key] = '')
+
+		form.name = ''
+		form.street = ''
+		form.external_number = ''
+		form.internal_number = ''
+		form.neighborhood = ''
+		form.postal_code = ''
+		form.id_state = null
+		form.id_municipality = null
+		form.city = ''
 		form.type = 'Pública'
+		form.id_subsystem = subsystems.value.length ? subsystems.value[0].id : null
+		form.id_academic_period = academic_periods.value.length ? academic_periods.value[0].id : null
+		form.image = ''
+		form.image_path = ''
+
 		municipalities.value = []
 	}
 })
-
 
 const onFileChange = (event: Event) => {
 	const target = event.target as HTMLInputElement
@@ -134,6 +158,8 @@ const onFileChange = (event: Event) => {
 	}
 }
 </script>
+
+
 
 <template>
 	<transition name="fade-scale">
@@ -237,15 +263,17 @@ const onFileChange = (event: Event) => {
 					<div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
 						<div class="form-error">
 							<label class="block text-sm font-medium text-gray-700 mb-1">Estado*</label>
-							<Select
-								v-model="form.id_state" name="id_state" :options="states" optionLabel="name" optionValue="id"
-								placeholder="Selecciona un estado" class="w-full px-3 py-2 !border-2 !border-gray-900 !rounded-md focus:outline-none focus:ring focus:ring-brand-800" />
+							<select v-model="form.id_state" name="id_state" class="w-full px-3 py-2 border rounded-md">
+								<option value="">Selecciona tu Estado</option>
+								<option v-for="state in states" :key="state.id" :value="state.id">{{ state.name }}</option>
+							</select>
 						</div>
 						<div class="form-error">
 							<label class="block text-sm font-medium text-gray-700 mb-1">Municipio*</label>
-							<Select
-								v-model="form.id_municipality" name="id_municipality" :options="municipalities" optionLabel="name" optionValue="id"
-								placeholder="Selecciona un municipio" class="w-full px-3 py-2 !border-2 !border-gray-900 !rounded-md focus:outline-none focus:ring focus:ring-brand-800" />
+							<select v-model="form.id_municipality" name="id_municipality" class="w-full px-3 py-2 border rounded-md">
+								<option value="">Selecciona tu Municipio</option>
+								<option v-for="municipalitie in municipalities" :key="municipalitie.id" :value="municipalitie.id">{{ municipalitie.name }}</option>
+							</select>
 						</div>
 					</div>
 

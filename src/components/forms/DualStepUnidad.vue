@@ -7,8 +7,9 @@ import mdlOrganization from '../modals/modals-forms/mdlOrganization.vue';
 import mdlMicroCredential from '../modals/modals-forms/mdlMicroCredential.vue';
 import { useModal } from '../../composables/UseModal';
 import { getOrganizations } from '../../services/organizations/organizations.js';
+import { getMicroCredentials } from '../../services/dual_projects/micro-credentials';
 
-const emit = defineEmits(['update:modelValue']);
+const emit = defineEmits(['update:modelValue', 'update:organizations', 'update:microCredentials']);
 const props = defineProps({
 	modelValue: { type: Object, required: true },
 	areas: Array,
@@ -20,13 +21,10 @@ const props = defineProps({
 });
 
 const { showModal, modalData, openModal, closeModal } = useModal();
-// Para microcredencial
 const { showModal: showMicroModal, modalData: microModalData, openModal: openMicroModal, closeModal: closeMicroModal } = useModal();
-
 
 const maxQualification = ref(props.modelValue.max_qualification || '');
 const errors = ref({});
-
 
 const searchArea = ref('');
 const showAreaDropdown = ref(false);
@@ -51,13 +49,63 @@ const dualTypeDropdownRef = ref(null);
 const period_start = ref(props.modelValue.period_start ? new Date(props.modelValue.period_start) : null);
 const period_end = ref(props.modelValue.period_end ? new Date(props.modelValue.period_end) : null);
 
-
 const allMicroCredentials = ref(props.microCredentials || []);
 const selectedMicroCredentials = ref([]);
 const searchMicro = ref('');
 const showMicroDropdown = ref(false);
 const microDropdownRef = ref(null);
 
+const activeTooltip = ref(null);
+const tooltipPosition = ref({ x: 0, y: 0 });
+const tooltipTimeout = ref(null);
+
+const fieldHelpTexts = {
+	name_report: "Escribe el nombre específico del proyecto o actividad dual que se está registrando (ejemplo: 'Residencia en Desarrollo de Software').",
+	id_dual_area: "Clasificación general de la actividad. Sirve para agrupar los proyectos según su naturaleza académica, profesional o técnica.",
+	dual_type_id: "Selecciona el tipo de modalidad que tendrá el proyecto dual: Desarrollo de proyecto, Rotación de puestos, Práctica en área, Residencias, Servicio Social, etc.",
+	id_organization: "Selecciona la empresa, institución u organismo donde se desarrollará el proyecto. Cada organización incluye datos como tipo, sector, tamaño y ubicación.",
+	period_start: "Día en que comenzará formalmente el proyecto dual.",
+	period_end: "Día en que se dará por concluido el proyecto.",
+	status_document: "Situación actual del convenio relacionado al proyecto (vigente, en trámite, concluido).",
+	economic_support: "Forma en la que la organización brinda apoyo (ejemplo: beca, transporte, alimentación, honorarios).",
+	amount: "Cantidad monetaria o equivalente proporcionada como apoyo.",
+	max_qualification: "La escala más alta de calificación (ejemplo: 10 o 100).",
+	qualification: "Evaluación obtenida en el proyecto de acuerdo con la escala.",
+	advisor: "Persona responsable de guiar al estudiante (interno: institución, externo: organización).",
+	is_concluded: "Marca si el proyecto ya finalizó.",
+	is_hired: "Indica si el estudiante fue contratado después del proyecto.",
+	micro_credentials: "Reconocimientos, constancias o certificaciones emitidas al finalizar el proyecto."
+};
+
+const toggleTooltip = (field, event) => {
+	if (activeTooltip.value === field) {
+		activeTooltip.value = null;
+	} else {
+		activeTooltip.value = field;
+		const rect = event.target.getBoundingClientRect();
+		tooltipPosition.value = {
+			x: rect.left + window.scrollX,
+			y: rect.top + window.scrollY - 10
+		};
+	}
+};
+
+const hideTooltip = () => {
+	activeTooltip.value = null;
+};
+
+const hideTooltipDelayed = () => {
+	tooltipTimeout.value = setTimeout(() => {
+		activeTooltip.value = null;
+	}, 200);
+};
+
+const cancelHideTooltip = () => {
+	if (tooltipTimeout.value) {
+		clearTimeout(tooltipTimeout.value);
+		tooltipTimeout.value = null;
+	}
+};
 
 const initializeMicroCredentials = () => {
 	selectedMicroCredentials.value = (props.modelValue.micro_credentials || [])
@@ -65,14 +113,47 @@ const initializeMicroCredentials = () => {
 		.filter(Boolean);
 };
 
-
 const handleSavedOrganization = async () => {
-	closeModal();
-	const res = await getOrganizations();
-	emit('update:modelValue', {
-		...props.modelValue,
-		id_organization: res.data?.[res.data.length - 1]?.id
-	});
+	try {
+		const res = await getOrganizations();
+
+		emit('update:organizations', res.data);
+
+		const newOrganization = res.data?.[res.data.length - 1];
+		if (newOrganization) {
+			update('id_organization', newOrganization.id);
+		}
+
+		closeModal();
+
+		setTimeout(() => {
+			showOrganizationDropdown.value = true;
+			searchOrganization.value = '';
+		}, 100);
+
+	} catch (error) {
+		console.error('Error al recargar organizaciones:', error);
+		closeModal();
+	}
+};
+
+const handleSavedMicroCredential = async () => {
+	try {
+		const res = await getMicroCredentials();
+
+		emit('update:microCredentials', res.data);
+
+		closeMicroModal();
+
+		setTimeout(() => {
+			showMicroDropdown.value = true;
+			searchMicro.value = '';
+		}, 100);
+
+	} catch (error) {
+		console.error('Error al recargar microcredenciales:', error);
+		closeMicroModal();
+	}
 };
 
 const initializeSearchValues = () => {
@@ -100,10 +181,8 @@ const initializeSearchValues = () => {
 		maxQualification.value = props.modelValue.max_qualification.toString();
 	}
 
-
 	initializeMicroCredentials();
 };
-
 
 const filteredAreas = computed(() =>
 	!searchArea.value ? props.areas || [] : (props.areas || []).filter(a => a.name.toLowerCase().includes(searchArea.value.toLowerCase()))
@@ -120,6 +199,10 @@ const filteredSupports = computed(() =>
 const filteredDualTypes = computed(() =>
 	!searchDualType.value ? props.dualTypes || [] : (props.dualTypes || []).filter(d => d.name.toLowerCase().includes(searchDualType.value.toLowerCase()))
 );
+
+const firstThreeDualTypes = computed(() => filteredDualTypes.value.slice(0, 3));
+const remainingDualTypes = computed(() => filteredDualTypes.value.slice(3));
+
 const filteredMicro = computed(() =>
 	!searchMicro.value
 		? allMicroCredentials.value.filter(m => !selectedMicroCredentials.value.some(s => s.id === m.id))
@@ -130,7 +213,6 @@ const filteredMicro = computed(() =>
 		)
 );
 
-
 const handleClickOutside = (event) => {
 	if (areaDropdownRef.value && !areaDropdownRef.value.contains(event.target)) showAreaDropdown.value = false;
 	if (organizationDropdownRef.value && !organizationDropdownRef.value.contains(event.target)) showOrganizationDropdown.value = false;
@@ -138,8 +220,11 @@ const handleClickOutside = (event) => {
 	if (supportDropdownRef.value && !supportDropdownRef.value.contains(event.target)) showSupportDropdown.value = false;
 	if (dualTypeDropdownRef.value && !dualTypeDropdownRef.value.contains(event.target)) showDualTypeDropdown.value = false;
 	if (microDropdownRef.value && !microDropdownRef.value.contains(event.target)) showMicroDropdown.value = false;
-};
 
+	if (!event.target.closest('.help-icon') && !event.target.closest('.fixed.z-50')) {
+		hideTooltip();
+	}
+};
 
 const update = (field, value) => {
 	emit('update:modelValue', { ...props.modelValue, [field]: value });
@@ -172,7 +257,6 @@ const update = (field, value) => {
 	}
 };
 
-
 const addMicroCredential = (micro) => {
 	if (!selectedMicroCredentials.value.some(m => m.id === micro.id)) {
 		selectedMicroCredentials.value.push(micro);
@@ -193,14 +277,12 @@ const removeMicroCredential = (micro) => {
 	});
 };
 
-// --- Watchers ---
 watch(() => props.modelValue, () => initializeSearchValues(), { deep: true });
 watch(() => props.modelValue.micro_credentials, () => initializeMicroCredentials());
 watch(() => props.microCredentials, (val) => {
 	allMicroCredentials.value = val || [];
 	initializeMicroCredentials();
 });
-
 watch(period_start, (val) => {
 	if (val) update('period_start', new Date(val).toISOString().slice(0, 10));
 });
@@ -217,24 +299,20 @@ watch(maxQualification, (newVal) => {
 	update('max_qualification', newVal ? Number(newVal) : '');
 });
 
-// --- Validación ---
 const validate = () => {
 	const requiredFields = [
 		'name_report','id_organization','id_dual_area','period_start','period_end',
 		'status_document','economic_support','amount','advisor','is_concluded',
 		'is_hired','dual_type_id'
 	];
-
 	let isValid = true;
 	errors.value = {};
-
 	for (const field of requiredFields) {
 		if (props.modelValue[field] === null || props.modelValue[field] === undefined || props.modelValue[field] === '') {
 			errors.value[field] = 'Este campo es obligatorio';
 			isValid = false;
 		}
 	}
-
 	if (props.modelValue.qualification != null && props.modelValue.qualification !== '') {
 		if (!props.modelValue.max_qualification) {
 			errors.value.max_qualification = 'Seleccione la calificación máxima';
@@ -244,32 +322,33 @@ const validate = () => {
 			isValid = false;
 		}
 	}
-
 	if (props.modelValue.amount < 0) {
 		errors.value.amount = 'El monto debe ser mayor o igual a 0';
 		isValid = false;
 	}
-
 	const start = new Date(props.modelValue.period_start);
 	const end = new Date(props.modelValue.period_end);
 	if (start && end && start > end) {
 		errors.value.period_end = 'La fecha de fin debe ser posterior a la fecha de inicio';
 		isValid = false;
 	}
-
 	return isValid;
 };
 
 defineExpose({ validate });
 
-
 onMounted(() => {
 	document.addEventListener('click', handleClickOutside);
 	initializeSearchValues();
 });
-onBeforeUnmount(() => document.removeEventListener('click', handleClickOutside));
-</script>
 
+onBeforeUnmount(() => {
+	document.removeEventListener('click', handleClickOutside);
+	if (tooltipTimeout.value) {
+		clearTimeout(tooltipTimeout.value);
+	}
+});
+</script>
 
 <template>
 	<div class="space-y-8">
@@ -279,6 +358,21 @@ onBeforeUnmount(() => document.removeEventListener('click', handleClickOutside))
 				<p class="text-gray-600 text-sm">Complete la información del proyecto dual</p>
 			</div>
 
+			<!-- Tooltip global -->
+			<div
+				v-if="activeTooltip"
+				class="fixed z-50 max-w-xs bg-gray-800 text-white text-sm rounded-lg p-3 shadow-lg transition-opacity duration-200"
+				:style="{
+					left: `${tooltipPosition.x}px`,
+					top: `${tooltipPosition.y}px`,
+					transform: 'translateY(-100%)'
+				}"
+				@mouseenter="cancelHideTooltip"
+				@mouseleave="hideTooltipDelayed">
+				{{ fieldHelpTexts[activeTooltip] }}
+				<div class="absolute top-full left-4 border-4 border-transparent border-t-gray-800"></div>
+			</div>
+
 			<div class="bg-gray-50 rounded-xl p-6 border border-gray-200">
 				<h3 class="text-lg font-semibold text-brand-800 mb-4 flex items-center">
 					<span class="w-6 h-6 bg-brand-100 rounded-full flex items-center justify-center text-brand-800 text-sm mr-2">1</span>
@@ -286,7 +380,16 @@ onBeforeUnmount(() => document.removeEventListener('click', handleClickOutside))
 				</h3>
 				<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
 					<div>
-						<label class="label">Nombre del Proyecto</label>
+						<label class="label flex items-center gap-1">
+							Nombre de Actividad Dual
+							<button
+								type="button"
+								class="help-icon text-gray-400 hover:text-brand-600 cursor-help transition-colors"
+								@click="toggleTooltip('name_report', $event)"
+								@mouseleave="hideTooltipDelayed">
+								?
+							</button>
+						</label>
 						<input
 							type="text"
 							class="input"
@@ -296,10 +399,19 @@ onBeforeUnmount(() => document.removeEventListener('click', handleClickOutside))
 					</div>
 
 					<div ref="areaDropdownRef">
-						<label class="label">Área del Proyecto Dual</label>
+						<label class="label flex items-center gap-1">
+							Categoría del Proyecto Dual
+							<button
+								type="button"
+								class="help-icon text-gray-400 hover:text-brand-600 cursor-help transition-colors"
+								@click="toggleTooltip('id_dual_area', $event)"
+								@mouseleave="hideTooltipDelayed">
+								?
+							</button>
+						</label>
 						<div class="relative">
 							<input
-								v-model="searchArea" class="input" placeholder="Buscar área..."
+								v-model="searchArea" class="input" placeholder="Buscar categoría..."
 								@focus="showAreaDropdown = true" @input="showAreaDropdown = true" />
 							<ul
 								v-if="showAreaDropdown && filteredAreas.length"
@@ -314,6 +426,58 @@ onBeforeUnmount(() => document.removeEventListener('click', handleClickOutside))
 						</div>
 						<p v-if="errors.id_dual_area" class="error-msg">{{ errors.id_dual_area }}</p>
 					</div>
+
+					<div ref="dualTypeDropdownRef" class="pt-3">
+						<label class="label flex items-center gap-1">
+							Tipo de Proyecto Dual
+							<button
+								type="button"
+								class="help-icon text-gray-400 hover:text-brand-600 cursor-help transition-colors"
+								@click="toggleTooltip('dual_type_id', $event)"
+								@mouseleave="hideTooltipDelayed">
+								?
+							</button>
+						</label>
+						<div class="relative">
+							<input
+								v-model="searchDualType"
+								class="input"
+								placeholder="Buscar tipo..."
+								@focus="showDualTypeDropdown = true"
+								@input="showDualTypeDropdown = true" />
+
+							<ul
+								v-if="showDualTypeDropdown"
+								class="absolute mt-1 w-full bg-white border border-gray-300 rounded-lg shadow-lg z-10 divide-y divide-gray-200">
+								<li
+									v-for="dual in firstThreeDualTypes"
+									:key="dual.id"
+									class="px-4 py-2 hover:bg-brand-50 cursor-pointer transition-colors"
+									@click="update('dual_type_id', dual.id)">
+									{{ dual.name }}
+								</li>
+
+								<li class="relative group">
+									<div
+										class="px-4 py-2 hover:bg-brand-50 cursor-pointer flex justify-between items-center transition-colors">
+										<span>Alternativas duales</span>
+										<span class="text-gray-400">▸</span>
+									</div>
+									<ul
+										class="absolute left-full top-0 ml-1 w-56 bg-white border border-gray-300 rounded-lg shadow-lg hidden group-hover:block z-20 divide-y divide-gray-200">
+										<li
+											v-for="dual in remainingDualTypes"
+											:key="dual.id"
+											class="px-4 py-2 hover:bg-brand-50 cursor-pointer transition-colors"
+											@click="update('dual_type_id', dual.id)">
+											{{ dual.name }}
+										</li>
+									</ul>
+								</li>
+							</ul>
+						</div>
+						<p v-if="errors.dual_type_id" class="error-msg">{{ errors.dual_type_id }}</p>
+					</div>
 				</div>
 			</div>
 
@@ -324,7 +488,16 @@ onBeforeUnmount(() => document.removeEventListener('click', handleClickOutside))
 				</h3>
 				<div ref="organizationDropdownRef" class="flex items-end gap-2">
 					<div class="flex-1 relative">
-						<label class="label">Organización</label>
+						<label class="label flex items-center gap-1">
+							Organización
+							<button
+								type="button"
+								class="help-icon text-gray-400 hover:text-brand-600 cursor-help transition-colors"
+								@click="toggleTooltip('id_organization', $event)"
+								@mouseleave="hideTooltipDelayed">
+								?
+							</button>
+						</label>
 						<input
 							v-model="searchOrganization" class="input" placeholder="Buscar organización..."
 							@focus="showOrganizationDropdown = true" @input="showOrganizationDropdown = true" />
@@ -354,12 +527,30 @@ onBeforeUnmount(() => document.removeEventListener('click', handleClickOutside))
 				</h3>
 				<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
 					<div>
-						<label class="label">Fecha de Inicio</label>
+						<label class="label flex items-center gap-1">
+							Fecha de Inicio
+							<button
+								type="button"
+								class="help-icon text-gray-400 hover:text-brand-600 cursor-help transition-colors"
+								@click="toggleTooltip('period_start', $event)"
+								@mouseleave="hideTooltipDelayed">
+								?
+							</button>
+						</label>
 						<Datepicker v-model="period_start" placeholder="Seleccione la fecha" :enable-time-picker="false" class="input" />
 						<p v-if="errors.period_start" class="error-msg">{{ errors.period_start }}</p>
 					</div>
 					<div>
-						<label class="label">Fecha de Fin</label>
+						<label class="label flex items-center gap-1">
+							Fecha de Fin
+							<button
+								type="button"
+								class="help-icon text-gray-400 hover:text-brand-600 cursor-help transition-colors"
+								@click="toggleTooltip('period_end', $event)"
+								@mouseleave="hideTooltipDelayed">
+								?
+							</button>
+						</label>
 						<Datepicker v-model="period_end" placeholder="Seleccione la fecha" :enable-time-picker="false" class="input" />
 						<p v-if="errors.period_end" class="error-msg">{{ errors.period_end }}</p>
 					</div>
@@ -373,7 +564,16 @@ onBeforeUnmount(() => document.removeEventListener('click', handleClickOutside))
 				</h3>
 
 				<div ref="statusDropdownRef">
-					<label class="label">Estado del Convenio Dual</label>
+					<label class="label flex items-center gap-1">
+						Estado del Convenio Dual
+						<button
+							type="button"
+							class="help-icon text-gray-400 hover:text-brand-600 cursor-help transition-colors"
+							@click="toggleTooltip('status_document', $event)"
+							@mouseleave="hideTooltipDelayed">
+							?
+						</button>
+					</label>
 					<div class="relative">
 						<input
 							v-model="searchStatus" class="input" placeholder="Buscar estado..."
@@ -392,7 +592,16 @@ onBeforeUnmount(() => document.removeEventListener('click', handleClickOutside))
 
 				<div ref="supportDropdownRef" class="flex gap-4 items-end">
 					<div class="flex-1">
-						<label class="label">Tipo de Apoyo Económico</label>
+						<label class="label flex items-center gap-1">
+							Tipo de Apoyo Económico
+							<button
+								type="button"
+								class="help-icon text-gray-400 hover:text-brand-600 cursor-help transition-colors"
+								@click="toggleTooltip('economic_support', $event)"
+								@mouseleave="hideTooltipDelayed">
+								?
+							</button>
+						</label>
 						<div class="relative">
 							<input
 								v-model="searchSupport" class="input" placeholder="Buscar apoyo..."
@@ -409,7 +618,16 @@ onBeforeUnmount(() => document.removeEventListener('click', handleClickOutside))
 						<p v-if="errors.economic_support" class="error-msg">{{ errors.economic_support }}</p>
 					</div>
 					<div class="w-40 flex-shrink-0">
-						<label class="label">Monto</label>
+						<label class="label flex items-center gap-1">
+							Monto
+							<button
+								type="button"
+								class="help-icon text-gray-400 hover:text-brand-600 cursor-help transition-colors"
+								@click="toggleTooltip('amount', $event)"
+								@mouseleave="hideTooltipDelayed">
+								?
+							</button>
+						</label>
 						<input
 							type="number" min="0" step="0.01" class="input"
 							:value="modelValue.amount"
@@ -424,10 +642,18 @@ onBeforeUnmount(() => document.removeEventListener('click', handleClickOutside))
 					<span class="w-6 h-6 bg-brand-100 rounded-full flex items-center justify-center text-brand-800 text-sm mr-2">5</span>
 					Información Adicional
 				</h3>
-
 				<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
 					<div>
-						<label class="label">Calificación máxima</label>
+						<label class="label flex items-center gap-1">
+							Calificación máxima
+							<button
+								type="button"
+								class="help-icon text-gray-400 hover:text-brand-600 cursor-help transition-colors"
+								@click="toggleTooltip('max_qualification', $event)"
+								@mouseleave="hideTooltipDelayed">
+								?
+							</button>
+						</label>
 						<select
 							v-model="modelValue.max_qualification"
 							class="input"
@@ -440,7 +666,16 @@ onBeforeUnmount(() => document.removeEventListener('click', handleClickOutside))
 					</div>
 
 					<div>
-						<label class="label">Calificación</label>
+						<label class="label flex items-center gap-1">
+							Calificación
+							<button
+								type="button"
+								class="help-icon text-gray-400 hover:text-brand-600 cursor-help transition-colors"
+								@click="toggleTooltip('qualification', $event)"
+								@mouseleave="hideTooltipDelayed">
+								?
+							</button>
+						</label>
 						<input
 							type="number"
 							class="input"
@@ -453,7 +688,16 @@ onBeforeUnmount(() => document.removeEventListener('click', handleClickOutside))
 				</div>
 
 				<div>
-					<label class="label">Asesor</label>
+					<label class="label flex items-center gap-1">
+						Asesor
+						<button
+							type="button"
+							class="help-icon text-gray-400 hover:text-brand-600 cursor-help transition-colors"
+							@click="toggleTooltip('advisor', $event)"
+							@mouseleave="hideTooltipDelayed">
+							?
+						</button>
+					</label>
 					<select
 						class="input" :value="modelValue.advisor"
 						@change="update('advisor', $event.target.value)">
@@ -465,15 +709,23 @@ onBeforeUnmount(() => document.removeEventListener('click', handleClickOutside))
 				</div>
 			</div>
 
-
 			<div class="bg-gray-50 rounded-xl p-6 border border-gray-200">
 				<h3 class="text-lg font-semibold text-brand-800 mb-4 flex items-center">
-					<span class="w-6 h-6 bg-brand-100 rounded-full flex items-center justify-center text-brand-800 text-sm mr-2">4</span>
+					<span class="w-6 h-6 bg-brand-100 rounded-full flex items-center justify-center text-brand-800 text-sm mr-2">6</span>
 					Estado del Proyecto
 				</h3>
 				<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
 					<div>
-						<label class="label">Proyecto Concluido</label>
+						<label class="label flex items-center gap-1">
+							Proyecto Concluido
+							<button
+								type="button"
+								class="help-icon text-gray-400 hover:text-brand-600 cursor-help transition-colors"
+								@click="toggleTooltip('is_concluded', $event)"
+								@mouseleave="hideTooltipDelayed">
+								?
+							</button>
+						</label>
 						<select
 							class="input"
 							:value="modelValue.is_concluded"
@@ -484,7 +736,16 @@ onBeforeUnmount(() => document.removeEventListener('click', handleClickOutside))
 					</div>
 
 					<div>
-						<label class="label">Contratado</label>
+						<label class="label flex items-center gap-1">
+							Contratado
+							<button
+								type="button"
+								class="help-icon text-gray-400 hover:text-brand-600 cursor-help transition-colors"
+								@click="toggleTooltip('is_hired', $event)"
+								@mouseleave="hideTooltipDelayed">
+								?
+							</button>
+						</label>
 						<select
 							class="input"
 							:value="modelValue.is_hired"
@@ -494,40 +755,30 @@ onBeforeUnmount(() => document.removeEventListener('click', handleClickOutside))
 						</select>
 					</div>
 				</div>
-
-				<div ref="dualTypeDropdownRef" class="pt-3">
-					<label class="label">Tipo de Proyecto Dual</label>
-					<div class="relative">
-						<input
-							v-model="searchDualType" class="input" placeholder="Buscar tipo..."
-							@focus="showDualTypeDropdown = true" @input="showDualTypeDropdown = true" />
-						<ul
-							v-if="showDualTypeDropdown && filteredDualTypes.length"
-							class="dropdown">
-							<li
-								v-for="dual in filteredDualTypes" :key="dual.id"
-								class="dropdown-item"
-								@click="update('dual_type_id', dual.id)">
-								{{ dual.name }}
-							</li>
-						</ul>
-					</div>
-					<p v-if="errors.dual_type_id" class="error-msg">{{ errors.dual_type_id }}</p>
-				</div>
 			</div>
 
 			<div class="bg-gray-50 rounded-xl p-6 border border-gray-200 space-y-4">
 				<h3 class="text-lg font-semibold text-brand-800 mb-4 flex items-center">
 					<span class="w-6 h-6 bg-brand-100 rounded-full flex items-center justify-center text-brand-800 text-sm mr-2">7</span>
-					Microcredenciales
+					Microcredenciales o Certificados
 				</h3>
 
 				<div ref="microDropdownRef" class="relative">
+					<label class="label flex items-center gap-1">
+						Microcredenciales o Certificados
+						<button
+							type="button"
+							class="help-icon text-gray-400 hover:text-brand-600 cursor-help transition-colors"
+							@click="toggleTooltip('micro_credentials', $event)"
+							@mouseleave="hideTooltipDelayed">
+							?
+						</button>
+					</label>
 					<div class="flex items-center gap-2">
 						<input
 							v-model="searchMicro"
 							class="input flex-1"
-							placeholder="Buscar microcredencial..."
+							placeholder="Buscar microcredencial o certificado..."
 							@focus="showMicroDropdown = true"
 							@input="showMicroDropdown = true" />
 
@@ -554,14 +805,13 @@ onBeforeUnmount(() => document.removeEventListener('click', handleClickOutside))
 				</div>
 			</div>
 
-
 			<mdl-organization
 				:show="showModal" :data="modalData"
 				@close="closeModal" @saved="handleSavedOrganization" />
 
 			<mdlMicroCredential
 				:show="showMicroModal" :data="microModalData"
-				@close="closeMicroModal" @saved="handleSaved" />
+				@close="closeMicroModal" @saved="handleSavedMicroCredential" />
 		</div>
 	</div>
 </template>
@@ -581,5 +831,8 @@ onBeforeUnmount(() => document.removeEventListener('click', handleClickOutside))
 }
 .error-msg {
 	@apply text-red-500 text-sm mt-2 flex items-center;
+}
+.help-icon {
+	@apply w-4 h-4 flex items-center justify-center rounded-full border border-current text-xs font-bold;
 }
 </style>
