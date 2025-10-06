@@ -32,7 +32,8 @@ const props = defineProps<{
 
 const form = reactive({
 	id: '',
-	name: ''
+	name: '',
+	plan_mexico: 0 // Valor por defecto 0 para el campo booleano
 })
 
 watchEffect(() => {
@@ -58,8 +59,13 @@ watchEffect(() => {
 		alvRoute.value = `${axios.defaults.baseURL}sectors`
 		alvMethod.value = 'POST'
 
+		// Reset del formulario manteniendo plan_mexico en 0
 		Object.keys(form).forEach(key => {
-			form[key] = ''
+			if (key === 'plan_mexico') {
+				form[key] = 0 // Mantener 0 como valor por defecto
+			} else {
+				form[key] = ''
+			}
 		})
 	}
 })
@@ -116,6 +122,12 @@ watchEffect(() => {
 									:disabled="isLoading" />
 							</template>
 						</div>
+
+						<!-- Campo oculto para plan_mexico -->
+						<input
+							v-model="form.plan_mexico"
+							type="hidden"
+							name="plan_mexico" />
 					</div>
 
 					<div class="flex justify-end gap-3 mt-6 pt-4 border-t border-gray-200 sticky bottom-0 bg-transparent z-10">

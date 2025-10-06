@@ -31,7 +31,8 @@ const props = defineProps<{
 }>()
 
 const form = reactive({
-	name: ''
+	name: '',
+	type: 'Local'
 })
 
 watchEffect(() => {
@@ -56,7 +57,7 @@ watchEffect(() => {
 		alvMethod.value = 'POST'
 
 		Object.keys(form).forEach(key => {
-			form[key] = ''
+			form[key] = key === 'type' ? 'Local' : ''
 		})
 	}
 })
@@ -111,6 +112,24 @@ watchEffect(() => {
 									required
 									class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring focus:ring-brand-800"
 									:disabled="isLoading" />
+							</template>
+						</div>
+
+						<div class="form-error">
+							<label class="block text-sm font-medium text-gray-700 mb-1">Tipo*</label>
+							<template v-if="isLoading">
+								<div class="h-8 bg-gray-300 rounded animate-pulse w-full" />
+							</template>
+							<template v-else>
+								<select
+									v-model="form.type"
+									name="type"
+									required
+									class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring focus:ring-brand-800"
+									:disabled="isLoading">
+									<option value="Local">Local</option>
+									<option value="Nacional">Nacional</option>
+								</select>
 							</template>
 						</div>
 					</div>

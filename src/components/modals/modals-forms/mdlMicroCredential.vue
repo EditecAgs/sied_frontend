@@ -102,7 +102,7 @@ watchEffect(() => {
 				<div
 					class="flex items-center justify-between bg-brand-900 -mx-8 -mt-8 px-8 py-4 rounded-t-2xl">
 					<h4 class="text-xl font-semibold text-white">
-						{{ data.mode === 'create' ? `Crear ${data.table}` : `Editar ${data.table}` }}
+						{{ data.mode === 'create' ? `Crear Microcredenciales y Certificados` : `Editar Microcredenciales y Certificados` }}
 					</h4>
 					<div class="flex items-center gap-4">
 						<div

@@ -2,7 +2,7 @@
 	<div class="bg-white rounded-xl shadow-lg overflow-hidden">
 		<div class="px-6 py-4 bg-gradient-to-r from-brand-800 to-brand-900">
 			<div class="flex justify-between items-center">
-				<h2 class="text-xl font-bold text-white">Gestión de Tipo de Organizaciones</h2>
+				<h2 class="text-xl font-bold text-white">Gestión de Tipos Dual</h2>
 				<button
 					class="flex items-center gap-1 px-4 py-2 bg-white/10 hover:bg-white/20 text-white rounded-lg backdrop-blur-sm transition-all"
 					@click="clearFilters">
@@ -23,7 +23,7 @@
 					</tr>
 					<tr class="bg-brand-800/60 text-white">
 						<th class="px-5 py-2 border-b border-brand-700/50 border-r border-brand-700/30">
-							<input v-model="filters.name" class="w-full bg-white/10 border-none text-white placeholder-white/60 rounded px-3 py-1 text-xs focus:outline-none" placeholder="Buscar tipo..." />
+							<input v-model="filters.name" class="w-full bg-white/10 border-none text-white placeholder-white/60 rounded px-3 py-1 text-xs focus:outline-none" placeholder="Buscar tipo dual..." />
 						</th>
 						<th class="px-5 py-2 border-b border-brand-700/50" />
 					</tr>
@@ -36,28 +36,28 @@
 								<circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" />
 								<path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z" />
 							</svg>
-							<p class="text-gray-500">Cargando Tipos...</p>
+							<p class="text-gray-500">Cargando Tipos Dual...</p>
 						</td>
 					</tr>
 
 					<tr
-						v-for="(type, index) in paginatedTypes"
-						:key="type.id ?? index"
+						v-for="(dualType, index) in paginatedDualTypes"
+						:key="dualType.id ?? index"
 						class="border-b border-gray-100 hover:bg-brand-50/30 transition-colors even:bg-gray-50">
 						<td class="px-5 py-3 text-sm border-r border-gray-100 font-medium text-brand-900">
-							{{ type.name }}
+							{{ dualType.name }}
 						</td>
 						<td class="px-5 py-3 text-sm">
 							<div class="flex space-x-2">
-								<btnEdit :table="'Tipo de Organizaciones'" :pk="type.id ?? index" @open="(data) => $emit('open', data)" />
-								<btnDelete :table="'types'" :pk="type.id ?? index" @open-confirm="(payload) => $emit('open-confirm', payload)" />
+								<btnEdit :table="'Tipo Dual'" :pk="dualType.id ?? index" @open="(data) => $emit('open', data)" />
+								<btnDelete :table="'dual_types'" :pk="dualType.id ?? index" @open-confirm="(payload) => $emit('open-confirm', payload)" />
 							</div>
 						</td>
 					</tr>
 
-					<tr v-if="!isLoading && filteredTypes.length === 0">
+					<tr v-if="!isLoading && filteredDualTypes.length === 0">
 						<td colspan="2" class="px-5 py-8 text-center">
-							<p class="text-gray-500">No se encontraron tipos registrados</p>
+							<p class="text-gray-500">No se encontraron tipos dual registrados</p>
 						</td>
 					</tr>
 				</tbody>
@@ -66,7 +66,7 @@
 
 		<div v-if="!isLoading" class="px-6 py-3 bg-gray-50 border-t border-gray-200 flex justify-between items-center">
 			<span class="text-xs text-gray-600">
-				Mostrando {{ paginatedTypes.length }} de {{ filteredTypes.length }} registros
+				Mostrando {{ paginatedDualTypes.length }} de {{ filteredDualTypes.length }} registros
 			</span>
 			<div class="flex items-center space-x-2">
 				<select v-model="rowsPerPage" class="text-xs border border-gray-300 rounded px-2 py-1 text-gray-700">
@@ -93,10 +93,9 @@
 import { ref, computed, onMounted, watch } from "vue";
 import btnEdit from "../../../components/buttons/btnEdit.vue";
 import btnDelete from "../../../components/buttons/btnDelete.vue";
-import { getTypes } from '../../../services/organizations/types';
 import { getDualTypes } from '../../../services/dual_projects/dual-types';
 
-const types = ref([]);
+const dualTypes = ref([]);
 const isLoading = ref(false);
 
 const filters = ref({
@@ -106,19 +105,19 @@ const filters = ref({
 const rowsPerPage = ref(10);
 const currentPage = ref(1);
 
-const filteredTypes = computed(() => {
-	return types.value.filter(type => {
+const filteredDualTypes = computed(() => {
+	return dualTypes.value.filter(type => {
 		return type.name.toLowerCase().includes(filters.value.name.toLowerCase());
 	});
 });
 
-const totalPages = computed(() => Math.ceil(filteredTypes.value.length / rowsPerPage.value));
-const paginatedTypes = computed(() => {
+const totalPages = computed(() => Math.ceil(filteredDualTypes.value.length / rowsPerPage.value));
+const paginatedDualTypes = computed(() => {
 	const start = (currentPage.value - 1) * rowsPerPage.value;
-	return filteredTypes.value.slice(start, start + rowsPerPage.value);
+	return filteredDualTypes.value.slice(start, start + rowsPerPage.value);
 });
 
-watch([filteredTypes, rowsPerPage], () => {
+watch([filteredDualTypes, rowsPerPage], () => {
 	if (currentPage.value > totalPages.value) {
 		currentPage.value = 1;
 	}
@@ -132,8 +131,8 @@ const clearFilters = () => {
 const fetchData = async () => {
 	isLoading.value = true;
 	try {
-		const { data } = await getTypes();
-		types.value = data;
+		const { data } = await getDualTypes();
+		dualTypes.value = data;
 	} finally {
 		isLoading.value = false;
 	}

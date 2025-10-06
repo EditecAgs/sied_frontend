@@ -1,3 +1,6 @@
+
+
+
 <script setup>
 import { ref, computed, defineProps, defineEmits, watch, onMounted } from "vue";
 
@@ -25,6 +28,31 @@ const form = ref({
 
 const errors = ref({});
 
+// Computed para filtrar carreras por institución
+const filteredCareers = computed(() => {
+	if (!props.institution?.id) return [];
+
+	return props.careers.filter(career => {
+		return career.id_institution === props.institution.id ||
+			career.institution_id === props.institution.id ||
+			career.institution?.id === props.institution.id;
+	});
+});
+
+
+const filteredSpecialties = computed(() => {
+	if (!form.value.id_career) return [];
+
+	const selectedCareer = props.careers.find(c => c.id === parseInt(form.value.id_career));
+	if (!selectedCareer) return [];
+
+	return props.specialties.filter(specialty => {
+		return specialty.id_career === parseInt(form.value.id_career) ||
+			specialty.career_id === parseInt(form.value.id_career) ||
+			specialty.career?.id === parseInt(form.value.id_career);
+	});
+});
+
 const studentCount = computed(() => students.value.length);
 const canSubmit = computed(() => studentCount.value >= 1);
 
@@ -32,7 +60,7 @@ const validateForm = () => {
 	errors.value = {};
 	let valid = true;
 
-	const requiredFields = ['control_number', 'name_student', 'lastname', 'gender', 'semester', 'id_career', 'id_specialty'];
+	const requiredFields = ['control_number', 'name_student', 'lastname', 'gender', 'semester', 'id_career'];
 
 	requiredFields.forEach(field => {
 		if (!form.value[field]) {
@@ -63,7 +91,6 @@ const addStudent = () => {
 		console.log('Validación falló, no se puede agregar estudiante');
 		return;
 	}
-
 
 	const controlNumberExists = students.value.some(s =>
 		s.student.control_number === form.value.control_number
@@ -150,6 +177,29 @@ const clearForm = () => {
 	errors.value = {};
 };
 
+
+watch(() => form.value.id_career, (newCareerId) => {
+	if (newCareerId) {
+		if (form.value.id_specialty) {
+			const currentSpecialty = props.specialties.find(s => s.id === parseInt(form.value.id_specialty));
+			if (currentSpecialty &&
+				currentSpecialty.id_career !== parseInt(newCareerId) &&
+				currentSpecialty.career_id !== parseInt(newCareerId)) {
+				form.value.id_specialty = "";
+			}
+		}
+	} else {
+		form.value.id_specialty = "";
+	}
+});
+
+watch(() => props.institution, (newInstitution) => {
+	if (newInstitution) {
+		form.value.id_career = "";
+		form.value.id_specialty = "";
+	}
+});
+
 const initializeStudents = () => {
 	if (props.modelValue?.dual_project_students && Array.isArray(props.modelValue.dual_project_students)) {
 		students.value = [...props.modelValue.dual_project_students];
@@ -172,8 +222,25 @@ defineExpose({
 
 <template>
 	<div class="space-y-8">
+		<!-- Información de la institución seleccionada
+		<div v-if="institution" class="bg-blue-50 p-4 rounded-lg border border-blue-200">
+			<div class="flex items-center justify-between">
+				<div>
+					<h3 class="text-lg font-semibold text-blue-800">Institución seleccionada</h3>
+					<p class="text-blue-600">{{ institution.name }}</p>
+				</div>
+				<div class="text-sm text-blue-500">
+					{{ filteredCareers.length }} carrera(s) disponible(s)
+				</div>
+			</div>
+		</div>-->
+
 		<div class="bg-white p-6 rounded-lg shadow-md space-y-4">
 			<h2 class="text-xl font-bold text-brand-900">Registro de Estudiante</h2>
+
+			<div v-if="!institution" class="bg-yellow-50 p-4 rounded-lg border border-yellow-200">
+				<p class="text-yellow-700">⚠️ Primero debe seleccionar una institución en el paso anterior</p>
+			</div>
 
 			<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
 				<div>
@@ -182,7 +249,8 @@ defineExpose({
 						v-model="form.control_number"
 						class="input"
 						placeholder="Número de control"
-						:class="{ 'border-red-500': errors.control_number }" />
+						:class="{ 'border-red-500': errors.control_number }"
+						:disabled="!institution" />
 					<p v-if="errors.control_number" class="text-red-500 text-sm mt-1">{{ errors.control_number }}</p>
 				</div>
 
@@ -192,7 +260,8 @@ defineExpose({
 						v-model="form.name_student"
 						class="input"
 						placeholder="Nombre del estudiante"
-						:class="{ 'border-red-500': errors.name_student }" />
+						:class="{ 'border-red-500': errors.name_student }"
+						:disabled="!institution" />
 					<p v-if="errors.name_student" class="text-red-500 text-sm mt-1">{{ errors.name_student }}</p>
 				</div>
 
@@ -202,7 +271,8 @@ defineExpose({
 						v-model="form.lastname"
 						class="input"
 						placeholder="Apellidos del estudiante"
-						:class="{ 'border-red-500': errors.lastname }" />
+						:class="{ 'border-red-500': errors.lastname }"
+						:disabled="!institution" />
 					<p v-if="errors.lastname" class="text-red-500 text-sm mt-1">{{ errors.lastname }}</p>
 				</div>
 
@@ -215,7 +285,8 @@ defineExpose({
 						max="12"
 						class="input"
 						placeholder="Semestre (1-12)"
-						:class="{ 'border-red-500': errors.semester }" />
+						:class="{ 'border-red-500': errors.semester }"
+						:disabled="!institution" />
 					<p v-if="errors.semester" class="text-red-500 text-sm mt-1">{{ errors.semester }}</p>
 				</div>
 
@@ -224,23 +295,31 @@ defineExpose({
 					<select
 						v-model="form.id_career"
 						class="input"
-						:class="{ 'border-red-500': errors.id_career }">
+						:class="{ 'border-red-500': errors.id_career }"
+						:disabled="!institution || filteredCareers.length === 0">
 						<option value="">Selecciona carrera</option>
-						<option v-for="c in careers" :key="c.id" :value="c.id">{{ c.name }}</option>
+						<option v-for="c in filteredCareers" :key="c.id" :value="c.id">{{ c.name }}</option>
 					</select>
 					<p v-if="errors.id_career" class="text-red-500 text-sm mt-1">{{ errors.id_career }}</p>
+					<p v-if="institution && filteredCareers.length === 0" class="text-yellow-600 text-sm mt-1">
+						No hay carreras disponibles para esta institución
+					</p>
 				</div>
 
 				<div>
-					<label class="block text-sm font-medium text-gray-700 mb-1">Especialidad *</label>
+					<label class="block text-sm font-medium text-gray-700 mb-1">Especialidad</label>
 					<select
 						v-model="form.id_specialty"
 						class="input"
-						:class="{ 'border-red-500': errors.id_specialty }">
+						:class="{ 'border-red-500': errors.id_specialty }"
+						:disabled="!institution || !form.id_career || filteredSpecialties.length === 0">
 						<option value="">Selecciona especialidad</option>
-						<option v-for="s in specialties" :key="s.id" :value="s.id">{{ s.name }}</option>
+						<option v-for="s in filteredSpecialties" :key="s.id" :value="s.id">{{ s.name }}</option>
 					</select>
 					<p v-if="errors.id_specialty" class="text-red-500 text-sm mt-1">{{ errors.id_specialty }}</p>
+					<p v-if="form.id_career && filteredSpecialties.length === 0" class="text-yellow-600 text-sm mt-1">
+						No hay especialidades disponibles para esta carrera
+					</p>
 				</div>
 
 				<div class="md:col-span-2">
@@ -251,20 +330,24 @@ defineExpose({
 								v-model="form.gender"
 								type="radio"
 								value="Masculino"
-								class="mr-2" /> Masculino
+								class="mr-2"
+								:disabled="!institution" /> Masculino
 						</label>
 						<label class="flex items-center">
 							<input
 								v-model="form.gender"
 								type="radio"
 								value="Femenino"
-								class="mr-2" /> Femenino
+								class="mr-2"
+								:disabled="!institution" /> Femenino
 						</label>
 						<label class="flex items-center">
 							<input
+								v-model="form.gender"
 								type="radio"
-								value="Femenino"
-								class="mr-2" /> Otro
+								value="Otro"
+								class="mr-2"
+								:disabled="!institution" /> Otro
 						</label>
 					</div>
 					<p v-if="errors.gender" class="text-red-500 text-sm mt-1">{{ errors.gender }}</p>
@@ -275,11 +358,13 @@ defineExpose({
 				<div class="flex gap-3">
 					<button
 						class="px-4 py-2 bg-brand-800 text-white rounded-lg hover:bg-brand-900 transition disabled:bg-gray-400"
+						:disabled="!institution"
 						@click="addStudent">
 						Agregar estudiante
 					</button>
 					<button
 						class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition"
+						:disabled="!institution"
 						@click="clearForm">
 						Limpiar formulario
 					</button>
@@ -291,7 +376,6 @@ defineExpose({
 			</div>
 		</div>
 
-		<!-- Tabla de estudiantes -->
 		<div v-if="students.length > 0" class="bg-white rounded-lg shadow-md overflow-hidden">
 			<div class="overflow-x-auto">
 				<table class="min-w-full">
@@ -330,7 +414,6 @@ defineExpose({
 			</div>
 		</div>
 
-		<!-- Mensaje cuando no hay estudiantes -->
 		<div v-else class="bg-yellow-50 p-6 rounded-lg shadow-md text-center">
 			<div class="flex items-center justify-center mb-3">
 				<svg class="w-8 h-8 text-yellow-600" fill="currentColor" viewBox="0 0 20 20">
@@ -341,7 +424,6 @@ defineExpose({
 			<p class="text-yellow-600">Utilice el formulario superior para agregar al menos 1 estudiante.</p>
 		</div>
 
-		<!-- Información adicional -->
 		<div class="bg-gray-50 p-4 rounded-lg">
 			<p class="text-sm text-gray-600 text-center">
 				💡 <strong>Consejo:</strong> Puedes agregar tantos estudiantes como necesites.
