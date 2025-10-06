@@ -17,49 +17,67 @@
 		<div class="overflow-x-auto">
 			<table class="min-w-full">
 				<thead>
-					<tr class="bg-brand-800/80 text-white">
-						<th class="px-5 py-3 text-left text-sm font-semibold border-b border-brand-700/50 border-r border-brand-700/30 w-10/12">Nombre</th>
-						<th class="px-5 py-3 text-left text-sm font-semibold border-b border-brand-700/50 w-2/12">Opciones</th>
-					</tr>
-					<tr class="bg-brand-800/60 text-white">
-						<th class="px-5 py-2 border-b border-brand-700/50 border-r border-brand-700/30">
-							<input v-model="filters.name" class="w-full bg-white/10 border-none text-white placeholder-white/60 rounded px-3 py-1 text-xs focus:outline-none" placeholder="Buscar Cámara..." />
-						</th>
-						<th class="px-5 py-2 border-b border-brand-700/50" />
-					</tr>
+				<tr class="bg-brand-800/80 text-white">
+					<th class="px-5 py-3 text-left text-sm font-semibold border-b border-brand-700/50 border-r border-brand-700/30 w-7/12">Nombre</th>
+					<th class="px-5 py-3 text-left text-sm font-semibold border-b border-brand-700/50 border-r border-brand-700/30 w-3/12">Tipo</th>
+					<th class="px-5 py-3 text-left text-sm font-semibold border-b border-brand-700/50 w-2/12">Opciones</th>
+				</tr>
+				<tr class="bg-brand-800/60 text-white">
+					<th class="px-5 py-2 border-b border-brand-700/50 border-r border-brand-700/30">
+						<input v-model="filters.name" class="w-full bg-white/10 border-none text-white placeholder-white/60 rounded px-3 py-1 text-xs focus:outline-none" placeholder="Buscar Cámara..." />
+					</th>
+					<th class="px-5 py-2 border-b border-brand-700/50 border-r border-brand-700/30">
+						<select v-model="filters.type" class="w-full bg-white/10 border-none text-white rounded px-3 py-1 text-xs focus:outline-none">
+							<option value="">Todos los tipos</option>
+							<option value="Local">Local</option>
+							<option value="Nacional">Nacional</option>
+						</select>
+					</th>
+					<th class="px-5 py-2 border-b border-brand-700/50" />
+				</tr>
 				</thead>
 
 				<tbody>
-					<tr v-if="isLoading">
-						<td colspan="2" class="py-12 text-center">
-							<svg class="animate-spin h-8 w-8 text-brand-800 mx-auto mb-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-								<circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" />
-								<path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z" />
-							</svg>
-							<p class="text-gray-500">Cargando Cámaras...</p>
-						</td>
-					</tr>
+				<tr v-if="isLoading">
+					<td colspan="3" class="py-12 text-center">
+						<svg class="animate-spin h-8 w-8 text-brand-800 mx-auto mb-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+							<circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" />
+							<path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z" />
+						</svg>
+						<p class="text-gray-500">Cargando Cámaras...</p>
+					</td>
+				</tr>
 
-					<tr
-						v-for="(cluster, index) in paginatedClusters"
-						:key="cluster.id ?? index"
-						class="border-b border-gray-100 hover:bg-brand-50/30 transition-colors even:bg-gray-50">
-						<td class="px-5 py-3 text-sm border-r border-gray-100 font-medium text-brand-900">
-							{{ cluster.name }}
-						</td>
-						<td class="px-5 py-3 text-sm">
-							<div class="flex space-x-2">
-								<btnEdit :table="'Cámara'" :pk="cluster.id ?? index" @open="(data) => $emit('open', data)" />
-								<btnDelete :table="'Cámara'" :pk="cluster.id ?? index" @open-confirm="(payload) => $emit('open-confirm', payload)" />
-							</div>
-						</td>
-					</tr>
+				<tr
+					v-for="(cluster, index) in paginatedClusters"
+					:key="cluster.id ?? index"
+					class="border-b border-gray-100 hover:bg-brand-50/30 transition-colors even:bg-gray-50">
+					<td class="px-5 py-3 text-sm border-r border-gray-100 font-medium text-brand-900">
+						{{ cluster.name }}
+					</td>
+					<td class="px-5 py-3 text-sm border-r border-gray-100">
+							<span
+								class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium"
+								:class="{
+									'bg-green-100 text-green-800': cluster.type === 'Local',
+									'bg-blue-100 text-blue-800': cluster.type === 'Nacional'
+								}">
+								{{ cluster.type }}
+							</span>
+					</td>
+					<td class="px-5 py-3 text-sm">
+						<div class="flex space-x-2">
+							<btnEdit :table="'Cámara'" :pk="cluster.id ?? index" @open="(data) => $emit('open', data)" />
+							<btnDelete :table="'Cámara'" :pk="cluster.id ?? index" @open-confirm="(payload) => $emit('open-confirm', payload)" />
+						</div>
+					</td>
+				</tr>
 
-					<tr v-if="!isLoading && filteredClusters.length === 0">
-						<td colspan="2" class="px-5 py-8 text-center">
-							<p class="text-gray-500">No se encontraron Cámaras registradas</p>
-						</td>
-					</tr>
+				<tr v-if="!isLoading && filteredClusters.length === 0">
+					<td colspan="3" class="px-5 py-8 text-center">
+						<p class="text-gray-500">No se encontraron Cámaras registradas</p>
+					</td>
+				</tr>
 				</tbody>
 			</table>
 		</div>
@@ -99,7 +117,8 @@ const clusters = ref([]);
 const isLoading = ref(false);
 
 const filters = ref({
-	name: ''
+	name: '',
+	type: ''
 });
 
 const rowsPerPage = ref(10);
@@ -107,7 +126,9 @@ const currentPage = ref(1);
 
 const filteredClusters = computed(() => {
 	return clusters.value.filter(cluster => {
-		return cluster.name.toLowerCase().includes(filters.value.name.toLowerCase());
+		const nameMatch = cluster.name.toLowerCase().includes(filters.value.name.toLowerCase());
+		const typeMatch = !filters.value.type || cluster.type === filters.value.type;
+		return nameMatch && typeMatch;
 	});
 });
 
@@ -124,7 +145,7 @@ watch([filteredClusters, rowsPerPage], () => {
 });
 
 const clearFilters = () => {
-	filters.value = { name: '' };
+	filters.value = { name: '', type: '' };
 	currentPage.value = 1;
 };
 

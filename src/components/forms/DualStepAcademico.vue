@@ -108,9 +108,24 @@ const handleInputBlur = () => {
 defineExpose({ validate });
 
 const handleSaved = async () => {
-	closeModal();
-	const res = await getInstitutions();
-	emit('update:institutions', res.data);
+	try {
+		console.log('Recargando instituciones después de crear...');
+		const res = await getInstitutions();
+		console.log('Nuevas instituciones cargadas:', res.data.length);
+
+		emit('update:institutions', res.data);
+
+		closeModal();
+
+		setTimeout(() => {
+			showDropdown.value = true;
+			searchTerm.value = '';
+		}, 100);
+
+	} catch (error) {
+		console.error('Error al recargar instituciones:', error);
+		closeModal();
+	}
 };
 
 const handleDropdownBlur = () => {
@@ -172,6 +187,21 @@ watch(isInstitutionValid, (newVal) => {
 		errors.value.id_institution = '';
 	}
 });
+
+watch(
+	() => props.institutions,
+	(newInstitutions) => {
+		console.log('Institutions prop updated:', newInstitutions?.length);
+	},
+	{ deep: true }
+);
+
+watch(
+	filteredInstitutions,
+	(newFiltered) => {
+		console.log('Filtered institutions updated:', newFiltered.length);
+	}
+);
 </script>
 
 <template>

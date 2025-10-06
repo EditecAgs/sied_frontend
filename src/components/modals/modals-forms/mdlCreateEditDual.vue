@@ -32,7 +32,7 @@ const props = defineProps<{
 const { showModal, modalData, openModal, closeModal } = useModal();
 const isLoading = ref(false);
 const currentStep = ref(0);
-const reportaModeloDual = ref<boolean | null>(null);
+const reportaModeloDual = ref<boolean>(false);
 
 const stepAcademicoRef = ref();
 const stepPersonalRef = ref();
@@ -330,8 +330,7 @@ const imprimirYGuardar = async () => {
 			}
 			payload = {
 				has_report: 0,
-				id_institution: Number(formData.academico.id_institution),
-				number_student: formData.personal.dual_project_students?.length || 0
+				id_institution: Number(formData.academico.id_institution)
 			};
 		} else {
 			if (!formData.unidadDual.name_report || !formData.unidadDual.id_organization || !formData.unidadDual.id_dual_area) {
@@ -405,6 +404,19 @@ const imprimirYGuardar = async () => {
 const handleInstitutionSaved = () => {
 	closeModal();
 };
+const handleInstitutionsUpdate = (newInstitutions: any[]) => {
+	console.log('Instituciones actualizadas desde el hijo:', newInstitutions.length);
+	institutions.value = newInstitutions;
+};
+const handleOrganizationsUpdate = (newOrganizations: any[]) => {
+	console.log('Organizaciones actualizadas desde el hijo:', newOrganizations.length);
+	organizations.value = newOrganizations;
+};
+
+const handleMicroCredentialsUpdate = (newMicroCredentials: any[]) => {
+	console.log('Microcredenciales actualizadas desde el hijo:', newMicroCredentials.length);
+	microCredentials.value = newMicroCredentials;
+};
 
 const closeModalAndReset = () => {
 	noChangesDetected.value = false;
@@ -476,8 +488,8 @@ const closeModalAndReset = () => {
 							v-model:reportaModeloDual="reportaModeloDual"
 							:institutions="institutions"
 							:mode="props.data.mode"
-							@submitSinUnidadDual="imprimirYGuardar" />
-
+							@submitSinUnidadDual="imprimirYGuardar"
+							@update:institutions="handleInstitutionsUpdate" />
 						<DualStepUnidad
 							v-else-if="currentStep === 1 && reportaModeloDual"
 							ref="stepUnidadDualRef"
@@ -489,7 +501,9 @@ const closeModalAndReset = () => {
 							:supportTypes="supportTypes"
 							:organizations="organizations"
 							:dualTypes="dualTypes"
-							:microCredentials="microCredentials" />
+							:microCredentials="microCredentials"
+							@update:organizations="handleOrganizationsUpdate"
+							@update:microCredentials="handleMicroCredentialsUpdate" />
 
 						<DualStepPersonal
 							v-else-if="currentStep === 2"

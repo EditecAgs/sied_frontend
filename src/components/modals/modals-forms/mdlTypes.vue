@@ -101,21 +101,6 @@ watchEffect(() => {
 					@after-done="afterDone"
 					@after-error="afterError">
 					<div class="grid grid-cols-1 gap-4 mb-6 mt-5">
-						<div v-if="data.mode === 'edit'" class="form-error">
-							<label class="block text-sm font-medium text-gray-700 mb-1">ID</label>
-							<template v-if="isLoading">
-								<div class="h-8 bg-gray-300 rounded animate-pulse w-full" />
-							</template>
-							<template v-else>
-								<input
-									v-model="form.id"
-									type="text"
-									name="id"
-									readonly
-									class="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-100 cursor-not-allowed"
-									:disabled="isLoading" />
-							</template>
-						</div>
 						<div class="form-error">
 							<label class="block text-sm font-medium text-gray-700 mb-1">Nombre*</label>
 							<template v-if="isLoading">

@@ -159,7 +159,7 @@ const afterError = (res: any) => {
 							<input v-model="form.name" name="name" required class="w-full px-3 py-2 border rounded-md" />
 						</div>
 
-						<!-- Tamaño -->
+
 						<div class="form-error">
 							<label class="block text-sm font-medium text-gray-700 mb-1">Tamaño*</label>
 							<select v-model="form.size" name="size" required class="w-full px-3 py-2 border rounded-md">
@@ -171,7 +171,7 @@ const afterError = (res: any) => {
 							</select>
 						</div>
 
-						<!-- Tipo -->
+
 						<div class="form-error">
 							<label class="block text-sm font-medium text-gray-700 mb-1">Tipo*</label>
 							<select v-model="form.id_type" name="id_type" required class="w-full px-3 py-2 border rounded-md">
@@ -180,7 +180,7 @@ const afterError = (res: any) => {
 							</select>
 						</div>
 
-						<!-- Sector -->
+
 						<div class="form-error">
 							<label class="block text-sm font-medium text-gray-700 mb-1">Sector*</label>
 							<select v-model="form.id_sector" name="id_sector" required class="w-full px-3 py-2 border rounded-md">
@@ -189,7 +189,7 @@ const afterError = (res: any) => {
 							</select>
 						</div>
 
-						<!-- Cluster Nacional -->
+
 						<div class="form-error">
 							<label class="block text-sm font-medium text-gray-700 mb-1">Cámara (cluster) Nacional*</label>
 							<select v-model="form.id_cluster" name="id_cluster" required class="w-full px-3 py-2 border rounded-md">
@@ -198,7 +198,6 @@ const afterError = (res: any) => {
 							</select>
 						</div>
 
-						<!-- Cluster Local -->
 						<div class="form-error">
 							<label class="block text-sm font-medium text-gray-700 mb-1">Cámara (cluster) Local*</label>
 							<select v-model="form.id_cluster_local" name="id_cluster_local" required class="w-full px-3 py-2 border rounded-md">
@@ -207,7 +206,7 @@ const afterError = (res: any) => {
 							</select>
 						</div>
 
-						<!-- Alcance -->
+
 						<div class="form-error">
 							<label class="block text-sm font-medium text-gray-700 mb-1">Alcance*</label>
 							<select v-model="form.scope" name="scope" required class="w-full px-3 py-2 border rounded-md">
