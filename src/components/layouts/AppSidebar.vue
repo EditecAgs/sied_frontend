@@ -230,7 +230,7 @@ const menuGroups = [
 				name: 'Catálogos',
 				icon: TableIcon,
 				subItems: [
-					{ name: 'Usuarios', path: '/basic-tables', pro: false },
+					//{ name: 'Usuarios', path: '/basic-tables', pro: false },
 					{ name: 'Instituciones', path: '/institution-table', pro: false },
 					{ name: 'Microcredenciales y Certificaciones', path: '/micro-credentials-table', pro: false },
 					{ name: 'Estudiantes', path: '/student-table', pro: false },

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { defineProps, defineEmits, reactive, watchEffect, ref, onMounted } from 'vue'
+import { defineProps, defineEmits, reactive, watchEffect, ref, onMounted, computed, watch } from 'vue'
 import axios from 'axios'
 import { getCareers } from '../../../services/institutions/careers'
 import { getInstitutions } from '../../../services/institutions/institutions'
@@ -12,6 +12,23 @@ const alvMethod = ref<'POST' | 'PUT'>('POST')
 
 const careers = ref<any[]>([])
 const institutions = ref<any[]>([])
+
+const filteredCareers = computed(() => {
+	if (!form.id_institution) {
+		return careers.value;
+	}
+
+	const institutionId = parseInt(form.id_institution);
+	return careers.value.filter(career =>
+		career.id_institution === institutionId
+	);
+});
+
+
+const hasCareersForInstitution = computed(() => {
+	if (!form.id_institution) return true;
+	return filteredCareers.value.length > 0;
+});
 
 const afterDone = (response: any) => {
 	console.log(response.data + ' guardado exitosamente')
@@ -39,6 +56,20 @@ const form = reactive({
 	id_institution: '',
 	id_career: ''
 })
+
+
+watch(() => form.id_institution, (newInstitutionId, oldInstitutionId) => {
+	if (newInstitutionId !== oldInstitutionId) {
+		if (form.id_career) {
+			const currentCareer = filteredCareers.value.find(career =>
+				career.id === parseInt(form.id_career)
+			);
+			if (!currentCareer) {
+				form.id_career = '';
+			}
+		}
+	}
+});
 
 const loadSelectData = async () => {
 	try {
@@ -150,12 +181,30 @@ onMounted(() => {
 									name="id_career"
 									required
 									class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring focus:ring-brand-800"
-									:disabled="isLoading">
-									<option value="">Seleccione carrera</option>
-									<option v-for="career in careers" :key="career.id" :value="career.id">
+									:disabled="isLoading || !hasCareersForInstitution">
+									<option value="">
+										{{ form.id_institution && !hasCareersForInstitution
+											? 'No hay carreras disponibles'
+											: 'Seleccione carrera'
+										}}
+									</option>
+									<option
+										v-for="career in filteredCareers"
+										:key="career.id"
+										:value="career.id">
 										{{ career.name }}
 									</option>
 								</select>
+								<div
+									v-if="form.id_institution && !hasCareersForInstitution"
+									class="text-sm text-red-600 mt-1">
+									⚠️ La institución seleccionada no tiene carreras disponibles
+								</div>
+								<div
+									v-else-if="form.id_institution && form.id_career && filteredCareers.length > 0"
+									class="text-sm text-green-600 mt-1">
+									✓ {{ filteredCareers.length }} carrera(s) disponible(s)
+								</div>
 							</template>
 						</div>
 
@@ -176,6 +225,11 @@ onMounted(() => {
 										{{ inst.name }}
 									</option>
 								</select>
+								<div
+									v-if="form.id_institution"
+									class="text-sm text-gray-600 mt-1">
+									Al seleccionar una institución, solo verás sus carreras disponibles
+								</div>
 							</template>
 						</div>
 					</div>
@@ -191,7 +245,7 @@ onMounted(() => {
 						<button
 							form="SpecialtyForm"
 							class="flex items-center gap-2 px-6 py-2 rounded-lg bg-gradient-to-r from-brand-700 to-brand-900 text-white font-semibold hover:brightness-110 transition shadow-md"
-							:disabled="isLoading">
+							:disabled="isLoading || (form.id_institution && !hasCareersForInstitution)">
 							<span v-if="data.mode !== 'create'">💾</span>
 							<span>Guardar</span>
 						</button>

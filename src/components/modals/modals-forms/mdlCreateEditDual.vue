@@ -352,7 +352,7 @@ const imprimirYGuardar = async () => {
 				gender: student.student?.gender || student.gender,
 				semester: student.student?.semester || student.semester,
 				id_career: student.student?.id_career || student.id_career,
-				id_specialty: student.student?.id_specialty || student.id_specialty,
+				id_specialty: student.student?.id_specialty || student.id_specialty || null,
 				id_institution: Number(formData.academico.id_institution)
 			}));
 
