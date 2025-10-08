@@ -124,14 +124,15 @@ const formData = reactive({
 		period_end: '',
 		status_document: '',
 		economic_support: '',
-		amount: '',
-		qualification: '',
-		max_qualification: '',
+		amount: '0',
+		qualification: '0',
+		max_qualification: '10',
 		advisor: '',
 		is_concluded: 0,
 		is_hired: 0,
 		dual_type_id: '',
-		micro_credentials: []
+		micro_credentials: [],
+		description: ''
 	}
 });
 
@@ -173,14 +174,15 @@ const resetForm = () => {
 		period_end: '',
 		status_document: '',
 		economic_support: '',
-		amount: '',
-		qualification: '',
-		max_qualification: '',
+		amount: '0',
+		qualification: '0',
+		max_qualification: '10',
 		advisor: '',
 		is_concluded: 0,
 		is_hired: 0,
 		dual_type_id: '',
-		micro_credentials: []
+		micro_credentials: [],
+		description: ''
 	};
 	reportaModeloDual.value = null;
 	currentStep.value = 0;
@@ -240,7 +242,8 @@ watch(
 					is_hired: project.dual_project_reports?.is_hired ?? 0,
 					dual_type_id: project.dual_project_reports?.dual_type?.id ?? '',
 					max_qualification: project.dual_project_reports?.max_qualification ?? '',
-					micro_credentials: project.dual_project_reports?.micro_credentials?.map(m => m.id) || []
+					micro_credentials: project.dual_project_reports?.micro_credentials?.map(m => m.id) || [],
+					description: project.dual_project_reports?.description ?? ''
 				};
 
 				reportaModeloDual.value = newData.mode === 'complete' ? true : !!project.dual_project_reports;
@@ -375,6 +378,7 @@ const imprimirYGuardar = async () => {
 				is_concluded: formData.unidadDual.is_concluded,
 				is_hired: formData.unidadDual.is_hired,
 				dual_type_id: Number(formData.unidadDual.dual_type_id),
+				description: formData.unidadDual.description,
 				micro_credentials: formData.unidadDual.micro_credentials
 			};
 		}

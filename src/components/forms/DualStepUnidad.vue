@@ -61,20 +61,22 @@ const tooltipTimeout = ref(null);
 
 const fieldHelpTexts = {
 	name_report: "Escribe el nombre específico del proyecto o actividad dual que se está registrando (ejemplo: 'Residencia en Desarrollo de Software').",
-	id_dual_area: "Clasificación general de la actividad. Sirve para agrupar los proyectos según su naturaleza académica, profesional o técnica.",
-	dual_type_id: "Selecciona el tipo de modalidad que tendrá el proyecto dual: Desarrollo de proyecto, Rotación de puestos, Práctica en área, Residencias, Servicio Social, etc.",
-	id_organization: "Selecciona la empresa, institución u organismo donde se desarrollará el proyecto. Cada organización incluye datos como tipo, sector, tamaño y ubicación.",
-	period_start: "Día en que comenzará formalmente el proyecto dual.",
-	period_end: "Día en que se dará por concluido el proyecto.",
-	status_document: "Situación actual del convenio relacionado al proyecto (vigente, en trámite, concluido).",
+	id_dual_area: "Clasificación general de la actividad. Sirve para agrupar las actividad según su naturaleza académica, profesional o técnica.",
+	dual_type_id: "Selecciona el tipo de modalidad que tendrá la actividad dual: Desarrollo de proyecto, Rotación de puestos, Práctica en área, Residencias, Servicio Social, etc.",
+	id_organization: "Selecciona la empresa, institución u organismo donde se desarrollará la actividad. Cada organización incluye datos como tipo, sector, tamaño y ubicación.",
+	period_start: "Día en que comenzará formalmente la actividad dual.",
+	period_end: "Día en que se dará por concluido la actividad.",
+	status_document: "Situación actual del convenio relacionado a la actividad (vigente, en trámite, concluido).",
 	economic_support: "Forma en la que la organización brinda apoyo (ejemplo: beca, transporte, alimentación, honorarios).",
 	amount: "Cantidad monetaria o equivalente proporcionada como apoyo.",
 	max_qualification: "La escala más alta de calificación (ejemplo: 10 o 100).",
-	qualification: "Evaluación obtenida en el proyecto de acuerdo con la escala.",
+	qualification: "Evaluación obtenida en la actividad de acuerdo con la escala.",
 	advisor: "Persona responsable de guiar al estudiante (interno: institución, externo: organización).",
-	is_concluded: "Marca si el proyecto ya finalizó.",
-	is_hired: "Indica si el estudiante fue contratado después del proyecto.",
-	micro_credentials: "Reconocimientos, constancias o certificaciones emitidas al finalizar el proyecto."
+	is_concluded: "Marca si la actividad ya finalizó.",
+	is_hired: "Indica si el estudiante fue contratado después de la actividad.",
+	micro_credentials: "Reconocimientos, constancias o certificaciones emitidas al finalizar la actividad.",
+	description: "Proporcione una breve descripción de la modalidad seleccionada, indicando sus características o propósito.",
+
 };
 
 const toggleTooltip = (field, event) => {
@@ -355,10 +357,9 @@ onBeforeUnmount(() => {
 		<div class="space-y-8">
 			<div class="text-center">
 				<h2 class="text-2xl font-bold text-brand-900 mb-2">Unidad Dual</h2>
-				<p class="text-gray-600 text-sm">Complete la información del proyecto dual</p>
+				<p class="text-gray-600 text-sm">Complete la información de la actividad dual</p>
 			</div>
 
-			<!-- Tooltip global -->
 			<div
 				v-if="activeTooltip"
 				class="fixed z-50 max-w-xs bg-gray-800 text-white text-sm rounded-lg p-3 shadow-lg transition-opacity duration-200"
@@ -370,13 +371,13 @@ onBeforeUnmount(() => {
 				@mouseenter="cancelHideTooltip"
 				@mouseleave="hideTooltipDelayed">
 				{{ fieldHelpTexts[activeTooltip] }}
-				<div class="absolute top-full left-4 border-4 border-transparent border-t-gray-800"></div>
+				<div class="absolute top-full left-4 border-4 border-transparent border-t-gray-800" />
 			</div>
 
 			<div class="bg-gray-50 rounded-xl p-6 border border-gray-200">
 				<h3 class="text-lg font-semibold text-brand-800 mb-4 flex items-center">
 					<span class="w-6 h-6 bg-brand-100 rounded-full flex items-center justify-center text-brand-800 text-sm mr-2">1</span>
-					Proyecto Dual
+					Actividad Dual
 				</h3>
 				<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
 					<div>
@@ -400,7 +401,7 @@ onBeforeUnmount(() => {
 
 					<div ref="areaDropdownRef">
 						<label class="label flex items-center gap-1">
-							Categoría del Proyecto Dual
+							Categoría de la Actividad Dual
 							<button
 								type="button"
 								class="help-icon text-gray-400 hover:text-brand-600 cursor-help transition-colors"
@@ -429,7 +430,7 @@ onBeforeUnmount(() => {
 
 					<div ref="dualTypeDropdownRef" class="pt-3">
 						<label class="label flex items-center gap-1">
-							Tipo de Proyecto Dual
+							Tipo de Actividad Dual
 							<button
 								type="button"
 								class="help-icon text-gray-400 hover:text-brand-600 cursor-help transition-colors"
@@ -476,6 +477,26 @@ onBeforeUnmount(() => {
 								</li>
 							</ul>
 						</div>
+
+						<div v-if="modelValue.dual_type_id" class="col-span-2">
+							<label class="label flex items-center gap-1">
+								Descripción del tipo de actividad dual
+								<button
+									type="button"
+									class="help-icon text-gray-400 hover:text-brand-600 cursor-help transition-colors"
+									@click="toggleTooltip('description', $event)"
+									@mouseleave="hideTooltipDelayed">
+									?
+								</button>
+							</label>
+							<textarea
+								class="input min-h-[100px]"
+								placeholder="Agregue una descripción de la actividad dual seleccionada..."
+								:value="modelValue.description || ''"
+								@input="update('description', $event.target.value)" />
+							<p v-if="errors.description" class="error-msg">{{ errors.description }}</p>
+						</div>
+
 						<p v-if="errors.dual_type_id" class="error-msg">{{ errors.dual_type_id }}</p>
 					</div>
 				</div>
@@ -712,12 +733,12 @@ onBeforeUnmount(() => {
 			<div class="bg-gray-50 rounded-xl p-6 border border-gray-200">
 				<h3 class="text-lg font-semibold text-brand-800 mb-4 flex items-center">
 					<span class="w-6 h-6 bg-brand-100 rounded-full flex items-center justify-center text-brand-800 text-sm mr-2">6</span>
-					Estado del Proyecto
+					Estado de la Actividad
 				</h3>
 				<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
 					<div>
 						<label class="label flex items-center gap-1">
-							Proyecto Concluido
+							Actividad Concluida
 							<button
 								type="button"
 								class="help-icon text-gray-400 hover:text-brand-600 cursor-help transition-colors"

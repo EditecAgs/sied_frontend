@@ -381,7 +381,7 @@ defineExpose({
 				<table class="min-w-full">
 					<thead>
 						<tr class="bg-brand-800 text-white">
-							<th class="px-4 py-2 text-left">No. Control</th>
+							<th class="px-4 py-2 text-left">No. Control o Matricula</th>
 							<th class="px-4 py-2 text-left">Nombre</th>
 							<th class="px-4 py-2 text-left">Apellidos</th>
 							<th class="px-4 py-2 text-left">Semestre</th>
