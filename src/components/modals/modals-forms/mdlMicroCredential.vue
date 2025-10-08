@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { defineProps, defineEmits, reactive, watchEffect, ref } from 'vue'
+import { defineProps, defineEmits, reactive, watchEffect, ref, onMounted, onBeforeUnmount } from 'vue'
 import axios from 'axios'
 import { showMicroCredential } from "../../../services/dual_projects/micro-credentials.js"
 
@@ -8,8 +8,42 @@ const isLoading = ref(false)
 const errorMessage = ref<string>('')
 const alvRoute = ref()
 alvRoute.value = axios.defaults.baseURL + 'micro-credentials'
-
 const alvMethod = ref<'POST' | 'PUT'>('POST')
+
+const activeTooltip = ref<string | null>(null)
+const tooltipPosition = ref({ x: 0, y: 0 })
+const tooltipTimeout = ref<number | null>(null)
+
+const fieldHelpTexts: Record<string, string> = {
+	name: "Nombre oficial de la microcredencial o certificado.",
+	organization: "Nombre de la organización, empresa o institución que emite la microcredencial.",
+	description: "Breve descripción del contenido o propósito de la microcredencial.",
+	image: "Imagen o logotipo representativo de la microcredencial o certificado."
+}
+
+const toggleTooltip = (field: string, event: MouseEvent) => {
+	const target = event.currentTarget as HTMLElement
+	const rect = target.getBoundingClientRect()
+	tooltipPosition.value = { x: rect.left + rect.width / 2, y: rect.top - 10 }
+	activeTooltip.value = activeTooltip.value === field ? null : field
+}
+
+const hideTooltip = () => (activeTooltip.value = null)
+const hideTooltipDelayed = () => {
+	tooltipTimeout.value = window.setTimeout(() => hideTooltip(), 200)
+}
+const cancelHideTooltip = () => {
+	if (tooltipTimeout.value) clearTimeout(tooltipTimeout.value)
+}
+
+const handleClickOutside = (event: MouseEvent) => {
+	if (!event.target.closest('.help-icon') && !event.target.closest('.tooltip-box')) {
+		hideTooltip()
+	}
+}
+
+onMounted(() => document.addEventListener('click', handleClickOutside))
+onBeforeUnmount(() => document.removeEventListener('click', handleClickOutside))
 
 const afterDone = (response) => {
 	console.log(response.data + ' guardado exitosamente')
@@ -20,8 +54,7 @@ const afterDone = (response) => {
 
 const afterError = (error) => {
 	if (error.response?.status === 422) {
-		errorMessage.value =
-			error.response?.data?.message || 'Algunos campos no son válidos'
+		errorMessage.value = error.response?.data?.message || 'Algunos campos no son válidos'
 	} else {
 		errorMessage.value = error.message || 'Ocurrió un error inesperado'
 	}
@@ -90,6 +123,16 @@ watchEffect(() => {
 </script>
 
 <template>
+	<div
+		v-if="activeTooltip"
+		class="tooltip-box fixed z-[999] max-w-xs bg-gray-800 text-white text-sm rounded-lg p-3 shadow-lg transition-opacity duration-200"
+		:style="{ left: `${tooltipPosition.x}px`, top: `${tooltipPosition.y}px`, transform: 'translate(-50%, -100%)' }"
+		@mouseenter="cancelHideTooltip"
+		@mouseleave="hideTooltipDelayed">
+		{{ fieldHelpTexts[activeTooltip] }}
+		<div class="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-gray-800" />
+	</div>
+
 	<transition name="fade-scale">
 		<div
 			v-if="show"
@@ -120,10 +163,7 @@ watchEffect(() => {
 					id="MicroCredentialForm"
 					:action="alvRoute"
 					:data-object="form"
-					:input-parent-selector="'.form-error'"
 					:method="alvMethod"
-					:enable-button-on-done="true"
-					:spinner="true"
 					class="flex-grow overflow-y-auto pr-2"
 					@after-done="afterDone"
 					@after-error="afterError">
@@ -135,7 +175,12 @@ watchEffect(() => {
 
 					<div class="grid grid-cols-1 gap-4 mb-6 mt-5">
 						<div class="form-error">
-							<label class="block text-sm font-medium text-gray-700 mb-1">Nombre*</label>
+							<label class="flex items-center gap-1 text-sm font-medium text-gray-700 mb-1">
+								Nombre*
+								<button
+									type="button" class="help-icon text-gray-400 hover:text-brand-600 cursor-help"
+									@click="toggleTooltip('name', $event)" @mouseleave="hideTooltipDelayed">?</button>
+							</label>
 							<input
 								v-model="form.name"
 								type="text"
@@ -146,7 +191,12 @@ watchEffect(() => {
 						</div>
 
 						<div class="form-error">
-							<label class="block text-sm font-medium text-gray-700 mb-1">Organización*</label>
+							<label class="flex items-center gap-1 text-sm font-medium text-gray-700 mb-1">
+								Organización*
+								<button
+									type="button" class="help-icon text-gray-400 hover:text-brand-600 cursor-help"
+									@click="toggleTooltip('organization', $event)" @mouseleave="hideTooltipDelayed">?</button>
+							</label>
 							<input
 								v-model="form.organization"
 								type="text"
@@ -157,7 +207,12 @@ watchEffect(() => {
 						</div>
 
 						<div class="form-error">
-							<label class="block text-sm font-medium text-gray-700 mb-1">Descripción</label>
+							<label class="flex items-center gap-1 text-sm font-medium text-gray-700 mb-1">
+								Descripción
+								<button
+									type="button" class="help-icon text-gray-400 hover:text-brand-600 cursor-help"
+									@click="toggleTooltip('description', $event)" @mouseleave="hideTooltipDelayed">?</button>
+							</label>
 							<textarea
 								v-model="form.description"
 								name="description"
@@ -167,14 +222,18 @@ watchEffect(() => {
 						</div>
 
 						<div class="form-error">
-							<label class="block text-sm font-medium text-gray-700 mb-1">Imagen</label>
+							<label class="flex items-center gap-1 text-sm font-medium text-gray-700 mb-1">
+								Imagen
+								<button
+									type="button" class="help-icon text-gray-400 hover:text-brand-600 cursor-help"
+									@click="toggleTooltip('image', $event)" @mouseleave="hideTooltipDelayed">?</button>
+							</label>
 							<input
 								type="file"
 								accept="image/*"
 								class="w-full px-3 py-2 border rounded-md"
 								:disabled="isLoading"
 								@change="handleImageUpload" />
-
 							<div v-if="form.image" class="mt-3">
 								<img :src="form.image" alt="Preview" class="max-h-40 rounded shadow-md" />
 							</div>
@@ -194,7 +253,6 @@ watchEffect(() => {
 							form="MicroCredentialForm"
 							class="px-6 py-2 rounded-lg bg-gradient-to-r from-brand-700 to-brand-900 text-white font-semibold"
 							:disabled="isLoading">
-							<span v-if="data.mode !== 'create'">💾</span>
 							<span>Guardar</span>
 						</button>
 					</div>
