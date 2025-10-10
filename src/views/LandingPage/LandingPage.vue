@@ -1,7 +1,7 @@
 <template>
 	<div class="h-auto font-outfit relative">
 		<img
-			src="/images/landing/landing.png"
+			src="/images/landing/landing.jpeg"
 			alt="Imagen Principal"
 			class="hidden md:block w-screen h-screen object-fit" />
 
