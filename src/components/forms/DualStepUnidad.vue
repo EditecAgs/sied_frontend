@@ -5,11 +5,13 @@ import '@vuepic/vue-datepicker/dist/main.css';
 import btnCreate from '../../components/buttons/btnCreate.vue';
 import mdlOrganization from '../modals/modals-forms/mdlOrganization.vue';
 import mdlMicroCredential from '../modals/modals-forms/mdlMicroCredential.vue';
+import mdlDualType from "../../components/modals/modals-forms/mdlDualType.vue";
 import { useModal } from '../../composables/UseModal';
 import { getOrganizations } from '../../services/organizations/organizations.js';
 import { getMicroCredentials } from '../../services/dual_projects/micro-credentials';
+import { getDualTypes } from '../../services/dual_projects/dual-types';
 
-const emit = defineEmits(['update:modelValue', 'update:organizations', 'update:microCredentials']);
+const emit = defineEmits(['update:modelValue', 'update:organizations', 'update:microCredentials', 'update:dualTypes']);
 const props = defineProps({
 	modelValue: { type: Object, required: true },
 	areas: Array,
@@ -22,6 +24,7 @@ const props = defineProps({
 
 const { showModal, modalData, openModal, closeModal } = useModal();
 const { showModal: showMicroModal, modalData: microModalData, openModal: openMicroModal, closeModal: closeMicroModal } = useModal();
+const { showModal: showDualTypeModal, modalData: dualTypeModalData, openModal: openDualTypeModal, closeModal: closeDualTypeModal } = useModal();
 
 const maxQualification = ref(props.modelValue.max_qualification || '');
 const errors = ref({});
@@ -74,9 +77,8 @@ const fieldHelpTexts = {
 	advisor: "Persona responsable de guiar al estudiante (interno: institución, externo: organización).",
 	is_concluded: "Marca si la actividad ya finalizó.",
 	is_hired: "Indica si el estudiante fue contratado después de la actividad.",
-	micro_credentials: "Reconocimientos, constancias o certificaciones emitidas al finalizar la actividad.",
+	micro_credentials: "Microcredenciales o certificaciones emitidas al finalizar la actividad.",
 	description: "Proporcione una breve descripción de la modalidad seleccionada, indicando sus características o propósito.",
-
 };
 
 const toggleTooltip = (field, event) => {
@@ -158,6 +160,29 @@ const handleSavedMicroCredential = async () => {
 	}
 };
 
+const handleSavedDualType = async () => {
+	try {
+		const res = await getDualTypes();
+
+		emit('update:dualTypes', res.data);
+
+		const newDualType = res.data?.[res.data.length - 1];
+		if (newDualType) {
+			update('dual_type_id', newDualType.id);
+		}
+
+		closeDualTypeModal();
+
+		setTimeout(() => {
+			showDualTypeDropdown.value = true;
+			searchDualType.value = newDualType?.name || '';
+		}, 100);
+
+	} catch (error) {
+		console.error('Error al recargar tipos duales:', error);
+		closeDualTypeModal();
+	}
+};
 const initializeSearchValues = () => {
 	if (props.modelValue.id_dual_area) {
 		const area = props.areas?.find(a => a.id === props.modelValue.id_dual_area);
@@ -204,6 +229,10 @@ const filteredDualTypes = computed(() =>
 
 const firstThreeDualTypes = computed(() => filteredDualTypes.value.slice(0, 3));
 const remainingDualTypes = computed(() => filteredDualTypes.value.slice(3));
+
+const isHiredDisabled = computed(() => {
+	return props.modelValue.is_concluded !== 1;
+});
 
 const filteredMicro = computed(() =>
 	!searchMicro.value
@@ -299,6 +328,12 @@ watch(() => props.modelValue.max_qualification, (newVal) => {
 });
 watch(maxQualification, (newVal) => {
 	update('max_qualification', newVal ? Number(newVal) : '');
+});
+
+watch(() => props.modelValue.is_concluded, (newVal) => {
+	if (newVal === 0 && props.modelValue.is_hired === 1) {
+		update('is_hired', 0);
+	}
 });
 
 const validate = () => {
@@ -401,7 +436,7 @@ onBeforeUnmount(() => {
 
 					<div ref="areaDropdownRef">
 						<label class="label flex items-center gap-1">
-							Categoría de la Actividad Dual
+							Área de la Actividad Dual
 							<button
 								type="button"
 								class="help-icon text-gray-400 hover:text-brand-600 cursor-help transition-colors"
@@ -412,7 +447,7 @@ onBeforeUnmount(() => {
 						</label>
 						<div class="relative">
 							<input
-								v-model="searchArea" class="input" placeholder="Buscar categoría..."
+								v-model="searchArea" class="input" placeholder="Buscar Área..."
 								@focus="showAreaDropdown = true" @input="showAreaDropdown = true" />
 							<ul
 								v-if="showAreaDropdown && filteredAreas.length"
@@ -474,6 +509,13 @@ onBeforeUnmount(() => {
 											{{ dual.name }}
 										</li>
 									</ul>
+								</li>
+
+
+								<li
+									class="px-4 py-2 hover:bg-brand-50 cursor-pointer transition-colors border-t border-gray-200 font-medium text-brand-600"
+									@click="openDualTypeModal('create', null, 'dual_type')">
+									+ Otro (Crear nuevo tipo)
 								</li>
 							</ul>
 						</div>
@@ -767,13 +809,36 @@ onBeforeUnmount(() => {
 								?
 							</button>
 						</label>
-						<select
-							class="input"
-							:value="modelValue.is_hired"
-							@change="update('is_hired', parseInt($event.target.value))">
-							<option :value="0">No</option>
-							<option :value="1">Sí</option>
-						</select>
+
+						<div class="relative">
+							<select
+								class="input w-full"
+								:class="{
+									'opacity-50 cursor-not-allowed bg-gray-100': isHiredDisabled,
+									'cursor-pointer': !isHiredDisabled
+								}"
+								:disabled="isHiredDisabled"
+								:value="modelValue.is_hired"
+								@change="update('is_hired', parseInt($event.target.value))">
+								<option :value="0">No</option>
+								<option :value="1">Sí</option>
+							</select>
+
+						
+							<div
+								v-if="isHiredDisabled"
+								class="absolute inset-0 flex items-center justify-center bg-gray-100 bg-opacity-80 rounded-lg cursor-not-allowed"
+								:title="'Primero debe marcar, Sí, en Actividad Concluida'">
+								<span class="text-gray-500 text-sm font-medium">No disponible</span>
+							</div>
+						</div>
+
+						<p v-if="isHiredDisabled" class="text-xs text-gray-500 mt-1 flex items-center">
+							<svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+								<path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" />
+							</svg>
+							Disponible cuando la actividad esté concluida
+						</p>
 					</div>
 				</div>
 			</div>
@@ -833,6 +898,13 @@ onBeforeUnmount(() => {
 			<mdlMicroCredential
 				:show="showMicroModal" :data="microModalData"
 				@close="closeMicroModal" @saved="handleSavedMicroCredential" />
+
+			<!-- Modal para crear nuevo tipo dual -->
+			<mdlDualType
+				:show="showDualTypeModal"
+				:data="dualTypeModalData"
+				@close="closeDualTypeModal"
+				@saved="handleSavedDualType" />
 		</div>
 	</div>
 </template>

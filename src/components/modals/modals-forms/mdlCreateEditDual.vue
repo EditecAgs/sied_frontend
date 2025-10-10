@@ -422,6 +422,11 @@ const handleMicroCredentialsUpdate = (newMicroCredentials: any[]) => {
 	microCredentials.value = newMicroCredentials;
 };
 
+const handleDualTypesUpdate = (newDualTypes: any[]) => {
+	console.log('Tipos duales actualizados desde el hijo:', newDualTypes.length);
+	dualTypes.value = newDualTypes;
+};
+
 const closeModalAndReset = () => {
 	noChangesDetected.value = false;
 	emit('close');
@@ -507,8 +512,8 @@ const closeModalAndReset = () => {
 							:dualTypes="dualTypes"
 							:microCredentials="microCredentials"
 							@update:organizations="handleOrganizationsUpdate"
-							@update:microCredentials="handleMicroCredentialsUpdate" />
-
+							@update:microCredentials="handleMicroCredentialsUpdate"
+							@update:dualTypes="handleDualTypesUpdate" />
 						<DualStepPersonal
 							v-else-if="currentStep === 2"
 							:key="'personal-step-' + personalStepKey"

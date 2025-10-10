@@ -1,6 +1,3 @@
-
-
-
 <script setup>
 import { ref, computed, defineProps, defineEmits, watch, onMounted } from "vue";
 
@@ -28,7 +25,6 @@ const form = ref({
 
 const errors = ref({});
 
-// Computed para filtrar carreras por institución
 const filteredCareers = computed(() => {
 	if (!props.institution?.id) return [];
 
@@ -244,7 +240,7 @@ defineExpose({
 
 			<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
 				<div>
-					<label class="block text-sm font-medium text-gray-700 mb-1">No. Control *</label>
+					<label class="block text-sm font-medium text-gray-700 mb-1">No. Control o Matricula *</label>
 					<input
 						v-model="form.control_number"
 						class="input"
@@ -277,14 +273,14 @@ defineExpose({
 				</div>
 
 				<div>
-					<label class="block text-sm font-medium text-gray-700 mb-1">Semestre *</label>
+					<label class="block text-sm font-medium text-gray-700 mb-1"> Periodo académico *</label>
 					<input
 						v-model="form.semester"
 						type="number"
 						min="1"
 						max="12"
 						class="input"
-						placeholder="Semestre (1-12)"
+						placeholder=" Periodo académico (1-12)"
 						:class="{ 'border-red-500': errors.semester }"
 						:disabled="!institution" />
 					<p v-if="errors.semester" class="text-red-500 text-sm mt-1">{{ errors.semester }}</p>
