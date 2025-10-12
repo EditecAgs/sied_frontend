@@ -583,6 +583,7 @@ onBeforeUnmount(() => {
 				</div>
 			</div>
 
+			<!-- En la sección del Periodo, después de las fechas -->
 			<div class="bg-gray-50 rounded-xl p-6 border border-gray-200">
 				<h3 class="text-lg font-semibold text-brand-800 mb-4 flex items-center">
 					<span class="w-6 h-6 bg-brand-100 rounded-full flex items-center justify-center text-brand-800 text-sm mr-2">3</span>
@@ -617,6 +618,25 @@ onBeforeUnmount(() => {
 						<Datepicker v-model="period_end" placeholder="Seleccione la fecha" :enable-time-picker="false" class="input" />
 						<p v-if="errors.period_end" class="error-msg">{{ errors.period_end }}</p>
 					</div>
+				</div>
+
+				<div class="mt-4">
+					<label class="label flex items-center gap-1">
+						Observaciones del Período
+						<button
+							type="button"
+							class="help-icon text-gray-400 hover:text-brand-600 cursor-help transition-colors"
+							@click="toggleTooltip('period_observation', $event)"
+							@mouseleave="hideTooltipDelayed">
+							?
+						</button>
+					</label>
+					<textarea
+						class="input min-h-[80px]"
+						placeholder="Observaciones adicionales sobre el período (opcional)"
+						:value="modelValue.period_observation || ''"
+						@input="update('period_observation', $event.target.value)" />
+					<p class="text-xs text-gray-500 mt-1">Campo opcional para notas sobre el período de la actividad</p>
 				</div>
 			</div>
 
@@ -824,7 +844,6 @@ onBeforeUnmount(() => {
 								<option :value="1">Sí</option>
 							</select>
 
-						
 							<div
 								v-if="isHiredDisabled"
 								class="absolute inset-0 flex items-center justify-center bg-gray-100 bg-opacity-80 rounded-lg cursor-not-allowed"
@@ -840,6 +859,25 @@ onBeforeUnmount(() => {
 							Disponible cuando la actividad esté concluida
 						</p>
 					</div>
+				</div>
+
+				<div v-if="modelValue.is_hired === 1" class="mt-4">
+					<label class="label flex items-center gap-1">
+						Observaciones de Contratación
+						<button
+							type="button"
+							class="help-icon text-gray-400 hover:text-brand-600 cursor-help transition-colors"
+							@click="toggleTooltip('hired_observation', $event)"
+							@mouseleave="hideTooltipDelayed">
+							?
+						</button>
+					</label>
+					<textarea
+						class="input min-h-[80px]"
+						placeholder="Detalles sobre la contratación (opcional)"
+						:value="modelValue.hired_observation || ''"
+						@input="update('hired_observation', $event.target.value)" />
+					<p class="text-xs text-gray-500 mt-1">Campo opcional para notas sobre la contratación</p>
 				</div>
 			</div>
 
