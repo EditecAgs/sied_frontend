@@ -122,16 +122,19 @@ const formData = reactive({
 		id_dual_area: '',
 		period_start: '',
 		period_end: '',
+		period_observation: '',
 		status_document: '',
 		economic_support: '',
-		amount: '',
-		qualification: '',
-		max_qualification: '',
+		amount: '0',
+		qualification: '0',
+		max_qualification: '10',
 		advisor: '',
 		is_concluded: 0,
 		is_hired: 0,
+		hired_observation: '',
 		dual_type_id: '',
-		micro_credentials: []
+		micro_credentials: [],
+		description: ''
 	}
 });
 
@@ -171,16 +174,19 @@ const resetForm = () => {
 		id_dual_area: '',
 		period_start: '',
 		period_end: '',
+		period_observation: '',
 		status_document: '',
 		economic_support: '',
-		amount: '',
-		qualification: '',
-		max_qualification: '',
+		amount: '0',
+		qualification: '0',
+		max_qualification: '10',
 		advisor: '',
 		is_concluded: 0,
 		is_hired: 0,
+		hired_observation: '',
 		dual_type_id: '',
-		micro_credentials: []
+		micro_credentials: [],
+		description: ''
 	};
 	reportaModeloDual.value = null;
 	currentStep.value = 0;
@@ -231,6 +237,7 @@ watch(
 					id_dual_area: project.dual_project_reports?.dual_area?.id ?? '',
 					period_start: project.dual_project_reports?.period_start ?? '',
 					period_end: project.dual_project_reports?.period_end ?? '',
+					period_observation: project.dual_project_reports?.period_observation ?? '',
 					status_document: project.dual_project_reports?.status_document?.id ?? '',
 					economic_support: project.dual_project_reports?.economic_support?.id ?? '',
 					amount: String(project.dual_project_reports?.amount ?? ''),
@@ -238,9 +245,11 @@ watch(
 					advisor: project.dual_project_reports?.advisor ?? '',
 					is_concluded: project.dual_project_reports?.is_concluded ?? 0,
 					is_hired: project.dual_project_reports?.is_hired ?? 0,
+					hired_observation: project.dual_project_reports?.hired_observation ?? '',
 					dual_type_id: project.dual_project_reports?.dual_type?.id ?? '',
 					max_qualification: project.dual_project_reports?.max_qualification ?? '',
-					micro_credentials: project.dual_project_reports?.micro_credentials?.map(m => m.id) || []
+					micro_credentials: project.dual_project_reports?.micro_credentials?.map(m => m.id) || [],
+					description: project.dual_project_reports?.description ?? ''
 				};
 
 				reportaModeloDual.value = newData.mode === 'complete' ? true : !!project.dual_project_reports;
@@ -366,6 +375,7 @@ const imprimirYGuardar = async () => {
 				id_dual_area: Number(formData.unidadDual.id_dual_area),
 				period_start: formatDate(formData.unidadDual.period_start),
 				period_end: formatDate(formData.unidadDual.period_end),
+				period_observation: formData.unidadDual.period_observation,
 				status_document: Number(formData.unidadDual.status_document),
 				economic_support: Number(formData.unidadDual.economic_support),
 				amount: Number(formData.unidadDual.amount),
@@ -374,7 +384,9 @@ const imprimirYGuardar = async () => {
 				advisor: formData.unidadDual.advisor,
 				is_concluded: formData.unidadDual.is_concluded,
 				is_hired: formData.unidadDual.is_hired,
+				hired_observation: formData.unidadDual.hired_observation,
 				dual_type_id: Number(formData.unidadDual.dual_type_id),
+				description: formData.unidadDual.description,
 				micro_credentials: formData.unidadDual.micro_credentials
 			};
 		}
@@ -416,6 +428,11 @@ const handleOrganizationsUpdate = (newOrganizations: any[]) => {
 const handleMicroCredentialsUpdate = (newMicroCredentials: any[]) => {
 	console.log('Microcredenciales actualizadas desde el hijo:', newMicroCredentials.length);
 	microCredentials.value = newMicroCredentials;
+};
+
+const handleDualTypesUpdate = (newDualTypes: any[]) => {
+	console.log('Tipos duales actualizados desde el hijo:', newDualTypes.length);
+	dualTypes.value = newDualTypes;
 };
 
 const closeModalAndReset = () => {
@@ -503,8 +520,8 @@ const closeModalAndReset = () => {
 							:dualTypes="dualTypes"
 							:microCredentials="microCredentials"
 							@update:organizations="handleOrganizationsUpdate"
-							@update:microCredentials="handleMicroCredentialsUpdate" />
-
+							@update:microCredentials="handleMicroCredentialsUpdate"
+							@update:dualTypes="handleDualTypesUpdate" />
 						<DualStepPersonal
 							v-else-if="currentStep === 2"
 							:key="'personal-step-' + personalStepKey"

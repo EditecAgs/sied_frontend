@@ -74,19 +74,16 @@ const props = defineProps<{
 	}
 }>();
 
-// objeto del formulario
 const form = reactive({
 	name: ''
 });
 
-// adaptar ruta y método según mode (create | edit). Si es edit, cargar el registro con showDualType
 watchEffect(() => {
 	if (props.data.mode === 'edit' && props.data.pk !== null) {
 		alvRoute.value = `${axios.defaults.baseURL}dual-types/${props.data.pk}`;
 		alvMethod.value = 'PUT';
 		isLoading.value = true;
 
-		// usar el servicio que carga un solo registro (igual que showDualArea en tu ejemplo)
 		showDualType(props.data.pk)
 			.then(({ data }) => {
 				form.name = data.name || '';

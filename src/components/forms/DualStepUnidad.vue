@@ -5,11 +5,13 @@ import '@vuepic/vue-datepicker/dist/main.css';
 import btnCreate from '../../components/buttons/btnCreate.vue';
 import mdlOrganization from '../modals/modals-forms/mdlOrganization.vue';
 import mdlMicroCredential from '../modals/modals-forms/mdlMicroCredential.vue';
+import mdlDualType from "../../components/modals/modals-forms/mdlDualType.vue";
 import { useModal } from '../../composables/UseModal';
 import { getOrganizations } from '../../services/organizations/organizations.js';
 import { getMicroCredentials } from '../../services/dual_projects/micro-credentials';
+import { getDualTypes } from '../../services/dual_projects/dual-types';
 
-const emit = defineEmits(['update:modelValue', 'update:organizations', 'update:microCredentials']);
+const emit = defineEmits(['update:modelValue', 'update:organizations', 'update:microCredentials', 'update:dualTypes']);
 const props = defineProps({
 	modelValue: { type: Object, required: true },
 	areas: Array,
@@ -22,6 +24,7 @@ const props = defineProps({
 
 const { showModal, modalData, openModal, closeModal } = useModal();
 const { showModal: showMicroModal, modalData: microModalData, openModal: openMicroModal, closeModal: closeMicroModal } = useModal();
+const { showModal: showDualTypeModal, modalData: dualTypeModalData, openModal: openDualTypeModal, closeModal: closeDualTypeModal } = useModal();
 
 const maxQualification = ref(props.modelValue.max_qualification || '');
 const errors = ref({});
@@ -61,20 +64,21 @@ const tooltipTimeout = ref(null);
 
 const fieldHelpTexts = {
 	name_report: "Escribe el nombre específico del proyecto o actividad dual que se está registrando (ejemplo: 'Residencia en Desarrollo de Software').",
-	id_dual_area: "Clasificación general de la actividad. Sirve para agrupar los proyectos según su naturaleza académica, profesional o técnica.",
-	dual_type_id: "Selecciona el tipo de modalidad que tendrá el proyecto dual: Desarrollo de proyecto, Rotación de puestos, Práctica en área, Residencias, Servicio Social, etc.",
-	id_organization: "Selecciona la empresa, institución u organismo donde se desarrollará el proyecto. Cada organización incluye datos como tipo, sector, tamaño y ubicación.",
-	period_start: "Día en que comenzará formalmente el proyecto dual.",
-	period_end: "Día en que se dará por concluido el proyecto.",
-	status_document: "Situación actual del convenio relacionado al proyecto (vigente, en trámite, concluido).",
+	id_dual_area: "Clasificación general de la actividad. Sirve para agrupar las actividad según su naturaleza académica, profesional o técnica.",
+	dual_type_id: "Selecciona el tipo de modalidad que tendrá la actividad dual: Desarrollo de proyecto, Rotación de puestos, Práctica en área, Residencias, Servicio Social, etc.",
+	id_organization: "Selecciona la empresa, institución u organismo donde se desarrollará la actividad. Cada organización incluye datos como tipo, sector, tamaño y ubicación.",
+	period_start: "Día en que comenzará formalmente la actividad dual.",
+	period_end: "Día en que se dará por concluido la actividad.",
+	status_document: "Situación actual del convenio relacionado a la actividad (vigente, en trámite, concluido).",
 	economic_support: "Forma en la que la organización brinda apoyo (ejemplo: beca, transporte, alimentación, honorarios).",
 	amount: "Cantidad monetaria o equivalente proporcionada como apoyo.",
 	max_qualification: "La escala más alta de calificación (ejemplo: 10 o 100).",
-	qualification: "Evaluación obtenida en el proyecto de acuerdo con la escala.",
+	qualification: "Evaluación obtenida en la actividad de acuerdo con la escala.",
 	advisor: "Persona responsable de guiar al estudiante (interno: institución, externo: organización).",
-	is_concluded: "Marca si el proyecto ya finalizó.",
-	is_hired: "Indica si el estudiante fue contratado después del proyecto.",
-	micro_credentials: "Reconocimientos, constancias o certificaciones emitidas al finalizar el proyecto."
+	is_concluded: "Marca si la actividad ya finalizó.",
+	is_hired: "Indica si el estudiante fue contratado después de la actividad.",
+	micro_credentials: "Microcredenciales o certificaciones emitidas al finalizar la actividad.",
+	description: "Proporcione una breve descripción de la modalidad seleccionada, indicando sus características o propósito.",
 };
 
 const toggleTooltip = (field, event) => {
@@ -156,6 +160,29 @@ const handleSavedMicroCredential = async () => {
 	}
 };
 
+const handleSavedDualType = async () => {
+	try {
+		const res = await getDualTypes();
+
+		emit('update:dualTypes', res.data);
+
+		const newDualType = res.data?.[res.data.length - 1];
+		if (newDualType) {
+			update('dual_type_id', newDualType.id);
+		}
+
+		closeDualTypeModal();
+
+		setTimeout(() => {
+			showDualTypeDropdown.value = true;
+			searchDualType.value = newDualType?.name || '';
+		}, 100);
+
+	} catch (error) {
+		console.error('Error al recargar tipos duales:', error);
+		closeDualTypeModal();
+	}
+};
 const initializeSearchValues = () => {
 	if (props.modelValue.id_dual_area) {
 		const area = props.areas?.find(a => a.id === props.modelValue.id_dual_area);
@@ -202,6 +229,10 @@ const filteredDualTypes = computed(() =>
 
 const firstThreeDualTypes = computed(() => filteredDualTypes.value.slice(0, 3));
 const remainingDualTypes = computed(() => filteredDualTypes.value.slice(3));
+
+const isHiredDisabled = computed(() => {
+	return props.modelValue.is_concluded !== 1;
+});
 
 const filteredMicro = computed(() =>
 	!searchMicro.value
@@ -299,6 +330,12 @@ watch(maxQualification, (newVal) => {
 	update('max_qualification', newVal ? Number(newVal) : '');
 });
 
+watch(() => props.modelValue.is_concluded, (newVal) => {
+	if (newVal === 0 && props.modelValue.is_hired === 1) {
+		update('is_hired', 0);
+	}
+});
+
 const validate = () => {
 	const requiredFields = [
 		'name_report','id_organization','id_dual_area','period_start','period_end',
@@ -355,10 +392,9 @@ onBeforeUnmount(() => {
 		<div class="space-y-8">
 			<div class="text-center">
 				<h2 class="text-2xl font-bold text-brand-900 mb-2">Unidad Dual</h2>
-				<p class="text-gray-600 text-sm">Complete la información del proyecto dual</p>
+				<p class="text-gray-600 text-sm">Complete la información de la actividad dual</p>
 			</div>
 
-			<!-- Tooltip global -->
 			<div
 				v-if="activeTooltip"
 				class="fixed z-50 max-w-xs bg-gray-800 text-white text-sm rounded-lg p-3 shadow-lg transition-opacity duration-200"
@@ -370,13 +406,13 @@ onBeforeUnmount(() => {
 				@mouseenter="cancelHideTooltip"
 				@mouseleave="hideTooltipDelayed">
 				{{ fieldHelpTexts[activeTooltip] }}
-				<div class="absolute top-full left-4 border-4 border-transparent border-t-gray-800"></div>
+				<div class="absolute top-full left-4 border-4 border-transparent border-t-gray-800" />
 			</div>
 
 			<div class="bg-gray-50 rounded-xl p-6 border border-gray-200">
 				<h3 class="text-lg font-semibold text-brand-800 mb-4 flex items-center">
 					<span class="w-6 h-6 bg-brand-100 rounded-full flex items-center justify-center text-brand-800 text-sm mr-2">1</span>
-					Proyecto Dual
+					Actividad Dual
 				</h3>
 				<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
 					<div>
@@ -400,7 +436,7 @@ onBeforeUnmount(() => {
 
 					<div ref="areaDropdownRef">
 						<label class="label flex items-center gap-1">
-							Categoría del Proyecto Dual
+							Área de la Actividad Dual
 							<button
 								type="button"
 								class="help-icon text-gray-400 hover:text-brand-600 cursor-help transition-colors"
@@ -411,7 +447,7 @@ onBeforeUnmount(() => {
 						</label>
 						<div class="relative">
 							<input
-								v-model="searchArea" class="input" placeholder="Buscar categoría..."
+								v-model="searchArea" class="input" placeholder="Buscar Área..."
 								@focus="showAreaDropdown = true" @input="showAreaDropdown = true" />
 							<ul
 								v-if="showAreaDropdown && filteredAreas.length"
@@ -429,7 +465,7 @@ onBeforeUnmount(() => {
 
 					<div ref="dualTypeDropdownRef" class="pt-3">
 						<label class="label flex items-center gap-1">
-							Tipo de Proyecto Dual
+							Tipo de Actividad Dual
 							<button
 								type="button"
 								class="help-icon text-gray-400 hover:text-brand-600 cursor-help transition-colors"
@@ -474,8 +510,35 @@ onBeforeUnmount(() => {
 										</li>
 									</ul>
 								</li>
+
+
+								<li
+									class="px-4 py-2 hover:bg-brand-50 cursor-pointer transition-colors border-t border-gray-200 font-medium text-brand-600"
+									@click="openDualTypeModal('create', null, 'dual_type')">
+									+ Otro (Crear nuevo tipo)
+								</li>
 							</ul>
 						</div>
+
+						<div v-if="modelValue.dual_type_id" class="col-span-2">
+							<label class="label flex items-center gap-1">
+								Descripción del tipo de actividad dual
+								<button
+									type="button"
+									class="help-icon text-gray-400 hover:text-brand-600 cursor-help transition-colors"
+									@click="toggleTooltip('description', $event)"
+									@mouseleave="hideTooltipDelayed">
+									?
+								</button>
+							</label>
+							<textarea
+								class="input min-h-[100px]"
+								placeholder="Agregue una descripción de la actividad dual seleccionada..."
+								:value="modelValue.description || ''"
+								@input="update('description', $event.target.value)" />
+							<p v-if="errors.description" class="error-msg">{{ errors.description }}</p>
+						</div>
+
 						<p v-if="errors.dual_type_id" class="error-msg">{{ errors.dual_type_id }}</p>
 					</div>
 				</div>
@@ -520,6 +583,7 @@ onBeforeUnmount(() => {
 				</div>
 			</div>
 
+			<!-- En la sección del Periodo, después de las fechas -->
 			<div class="bg-gray-50 rounded-xl p-6 border border-gray-200">
 				<h3 class="text-lg font-semibold text-brand-800 mb-4 flex items-center">
 					<span class="w-6 h-6 bg-brand-100 rounded-full flex items-center justify-center text-brand-800 text-sm mr-2">3</span>
@@ -554,6 +618,25 @@ onBeforeUnmount(() => {
 						<Datepicker v-model="period_end" placeholder="Seleccione la fecha" :enable-time-picker="false" class="input" />
 						<p v-if="errors.period_end" class="error-msg">{{ errors.period_end }}</p>
 					</div>
+				</div>
+
+				<div class="mt-4">
+					<label class="label flex items-center gap-1">
+						Observaciones del Período
+						<button
+							type="button"
+							class="help-icon text-gray-400 hover:text-brand-600 cursor-help transition-colors"
+							@click="toggleTooltip('period_observation', $event)"
+							@mouseleave="hideTooltipDelayed">
+							?
+						</button>
+					</label>
+					<textarea
+						class="input min-h-[80px]"
+						placeholder="Observaciones adicionales sobre el período (opcional)"
+						:value="modelValue.period_observation || ''"
+						@input="update('period_observation', $event.target.value)" />
+					<p class="text-xs text-gray-500 mt-1">Campo opcional para notas sobre el período de la actividad</p>
 				</div>
 			</div>
 
@@ -712,12 +795,12 @@ onBeforeUnmount(() => {
 			<div class="bg-gray-50 rounded-xl p-6 border border-gray-200">
 				<h3 class="text-lg font-semibold text-brand-800 mb-4 flex items-center">
 					<span class="w-6 h-6 bg-brand-100 rounded-full flex items-center justify-center text-brand-800 text-sm mr-2">6</span>
-					Estado del Proyecto
+					Estado de la Actividad
 				</h3>
 				<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
 					<div>
 						<label class="label flex items-center gap-1">
-							Proyecto Concluido
+							Actividad Concluida
 							<button
 								type="button"
 								class="help-icon text-gray-400 hover:text-brand-600 cursor-help transition-colors"
@@ -746,14 +829,55 @@ onBeforeUnmount(() => {
 								?
 							</button>
 						</label>
-						<select
-							class="input"
-							:value="modelValue.is_hired"
-							@change="update('is_hired', parseInt($event.target.value))">
-							<option :value="0">No</option>
-							<option :value="1">Sí</option>
-						</select>
+
+						<div class="relative">
+							<select
+								class="input w-full"
+								:class="{
+									'opacity-50 cursor-not-allowed bg-gray-100': isHiredDisabled,
+									'cursor-pointer': !isHiredDisabled
+								}"
+								:disabled="isHiredDisabled"
+								:value="modelValue.is_hired"
+								@change="update('is_hired', parseInt($event.target.value))">
+								<option :value="0">No</option>
+								<option :value="1">Sí</option>
+							</select>
+
+							<div
+								v-if="isHiredDisabled"
+								class="absolute inset-0 flex items-center justify-center bg-gray-100 bg-opacity-80 rounded-lg cursor-not-allowed"
+								:title="'Primero debe marcar, Sí, en Actividad Concluida'">
+								<span class="text-gray-500 text-sm font-medium">No disponible</span>
+							</div>
+						</div>
+
+						<p v-if="isHiredDisabled" class="text-xs text-gray-500 mt-1 flex items-center">
+							<svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+								<path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" />
+							</svg>
+							Disponible cuando la actividad esté concluida
+						</p>
 					</div>
+				</div>
+
+				<div v-if="modelValue.is_hired === 1" class="mt-4">
+					<label class="label flex items-center gap-1">
+						Observaciones de Contratación
+						<button
+							type="button"
+							class="help-icon text-gray-400 hover:text-brand-600 cursor-help transition-colors"
+							@click="toggleTooltip('hired_observation', $event)"
+							@mouseleave="hideTooltipDelayed">
+							?
+						</button>
+					</label>
+					<textarea
+						class="input min-h-[80px]"
+						placeholder="Detalles sobre la contratación (opcional)"
+						:value="modelValue.hired_observation || ''"
+						@input="update('hired_observation', $event.target.value)" />
+					<p class="text-xs text-gray-500 mt-1">Campo opcional para notas sobre la contratación</p>
 				</div>
 			</div>
 
@@ -812,6 +936,13 @@ onBeforeUnmount(() => {
 			<mdlMicroCredential
 				:show="showMicroModal" :data="microModalData"
 				@close="closeMicroModal" @saved="handleSavedMicroCredential" />
+
+			<!-- Modal para crear nuevo tipo dual -->
+			<mdlDualType
+				:show="showDualTypeModal"
+				:data="dualTypeModalData"
+				@close="closeDualTypeModal"
+				@saved="handleSavedDualType" />
 		</div>
 	</div>
 </template>

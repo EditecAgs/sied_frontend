@@ -59,7 +59,7 @@ const afterError = (res: any) => {
 				style="background-image: url('/images/background/bg-white-flores.png');">
 				<div class="flex items-center justify-between bg-brand-900 -mx-8 -mt-8 px-8 py-4 rounded-t-2xl">
 					<h4 class="text-xl font-semibold text-white">
-						{{ data.mode === 'create' ? `Crear ${data.table}` : `Editar categoría dual` }}
+						{{ data.mode === 'create' ? `Crear ${data.table}` : `Editar Área dual` }}
 					</h4>
 
 					<div class="flex items-center gap-4">
