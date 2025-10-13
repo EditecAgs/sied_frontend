@@ -1,6 +1,3 @@
-
-
-
 <script setup>
 import { ref, computed, defineProps, defineEmits, watch, onMounted } from "vue";
 
@@ -28,7 +25,6 @@ const form = ref({
 
 const errors = ref({});
 
-// Computed para filtrar carreras por institución
 const filteredCareers = computed(() => {
 	if (!props.institution?.id) return [];
 
@@ -99,6 +95,10 @@ const addStudent = () => {
 	if (controlNumberExists) {
 		errors.value.control_number = "Este número de control ya ha sido registrado";
 		return;
+	}
+	
+	if (form.value.id_specialty === "null" || form.value.id_specialty === "") {
+	form.value.id_specialty = null;
 	}
 
 	const newStudent = {
@@ -201,12 +201,21 @@ watch(() => props.institution, (newInstitution) => {
 });
 
 const initializeStudents = () => {
-	if (props.modelValue?.dual_project_students && Array.isArray(props.modelValue.dual_project_students)) {
-		students.value = [...props.modelValue.dual_project_students];
-		console.log('Estudiantes inicializados:', students.value.length);
-	} else {
-		students.value = [];
-	}
+if (props.modelValue?.dual_project_students && Array.isArray(props.modelValue.dual_project_students)) {
+	students.value = props.modelValue.dual_project_students.map(s => ({
+		...s,
+		student: {
+			...s.student,
+			specialty:
+				s.student.id_specialty === null
+					? { id: null, name: 'Sin especialidad' }
+					: s.student.specialty
+		}
+	}));
+	console.log('Estudiantes inicializados:', students.value.length);
+} else {
+	students.value = [];
+}
 };
 
 onMounted(() => {
@@ -244,7 +253,7 @@ defineExpose({
 
 			<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
 				<div>
-					<label class="block text-sm font-medium text-gray-700 mb-1">No. Control *</label>
+					<label class="block text-sm font-medium text-gray-700 mb-1">No. Control o Matricula *</label>
 					<input
 						v-model="form.control_number"
 						class="input"
@@ -277,14 +286,14 @@ defineExpose({
 				</div>
 
 				<div>
-					<label class="block text-sm font-medium text-gray-700 mb-1">Semestre *</label>
+					<label class="block text-sm font-medium text-gray-700 mb-1"> Periodo académico *</label>
 					<input
 						v-model="form.semester"
 						type="number"
 						min="1"
 						max="12"
 						class="input"
-						placeholder="Semestre (1-12)"
+						placeholder=" Periodo académico (1-12)"
 						:class="{ 'border-red-500': errors.semester }"
 						:disabled="!institution" />
 					<p v-if="errors.semester" class="text-red-500 text-sm mt-1">{{ errors.semester }}</p>
@@ -312,13 +321,15 @@ defineExpose({
 						v-model="form.id_specialty"
 						class="input"
 						:class="{ 'border-red-500': errors.id_specialty }"
-						:disabled="!institution || !form.id_career || filteredSpecialties.length === 0">
+						:disabled="!institution || !form.id_career">
 						<option value="">Selecciona especialidad</option>
+						<option value="null">Sin especialidad</option>
 						<option v-for="s in filteredSpecialties" :key="s.id" :value="s.id">{{ s.name }}</option>
 					</select>
 					<p v-if="errors.id_specialty" class="text-red-500 text-sm mt-1">{{ errors.id_specialty }}</p>
-					<p v-if="form.id_career && filteredSpecialties.length === 0" class="text-yellow-600 text-sm mt-1">
-						No hay especialidades disponibles para esta carrera
+
+					<p v-if="form.id_career && filteredSpecialties.length === 0" class="text-[#800020]  text-sm mt-1">
+						Esta carrera no tiene especialidades registradas. Puedes seleccionar “Sin especialidad”.
 					</p>
 				</div>
 
@@ -398,7 +409,7 @@ defineExpose({
 							<td class="px-4 py-2">{{ s.student.lastname }}</td>
 							<td class="px-4 py-2 text-center">{{ s.student.semester }}</td>
 							<td class="px-4 py-2">{{ s.student.career?.name || 'N/A' }}</td>
-							<td class="px-4 py-2">{{ s.student.specialty?.name || 'N/A' }}</td>
+							<td class="px-4 py-2">{{ s.student.specialty?.name || 'Sin especialidad' }}</td>
 							<td class="px-4 py-2">{{ s.student.gender }}</td>
 							<td class="px-4 py-2">
 								<button
