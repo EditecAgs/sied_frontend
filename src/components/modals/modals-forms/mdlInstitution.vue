@@ -197,7 +197,7 @@ const onFileChange = (event: Event) => {
 
 	<transition name="fade-scale">
 		<div v-if="show" class="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm" style="margin-top: 0px" @click.self="emit('close')">
-			<div class="bg-white rounded-2xl shadow-2xl w-full max-w-4xl p-8 relative max-h-[85vh] flex flex-col overflow-hidden">
+			<div class="bg-white rounded-2xl shadow-2xl w-full max-w-4xl p-8 relative max-h-[85vh] flex flex-col overflow-hidden" style="background-image: url('/images/background/bg-white-flores.png');">
 				<div class="flex items-center justify-between bg-brand-900 -mx-8 -mt-8 px-8 py-4 rounded-t-2xl">
 					<h4 class="text-xl font-semibold text-white">
 						{{ data.mode === 'create' ? `Crear ${data.table}` : `Editar ${data.table}` }}
@@ -213,7 +213,6 @@ const onFileChange = (event: Event) => {
 					class="flex-grow overflow-y-auto pr-2"
 					@after-done="afterDone"
 					@after-error="afterError">
-					<!-- 🔸 Nombre y tipo -->
 					<div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6 mt-5">
 						<div class="form-error">
 							<label class="flex items-center gap-1 text-sm font-medium text-gray-700 mb-1">
@@ -239,7 +238,6 @@ const onFileChange = (event: Event) => {
 						</div>
 					</div>
 
-					<!-- 🔸 Dirección -->
 					<div class="border-t pt-4 mb-6">
 						<h5 class="text-md font-semibold text-brand-800 mb-3">Dirección</h5>
 						<div class="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -262,7 +260,6 @@ const onFileChange = (event: Event) => {
 						</div>
 					</div>
 
-					<!-- 🔸 Estado / Municipio -->
 					<div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
 						<div class="form-error">
 							<label class="flex items-center gap-1 text-sm font-medium text-gray-700 mb-1">
@@ -290,7 +287,6 @@ const onFileChange = (event: Event) => {
 						</div>
 					</div>
 
-					<!-- 🔸 Imagen -->
 					<div class="form-error">
 						<label class="flex items-center gap-1 text-sm font-medium text-gray-700 mb-1">
 							Imagen
@@ -304,8 +300,7 @@ const onFileChange = (event: Event) => {
 						</div>
 					</div>
 
-					<!-- 🔸 Botones -->
-					<div class="flex justify-end gap-3 mt-6 pt-4 border-t border-gray-200 sticky bottom-0 bg-white z-10">
+					<div class="flex justify-end gap-3 mt-6 pt-4 border-t border-transparent sticky bottom-0 bg-transparent z-10">
 						<button type="button" class="px-5 py-2 rounded-lg bg-gray-100 text-gray-700 font-semibold hover:bg-gray-200" @click="emit('close')">Cancelar</button>
 						<button form="InstitutionForm" class="px-6 py-2 rounded-lg bg-gradient-to-r from-brand-700 to-brand-900 text-white font-semibold">Guardar</button>
 					</div>
