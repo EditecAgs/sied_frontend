@@ -62,6 +62,9 @@ const activeTooltip = ref(null);
 const tooltipPosition = ref({ x: 0, y: 0 });
 const tooltipTimeout = ref(null);
 
+const isAmountDisabled = ref(false);
+const amountField = ref(null);
+
 const fieldHelpTexts = {
 	name_report: "Escribe el nombre específico del proyecto o actividad dual que se está registrando (ejemplo: 'Residencia en Desarrollo de Software').",
 	id_dual_area: "Clasificación general de la actividad. Sirve para agrupar las actividad según su naturaleza académica, profesional o técnica.",
@@ -80,6 +83,28 @@ const fieldHelpTexts = {
 	micro_credentials: "Microcredenciales o certificaciones emitidas al finalizar la actividad.",
 	description: "Proporcione una breve descripción de la modalidad seleccionada, indicando sus características o propósito.",
 };
+
+
+watch(() => props.modelValue.economic_support, (newSupportId, oldSupportId) => {
+	if (newSupportId === 1) {
+		isAmountDisabled.value = true;
+		update('amount', 0);
+
+		const sinApoyoOption = props.supportTypes?.find(s => s.id === 1);
+		if (sinApoyoOption) {
+			searchSupport.value = sinApoyoOption.name;
+		}
+	}
+	else if (oldSupportId === 1 && newSupportId !== 1) {
+		isAmountDisabled.value = false;
+	}
+});
+
+watch(() => props.supportTypes, (newTypes) => {
+	if (props.modelValue.economic_support === 1) {
+		isAmountDisabled.value = true;
+	}
+});
 
 const toggleTooltip = (field, event) => {
 	if (activeTooltip.value === field) {
@@ -183,6 +208,7 @@ const handleSavedDualType = async () => {
 		closeDualTypeModal();
 	}
 };
+
 const initializeSearchValues = () => {
 	if (props.modelValue.id_dual_area) {
 		const area = props.areas?.find(a => a.id === props.modelValue.id_dual_area);
@@ -199,6 +225,15 @@ const initializeSearchValues = () => {
 	if (props.modelValue.economic_support) {
 		const support = props.supportTypes?.find(s => s.id === props.modelValue.economic_support);
 		searchSupport.value = support?.name || '';
+
+		if (props.modelValue.economic_support === 1) {
+			isAmountDisabled.value = true;
+			if (props.modelValue.amount !== 0) {
+				update('amount', 0);
+			}
+		} else {
+			isAmountDisabled.value = false;
+		}
 	}
 	if (props.modelValue.dual_type_id) {
 		const dualType = props.dualTypes?.find(d => d.id === props.modelValue.dual_type_id);
@@ -280,6 +315,13 @@ const update = (field, value) => {
 		const selected = props.supportTypes?.find(s => s.id === value);
 		searchSupport.value = selected?.name || '';
 		showSupportDropdown.value = false;
+
+		if (value === 1) {
+			isAmountDisabled.value = true;
+			emit('update:modelValue', { ...props.modelValue, economic_support: value, amount: 0 });
+		} else {
+			isAmountDisabled.value = false;
+		}
 	}
 	if (field === 'dual_type_id') {
 		const selected = props.dualTypes?.find(d => d.id === value);
@@ -377,6 +419,13 @@ defineExpose({ validate });
 onMounted(() => {
 	document.addEventListener('click', handleClickOutside);
 	initializeSearchValues();
+
+	if (props.modelValue.economic_support === 1) {
+		isAmountDisabled.value = true;
+		if (props.modelValue.amount !== 0) {
+			update('amount', 0);
+		}
+	}
 });
 
 onBeforeUnmount(() => {
@@ -514,7 +563,7 @@ onBeforeUnmount(() => {
 
 								<li
 									class="px-4 py-2 hover:bg-brand-50 cursor-pointer transition-colors border-t border-gray-200 font-medium text-brand-600"
-									@click="openDualTypeModal('create', null, 'dual_type')">
+									@click="openDualTypeModal('create', null, 'Tipo de actividad dual')">
 									+ Otro (Crear nuevo tipo)
 								</li>
 							</ul>
@@ -583,7 +632,6 @@ onBeforeUnmount(() => {
 				</div>
 			</div>
 
-			<!-- En la sección del Periodo, después de las fechas -->
 			<div class="bg-gray-50 rounded-xl p-6 border border-gray-200">
 				<h3 class="text-lg font-semibold text-brand-800 mb-4 flex items-center">
 					<span class="w-6 h-6 bg-brand-100 rounded-full flex items-center justify-center text-brand-800 text-sm mr-2">3</span>
@@ -687,11 +735,15 @@ onBeforeUnmount(() => {
 						</label>
 						<div class="relative">
 							<input
-								v-model="searchSupport" class="input" placeholder="Buscar apoyo..."
-								@focus="showSupportDropdown = true" @input="showSupportDropdown = true" />
+								v-model="searchSupport"
+								class="input"
+								placeholder="Buscar apoyo..."
+								@focus="showSupportDropdown = true"
+								@input="showSupportDropdown = true" />
 							<ul v-if="showSupportDropdown && filteredSupports.length" class="dropdown">
 								<li
-									v-for="apoyo in filteredSupports" :key="apoyo.id"
+									v-for="apoyo in filteredSupports"
+									:key="apoyo.id"
 									class="dropdown-item"
 									@click="update('economic_support', apoyo.id)">
 									{{ apoyo.name }}
@@ -700,6 +752,7 @@ onBeforeUnmount(() => {
 						</div>
 						<p v-if="errors.economic_support" class="error-msg">{{ errors.economic_support }}</p>
 					</div>
+
 					<div class="w-40 flex-shrink-0">
 						<label class="label flex items-center gap-1">
 							Monto
@@ -712,7 +765,13 @@ onBeforeUnmount(() => {
 							</button>
 						</label>
 						<input
-							type="number" min="0" step="0.01" class="input"
+							ref="amountField"
+							type="number"
+							min="0"
+							step="0.01"
+							class="input"
+							:class="{ 'bg-gray-100 cursor-not-allowed': isAmountDisabled }"
+							:disabled="isAmountDisabled"
 							:value="modelValue.amount"
 							@input="update('amount', parseFloat($event.target.value))" />
 						<p v-if="errors.amount" class="error-msg">{{ errors.amount }}</p>
@@ -937,7 +996,6 @@ onBeforeUnmount(() => {
 				:show="showMicroModal" :data="microModalData"
 				@close="closeMicroModal" @saved="handleSavedMicroCredential" />
 
-			<!-- Modal para crear nuevo tipo dual -->
 			<mdlDualType
 				:show="showDualTypeModal"
 				:data="dualTypeModalData"

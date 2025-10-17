@@ -192,7 +192,6 @@ const afterError = (res: any) => {
 					@after-done="afterDone"
 					@after-error="afterError">
 					<div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6 mt-5">
-						<!-- Nombre -->
 						<div class="form-error">
 							<label class="flex items-center gap-1 text-sm font-medium text-gray-700 mb-1">
 								Nombre*
@@ -201,7 +200,6 @@ const afterError = (res: any) => {
 							<input v-model="form.name" name="name" required class="w-full px-3 py-2 border rounded-md" />
 						</div>
 
-						<!-- Tamaño -->
 						<div class="form-error">
 							<label class="flex items-center gap-1 text-sm font-medium text-gray-700 mb-1">
 								Tamaño*
@@ -216,7 +214,6 @@ const afterError = (res: any) => {
 							</select>
 						</div>
 
-						<!-- Tipo -->
 						<div class="form-error">
 							<label class="flex items-center gap-1 text-sm font-medium text-gray-700 mb-1">
 								Tipo*
@@ -228,7 +225,6 @@ const afterError = (res: any) => {
 							</select>
 						</div>
 
-						<!-- Sector -->
 						<div class="form-error">
 							<label class="flex items-center gap-1 text-sm font-medium text-gray-700 mb-1">
 								Sector*
@@ -240,7 +236,6 @@ const afterError = (res: any) => {
 							</select>
 						</div>
 
-						<!-- Cluster nacional -->
 						<div class="form-error">
 							<label class="flex items-center gap-1 text-sm font-medium text-gray-700 mb-1">
 								Cámara (cluster) Nacional*
@@ -252,7 +247,6 @@ const afterError = (res: any) => {
 							</select>
 						</div>
 
-						<!-- Cluster local -->
 						<div class="form-error">
 							<label class="flex items-center gap-1 text-sm font-medium text-gray-700 mb-1">
 								Cámara (cluster) Local*
@@ -264,7 +258,6 @@ const afterError = (res: any) => {
 							</select>
 						</div>
 
-						<!-- Alcance -->
 						<div class="form-error">
 							<label class="flex items-center gap-1 text-sm font-medium text-gray-700 mb-1">
 								Alcance*
@@ -280,7 +273,6 @@ const afterError = (res: any) => {
 						</div>
 					</div>
 
-					<!-- Dirección -->
 					<div class="border-t pt-4 mb-6">
 						<h5 class="text-md font-semibold text-brand-800 mb-3">Dirección</h5>
 						<div class="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -334,7 +326,6 @@ const afterError = (res: any) => {
 						</div>
 					</div>
 
-					<!-- Estado / Municipio -->
 					<div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
 						<div class="form-error">
 							<label class="flex items-center gap-1 text-sm font-medium text-gray-700 mb-1">
@@ -359,7 +350,6 @@ const afterError = (res: any) => {
 						</div>
 					</div>
 
-					<!-- Botones -->
 					<div class="flex justify-end gap-3 mt-6 pt-4 border-t border-gray-200 sticky bottom-0 bg-transparent z-10">
 						<button type="button" class="px-5 py-2 rounded-lg bg-gray-100 text-gray-700 font-semibold hover:bg-gray-200" :disabled="isLoading" @click="emit('close')">
 							Cancelar

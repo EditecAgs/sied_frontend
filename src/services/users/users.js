@@ -28,18 +28,19 @@ export function showUsers(pk) {
 }
 
 
-export function updateUsers(pk) {
+export function updateUsers(pk, params) {
 	return new Promise((resolve, reject) => {
 		axios
-			.put(`users/${pk}`)
-			.then((response) => {
-				resolve(response);
+			.put(`users/${pk}`, params, {
+				headers: {
+					'Content-Type': 'application/json',
+				},
 			})
-			.catch((error) => {
-				reject(error);
-			});
+			.then((response) => resolve(response))
+			.catch((error) => reject(error));
 	});
 }
+
 
 export function removeUsers(pk) {
 	return new Promise((resolve, reject) => {

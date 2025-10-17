@@ -1,83 +1,197 @@
 <script setup lang="ts">
 import { defineProps, defineEmits, reactive, watchEffect, ref, onMounted } from 'vue'
 import axios from 'axios'
-import {getInstitutions} from '../../../services/institutions/institutions.js'
-import {showUsers} from "../../../services/users/users.js"
+import { getInstitutions } from '../../../services/institutions/institutions.js'
+import { showUsers, createUsers, updateUsers } from "../../../services/users/users.js"
+import Select from 'primevue/select'
 
-const emit = defineEmits(['close', 'saved'])
-const isLoading = ref(false)
 
-const alvRoute = ref()
-const alvMethod = ref('POST')
+interface UserForm {
+	name: string
+	lastname: string
+	email: string
+	id_institution: string
+	password: string
+	password_confirmation: string
+}
 
+interface UserFormErrors {
+	name?: string
+	lastname?: string
+	email?: string
+	id_institution?: string
+	password?: string
+	password_confirmation?: string
+	general?: string
+}
+
+interface Institution {
+	id: string | number
+	name: string
+}
 
 // eslint-disable-next-line vue/valid-define-props
 const props = defineProps<{
-  show: boolean
-  data: {
-    mode: 'create' | 'edit'
-    pk: number | null
-    table: string
-  }
+	show: boolean
+	data: {
+		mode: 'create' | 'edit'
+		pk: number | null
+		table: string
+	}
 }>()
 
+const emit = defineEmits(['close', 'saved'])
 
-const form = reactive({
-  name: '',
-  email: '',
-  lastname: '',
-  id_institution: ''
+const isLoading = ref(false)
+const showPassword = ref(false)
+const formErrors = ref<UserFormErrors>({})
+const institutions = ref<Institution[]>([])
+
+const alvRoute = ref('')
+const alvMethod = ref<'POST' | 'PUT'>('POST')
+
+const form = reactive<UserForm>({
+	name: '',
+	lastname: '',
+	email: '',
+	id_institution: '',
+	password: '',
+	password_confirmation: ''
 })
 
-
-const institutions = ref([])
-
 const loadInstitutions = () => {
-  getInstitutions().then(({data}) => {
-    institutions.value = data;
-  });
+	getInstitutions().then(({ data }) => {
+		institutions.value = data
+	})
 }
 
 onMounted(() => {
-  loadInstitutions()
+	loadInstitutions()
 })
-
 
 watchEffect(() => {
-  if (props.data.mode === 'edit' && props.data.pk !== null) {
-    alvRoute.value = `${axios.defaults.baseURL}users/${props.data.pk}`
-    alvMethod.value = 'PUT'
-    isLoading.value = true
+	if (props.data.mode === 'edit' && props.data.pk !== null) {
+		alvRoute.value = `${axios.defaults.baseURL}users/${props.data.pk}`
+		alvMethod.value = 'PUT'
+		isLoading.value = true
 
-    showUsers(props.data.pk)
-        .then(res => {
-          const user = res.data
-          form.name = user.name
-          form.lastname = user.lastname
-          form.email = user.email
-          form.id_institution = user.id_institution
-        })
-        .finally(() => { isLoading.value = false })
-  } else if (props.data.mode === 'create') {
-    alvRoute.value = `${axios.defaults.baseURL}users`
-    alvMethod.value = 'POST'
+		showUsers(props.data.pk)
+			.then(res => {
+				const user = res.data
+				form.name = user.name || ''
+				form.lastname = user.lastname || ''
+				form.email = user.email || ''
+				form.id_institution = user.id_institution || ''
+				form.password = ''
+				form.password_confirmation = ''
+			})
+			.catch(error => {
+				console.error('Error al cargar usuario:', error)
+				formErrors.value = error.response?.data?.errors || {}
+			})
+			.finally(() => { isLoading.value = false })
+	} else if (props.data.mode === 'create') {
+		alvRoute.value = `${axios.defaults.baseURL}users`
+		alvMethod.value = 'POST'
 
-    form.name = ''
-    form.lastname = ''
-    form.email = ''
-    form.id_institution = ''
-  }
+		form.name = ''
+		form.lastname = ''
+		form.email = ''
+		form.id_institution = ''
+		form.password = ''
+		form.password_confirmation = ''
+		formErrors.value = {}
+	}
 })
 
+const validateForm = (): boolean => {
+	const errors: UserFormErrors = {}
 
-const afterDone = (response) => {
-  console.log(response.data + ' guardado exitosamente')
-  emit('saved')
-  emit('close')
+	if (!form.name.trim()) errors.name = 'El nombre es requerido'
+	else if (form.name.length > 255) errors.name = 'El nombre no puede tener más de 255 caracteres'
+
+	if (!form.lastname.trim()) errors.lastname = 'El apellido es requerido'
+	else if (form.lastname.length > 255) errors.lastname = 'El apellido no puede tener más de 255 caracteres'
+
+	const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/
+	if (!form.email.trim()) errors.email = 'El correo electrónico es requerido'
+	else if (!emailRegex.test(form.email)) errors.email = 'El formato del correo no es válido'
+	else if (form.email.length > 255) errors.email = 'El correo electrónico no puede tener más de 255 caracteres'
+
+	if (!form.id_institution) errors.id_institution = 'La institución es requerida'
+
+	if (props.data.mode === 'create') {
+		if (!form.password) errors.password = 'La contraseña es requerida'
+		else if (form.password.length < 8) errors.password = 'Debe tener al menos 8 caracteres'
+	} else if (props.data.mode === 'edit' && form.password && form.password.length < 8) {
+		errors.password = 'Debe tener al menos 8 caracteres'
+	}
+
+	if (form.password && form.password !== form.password_confirmation) {
+		errors.password_confirmation = 'Las contraseñas no coinciden'
+	}
+
+	formErrors.value = errors
+	return Object.keys(errors).length === 0
 }
 
-const afterError = (response) => {
-  console.log('Error al enviar:', response.data)
+const submitForm = async (event: Event) => {
+	event.preventDefault()
+	if (!validateForm()) return
+
+	isLoading.value = true
+
+	try {
+		const formData: Record<string, any> = {
+			name: form.name,
+			lastname: form.lastname,
+			email: form.email,
+			id_institution: form.id_institution
+		}
+
+		if (form.password) {
+			formData.password = form.password
+			formData.password_confirmation = form.password_confirmation
+		}
+
+
+		let response
+		if (props.data.mode === 'create') {
+			response = await createUsers(formData)
+		} else if (props.data.mode === 'edit' && props.data.pk) {
+			response = await updateUsers(props.data.pk, formData)
+		}
+
+		afterDone(response)
+	} catch (error: any) {
+		console.error('Error al guardar usuario:', error)
+
+		if (error.response?.data?.errors) {
+			formErrors.value = error.response.data.errors
+		} else if (error.response?.data?.message) {
+			formErrors.value.general = error.response.data.message
+		} else {
+			formErrors.value.general = 'Error al guardar el usuario'
+		}
+
+		afterError(error.response)
+	} finally {
+		isLoading.value = false
+	}
+}
+
+const afterDone = (response: any) => {
+	console.log('Usuario guardado exitosamente:', response.data)
+	emit('saved')
+	emit('close')
+}
+
+const afterError = (response: any) => {
+	console.log('Error al enviar:', response?.data)
+}
+
+const togglePasswordVisibility = () => {
+	showPassword.value = !showPassword.value
 }
 </script>
 
@@ -109,17 +223,14 @@ const afterError = (response) => {
 					</div>
 				</div>
 
-				<alv-form
+				<div v-if="formErrors.general" class="mt-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded">
+					{{ formErrors.general }}
+				</div>
+
+				<form
 					id="UserForm"
-					:action="alvRoute"
-					:data-object="form"
-					:input-parent-selector="'.form-error'"
-					:method="alvMethod"
-					:enable-button-on-done="true"
-					:spinner="true"
-					class="flex-grow overflow-y-auto pr-2"
-					@after-done="afterDone"
-					@after-error="afterError">
+					@submit="submitForm"
+					class="flex-grow overflow-y-auto pr-2">
 					<div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6 mt-5">
 						<div class="form-error">
 							<label class="block text-sm font-medium text-gray-700 mb-1">Nombre*</label>
@@ -132,7 +243,14 @@ const afterError = (response) => {
 									type="text"
 									name="name"
 									required
-									class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring focus:ring-brand-800" />
+									maxlength="255"
+									:class="[
+										'w-full px-3 py-2 border rounded-md focus:outline-none focus:ring focus:ring-brand-800',
+										formErrors.name ? 'border-red-500' : 'border-gray-300'
+									]" />
+								<div v-if="formErrors.name" class="text-red-500 text-sm mt-1">
+									{{ formErrors.name }}
+								</div>
 							</template>
 						</div>
 
@@ -147,7 +265,14 @@ const afterError = (response) => {
 									type="text"
 									name="lastname"
 									required
-									class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring focus:ring-brand-800" />
+									maxlength="255"
+									:class="[
+										'w-full px-3 py-2 border rounded-md focus:outline-none focus:ring focus:ring-brand-800',
+										formErrors.lastname ? 'border-red-500' : 'border-gray-300'
+									]" />
+								<div v-if="formErrors.lastname" class="text-red-500 text-sm mt-1">
+									{{ formErrors.lastname }}
+								</div>
 							</template>
 						</div>
 
@@ -162,7 +287,14 @@ const afterError = (response) => {
 									type="email"
 									name="email"
 									required
-									class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring focus:ring-brand-800" />
+									maxlength="255"
+									:class="[
+										'w-full px-3 py-2 border rounded-md focus:outline-none focus:ring focus:ring-brand-800',
+										formErrors.email ? 'border-red-500' : 'border-gray-300'
+									]" />
+								<div v-if="formErrors.email" class="text-red-500 text-sm mt-1">
+									{{ formErrors.email }}
+								</div>
 							</template>
 						</div>
 
@@ -175,8 +307,83 @@ const afterError = (response) => {
 								optionLabel="name"
 								optionValue="id"
 								:virtualScrollerOptions="{ itemSize: 38, showLoader: isLoading}"
-								placeholder="Selecciona una institucion"
-								class="w-full px-3 py-2 !border-2 !border-gray-900 !rounded-md focus:outline-none focus:ring focus:ring-brand-800" />
+								placeholder="Selecciona una institución"
+								:class="[
+									'w-full px-3 py-2 !border-2 !rounded-md focus:outline-none focus:ring focus:ring-brand-800',
+									formErrors.id_institution ? '!border-red-500' : '!border-gray-900'
+								]" />
+							<div v-if="formErrors.id_institution" class="text-red-500 text-sm mt-1">
+								{{ formErrors.id_institution }}
+							</div>
+						</div>
+
+						<div class="form-error md:col-span-2">
+							<label class="block text-sm font-medium text-gray-700 mb-1">
+								Contraseña{{ data.mode === 'create' ? '*' : '' }}
+								<span v-if="data.mode === 'edit'" class="text-gray-500 text-xs">(Dejar en blanco para mantener la actual)</span>
+							</label>
+							<template v-if="isLoading">
+								<div class="h-8 bg-gray-300 rounded animate-pulse" />
+							</template>
+							<template v-else>
+								<div class="relative">
+									<input
+										v-model="form.password"
+										:type="showPassword ? 'text' : 'password'"
+										name="password"
+										:required="data.mode === 'create'"
+										:minlength="data.mode === 'create' ? 8 : 0"
+										:placeholder="data.mode === 'edit' ? 'Nueva contraseña (opcional)' : 'Ingresa la contraseña'"
+										:class="[
+											'w-full px-3 py-2 border rounded-md focus:outline-none focus:ring focus:ring-brand-800 pr-10',
+											formErrors.password ? 'border-red-500' : 'border-gray-300'
+										]" />
+									<button
+										type="button"
+										class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700"
+										@click="togglePasswordVisibility">
+										<span v-if="showPassword">👁️</span>
+										<span v-else>👁️‍🗨️</span>
+									</button>
+								</div>
+								<div v-if="formErrors.password" class="text-red-500 text-sm mt-1">
+									{{ formErrors.password }}
+								</div>
+								<div v-else class="text-gray-500 text-xs mt-1">
+									La contraseña debe tener al menos 8 caracteres
+								</div>
+							</template>
+						</div>
+
+						<div class="form-error md:col-span-2" v-if="form.password">
+							<label class="block text-sm font-medium text-gray-700 mb-1">Confirmar Contraseña*</label>
+							<template v-if="isLoading">
+								<div class="h-8 bg-gray-300 rounded animate-pulse" />
+							</template>
+							<template v-else>
+								<div class="relative">
+									<input
+										v-model="form.password_confirmation"
+										:type="showPassword ? 'text' : 'password'"
+										name="password_confirmation"
+										:required="form.password !== ''"
+										placeholder="Confirma la contraseña"
+										:class="[
+											'w-full px-3 py-2 border rounded-md focus:outline-none focus:ring focus:ring-brand-800 pr-10',
+											formErrors.password_confirmation ? 'border-red-500' : 'border-gray-300'
+										]" />
+									<button
+										type="button"
+										class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700"
+										@click="togglePasswordVisibility">
+										<span v-if="showPassword">👁️</span>
+										<span v-else>👁️‍🗨️</span>
+									</button>
+								</div>
+								<div v-if="formErrors.password_confirmation" class="text-red-500 text-sm mt-1">
+									{{ formErrors.password_confirmation }}
+								</div>
+							</template>
 						</div>
 					</div>
 
@@ -188,33 +395,32 @@ const afterError = (response) => {
 							Cancelar
 						</button>
 						<button
-							form="UserForm"
-							class="flex items-center gap-2 px-6 py-2 rounded-lg bg-gradient-to-r from-brand-700 to-brand-900 text-white font-semibold hover:brightness-110 transition shadow-md">
-							<span v-if="data.mode === 'create'" />
-							<span v-else>💾</span>
-							<span>Guardar</span>
+							type="submit"
+							:disabled="isLoading"
+							class="flex items-center gap-2 px-6 py-2 rounded-lg bg-gradient-to-r from-brand-700 to-brand-900 text-white font-semibold hover:brightness-110 transition shadow-md disabled:opacity-50 disabled:cursor-not-allowed">
+							<span v-if="isLoading" class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+							<span>{{ isLoading ? 'Guardando...' : 'Guardar' }}</span>
 						</button>
 					</div>
-				</alv-form>
+				</form>
 			</div>
 		</div>
 	</transition>
 </template>
 
-
 <style scoped>
 .fade-scale-enter-active,
 .fade-scale-leave-active {
-  transition: all 0.3s ease;
+	transition: all 0.3s ease;
 }
 .fade-scale-enter-from,
 .fade-scale-leave-to {
-  opacity: 0;
-  transform: scale(0.95);
+	opacity: 0;
+	transform: scale(0.95);
 }
 .fade-scale-enter-to,
 .fade-scale-leave-from {
-  opacity: 1;
-  transform: scale(1);
+	opacity: 1;
+	transform: scale(1);
 }
 </style>
