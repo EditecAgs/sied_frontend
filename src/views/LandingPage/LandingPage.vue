@@ -6,18 +6,18 @@
 			class="hidden md:block w-screen h-screen object-fit" />
 
 		<img
-			src="/images/landing/landing-mobile.png"
+			src="/images/landing/landing-mobile2.png"
 			alt="Imagen Principal"
-			class="block md:hidden w-screen h-screen object-fit" />
+			class="block md:hidden w-screen h-auto object-fit" />
 
 		<div
 			class="
-		absolute
-		/* Mobile */
-		bottom-5 left-1/2 -translate-x-1/2
-		/* Desktop */
-		md:bottom-56 md:right-44 md:left-auto md:translate-x-0
-	">
+    absolute
+    /* Mobile */
+    top-48 left-1/2 -translate-x-1/2
+    /* Desktop */
+    md:bottom-56 md:right-44 md:left-auto md:translate-x-0 md:top-auto
+  ">
 			<button
 				class="px-6 py-3 text-white font-semibold rounded-lg shadow-lg transition bg-guindo hover:bg-guindo-light animate-pulse-custom"
 				@click="router.push('/signin')">
