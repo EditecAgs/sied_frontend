@@ -21,7 +21,7 @@
 <script setup>
 import AdminLayout from '../../components/layouts/AdminLayout.vue'
 import PageBreadcrumb from '../../components/common/PageBreadcrumb.vue'
-import logs from '../../components/tables/logs/logs.vue'
+import logs from '../../components/tables/logs.vue'
 import mdlLogs from '../../components/modals/modals-forms/mdlLogs.vue'
 import { useModal } from '../../composables/UseModal'
 const { showModal, modalData, openModal, closeModal } = useModal();
