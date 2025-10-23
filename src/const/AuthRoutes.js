@@ -27,6 +27,7 @@ export default [
     'TypeTable',
 	'MicroCredentialsTable',
 	'StudentsTable',
-	'Dual_TypeTable'
+	'Dual_TypeTable',
+    'Logs',
 
 ];
