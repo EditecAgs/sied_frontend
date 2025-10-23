@@ -49,7 +49,7 @@
 						</td>
 						<td class="px-5 py-3 text-sm">
 							<div class="flex space-x-2">
-								<btnEdit :table="'Actividad Dual'" :pk="dualType.id ?? index" @open="(data) => $emit('open', data)" />
+								<btnEdit :table="'Tipo de actividad Dual'" :pk="dualType.id ?? index" @open="(data) => $emit('open', data)" />
 								<btnDelete :table="'dual_types'" :pk="dualType.id ?? index" @open-confirm="(payload) => $emit('open-confirm', payload)" />
 							</div>
 						</td>

@@ -88,8 +88,9 @@
 													},
 												]" />
 										</button>
+										<!-- Si el enlace es interno, usa router-link -->
 										<router-link
-											v-else-if="item.path"
+											v-else-if="item.path && !item.path.startsWith('http')"
 											:to="item.path"
 											:class="[
 												'menu-item group',
@@ -107,6 +108,25 @@
 												{{ item.name }}
 											</span>
 										</router-link>
+										<a
+											v-else-if="item.path && item.path.startsWith('http')"
+											:href="item.path"
+											target="_blank"
+											rel="noopener noreferrer"
+											:class="[
+												'menu-item group',
+												'menu-item-inactive hover:opacity-80',
+											]">
+											<span class="menu-item-icon-inactive">
+												<component :is="item.icon" class="text-white" />
+											</span>
+											<span
+												v-if="isExpanded || isHovered || isMobileOpen"
+												class="menu-item-text text-white">
+												{{ item.name }}
+											</span>
+										</a>
+
 										<transition
 											@enter="startTransition"
 											@after-enter="endTransition"
@@ -169,117 +189,109 @@
 </template>
 
 <script setup>
-import { computed } from 'vue';
+import { computed, ref, onMounted } from 'vue';
 import { useRoute } from 'vue-router';
 
 import {
 	GridIcon,
-	// CalenderIcon,
 	UserCircleIcon,
-	// ChatIcon,
-	// MailIcon,
-	// DocsIcon,
-	PieChartIcon,
 	ChevronDownIcon,
 	HorizontalDots,
-	// PageIcon,
 	TableIcon,
 	ListIcon,
-	// PlugInIcon,
+	FolderIcon,
+	HistoryIcon 
 } from '../../icons';
-// import BoxCubeIcon from "../../icons/BoxCubeIcon.vue";
 import { useSidebar } from '../../composables/useSidebar';
 
 const route = useRoute();
-
 const { isExpanded, isMobileOpen, isHovered, openSubmenu } = useSidebar();
 
-const menuGroups = [
-	{
-		title: 'Menú',
-		items: [
-			{
-				icon: GridIcon,
-				name: 'Dashboard',
-				path: '/dashboard',
-			},
-			{
-				icon: UserCircleIcon,
-				name: 'Perfil de Usuario',
-				path: '/profile',
-			},
+const userType = ref(null);
 
-			{
-				name: 'Modelo Dual',
-				icon: ListIcon,
-				path: '/form-elements',
-			},
-			/*{
-        name: "Pages",
-        icon: PageIcon,
-        subItems: [
-          {name: "Black Page", path: "/blank", pro: false},
-        ],
-      },*/
-		],
-	},
-	{
-		title: 'Admin',
-		items: [
-			{
-				name: 'Catálogos',
-				icon: TableIcon,
-				subItems: [
-					//{ name: 'Usuarios', path: '/basic-tables', pro: false },
-					{ name: 'Apoyo Económico', path: '/economic-table', pro: false },
-					{ name: 'Áreas Duales', path: '/dual_Area-table', pro: false },
-					{ name: 'Carreras', path: '/careers-table', pro: false },
-					{ name: 'Cámaras', path: '/Clusters-table', pro: false },
-					{ name: 'Especialidades', path: '/specialties-table', pro: false },
-					{ name: 'Estudiantes', path: '/student-table', pro: false },
-					{ name: 'Estatus de Documentos', path: '/document-table', pro: false },
-					{ name: 'Instituciones', path: '/institution-table', pro: false },
-					{ name: 'Microcredenciales y Certificaciones', path: '/micro-credentials-table', pro: false },
-					{ name: 'Organizaciones', path: '/Organization-table', pro: false },
-					{ name: 'Periodos Académicos', path: '/periods_Academic-table', pro: false },
-					{ name: 'Sectores', path: '/sectors-table', pro: false },
-					{ name: 'Subsistemas', path: '/subsystem-table', pro: false },
-					{ name: 'Tipo de Organización ', path: '/type-table', pro: false },
-					{ name: 'Tipo de Actividad Dual', path: '/dual_type-table', pro: false },
+onMounted(() => {
+	const userData = localStorage.getItem('user');
+	if (userData) {
+		try {
+			const user = JSON.parse(userData);
+			userType.value = user.type;
+		} catch (error) {
+			console.warn('Error al parsear user data:', error);
+		}
+	}
+});
 
-				],
-			},
-			/*{
-				icon: PieChartIcon,
-				name: 'Estadísticas',
-				subItems: [
-					{ name: 'Gráficas de líneas', path: '/line-chart', pro: false },
-					{ name: 'Gráficas de barras', path: '/bar-chart', pro: false },
-				],
-			},
-			/*{
-        icon: BoxCubeIcon,
-        name: "Ui Elements",
-        subItems: [
-          {name: "Alerts", path: "/alerts", pro: false},
-          {name: "Avatars", path: "/avatars", pro: false},
-          {name: "Badge", path: "/badge", pro: false},
-          {name: "Buttons", path: "/buttons", pro: false},
-          {name: "Images", path: "/images", pro: false},
-          {name: "Videos", path: "/videos", pro: false},
-        ],
-      },
-      {
-        icon: PlugInIcon,
-        name: "Authentication",
-        subItems: [
-          {name: "Signin", path: "/signin", pro: false},
-          {name: "Signup", path: "/signup", pro: false},
-        ],
-      },*/
-		],
-	},
-];
+
+const menuGroups = computed(() => {
+	return [
+		{
+			title: 'Menú',
+			items: [
+				{
+					icon: GridIcon,
+					name: 'Dashboard',
+					path: '/dashboard',
+				},
+				{
+					icon: UserCircleIcon,
+					name: 'Perfil de Usuario',
+					path: '/profile',
+				},
+				{
+					name: 'Modelo Dual',
+					icon: ListIcon,
+					path: '/form-elements',
+				},
+			],
+		},
+		{
+			title: 'Admin',
+			items: [
+				{
+					name: 'Catálogos',
+					icon: TableIcon,
+					subItems: [
+						...(userType.value === 0 ? [{ name: 'Usuarios', path: '/basic-tables', pro: false }] : []),
+						{ name: 'Apoyo Económico', path: '/economic-table', pro: false },
+						{ name: 'Áreas Duales', path: '/dual_Area-table', pro: false },
+						{ name: 'Carreras', path: '/careers-table', pro: false },
+						{ name: 'Cámaras', path: '/Clusters-table', pro: false },
+						{ name: 'Especialidades', path: '/specialties-table', pro: false },
+						{ name: 'Estudiantes', path: '/student-table', pro: false },
+						{ name: 'Estatus de Documentos', path: '/document-table', pro: false },
+						{ name: 'Instituciones', path: '/institution-table', pro: false },
+						{ name: 'Microcredenciales y Certificaciones', path: '/micro-credentials-table', pro: false },
+						{ name: 'Organizaciones', path: '/Organization-table', pro: false },
+						{ name: 'Periodos Académicos', path: '/periods_Academic-table', pro: false },
+						{ name: 'Sectores', path: '/sectors-table', pro: false },
+						{ name: 'Subsistemas', path: '/subsystem-table', pro: false },
+						{ name: 'Tipo de Organización ', path: '/type-table', pro: false },
+						{ name: 'Tipo de Actividad Dual', path: '/dual_type-table', pro: false },
+					].filter(Boolean),
+				},
+			],
+		},
+		{
+			title: 'Recursos',
+			items: [
+				{
+					icon: FolderIcon,
+					name: 'Tutoriales',
+					path: 'https://drive.google.com/drive/folders/1RGMQ_KbbKvaCW0RipKpEgEZi7oBMpbub?usp=sharing',
+				},
+...(userType.value === 0
+    ? [
+        {
+            icon: HistoryIcon,
+            name: 'Registro de Actividades de Usuario',
+            path: '/logs',
+        },
+    ]
+    : []),
+			],
+		},
+	];
+});
 
 const isActive = (path) => route.path === path;
 
@@ -289,14 +301,19 @@ const toggleSubmenu = (groupIndex, itemIndex) => {
 };
 
 const isAnySubmenuRouteActive = computed(() => {
-	return menuGroups.some((group) => group.items.some((item) => item.subItems && item.subItems.some((subItem) => isActive(subItem.path))));
+	return menuGroups.value.some((group) =>
+		group.items.some((item) =>
+			item.subItems && item.subItems.some((subItem) => isActive(subItem.path))
+		)
+	);
 });
 
 const isSubmenuOpen = (groupIndex, itemIndex) => {
 	const key = `${groupIndex}-${itemIndex}`;
 	return (
 		openSubmenu.value === key ||
-		(isAnySubmenuRouteActive.value && menuGroups[groupIndex].items[itemIndex].subItems?.some((subItem) => isActive(subItem.path)))
+		(isAnySubmenuRouteActive.value &&
+			menuGroups.value[groupIndex].items[itemIndex].subItems?.some((subItem) => isActive(subItem.path)))
 	);
 };
 
@@ -304,7 +321,7 @@ const startTransition = (el) => {
 	el.style.height = 'auto';
 	const height = el.scrollHeight;
 	el.style.height = '0px';
-	void el.offsetHeight; // force reflow
+	void el.offsetHeight;
 	el.style.height = height + 'px';
 };
 
