@@ -200,6 +200,7 @@ import {
 	TableIcon,
 	ListIcon,
 	FolderIcon,
+	HistoryIcon 
 } from '../../icons';
 import { useSidebar } from '../../composables/useSidebar';
 
@@ -278,6 +279,15 @@ const menuGroups = computed(() => {
 					name: 'Tutoriales',
 					path: 'https://drive.google.com/drive/folders/1RGMQ_KbbKvaCW0RipKpEgEZi7oBMpbub?usp=sharing',
 				},
+...(userType.value === 0
+    ? [
+        {
+            icon: HistoryIcon,
+            name: 'Registro de Actividades de Usuario',
+            path: '/logs',
+        },
+    ]
+    : []),
 			],
 		},
 	];
