@@ -10,3 +10,11 @@ export function login(email, password) {
         });
 }
 
+export function logout() {
+    return axios
+        .get('logout') 
+        .then(response => response.data) 
+        .catch(error => {
+            throw error; 
+        });
+}
