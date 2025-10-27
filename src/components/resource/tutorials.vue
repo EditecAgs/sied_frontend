@@ -1,61 +1,56 @@
 <template>
-  <div class="bg-white rounded-xl shadow-lg overflow-hidden border-l-8 border-red-800 p-6">
-    <div class="flex items-center mb-6">
-      <svg class="w-6 h-6 text-red-800 mr-2" fill="currentColor" viewBox="0 0 24 24">
-        <path d="M12 2L15 8H9L12 2Z" />
-      </svg>
-      <h1 class="text-2xl font-semibold text-red-800">Sied Tutoriales</h1>
-    </div>
-    <div class="mb-6 relative">
-      <input
-        v-model="filtro"
-        type="text"
-        placeholder="Filtrar por título, descripción o módulo..."
-        class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-red-800 pr-10"
-      />
-      <svg
-        class="w-5 h-5 text-red-800 absolute right-3 top-1/2 transform -translate-y-1/2 pointer-events-none"
-        fill="none"
-        stroke="currentColor"
-        stroke-width="2"
-        viewBox="0 0 24 24"
-      >
-        <circle cx="11" cy="11" r="8" />
-        <line x1="21" y1="21" x2="16.65" y2="16.65" />
-      </svg>
-    </div>
+	<div class="bg-white rounded-xl shadow-lg overflow-hidden border-l-8 border-red-800 p-6">
+		<div class="flex items-center mb-6">
+			<svg class="w-6 h-6 text-red-800 mr-2" fill="currentColor" viewBox="0 0 24 24">
+				<path d="M12 2L15 8H9L12 2Z" />
+			</svg>
+			<h1 class="text-2xl font-semibold text-red-800">SIED Tutoriales</h1>
+		</div>
+		<div class="mb-6 relative">
+			<input
+				v-model="filtro"
+				type="text"
+				placeholder="Filtrar por título, descripción o módulo..."
+				class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-red-800 pr-10" />
+			<svg
+				class="w-5 h-5 text-red-800 absolute right-3 top-1/2 transform -translate-y-1/2 pointer-events-none"
+				fill="none"
+				stroke="currentColor"
+				stroke-width="2"
+				viewBox="0 0 24 24">
+				<circle cx="11" cy="11" r="8" />
+				<line x1="21" y1="21" x2="16.65" y2="16.65" />
+			</svg>
+		</div>
 
-    <div class="grid md:grid-cols-3 gap-6">
-      <div
-        v-for="(modulo, index) in modulosFiltrados"
-        :key="index"
-        class="bg-white rounded-xl shadow-lg overflow-hidden"
-      >
-        <img :src="modulo.imagen" alt="Módulo" class="w-full h-48 object-cover" />
-        <div class="p-4">
-          <span
-            v-if="modulo.nombre"
-            class="bg-red-800 text-white text-xs px-2 py-1 rounded-full mb-2 inline-block"
-          >
-            {{ modulo.nombre }}
-          </span>
-          <h3 class="text-lg font-semibold text-red-800 mb-2">{{ modulo.titulo }}</h3>
-          <p class="text-gray-600 text-sm">{{ modulo.descripcion }}</p>
-          <p class="text-gray-500 text-xs mt-2">Duración: {{ modulo.duracion }}</p>
+		<div class="grid md:grid-cols-3 gap-6">
+			<div
+				v-for="(modulo, index) in modulosFiltrados"
+				:key="index"
+				class="bg-white rounded-xl shadow-lg overflow-hidden">
+				<img :src="modulo.imagen" alt="Módulo" class="w-full h-48 object-cover" />
+				<div class="p-4">
+					<span
+						v-if="modulo.nombre"
+						class="bg-red-800 text-white text-xs px-2 py-1 rounded-full mb-2 inline-block">
+						{{ modulo.nombre }}
+					</span>
+					<h3 class="text-lg font-semibold text-red-800 mb-2">{{ modulo.titulo }}</h3>
+					<p class="text-gray-600 text-sm">{{ modulo.descripcion }}</p>
+					<p class="text-gray-500 text-xs mt-2">Duración: {{ modulo.duracion }}</p>
 
-          <div class="mt-4 text-right">
-            <a
-              :href="modulo.link"
-              target="_blank"
-              class="inline-block bg-red-800 hover:bg-red-900 text-white font-semibold py-1 px-3 rounded-full"
-            >
-              Ver Tutorial
-            </a>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
+					<div class="mt-4 text-right">
+						<a
+							:href="modulo.link"
+							target="_blank"
+							class="inline-block bg-red-800 hover:bg-red-900 text-white font-semibold py-1 px-3 rounded-full">
+							Ver Tutorial
+						</a>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
 </template>
 
 <script setup>

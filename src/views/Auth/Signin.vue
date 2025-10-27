@@ -5,10 +5,10 @@
 			style="background-image: url('/images/signin/bg-rigth.png');">
 			<div class="flex w-full h-full">
 				<div
-					class="hidden md:flex w-1/2 h-full bg-cover bg-center"
+					class="hidden md:flex md:w-1/2 xl:w-3/5 h-full bg-cover bg-center"
 					style="background-image: url('/images/signin/bg-left.png');" />
 
-				<div class="flex items-center justify-center w-full md:w-1/2 h-full">
+				<div class="flex items-center justify-center w-full md:w-1/2 xl:w-2/5 h-full">
 					<div class="w-full max-w-md p-8 bg-white rounded-2xl shadow-lg dark:bg-gray-900/95">
 						<div class="flex justify-center mb-6 gap-6 flex-wrap">
 							<img src="/images/logo/logo-anuies-guinda.png" alt="Logo" class="w-24 h-24 object-contain" />
