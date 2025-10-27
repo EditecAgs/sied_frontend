@@ -1,20 +1,23 @@
 import axios from 'axios';
 
 /**
- * Obtener todos los logs
+ * @param {number} page 
+ * @param {number} perPage 
+ * @param {object} filters 
  */
-export function getLogs() {
+export function getLogs(page = 1, perPage = 100, filters = {}) {
   return new Promise((resolve, reject) => {
+    const params = { page, per_page: perPage, ...filters };
+
     axios
-      .get('logs')
+      .get('logs', { params })
       .then((response) => resolve(response))
       .catch((error) => reject(error));
   });
 }
 
 /**
- * Obtener un log específico por ID
- * @param pk 
+ * @param {number|string} pk - ID del log
  */
 export function getLogById(pk) {
   return new Promise((resolve, reject) => {

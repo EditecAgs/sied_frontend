@@ -200,7 +200,8 @@ import {
 	TableIcon,
 	ListIcon,
 	FolderIcon,
-	HistoryIcon 
+	HistoryIcon,
+	accesIcon
 } from '../../icons';
 import { useSidebar } from '../../composables/useSidebar';
 
@@ -277,7 +278,8 @@ const menuGroups = computed(() => {
 				{
 					icon: FolderIcon,
 					name: 'Tutoriales',
-					path: 'https://drive.google.com/drive/folders/1RGMQ_KbbKvaCW0RipKpEgEZi7oBMpbub?usp=sharing',
+					path: '/tutorials',
+					
 				},
 ...(userType.value === 0
     ? [
@@ -286,6 +288,11 @@ const menuGroups = computed(() => {
             name: 'Registro de Actividades de Usuario',
             path: '/logs',
         },
+		{
+			icon: accesIcon,
+			name: 'Registro de Accesos de Usuario',
+			path: '/access-logs',
+		}
     ]
     : []),
 			],

@@ -38,27 +38,37 @@
 				</thead>
 
 				<tbody>
-					<tr v-for="(log, index) in paginatedLogs" :key="log.id ?? index" class="border-b border-gray-100 hover:bg-brand-50/30 transition-colors even:bg-gray-50">
+					<tr v-for="(log, index) in logs" :key="log.id ?? index" class="border-b border-gray-100 hover:bg-brand-50/30 transition-colors even:bg-gray-50">
 						<td class="px-5 py-3 text-sm border-r border-gray-100">{{ log.user }}</td>
 						<td class="px-5 py-3 text-sm border-r border-gray-100">{{ log.module }}</td>
 						<td class="px-5 py-3 text-sm border-r border-gray-100">{{ log.action }}</td>
-						<td class="px-5 py-3 text-sm border-r border-gray-100">{{ log.detail || '—' }}</td>
+						<td class="px-5 py-3 text-sm border-r border-gray-100" :title="log.detail">
+						{{ truncate(log.detail, 50) || '—' }}
+						</td>
 						<td class="px-5 py-3 text-sm border-r border-gray-100">{{ log.timestamp }}</td>
 						<td class="px-5 py-3 text-sm">
 							<button class="text-brand-800 hover:underline" @click="$emit('open', { pk: log.id })">Ver detalles</button>
 						</td>
+					</tr>
+
+					<tr v-if="!isLoading && logs.length === 0">
+						<td colspan="6" class="text-center py-5 text-gray-500 text-sm">No hay registros</td>
+					</tr>
+					<tr v-if="isLoading">
+						<td colspan="6" class="text-center py-5 text-gray-500 text-sm animate-pulse">Cargando...</td>
 					</tr>
 				</tbody>
 			</table>
 		</div>
 
 		<div class="px-6 py-3 bg-gray-50 border-t border-gray-200 flex justify-between items-center">
-			<span class="text-xs text-gray-600">Mostrando {{ paginatedLogs.length }} de {{ filteredLogs.length }} registros</span>
+			<span class="text-xs text-gray-600">Página {{ currentPage }} de {{ totalPages }}</span>
 			<div class="flex items-center space-x-2">
 				<select v-model="rowsPerPage" class="text-xs border border-gray-300 rounded px-2 py-1 text-gray-700">
 					<option value="10">10 por página</option>
 					<option value="25">25 por página</option>
 					<option value="50">50 por página</option>
+					<option value="100">100 por página</option>
 				</select>
 
 				<button
@@ -84,44 +94,45 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from "vue";
+import { ref, watch, onMounted } from "vue";
 import { getLogs } from "../../services/statistics/logsService";
 
 const logs = ref([]);
 const isLoading = ref(false);
-
-const filters = ref({ user: "", module: "", action: "", detail: "", timestamp: "" });
-const rowsPerPage = ref(10);
+const totalPages = ref(1);
 const currentPage = ref(1);
+const rowsPerPage = ref(100);
 
-const filteredLogs = computed(() => {
-  const { user, module, action, detail, timestamp } = filters.value;
-  return logs.value.filter(l => 
-    l.user.toLowerCase().includes(user.toLowerCase()) &&
-    (l.module ?? "").toLowerCase().includes(module.toLowerCase()) &&
-    l.action.toLowerCase().includes(action.toLowerCase()) &&
-    (l.detail ?? "").toLowerCase().includes(detail.toLowerCase()) &&
-    l.timestamp.toLowerCase().includes(timestamp.toLowerCase())
-  );
-}); 
-
-const totalPages = computed(() => Math.ceil(filteredLogs.value.length / rowsPerPage.value));
-const paginatedLogs = computed(() => {
-  const start = (currentPage.value - 1) * rowsPerPage.value;
-  return filteredLogs.value.slice(start, start + rowsPerPage.value);
+const filters = ref({
+  user: "",
+  module: "",
+  action: "",
+  detail: "",
+  timestamp: "",
 });
 
 const fetchData = async () => {
   isLoading.value = true;
   try {
-    const { data } = await getLogs();
-    logs.value = data;
-  } finally { 
-    isLoading.value = false; 
+    const { data } = await getLogs(currentPage.value, rowsPerPage.value, filters.value);
+    logs.value = data.data;
+    totalPages.value = data.last_page;
+  } catch (error) {
+    console.error("Error al obtener logs:", error);
+  } finally {
+    isLoading.value = false;
   }
 };
 
-onMounted(() => fetchData());
+const truncate = (text, length = 50) => {
+  if (!text) return '';
+  return text.length > length ? text.slice(0, length) + '...' : text;
+};
+
+
+watch([currentPage, rowsPerPage, filters], fetchData, { deep: true });
+
+onMounted(fetchData);
 
 defineExpose({ fetchData });
 </script>
