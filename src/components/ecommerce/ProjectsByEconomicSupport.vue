@@ -53,10 +53,15 @@ const chartOptions = ref({
 			return val + ' proyectos'
 		},
 		style: {
-			colors: ['#fff'],
 			fontSize: '13px',
 			fontWeight: 600,
 		},
+		background: {
+			enabled: false
+		},
+		dropShadow: {
+			enabled: false
+		}
 	},
 	xaxis: {
 		categories: [],
@@ -83,9 +88,23 @@ onMounted(async () => {
 		const labels = data.map(item => item.support_name)
 		const values = data.map(item => item.project_count)
 
+		const dataLabelsColors = values.map(value =>
+			value === 0 ? '#000000' : '#FFFFFF'
+		)
+
 		chartOptions.value = {
 			...chartOptions.value,
-			xaxis: { categories: labels },
+			xaxis: {
+				...chartOptions.value.xaxis,
+				categories: labels
+			},
+			dataLabels: {
+				...chartOptions.value.dataLabels,
+				style: {
+					...chartOptions.value.dataLabels.style,
+					colors: dataLabelsColors
+				}
+			}
 		}
 
 		series.value = [{ name: 'Proyectos', data: values }]

@@ -13,11 +13,10 @@
 
 		<div class="space-y-6">
 			<div
-				v-for="(item, index) in dual_projects_by_institution"
+				v-for="(item, index) in topTenInstitutions"
 				:key="index"
 				class="flex items-center justify-between gap-4 hover:bg-gray-200/50 dark:hover:bg-gray-800/70
-                       p-2 rounded-lg transition-colors">
-
+           p-2 rounded-lg transition-colors">
 				<img
 					v-if="item.image"
 					:src="item.image"
@@ -73,7 +72,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 import { getProjectsByIntitution } from '../../services/statistics/dashboard'
 
 interface ProjectByInstitution {
@@ -86,7 +85,14 @@ interface ProjectByInstitution {
 const dual_projects_by_institution = ref<ProjectByInstitution[]>([])
 
 getProjectsByIntitution().then((data) => {
-	dual_projects_by_institution.value = (data.data.data || []) as ProjectByInstitution[]
+	const items = (data.data.data || []) as ProjectByInstitution[]
+	items.sort((a, b) => b.percentage - a.percentage)
+	dual_projects_by_institution.value = items
 })
+
+const topTenInstitutions = computed(() =>
+	dual_projects_by_institution.value.slice(0, 10)
+)
 </script>
+
 

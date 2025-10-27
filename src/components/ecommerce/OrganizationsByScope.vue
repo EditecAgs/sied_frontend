@@ -124,11 +124,12 @@ const chartOptions = ref({
 })
 
 const scopeLabels = {
-	municipal_level: 'Ámbito municipal',
-	state_level: 'Ámbito estatal',
-	federal_level: 'Ámbito federal',
-	international_level: 'Ámbito internacional',
+	Municipal: 'Ámbito municipal',
+	Estatal: 'Ámbito estatal',
+	Federal: 'Ámbito federal',
+	Internacional: 'Ámbito internacional',
 }
+
 
 onMounted(async () => {
 	try {
