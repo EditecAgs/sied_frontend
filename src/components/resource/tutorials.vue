@@ -59,61 +59,53 @@ import { ref, computed } from "vue";
 const filtro = ref("");
 
 const modulos = ref([
+	{
+	titulo: "Inicio de sesión",
+	descripcion: "Descripción de inicio de sesión.",
+	duracion: "1 minuto",
+	imagen: "/images/tutorial/Dhasboard.png",
+	nombre: "Módulo Inicio de sesión",
+	link: "https://drive.google.com/file/d/1BZizdLsb5vBPL4zNgHbfVQgoJSp_-1RT/view?usp=sharing"
+  },
   {
-    titulo: "Módulo 1",
+    titulo: "Dashboard",
     descripcion: "Descripción del Módulo 1.",
-    duracion: "2 horas",
+    duracion: "1 minuto",
     imagen: "/images/tutorial/Dhasboard.png",
     nombre: "Módulo Dashboard",
-    link: "https://drive.google.com/open?id=15uU6MW78xog2CaFnDXPnguGiimXgRZEz"
+    link: "https://drive.google.com/file/d/13q-tK6OcMuU-I-mmCOY8_De1Z6DvyR91/view?usp=sharing"
   },
   {
-    titulo: "Módulo 2",
-    descripcion: "Descripción del Módulo 2.",
-    duracion: "3 horas",
+    titulo: "Modelo dual 1",
+    descripcion: "Modelo dual primera fase.",
+    duracion: "1 minuto",
     imagen: "/images/tutorial/Dhasboard.png",
-    nombre: "Módulo Catalogos",
-    link: "https://drive.google.com/open?id=1XbYhV_BYlINiGQNzhDK6teePNsDHF9px"
+    nombre: "Módulo Modelo dual",
+    link: "https://drive.google.com/file/d/1bqxP_NLXU7_G64im0LpCHfPW95Ya4lmq/view?usp=sharing"
   },
   {
-    titulo: "Módulo 3",
-    descripcion: "Descripción del Módulo 3.",
-    duracion: "1.5 horas",
+    titulo: "Modelo dual 2",
+    descripcion: "Modelo dual Segunda fase.",
+    duracion: "4 minutos",
     imagen: "/images/tutorial/Dhasboard.png",
-    nombre: "Módulo Usuarios",
-    link: "https://drive.google.com/open?id=1EBzJsdi28Xf131e79qbEKq-ZWiRhZDSI"
+    nombre: "Módulo Modelo dual",
+    link: "https://drive.google.com/file/d/11_qmxCZmtr8kmeGlxQdFr3PpWNi0Donf/view?usp=sharing"
   },
   {
-    titulo: "Módulo 4",
-    descripcion: "Descripción del Módulo 4.",
-    duracion: "2.5 horas",
+    titulo: "Modelo dual 3",
+    descripcion: "Modelo dual tercera fase.",
+    duracion: "2 minutos",
     imagen: "/images/tutorial/Dhasboard.png",
-    nombre: "Módulo Productos",
-    link: "https://drive.google.com/open?id=1bqxP_NLXU7_G64im0LpCHfPW95Ya4lmq"
+    nombre: "Módulo Modelo dual",
+    link: "https://drive.google.com/file/d/1XbYhV_BYlINiGQNzhDK6teePNsDHF9px/view?usp=sharing"
   },
   {
-    titulo: "Módulo 5",
-    descripcion: "Descripción del Módulo 5.",
-    duracion: "3 horas",
+    titulo: "Catálogos",
+    descripcion: "Descripción de catálogos.",
+    duracion: "5 minutos",
     imagen: "/images/tutorial/Dhasboard.png",
     nombre: "Módulo Inventario",
-    link: "https://drive.google.com/open?id=11_qmxCZmtr8kmeGlxQdFr3PpWNi0Donf"
-  },
-  {
-    titulo: "Módulo 6",
-    descripcion: "Descripción del Módulo 6.",
-    duracion: "2 horas",
-    imagen: "/images/tutorial/Dhasboard.png",
-    nombre: "Módulo Ventas",
-    link: "https://drive.google.com/open?id=13q-tK6OcMuU-I-mmCOY8_De1Z6DvyR91"
-  },
-  {
-    titulo: "Módulo 7",
-    descripcion: "Descripción del Módulo 7.",
-    duracion: "4 horas",
-    imagen: "/images/tutorial/Dhasboard.png",
-    nombre: "Módulo Reportes",
-    link: "https://drive.google.com/open?id=1BZizdLsb5vBPL4zNgHbfVQgoJSp_-1RT"
+    link: "https://drive.google.com/file/d/1EBzJsdi28Xf131e79qbEKq-ZWiRhZDSI/view?usp=sharing"
   },
 ]);
 
