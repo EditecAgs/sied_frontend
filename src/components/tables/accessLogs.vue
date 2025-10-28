@@ -13,7 +13,6 @@
             <th class="px-5 py-3 text-left text-sm font-semibold border-b border-brand-700/50 border-r border-brand-700/30">Usuario</th>
             <th class="px-5 py-3 text-left text-sm font-semibold border-b border-brand-700/50 border-r border-brand-700/30">Acción</th>
             <th class="px-5 py-3 text-left text-sm font-semibold border-b border-brand-700/50 border-r border-brand-700/30">Fecha / Hora</th>
-            <th class="px-5 py-3 text-left text-sm font-semibold border-b border-brand-700/50">Opciones</th>
           </tr>
           <tr class="bg-brand-800/60 text-white">
             <th class="px-5 py-2 border-b border-brand-700/50 border-r border-brand-700/30">
@@ -25,7 +24,6 @@
             <th class="px-5 py-2 border-b border-brand-700/50 border-r border-brand-700/30">
               <input v-model="filters.fecha_hora" placeholder="Fecha / Hora" class="w-full bg-white/10 text-white text-xs px-3 py-1 rounded focus:outline-none focus:ring-1 focus:ring-white/50" />
             </th>
-            <th class="px-5 py-2 border-b border-brand-700/50"></th>
           </tr>
         </thead>
 
@@ -34,9 +32,6 @@
             <td class="px-5 py-3 text-sm border-r border-gray-100">{{ bitacora.user?.name || '—' }}</td>
             <td class="px-5 py-3 text-sm border-r border-gray-100">{{ bitacora.accion }}</td>
             <td class="px-5 py-3 text-sm border-r border-gray-100">{{ bitacora.fecha_hora }}</td>
-            <td class="px-5 py-3 text-sm">
-              <button class="text-brand-800 hover:underline" @click="$emit('open', { pk: bitacora.id })">Ver detalles</button>
-            </td>
           </tr>
 
           <tr v-if="!isLoading && bitacoras.length === 0">
@@ -102,8 +97,7 @@ const fetchData = async () => {
   try {
     const { data } = await getBitacoraAccesos(currentPage.value, rowsPerPage.value, filters.value);
     bitacoras.value = data.data;
-    totalPages.value = data.last_page;
-    console.log(data);
+    totalPages.value = data.last_page ?? 1;
   } catch (error) {
     console.error("Error al obtener bitácora de accesos:", error);
   } finally {
@@ -111,6 +105,7 @@ const fetchData = async () => {
   }
 };
 
+// Re-fetch al cambiar página, filas por página o filtros
 watch([currentPage, rowsPerPage, filters], fetchData, { deep: true });
 
 onMounted(fetchData);

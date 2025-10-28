@@ -36,6 +36,9 @@ import DualTypesView from '../views/Tables/DualTypesView.vue';
 import UserActivityLogger from "../views/Others/UserActivityLogger.vue";
 import AccesLogs from "../views/Others/AccesLogs.vue";
 import Tutorials from "../views/Others/Tutorials.vue";
+import ResetPassword from "../views/Auth/ResetPassword.vue";
+
+
 
 import UnAuthRoutes from "../const/UnauthRoutes.js";
 import AuthRoutes from '../const/AuthRoutes';
@@ -76,6 +79,7 @@ const routes = [
     { path: '/videos', name: 'Videos', component: Videos },
     { path: '/blank', name: 'Blank', component: BlankPage },
     { path: '/tutorials', name: 'Tutorials', component: Tutorials },
+    { path: '/reset-password', name: 'ResetPassword', component: ResetPassword },
     {
         path: '/logs',
         name: 'Logs',
