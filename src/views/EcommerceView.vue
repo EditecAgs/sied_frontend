@@ -1,7 +1,6 @@
 <template>
 	<div style="background-image: url('/images/background/bg-white-flores.png')">
 		<admin-layout>
-
 			<LoadingScreen :show="loading" message="Cargando datos..." />
 
 
