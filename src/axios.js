@@ -22,22 +22,20 @@ axios.interceptors.response.use(
   response => response,
   async error => {
     if (error.response && error.response.status === 401) {
-      console.log('Usuario no autorizado. Sesión expirada o token inválido.');
-
-      try {
-        await axios.get('/logout'); 
-      } catch (err) {
-        console.error('Error al llamar logout del backend:', err);
-      }
-
+      console.warn('Usuario no autorizado. Sesión expirada o token inválido.');
       localStorage.removeItem('token');
       localStorage.removeItem('user');
+      localStorage.removeItem('user_type');
       localStorage.removeItem('institution');
-      axios.defaults.headers.common['Authorization'] = undefined;
-
-      router.push('/signin');
+      delete axios.defaults.headers.common['Authorization'];
+      
+      if (router.currentRoute.value.path !== '/signin') {
+        router.push('/signin');
+      }
     }
+
     return Promise.reject(error);
   }
 );
+
 }
