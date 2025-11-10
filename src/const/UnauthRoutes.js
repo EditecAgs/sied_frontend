@@ -4,4 +4,5 @@ export default [
 	'signup',
 	'signin',
 	'Error404',
+	'ResetPassword'
 ];

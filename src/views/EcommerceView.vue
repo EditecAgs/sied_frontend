@@ -1,13 +1,12 @@
 <template>
 	<div style="background-image: url('/images/background/bg-white-flores.png')">
 		<admin-layout>
-
 			<LoadingScreen :show="loading" message="Cargando datos..." />
 
 
 			<div v-show="!loading" class="min-h-screen w-full bg-cover bg-center bg-fixed">
-				<div class="grid grid-cols-12 gap-4 md:gap-6 p-4 md:p-6">
-					<div class="col-span-12 xl:col-span-7 grid gap-4 md:gap-6">
+				<div class="grid grid-cols-12 gap-4 md:gap-6 p-4 md:p-6 grid-flow-dense">
+					<div class="col-span-12 xl:col-span-7 grid gap-4 md:gap-6 auto-rows-max">
 						<ecommerce-metrics @loaded="onChildLoaded" />
 						<monthly-sale @loaded="onChildLoaded" />
 					</div>
@@ -22,21 +21,21 @@
 						<statistics-chart class="h-full" @loaded="onChildLoaded" />
 					</div>
 
-					<div class="col-span-12 xl:col-span-8 grid gap-4 md:gap-6">
-						<recent-orders class="h-full" @loaded="onChildLoaded" />
+					<div class="col-span-12 xl:col-span-8 grid gap-4 md:gap-6 auto-rows-max">
+						<recent-orders class="h-auto" @loaded="onChildLoaded" />
+						<OrganizationsByScope class="h-auto" @loaded="onChildLoaded" />
+						<ProjectsByEconomicSupport class="h-auto" @loaded="onChildLoaded" />
+						<SectorsMexicoMetric class="h-auto" @loaded="onChildLoaded" />
 					</div>
 
-					<div class="col-span-12 xl:col-span-4 grid gap-4 md:gap-6">
-						<customer-demographic class="h-full" @loaded="onChildLoaded" />
-						<SectorsMexicoMetric class="h-full" @loaded="onChildLoaded" />
+					<div class="col-span-12 xl:col-span-4 grid gap-4 md:gap-6 auto-rows-max">
+						<customer-demographic class="h-auto" @loaded="onChildLoaded" />
+						<AverageAmountByEconomicSupport class="h-auto" @loaded="onChildLoaded" />
+
 					</div>
 
-					<div class="col-span-12 xl:col-span-12 grid grid-cols-1 xl:grid-cols-2 gap-4 md:gap-6">
-						<OrganizationsByScope class="h-full" @loaded="onChildLoaded" />
-						<ProjectsByEconomicSupport class="h-full" @loaded="onChildLoaded" />
-					</div>
-					<div class="col-span-12 xl:col-span-12 grid grid-cols-1 xl:grid-cols-2 gap-4 md:gap-6">
-						<AverageAmountByEconomicSupport class="h-full" @loaded="onChildLoaded" />
+					<div class="col-span-12 ">
+						<ProjectsByDualType class="h-auto" @loaded="onChildLoaded" />
 					</div>
 				</div>
 			</div>
@@ -58,6 +57,7 @@ import OrganizationsByScope from '../components/ecommerce/OrganizationsByScope.v
 import ProjectsByEconomicSupport from '../components/ecommerce/ProjectsByEconomicSupport.vue';
 import AverageAmountByEconomicSupport from '../components/ecommerce/AverageAmountByEconomicSupport.vue';
 import LoadingScreen from '../components/layouts/LoadingScreen.vue';
+import ProjectsByDualType from '../components/ecommerce/ProjectsByDualType.vue';
 
 export default {
 	name: 'Ecommerce',
@@ -76,6 +76,7 @@ export default {
 		SectorsMexico,
 		SectorsMexicoMetric,
 		LoadingScreen,
+		ProjectsByDualType,
 	},
 	data() {
 		return {

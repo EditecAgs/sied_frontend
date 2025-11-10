@@ -143,3 +143,16 @@ export function getAverageAmountByEconomicSupport() {
 	});
 }
 
+export function getProjectsByDualType() {
+	return new Promise((resolve, reject) => {
+		axios
+			.get('projects/dual-type')
+			.then((response) => {
+				resolve(response);
+			})
+			.catch((error) => {
+				reject(error);
+			});
+	});
+}
+

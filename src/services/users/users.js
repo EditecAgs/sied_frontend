@@ -67,3 +67,16 @@ export function createUsers(params) {
 			});
 	});
 }
+
+export function getProfile() {
+	return new Promise((resolve, reject) => {
+		axios
+			.get('profile')
+			.then((response) => {
+				resolve(response)
+			})
+			.catch((error) => {
+				reject(error)
+			})
+	})
+}

@@ -74,13 +74,27 @@ const menuItems = [
 const toggleDropdown = () => (dropdownOpen.value = !dropdownOpen.value)
 const closeDropdown = () => (dropdownOpen.value = false)
 
+
 const signOut = () => {
-	localStorage.removeItem('token')
-	localStorage.removeItem('user')
-	localStorage.removeItem('institution')
-	axios.defaults.headers.common['Authorization'] = undefined
-	router.push('/signin')
-	closeDropdown()
+  axios.get('/logout') 
+    .then(() => {
+      localStorage.removeItem('token')
+      localStorage.removeItem('user')
+      localStorage.removeItem('institution')
+      axios.defaults.headers.common['Authorization'] = undefined
+
+      router.push('/signin')
+      closeDropdown()
+    })
+    .catch((err) => {
+      console.error('Error al cerrar sesión:', err)
+      localStorage.removeItem('token')
+      localStorage.removeItem('user')
+      localStorage.removeItem('institution')
+      axios.defaults.headers.common['Authorization'] = undefined
+      router.push('/signin')
+      closeDropdown()
+    })
 }
 
 const handleClickOutside = (event: MouseEvent) => {
