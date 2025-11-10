@@ -46,7 +46,7 @@ import UserGroupIcon from "./UserGroupIcon.vue";
 import BellIcon from "./BellIcon.vue";
 import BarChartIcon from "./BarChartIcon.vue";
 import HistoryIcon from "./HistoryIcon.vue";
-import accesIcon from "./accesIcon.vue";
+import accesIcon from "./AccesIcon.vue";
 
 export {
   BellIcon,
