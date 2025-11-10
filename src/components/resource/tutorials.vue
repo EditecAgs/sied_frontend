@@ -63,7 +63,7 @@ const modulos = ref([
 	titulo: "Inicio de sesión",
 	descripcion: "Descripción de inicio de sesión.",
 	duracion: "1 minuto",
-	imagen: "/images/tutorial/Dhasboard.png",
+	imagen: "/images/tutorial/login.png",
 	nombre: "Módulo Inicio de sesión",
 	link: "https://drive.google.com/file/d/1BZizdLsb5vBPL4zNgHbfVQgoJSp_-1RT/view?usp=sharing"
   },
@@ -71,7 +71,7 @@ const modulos = ref([
     titulo: "Dashboard",
     descripcion: "Descripción del Módulo 1.",
     duracion: "1 minuto",
-    imagen: "/images/tutorial/Dhasboard.png",
+    imagen: "/images/tutorial/dashboard.png",
     nombre: "Módulo Dashboard",
     link: "https://drive.google.com/file/d/13q-tK6OcMuU-I-mmCOY8_De1Z6DvyR91/view?usp=sharing"
   },
@@ -79,7 +79,7 @@ const modulos = ref([
     titulo: "Modelo dual 1",
     descripcion: "Modelo dual primera fase.",
     duracion: "1 minuto",
-    imagen: "/images/tutorial/Dhasboard.png",
+    imagen: "/images/tutorial/fase1.png",
     nombre: "Módulo Modelo dual",
     link: "https://drive.google.com/file/d/1bqxP_NLXU7_G64im0LpCHfPW95Ya4lmq/view?usp=sharing"
   },
@@ -87,7 +87,7 @@ const modulos = ref([
     titulo: "Modelo dual 2",
     descripcion: "Modelo dual Segunda fase.",
     duracion: "4 minutos",
-    imagen: "/images/tutorial/Dhasboard.png",
+    imagen: "/images/tutorial/fase2.png",
     nombre: "Módulo Modelo dual",
     link: "https://drive.google.com/file/d/11_qmxCZmtr8kmeGlxQdFr3PpWNi0Donf/view?usp=sharing"
   },
@@ -95,7 +95,7 @@ const modulos = ref([
     titulo: "Modelo dual 3",
     descripcion: "Modelo dual tercera fase.",
     duracion: "2 minutos",
-    imagen: "/images/tutorial/Dhasboard.png",
+    imagen: "/images/tutorial/fase3.png",
     nombre: "Módulo Modelo dual",
     link: "https://drive.google.com/file/d/1XbYhV_BYlINiGQNzhDK6teePNsDHF9px/view?usp=sharing"
   },
@@ -103,7 +103,7 @@ const modulos = ref([
     titulo: "Catálogos",
     descripcion: "Descripción de catálogos.",
     duracion: "5 minutos",
-    imagen: "/images/tutorial/Dhasboard.png",
+    imagen: "/images/tutorial/catalogos.png",
     nombre: "Módulo Inventario",
     link: "https://drive.google.com/file/d/1EBzJsdi28Xf131e79qbEKq-ZWiRhZDSI/view?usp=sharing"
   },

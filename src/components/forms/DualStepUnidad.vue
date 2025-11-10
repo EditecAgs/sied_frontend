@@ -545,7 +545,7 @@ onBeforeUnmount(() => {
 								<li class="relative group">
 									<div
 										class="px-4 py-2 hover:bg-brand-50 cursor-pointer flex justify-between items-center transition-colors">
-										<span>Alternativas duales</span>
+										<span>Otras Alternativas Duales</span>
 										<span class="text-gray-400">▸</span>
 									</div>
 									<ul
@@ -564,7 +564,7 @@ onBeforeUnmount(() => {
 								<li
 									class="px-4 py-2 hover:bg-brand-50 cursor-pointer transition-colors border-t border-gray-200 font-medium text-brand-600"
 									@click="openDualTypeModal('create', null, 'Tipo de actividad dual')">
-									+ Otro (Crear nuevo tipo)
+									+ Crear Nueva Alternativa
 								</li>
 							</ul>
 						</div>
