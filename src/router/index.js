@@ -34,9 +34,16 @@ import MicroCredentialView from '../views/Tables/MicroCredentialView.vue';
 import StudentView from '../views/Tables/StudentView.vue';
 import DualTypesView from '../views/Tables/DualTypesView.vue';
 import UserActivityLogger from "../views/Others/UserActivityLogger.vue";
+import AccesLogs from "../views/Others/AccesLogs.vue";
+import Tutorials from "../views/Others/Tutorials.vue";
+import ResetPassword from "../views/Auth/ResetPassword.vue";
+
+
 
 import UnAuthRoutes from "../const/UnauthRoutes.js";
 import AuthRoutes from '../const/AuthRoutes';
+
+import { requireAdmin } from '../composables/requireAdmin.js';
 
 const routes = [
     { path: '/', name: 'LandingPage', component: LandingPage },
@@ -71,21 +78,20 @@ const routes = [
     { path: '/images', name: 'Images', component: Images },
     { path: '/videos', name: 'Videos', component: Videos },
     { path: '/blank', name: 'Blank', component: BlankPage },
-  {
-  path: '/logs',
-  name: 'Logs',
-  component: UserActivityLogger,
-  beforeEnter: (to, from, next) => {
-    const userData = localStorage.getItem('user');
-    const user = userData ? JSON.parse(userData) : null;
-
-    if (user && user.type === 0) {
-      next();
-    } else {
-      next('/signin'); 
+    { path: '/tutorials', name: 'Tutorials', component: Tutorials },
+    { path: '/reset-password', name: 'ResetPassword', component: ResetPassword },
+    {
+        path: '/logs',
+        name: 'Logs',
+        component: UserActivityLogger,
+        beforeEnter: requireAdmin
+    },
+    {
+        path: '/access-logs',
+        name: 'AccessLogs',
+        component: AccesLogs,
+        beforeEnter: requireAdmin
     }
-  }
-}
 ];
 
 export default function () {

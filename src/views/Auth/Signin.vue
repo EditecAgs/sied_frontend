@@ -5,10 +5,10 @@
 			style="background-image: url('/images/signin/bg-rigth.png');">
 			<div class="flex w-full h-full">
 				<div
-					class="hidden md:flex w-1/2 h-full bg-cover bg-center"
+					class="hidden md:flex md:w-5/6 xl:w-4/6 h-full bg-cover bg-center"
 					style="background-image: url('/images/signin/bg-left.png');" />
 
-				<div class="flex items-center justify-center w-full md:w-1/2 h-full">
+				<div class="flex items-center justify-center w-full md:w-1/2 xl:w-2/5 h-full">
 					<div class="w-full max-w-md p-8 bg-white rounded-2xl shadow-lg dark:bg-gray-900/95">
 						<div class="flex justify-center mb-6 gap-6 flex-wrap">
 							<img src="/images/logo/logo-anuies-guinda.png" alt="Logo" class="w-24 h-24 object-contain" />
@@ -75,11 +75,7 @@
 								</div>
 							</div>
 
-							<div class="flex items-center justify-between">
-								<label for="keepLoggedIn" class="flex items-center text-sm text-gray-700 cursor-pointer select-none dark:text-gray-400">
-									<input id="keepLoggedIn" v-model="keepLoggedIn" type="checkbox" class="mr-2" />
-									Mantener sesión iniciada
-								</label>
+							<div class="items-right flex justify-end">
 								<router-link
 									to="/reset-password"
 									class="text-sm text-brand-500 hover:text-brand-600 dark:text-brand-400">
@@ -101,49 +97,89 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue';
-import { useRouter } from 'vue-router';
-import axios from 'axios';
-import { login } from '../../services/auth/auth.js';
-import { showInstitutions } from '../../services/institutions/institutions';
+import Swal from 'sweetalert2'
+import { ref } from 'vue'
+import { useRouter } from 'vue-router'
+import axios from 'axios'
+import { login } from '../../services/auth/auth.js'
+import { showInstitutions } from '../../services/institutions/institutions'
 
-const router = useRouter();
-
-const email = ref('');
-const password = ref('');
-const showPassword = ref(false);
-const keepLoggedIn = ref(false);
+const router = useRouter()
+const email = ref('')
+const password = ref('')
+const showPassword = ref(false)
+const keepLoggedIn = ref(false)
 
 const togglePasswordVisibility = () => {
-	showPassword.value = !showPassword.value;
-};
+  showPassword.value = !showPassword.value
+}
 
 const handleSubmit = async () => {
-	try {
-		const data = await login(email.value, password.value);
-		if (data.token) {
-			localStorage.setItem('token', data.token);
-			localStorage.setItem('user', JSON.stringify(data.user));
-			localStorage.setItem('user_type', data.user.type);
+  if (!email.value.trim() && !password.value.trim()) {
+    Swal.fire({
+      icon: 'warning',
+      title: 'Campos vacíos',
+      text: 'Por favor ingresa tu correo y contraseña.',
+      confirmButtonColor: '#8B1D41'
+    })
+    return
+  }
 
-			axios.defaults.headers.common['Authorization'] = `Bearer ${data.token}`;
+  if (!email.value.trim()) {
+    Swal.fire({
+      icon: 'warning',
+      title: 'Correo requerido',
+      text: 'Por favor ingresa tu correo electrónico.',
+      confirmButtonColor: '#8B1D41'
+    })
+    return
+  }
 
-			try {
-				const resInst = await showInstitutions(data.user.id_institution);
-				const inst = resInst?.data?.data ?? resInst?.data ?? resInst;
-				localStorage.setItem('institution', JSON.stringify(inst));
-			} catch (errInst) {
-				console.warn('No se pudo obtener la institución:', errInst);
-			}
+  if (!password.value.trim()) {
+    Swal.fire({
+      icon: 'warning',
+      title: 'Contraseña requerida',
+      text: 'Por favor ingresa tu contraseña.',
+      confirmButtonColor: '#8B1D41'
+    })
+    return
+  }
 
-			router.push('/dashboard');
-		} else {
-			alert('No se recibió token.');
-		}
-	} catch (err) {
-		console.error('Error en login:', err);
-		alert('Credenciales Incorrectas');
-	}
-};
+
+  try {
+    const data = await login(email.value, password.value)
+    if (data.token) {
+      localStorage.setItem('token', data.token)
+      localStorage.setItem('user', JSON.stringify(data.user))
+      localStorage.setItem('user_type', data.user.type)
+
+      axios.defaults.headers.common['Authorization'] = `Bearer ${data.token}`
+
+      try {
+        const resInst = await showInstitutions(data.user.id_institution)
+        const inst = resInst?.data?.data ?? resInst?.data ?? resInst
+        localStorage.setItem('institution', JSON.stringify(inst))
+      } catch (errInst) {
+        console.warn('No se pudo obtener la institución:', errInst)
+      }
+
+      router.push('/dashboard')
+    } else {
+      Swal.fire({
+        icon: 'warning',
+        title: 'Ups...',
+        text: 'No se recibió token del servidor.',
+        confirmButtonColor: '#8B1D41'
+      })
+    }
+  } catch (err) {
+    console.error('Error en login:', err)
+    Swal.fire({
+      icon: 'error',
+      title: 'Credenciales incorrectas',
+      text: 'Verifica tu correo y contraseña e inténtalo nuevamente.',
+      confirmButtonColor: '#8B1D41'
+    })
+  }
+}
 </script>
-

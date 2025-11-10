@@ -29,5 +29,6 @@ export default [
 	'StudentsTable',
 	'Dual_TypeTable',
     'Logs',
-
+    'AccessLogs',
+    'Tutorials'
 ];

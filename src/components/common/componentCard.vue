@@ -1,41 +1,15 @@
 <template>
-	<div :class="['rounded-2xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-white/[0.03]', className]">
-		<!-- Card Header -->
-		<div class="flex items-start justify-between px-6 py-5">
-			<!-- Title and Description -->
-			<div>
-				<h3 class="text-base font-medium text-gray-800 dark:text-white/90">
-					{{ title }}
-				</h3>
-				<p
-					v-if="desc"
-					class="mt-1 text-sm text-gray-500 dark:text-gray-400">
-					{{ desc }}
-				</p>
-			</div>
-		</div>
-
-		<!-- Card Body -->
-		<div class="p-4 border-t border-gray-100 dark:border-gray-800 sm:p-6">
-			<div class="space-y-5">
-				<slot />
-			</div>
-		</div>
+	<div
+		class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 p-6">
+		<h2 class="text-xl font-semibold text-gray-800 dark:text-white mb-2">{{ title }}</h2>
+		<p v-if="desc" class="text-sm text-gray-500 dark:text-gray-400 mb-4">{{ desc }}</p>
+		<slot />
 	</div>
 </template>
 
-
-<script
-	setup
-	lang="ts">
-import { defineProps } from 'vue';
-
-interface Props {
-	title: string;
-	className?: string;
-	desc?: string;
-}
-
-// eslint-disable-next-line vue/valid-define-props
-defineProps<Props>();
+<script setup lang="ts">
+defineProps({
+	title: String,
+	desc: String
+});
 </script>

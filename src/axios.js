@@ -18,17 +18,24 @@ export function useAxios(router) {
     });
 
 
-    axios.interceptors.response.use(
-        response => response,
-        error => {
-            if (error.response && error.response.status === 401) {
-                console.log('Usuario no autorizado. Sesión expirada o token inválido.');
-                localStorage.removeItem('token');
-                router.push('/signin');
-            }
-            return Promise.reject(error);
-        }
-    );
+axios.interceptors.response.use(
+  response => response,
+  async error => {
+    if (error.response && error.response.status === 401) {
+      console.warn('Usuario no autorizado. Sesión expirada o token inválido.');
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
+      localStorage.removeItem('user_type');
+      localStorage.removeItem('institution');
+      delete axios.defaults.headers.common['Authorization'];
+      
+      if (router.currentRoute.value.path !== '/signin') {
+        router.push('/signin');
+      }
+    }
 
-    return axios;
+    return Promise.reject(error);
+  }
+);
+
 }

@@ -70,27 +70,51 @@ onMounted(() => {
 })
 
 watchEffect(() => {
-	if (props.data.mode === 'edit' && props.data.pk !== null) {
-		alvRoute.value = `${axios.defaults.baseURL}users/${props.data.pk}`
-		alvMethod.value = 'PUT'
+	if (props.data.mode === 'edit') {
 		isLoading.value = true
 
-		showUsers(props.data.pk)
-			.then(res => {
-				const user = res.data
-				form.name = user.name || ''
-				form.lastname = user.lastname || ''
-				form.email = user.email || ''
-				form.id_institution = user.id_institution || ''
-				form.password = ''
-				form.password_confirmation = ''
-			})
-			.catch(error => {
-				console.error('Error al cargar usuario:', error)
-				formErrors.value = error.response?.data?.errors || {}
-			})
-			.finally(() => { isLoading.value = false })
-	} else if (props.data.mode === 'create') {
+		if (props.data.table === 'perfil') {
+			alvRoute.value = `${axios.defaults.baseURL}profile`
+			alvMethod.value = 'PUT'
+
+			axios.get('/profile')
+				.then(res => {
+					const user = res.data
+					form.name = user.name || ''
+					form.lastname = user.lastname || ''
+					form.email = user.email || ''
+					form.id_institution = user.id_institution || ''
+					form.password = ''
+					form.password_confirmation = ''
+				})
+				.catch(error => {
+					console.error('Error al cargar perfil:', error)
+					formErrors.value = error.response?.data?.errors || {}
+				})
+				.finally(() => { isLoading.value = false })
+		}
+		else if (props.data.pk !== null) {
+			alvRoute.value = `${axios.defaults.baseURL}users/${props.data.pk}`
+			alvMethod.value = 'PUT'
+
+			showUsers(props.data.pk)
+				.then(res => {
+					const user = res.data
+					form.name = user.name || ''
+					form.lastname = user.lastname || ''
+					form.email = user.email || ''
+					form.id_institution = user.id_institution || ''
+					form.password = ''
+					form.password_confirmation = ''
+				})
+				.catch(error => {
+					console.error('Error al cargar usuario:', error)
+					formErrors.value = error.response?.data?.errors || {}
+				})
+				.finally(() => { isLoading.value = false })
+		}
+	}
+	else if (props.data.mode === 'create') {
 		alvRoute.value = `${axios.defaults.baseURL}users`
 		alvMethod.value = 'POST'
 
@@ -103,6 +127,7 @@ watchEffect(() => {
 		formErrors.value = {}
 	}
 })
+
 
 const validateForm = (): boolean => {
 	const errors: UserFormErrors = {}
@@ -158,8 +183,13 @@ const submitForm = async (event: Event) => {
 		let response
 		if (props.data.mode === 'create') {
 			response = await createUsers(formData)
-		} else if (props.data.mode === 'edit' && props.data.pk) {
-			response = await updateUsers(props.data.pk, formData)
+		}
+		else if (props.data.mode === 'edit') {
+			if (props.data.table === 'perfil') {
+				response = await axios.put('/profile', formData)
+			} else if (props.data.pk) {
+				response = await updateUsers(props.data.pk, formData)
+			}
 		}
 
 		afterDone(response)
@@ -207,7 +237,11 @@ const togglePasswordVisibility = () => {
 				style="background-image: url('/images/background/bg-white-flores.png');">
 				<div class="flex items-center justify-between bg-brand-900 -mx-8 -mt-8 px-8 py-4 rounded-t-2xl">
 					<h4 class="text-xl font-semibold text-white">
-						{{ data.mode === 'create' ? `Crear ${data.table}` : `Editar ${data.table}` }}
+						{{ data.mode === 'create'
+							? `Crear ${data.table}`
+							: data.table === 'perfil'
+								? 'Editar mi perfil'
+								: `Editar ${data.table}` }}
 					</h4>
 
 					<div class="flex items-center gap-4">
@@ -229,8 +263,8 @@ const togglePasswordVisibility = () => {
 
 				<form
 					id="UserForm"
-					@submit="submitForm"
-					class="flex-grow overflow-y-auto pr-2">
+					class="flex-grow overflow-y-auto pr-2"
+					@submit="submitForm">
 					<div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6 mt-5">
 						<div class="form-error">
 							<label class="block text-sm font-medium text-gray-700 mb-1">Nombre*</label>
@@ -355,7 +389,7 @@ const togglePasswordVisibility = () => {
 							</template>
 						</div>
 
-						<div class="form-error md:col-span-2" v-if="form.password">
+						<div v-if="form.password" class="form-error md:col-span-2">
 							<label class="block text-sm font-medium text-gray-700 mb-1">Confirmar Contraseña*</label>
 							<template v-if="isLoading">
 								<div class="h-8 bg-gray-300 rounded animate-pulse" />
