@@ -1,7 +1,7 @@
 <template>
 	<div
 		class="rounded-2xl border border-gray-200 bg-[rgb(211,211,210)]/50
-               p-6 sm:p-8 shadow-md dark:border-gray-700 dark:bg-gray-900/90">
+               p-6 sm:p-4 shadow-md dark:border-gray-700 dark:bg-gray-900/90">
 		<div class="mb-6">
 			<h3 class="text-lg font-semibold text-gray-600 dark:text-white">
 				Proyectos por Institución

@@ -5,7 +5,7 @@
 			style="background-image: url('/images/signin/bg-rigth.png');">
 			<div class="flex w-full h-full">
 				<div
-					class="hidden md:flex md:w-1/2 xl:w-3/5 h-full bg-cover bg-center"
+					class="hidden md:flex md:w-5/6 xl:w-4/6 h-full bg-cover bg-center"
 					style="background-image: url('/images/signin/bg-left.png');" />
 
 				<div class="flex items-center justify-center w-full md:w-1/2 xl:w-2/5 h-full">

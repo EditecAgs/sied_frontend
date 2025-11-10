@@ -16,7 +16,7 @@
 				Ingresa tu correo electrónico para recibir el enlace de recuperación
 			</p>
 		</div>
-		
+
 		<div class="space-y-5">
 			<div>
 				<label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
@@ -46,28 +46,32 @@ import { defineEmits } from 'vue';
 import { useRouter } from 'vue-router';
 import Swal from 'sweetalert2';
 import { requestResetEmail } from '../../services/auth/forgot-passwodService.js';
+import { useLoaderNotifier } from '../../composables/useLoaderNotifier';
 
-const emits = defineEmits(['email-sent']);
+const emits = defineEmits(['email-sent', 'loading', 'loaded']);
 const router = useRouter();
 const email = ref('');
 const emailSent = ref(false);
 
-const sendEmail = async () => {
-	if (!email.value) {
-		Swal.fire({
-			icon: 'warning',
-			title: 'Campo vacío',
-			text: 'Por favor ingresa tu correo electrónico.',
-			confirmButtonColor: '#8B1D41'
-		});
-		return;
-	}
+const { notifyLoading, notifyLoaded } = useLoaderNotifier();
 
+const sendEmail = async () => {
 	try {
+		notifyLoading();
+
+		if (!email.value) throw new Error('Campo vacío');
+
+		email.value = email.value.trim();
+
+		if (/\s/.test(email.value)) throw new Error('Correo con espacios');
+
+		const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+		if (!emailRegex.test(email.value)) throw new Error('Formato inválido');
+
 		await requestResetEmail(email.value);
-		emits('email-sent', { email: email.value });
 		emailSent.value = true;
-		
+		emits('email-sent', { email: email.value });
+
 		await Swal.fire({
 			icon: 'success',
 			title: 'Correo enviado',
@@ -75,15 +79,44 @@ const sendEmail = async () => {
 			confirmButtonText: 'Aceptar',
 			confirmButtonColor: '#8B1D41'
 		});
+
 		router.push('/signin');
 	} catch (err) {
-		// Alerta de error general
-		Swal.fire({
-			icon: 'error',
-			title: 'Error al enviar el correo',
-			text: err.response?.data?.message || 'Ocurrió un error inesperado. Intenta nuevamente más tarde.',
-			confirmButtonColor: '#8B1D41'
-		});
+		if (err.message === 'Campo vacío') {
+			await Swal.fire({
+				icon: 'warning',
+				title: 'Campo vacío',
+				text: 'Por favor ingresa tu correo electrónico.',
+				confirmButtonColor: '#8B1D41'
+			});
+		} else if (err.message === 'Correo con espacios') {
+			await Swal.fire({
+				icon: 'warning',
+				title: 'Correo inválido',
+				text: 'El correo no debe contener espacios.',
+				confirmButtonColor: '#8B1D41'
+			});
+		} else if (err.message === 'Formato inválido') {
+			await Swal.fire({
+				icon: 'warning',
+				title: 'Formato inválido',
+				text: 'Por favor ingresa un correo válido. Ejemplo: usuario@dominio.com',
+				confirmButtonColor: '#8B1D41'
+			});
+		} else {
+			await Swal.fire({
+				icon: 'info',
+				title: 'Verifica tu correo',
+				text: 'Si tu correo existe, revisa tu bandeja de entrada y carpeta de spam.',
+				confirmButtonColor: '#8B1D41'
+			});
+		}
+	} finally {
+		notifyLoaded();
 	}
+
 };
 </script>
+
+
+

@@ -25,12 +25,17 @@
 						<recent-orders class="h-auto" @loaded="onChildLoaded" />
 						<OrganizationsByScope class="h-auto" @loaded="onChildLoaded" />
 						<ProjectsByEconomicSupport class="h-auto" @loaded="onChildLoaded" />
-						<AverageAmountByEconomicSupport class="h-auto" @loaded="onChildLoaded" />
+						<SectorsMexicoMetric class="h-auto" @loaded="onChildLoaded" />
 					</div>
 
 					<div class="col-span-12 xl:col-span-4 grid gap-4 md:gap-6 auto-rows-max">
 						<customer-demographic class="h-auto" @loaded="onChildLoaded" />
-						<SectorsMexicoMetric class="h-auto" @loaded="onChildLoaded" />
+						<AverageAmountByEconomicSupport class="h-auto" @loaded="onChildLoaded" />
+
+					</div>
+
+					<div class="col-span-12 ">
+						<ProjectsByDualType class="h-auto" @loaded="onChildLoaded" />
 					</div>
 				</div>
 			</div>
@@ -52,6 +57,7 @@ import OrganizationsByScope from '../components/ecommerce/OrganizationsByScope.v
 import ProjectsByEconomicSupport from '../components/ecommerce/ProjectsByEconomicSupport.vue';
 import AverageAmountByEconomicSupport from '../components/ecommerce/AverageAmountByEconomicSupport.vue';
 import LoadingScreen from '../components/layouts/LoadingScreen.vue';
+import ProjectsByDualType from '../components/ecommerce/ProjectsByDualType.vue';
 
 export default {
 	name: 'Ecommerce',
@@ -70,6 +76,7 @@ export default {
 		SectorsMexico,
 		SectorsMexicoMetric,
 		LoadingScreen,
+		ProjectsByDualType,
 	},
 	data() {
 		return {
