@@ -299,12 +299,11 @@ const onFileChange = (event: Event) => {
 							<img :src="form.image_path" alt="Vista previa" class="h-24 object-contain border rounded-md" />
 						</div>
 					</div>
-
-					<div class="flex justify-end gap-3 mt-6 pt-4 border-t border-transparent sticky bottom-0 bg-transparent z-10">
-						<button type="button" class="px-5 py-2 rounded-lg bg-gray-100 text-gray-700 font-semibold hover:bg-gray-200" @click="emit('close')">Cancelar</button>
-						<button form="InstitutionForm" class="px-6 py-2 rounded-lg bg-gradient-to-r from-brand-700 to-brand-900 text-white font-semibold">Guardar</button>
-					</div>
 				</alv-form>
+				<div class="flex justify-end gap-3  pt-4 border-t border-transparent sticky bottom-0 bg-transparent z-10">
+					<button type="button" class="px-5 py-2 rounded-lg bg-gray-100 text-gray-700 font-semibold hover:bg-gray-200" @click="emit('close')">Cancelar</button>
+					<button form="InstitutionForm" class="px-6 py-2 rounded-lg bg-gradient-to-r from-brand-700 to-brand-900 text-white font-semibold">Guardar</button>
+				</div>
 			</div>
 		</div>
 	</transition>
