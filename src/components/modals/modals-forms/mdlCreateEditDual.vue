@@ -90,6 +90,59 @@ const LoadDependence = async () => {
 	microCredentials.value = microRes.data;
 };
 
+// Funciones para recargar carreras y especialidades
+const reloadCareers = async () => {
+	try {
+		console.log('Recargando carreras...');
+		const response = await getCareers();
+		careers.value = response.data;
+		console.log('Carreras actualizadas:', careers.value.length);
+	} catch (error) {
+		console.error('Error al recargar carreras:', error);
+	}
+};
+
+const reloadSpecialties = async () => {
+	try {
+		console.log('Recargando especialidades...');
+		const response = await getSpecialties();
+		specialties.value = response.data;
+		console.log('Especialidades actualizadas:', specialties.value.length);
+	} catch (error) {
+		console.error('Error al recargar especialidades:', error);
+	}
+};
+
+// Manejadores para las actualizaciones desde el componente hijo
+const handleCareersUpdate = async () => {
+	console.log('Evento update:careers recibido');
+	await reloadCareers();
+};
+
+const handleSpecialtiesUpdate = async () => {
+	console.log('Evento update:specialties recibido');
+	await reloadSpecialties();
+};
+
+const handleInstitutionsUpdate = (newInstitutions: any[]) => {
+	console.log('Instituciones actualizadas desde el hijo:', newInstitutions.length);
+	institutions.value = newInstitutions;
+};
+
+const handleOrganizationsUpdate = (newOrganizations: any[]) => {
+	console.log('Organizaciones actualizadas desde el hijo:', newOrganizations.length);
+	organizations.value = newOrganizations;
+};
+
+const handleMicroCredentialsUpdate = (newMicroCredentials: any[]) => {
+	console.log('Microcredenciales actualizadas desde el hijo:', newMicroCredentials.length);
+	microCredentials.value = newMicroCredentials;
+};
+
+const handleDualTypesUpdate = (newDualTypes: any[]) => {
+	console.log('Tipos duales actualizados desde el hijo:', newDualTypes.length);
+	dualTypes.value = newDualTypes;
+};
 
 onMounted(() => {
 	LoadDependence();
@@ -416,24 +469,6 @@ const imprimirYGuardar = async () => {
 const handleInstitutionSaved = () => {
 	closeModal();
 };
-const handleInstitutionsUpdate = (newInstitutions: any[]) => {
-	console.log('Instituciones actualizadas desde el hijo:', newInstitutions.length);
-	institutions.value = newInstitutions;
-};
-const handleOrganizationsUpdate = (newOrganizations: any[]) => {
-	console.log('Organizaciones actualizadas desde el hijo:', newOrganizations.length);
-	organizations.value = newOrganizations;
-};
-
-const handleMicroCredentialsUpdate = (newMicroCredentials: any[]) => {
-	console.log('Microcredenciales actualizadas desde el hijo:', newMicroCredentials.length);
-	microCredentials.value = newMicroCredentials;
-};
-
-const handleDualTypesUpdate = (newDualTypes: any[]) => {
-	console.log('Tipos duales actualizados desde el hijo:', newDualTypes.length);
-	dualTypes.value = newDualTypes;
-};
 
 const closeModalAndReset = () => {
 	noChangesDetected.value = false;
@@ -532,7 +567,9 @@ const closeModalAndReset = () => {
 							:institution="{
 								id: formData.academico.id_institution,
 								name: institutions.find(i => i.id === formData.academico.id_institution)?.name || ''
-							}" />
+							}"
+							@update:careers="handleCareersUpdate"
+							@update:specialties="handleSpecialtiesUpdate" />
 					</template>
 					<template v-else>
 						<div class="flex justify-center items-center h-full">
@@ -556,7 +593,7 @@ const closeModalAndReset = () => {
 						@click="handleNextOrSubmit">
 						{{
 							currentStep === steps.length - 1 ||
-								(currentStep === 0 && reportaModeloDual === false)
+							(currentStep === 0 && reportaModeloDual === false)
 								? 'Enviar'
 								: 'Siguiente'
 						}}

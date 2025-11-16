@@ -19,16 +19,10 @@ const isLoading = ref(false)
 const alvRoute = ref()
 const alvMethod = ref('POST')
 
-// Modales para diferentes entidades
 const { showModal: showSectorModal, modalData: sectorModalData, openModal: openSectorModal, closeModal: closeSectorModal } = useModal();
 const { showModal: showClusterModal, modalData: clusterModalData, openModal: openClusterModal, closeModal: closeClusterModal } = useModal();
 
 const tableRef = ref(null);
-
-const handleSaved = () => {
-	closeModal();
-	tableRef.value?.fetchData();
-};
 
 // eslint-disable-next-line vue/valid-define-props
 const props = defineProps<{
@@ -66,7 +60,63 @@ const types = ref([])
 const sectors = ref([])
 const clusters = ref([])
 
-// Función para manejar el guardado de sectores
+
+const sectorDropdownOpen = ref(false)
+const searchQuery = ref('')
+
+const highlightedSectors = [
+	'Agroindustrial',
+	'Textiles, Vestuario y Cuero',
+	'Química',
+	'Tecnologías de la Información y Comunicaciones',
+	'Farmacéutico y Dispositivos Médicos',
+	'Energía',
+	'Calzado',
+	'Bienes de consumo y economía circular',
+	'Aeroespacial',
+	'Semiconductores',
+	'Automotriz y Electromovilidad'
+];
+
+const filteredSectors = computed(() => {
+	if (!sectors.value) return [];
+
+	let filtered = sectors.value;
+
+	if (searchQuery.value) {
+		filtered = sectors.value.filter(sector =>
+			sector.name.toLowerCase().includes(searchQuery.value.toLowerCase())
+		);
+	}
+
+	return filtered.map(sector => ({
+		...sector,
+		isHighlighted: highlightedSectors.includes(sector.name)
+	}));
+});
+
+const selectedSectorName = computed(() => {
+	if (!form.id_sector || !sectors.value) return '';
+	const sector = sectors.value.find(s => s.id === form.id_sector);
+	return sector ? sector.name : '';
+});
+
+const toggleSectorDropdown = () => {
+	sectorDropdownOpen.value = !sectorDropdownOpen.value;
+	searchQuery.value = '';
+};
+
+const selectSector = (sector: any) => {
+	form.id_sector = sector.id;
+	sectorDropdownOpen.value = false;
+	searchQuery.value = '';
+};
+
+const closeSectorDropdown = () => {
+	sectorDropdownOpen.value = false;
+	searchQuery.value = '';
+};
+
 const handleSavedSector = async () => {
 	try {
 		const sectorsRes = await getSectors();
@@ -84,16 +134,13 @@ const handleSavedSector = async () => {
 	}
 };
 
-// Función para manejar el guardado de clusters
 const handleSavedCluster = async () => {
 	try {
 		const clustersRes = await getClusters();
 		clusters.value = clustersRes.data;
 
-		// Seleccionar automáticamente el nuevo cluster
 		const newCluster = clustersRes.data[clustersRes.data.length - 1];
 		if (newCluster) {
-			// Determinar en qué campo asignar basado en el tipo del cluster
 			if (newCluster.type === 'Nacional') {
 				form.id_cluster = newCluster.id;
 			} else if (newCluster.type === 'Local') {
@@ -221,8 +268,8 @@ const afterError = (res: any) => {
 							<label class="flex items-center gap-1 text-sm font-medium text-gray-700 mb-1">
 								Nombre*
 								<button
-									type="button"
 									v-tooltip="fieldHelpTexts.name"
+									type="button"
 									class="help-icon text-gray-400 hover:text-brand-600 cursor-help">?</button>
 							</label>
 							<input v-model="form.name" name="name" required class="w-full px-3 py-2 border rounded-md" />
@@ -232,8 +279,8 @@ const afterError = (res: any) => {
 							<label class="flex items-center gap-1 text-sm font-medium text-gray-700 mb-1">
 								Tamaño*
 								<button
-									type="button"
 									v-tooltip="fieldHelpTexts.size"
+									type="button"
 									class="help-icon text-gray-400 hover:text-brand-600 cursor-help">?</button>
 							</label>
 							<select v-model="form.size" name="size" required class="w-full px-3 py-2 border rounded-md">
@@ -249,8 +296,8 @@ const afterError = (res: any) => {
 							<label class="flex items-center gap-1 text-sm font-medium text-gray-700 mb-1">
 								Tipo*
 								<button
-									type="button"
 									v-tooltip="fieldHelpTexts.id_type"
+									type="button"
 									class="help-icon text-gray-400 hover:text-brand-600 cursor-help">?</button>
 							</label>
 							<select v-model="form.id_type" name="id_type" required class="w-full px-3 py-2 border rounded-md">
@@ -263,22 +310,61 @@ const afterError = (res: any) => {
 							<label class="flex items-center gap-1 text-sm font-medium text-gray-700 mb-1">
 								Sector*
 								<button
-									type="button"
 									v-tooltip="fieldHelpTexts.id_sector"
+									type="button"
 									class="help-icon text-gray-400 hover:text-brand-600 cursor-help">?</button>
 							</label>
 
-							<div class="flex gap-2">
-								<select
-									v-model="form.id_sector"
-									name="id_sector"
-									required
-									class="w-full px-3 py-2 border rounded-md flex-1">
-									<option value="">Selecciona sector</option>
-									<option v-for="sector in sectors" :key="sector.id" :value="sector.id">
-										{{ sector.name }}
-									</option>
-								</select>
+							<div class="flex gap-2 relative">
+								<div class="w-full relative">
+									<div
+										@click="toggleSectorDropdown"
+										class="w-full px-3 py-2 border rounded-md bg-white cursor-pointer flex items-center justify-between"
+										:class="{ 'border-brand-600': sectorDropdownOpen }">
+										<span v-if="selectedSectorName" class="text-gray-700">
+											{{ selectedSectorName }}
+										</span>
+										<span v-else class="text-gray-400">Selecciona sector</span>
+										<svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+											<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+										</svg>
+									</div>
+
+									<input type="hidden" :name="'id_sector'" :value="form.id_sector" />
+
+									<div
+										v-if="sectorDropdownOpen"
+										class="absolute z-50 w-full mt-1 bg-white border border-gray-200 rounded-md shadow-lg max-h-60 overflow-y-auto">
+										<div class="p-2 border-b">
+											<input
+												v-model="searchQuery"
+												type="text"
+												placeholder="Buscar sector..."
+												class="w-full px-3 py-2 border rounded-md text-sm"
+												@click.stop />
+										</div>
+
+										<div class="py-1">
+											<div
+												v-for="sector in filteredSectors"
+												:key="sector.id"
+												@click="selectSector(sector)"
+												class="px-3 py-2 cursor-pointer hover:bg-gray-100 transition-colors"
+												:class="{
+													'bg-brand-50 text-brand-700': form.id_sector === sector.id,
+													'font-semibold text-brand-700': sector.isHighlighted,
+													'text-gray-700': !sector.isHighlighted
+												}">
+												{{ sector.name }}
+											</div>
+											<div
+												v-if="filteredSectors.length === 0"
+												class="px-3 py-2 text-gray-500 text-sm text-center">
+												No se encontraron sectores
+											</div>
+										</div>
+									</div>
+								</div>
 
 								<btn-create
 									:table="'Sector'"
@@ -292,8 +378,8 @@ const afterError = (res: any) => {
 							<label class="flex items-center gap-1 text-sm font-medium text-gray-700 mb-1">
 								Cámara (cluster) Nacional*
 								<button
-									type="button"
 									v-tooltip="fieldHelpTexts.id_cluster"
+									type="button"
 									class="help-icon text-gray-400 hover:text-brand-600 cursor-help">?</button>
 							</label>
 							<div class="flex gap-2">
@@ -319,8 +405,8 @@ const afterError = (res: any) => {
 							<label class="flex items-center gap-1 text-sm font-medium text-gray-700 mb-1">
 								Cámara (cluster) Local*
 								<button
-									type="button"
 									v-tooltip="fieldHelpTexts.id_cluster_local"
+									type="button"
 									class="help-icon text-gray-400 hover:text-brand-600 cursor-help">?</button>
 							</label>
 							<div class="flex gap-2">
@@ -346,8 +432,8 @@ const afterError = (res: any) => {
 							<label class="flex items-center gap-1 text-sm font-medium text-gray-700 mb-1">
 								Operación de la organización *
 								<button
-									type="button"
 									v-tooltip="fieldHelpTexts.scope"
+									type="button"
 									class="help-icon text-gray-400 hover:text-brand-600 cursor-help">?</button>
 							</label>
 							<select v-model="form.scope" name="scope" required class="w-full px-3 py-2 border rounded-md">
@@ -367,8 +453,8 @@ const afterError = (res: any) => {
 								<label class="flex items-center gap-1 text-sm font-medium text-gray-700 mb-1">
 									Calle*
 									<button
-										type="button"
 										v-tooltip="fieldHelpTexts.street"
+										type="button"
 										class="help-icon text-gray-400 hover:text-brand-600 cursor-help">?</button>
 								</label>
 								<input v-model="form.street" name="street" required class="w-full px-3 py-2 border rounded-md" />
@@ -378,8 +464,8 @@ const afterError = (res: any) => {
 								<label class="flex items-center gap-1 text-sm font-medium text-gray-700 mb-1">
 									Número Exterior*
 									<button
-										type="button"
 										v-tooltip="fieldHelpTexts.external_number"
+										type="button"
 										class="help-icon text-gray-400 hover:text-brand-600 cursor-help">?</button>
 								</label>
 								<input v-model="form.external_number" name="external_number" required class="w-full px-3 py-2 border rounded-md" />
@@ -389,8 +475,8 @@ const afterError = (res: any) => {
 								<label class="flex items-center gap-1 text-sm font-medium text-gray-700 mb-1">
 									Número Interior
 									<button
-										type="button"
 										v-tooltip="fieldHelpTexts.internal_number"
+										type="button"
 										class="help-icon text-gray-400 hover:text-brand-600 cursor-help">?</button>
 								</label>
 								<input v-model="form.internal_number" name="internal_number" class="w-full px-3 py-2 border rounded-md" />
@@ -400,8 +486,8 @@ const afterError = (res: any) => {
 								<label class="flex items-center gap-1 text-sm font-medium text-gray-700 mb-1">
 									Colonia*
 									<button
-										type="button"
 										v-tooltip="fieldHelpTexts.neighborhood"
+										type="button"
 										class="help-icon text-gray-400 hover:text-brand-600 cursor-help">?</button>
 								</label>
 								<input v-model="form.neighborhood" name="neighborhood" required class="w-full px-3 py-2 border rounded-md" />
@@ -411,8 +497,8 @@ const afterError = (res: any) => {
 								<label class="flex items-center gap-1 text-sm font-medium text-gray-700 mb-1">
 									Código Postal*
 									<button
-										type="button"
 										v-tooltip="fieldHelpTexts.postal_code"
+										type="button"
 										class="help-icon text-gray-400 hover:text-brand-600 cursor-help">?</button>
 								</label>
 								<input v-model="form.postal_code" name="postal_code" required class="w-full px-3 py-2 border rounded-md" />
@@ -422,8 +508,8 @@ const afterError = (res: any) => {
 								<label class="flex items-center gap-1 text-sm font-medium text-gray-700 mb-1">
 									Ciudad
 									<button
-										type="button"
 										v-tooltip="fieldHelpTexts.city"
+										type="button"
 										class="help-icon text-gray-400 hover:text-brand-600 cursor-help">?</button>
 								</label>
 								<input v-model="form.city" name="city" class="w-full px-3 py-2 border rounded-md" />
@@ -436,8 +522,8 @@ const afterError = (res: any) => {
 							<label class="flex items-center gap-1 text-sm font-medium text-gray-700 mb-1">
 								Estado*
 								<button
-									type="button"
 									v-tooltip="fieldHelpTexts.id_state"
+									type="button"
 									class="help-icon text-gray-400 hover:text-brand-600 cursor-help">?</button>
 							</label>
 							<select v-model="form.id_state" name="id_state" class="w-full px-3 py-2 border rounded-md">
@@ -450,8 +536,8 @@ const afterError = (res: any) => {
 							<label class="flex items-center gap-1 text-sm font-medium text-gray-700 mb-1">
 								Municipio*
 								<button
-									type="button"
 									v-tooltip="fieldHelpTexts.id_municipality"
+									type="button"
 									class="help-icon text-gray-400 hover:text-brand-600 cursor-help">?</button>
 							</label>
 							<select v-model="form.id_municipality" name="id_municipality" class="w-full px-3 py-2 border rounded-md">
@@ -470,14 +556,12 @@ const afterError = (res: any) => {
 					</button>
 				</div>
 
-				<!-- Modal de Sectores -->
 				<mdl-sectors
 					:show="showSectorModal"
 					:data="sectorModalData"
 					@close="closeSectorModal"
 					@saved="handleSavedSector" />
 
-				<!-- Modal de Clusters/Cámaras -->
 				<mdl-clusters
 					:show="showClusterModal"
 					:data="clusterModalData"
@@ -501,5 +585,16 @@ const afterError = (res: any) => {
 
 .help-icon {
 	@apply w-4 h-4 flex items-center justify-center rounded-full border border-current text-xs font-bold;
+}
+
+:deep() {
+	.dropdown-backdrop {
+		position: fixed;
+		top: 0;
+		left: 0;
+		width: 100%;
+		height: 100%;
+		z-index: 40;
+	}
 }
 </style>

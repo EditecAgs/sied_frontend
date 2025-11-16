@@ -1,5 +1,9 @@
 <script setup>
-import { ref, computed, defineProps, defineEmits, watch, onMounted } from "vue";
+import { ref, computed, defineProps, defineEmits, watch, onMounted, nextTick } from "vue";
+import btnCreate from '../../components/buttons/btnCreate.vue';
+import mdlCareers from '../modals/modals-forms/mdlCareers.vue';
+import mdlSpecialties from '../modals/modals-forms/mdlSpecialties.vue';
+import { useModal } from '../../composables/UseModal';
 
 const props = defineProps({
 	modelValue: Object,
@@ -8,7 +12,11 @@ const props = defineProps({
 	institution: Object
 });
 
-const emit = defineEmits(['update:modelValue', 'validate']);
+const emit = defineEmits(['update:modelValue', 'validate', 'update:careers', 'update:specialties']);
+
+// Modales para carreras y especialidades
+const { showModal: showCareerModal, modalData: careerModalData, openModal: openCareerModal, closeModal: closeCareerModal } = useModal();
+const { showModal: showSpecialtyModal, modalData: specialtyModalData, openModal: openSpecialtyModal, closeModal: closeSpecialtyModal } = useModal();
 
 const localModel = ref({...props.modelValue});
 const students = ref([]);
@@ -25,6 +33,152 @@ const form = ref({
 
 const errors = ref({});
 
+// Variables para controlar la selección automática
+const pendingCareerSelection = ref(false);
+const pendingSpecialtySelection = ref(false);
+
+// Funciones para manejar el guardado de carreras y especialidades
+const handleSavedCareer = async () => {
+	try {
+		// Emitir evento para actualizar las carreras en el componente padre
+		emit('update:careers');
+
+		// Marcar que debemos seleccionar la nueva carrera
+		pendingCareerSelection.value = true;
+
+		// Cerrar el modal
+		closeCareerModal();
+
+		// Intentar seleccionar después de un delay para dar tiempo a que se actualicen las props
+		setTimeout(() => {
+			if (props.careers && props.careers.length > 0 && pendingCareerSelection.value) {
+				// Buscar la última carrera que pertenezca a la institución actual
+				const latestCareer = [...props.careers]
+					.reverse()
+					.find(career =>
+						career.id_institution === props.institution?.id ||
+						career.institution_id === props.institution?.id
+					);
+
+				if (latestCareer) {
+					form.value.id_career = latestCareer.id;
+					console.log('Nueva carrera seleccionada automáticamente:', latestCareer.name);
+					pendingCareerSelection.value = false;
+				} else {
+					// Si no encontramos una carrera para esta institución, intentar de nuevo en 500ms
+					setTimeout(() => {
+						if (pendingCareerSelection.value && props.careers && props.careers.length > 0) {
+							const retryCareer = [...props.careers]
+								.reverse()
+								.find(career =>
+									career.id_institution === props.institution?.id ||
+									career.institution_id === props.institution?.id
+								);
+							if (retryCareer) {
+								form.value.id_career = retryCareer.id;
+								console.log('Nueva carrera seleccionada en reintento:', retryCareer.name);
+								pendingCareerSelection.value = false;
+							}
+						}
+					}, 500);
+				}
+			}
+		}, 800);
+
+	} catch (error) {
+		console.error('Error al guardar carrera:', error);
+		closeCareerModal();
+		pendingCareerSelection.value = false;
+	}
+};
+
+const handleSavedSpecialty = async () => {
+	try {
+		// Emitir evento para actualizar las especialidades en el componente padre
+		emit('update:specialties');
+
+		// Marcar que debemos seleccionar la nueva especialidad
+		pendingSpecialtySelection.value = true;
+
+		// Cerrar el modal
+		closeSpecialtyModal();
+
+		// Intentar seleccionar después de un delay para dar tiempo a que se actualicen las props
+		setTimeout(() => {
+			if (props.specialties && props.specialties.length > 0 && pendingSpecialtySelection.value && form.value.id_career) {
+				// Buscar la última especialidad que pertenezca a la carrera actual
+				const latestSpecialty = [...props.specialties]
+					.reverse()
+					.find(specialty =>
+						specialty.id_career === parseInt(form.value.id_career) ||
+						specialty.career_id === parseInt(form.value.id_career)
+					);
+
+				if (latestSpecialty) {
+					form.value.id_specialty = latestSpecialty.id;
+					console.log('Nueva especialidad seleccionada automáticamente:', latestSpecialty.name);
+					pendingSpecialtySelection.value = false;
+				} else {
+					// Si no encontramos una especialidad para esta carrera, intentar de nuevo en 500ms
+					setTimeout(() => {
+						if (pendingSpecialtySelection.value && props.specialties && props.specialties.length > 0 && form.value.id_career) {
+							const retrySpecialty = [...props.specialties]
+								.reverse()
+								.find(specialty =>
+									specialty.id_career === parseInt(form.value.id_career) ||
+									specialty.career_id === parseInt(form.value.id_career)
+								);
+							if (retrySpecialty) {
+								form.value.id_specialty = retrySpecialty.id;
+								console.log('Nueva especialidad seleccionada en reintento:', retrySpecialty.name);
+								pendingSpecialtySelection.value = false;
+							}
+						}
+					}, 500);
+				}
+			}
+		}, 800);
+
+	} catch (error) {
+		console.error('Error al guardar especialidad:', error);
+		closeSpecialtyModal();
+		pendingSpecialtySelection.value = false;
+	}
+};
+
+// Watchers para detectar cuando se actualizan las props y seleccionar automáticamente
+watch(() => props.careers, (newCareers, oldCareers) => {
+	if (pendingCareerSelection.value && newCareers && newCareers.length > 0) {
+		// Si hay una nueva carrera y estamos esperando seleccionar
+		const newCareer = newCareers.find(career =>
+			!oldCareers?.find(old => old.id === career.id) && // Es nueva
+			(career.id_institution === props.institution?.id || career.institution_id === props.institution?.id) // Pertenece a la institución
+		);
+
+		if (newCareer) {
+			form.value.id_career = newCareer.id;
+			console.log('Nueva carrera detectada y seleccionada:', newCareer.name);
+			pendingCareerSelection.value = false;
+		}
+	}
+}, { deep: true });
+
+watch(() => props.specialties, (newSpecialties, oldSpecialties) => {
+	if (pendingSpecialtySelection.value && newSpecialties && newSpecialties.length > 0 && form.value.id_career) {
+		// Si hay una nueva especialidad y estamos esperando seleccionar
+		const newSpecialty = newSpecialties.find(specialty =>
+			!oldSpecialties?.find(old => old.id === specialty.id) && // Es nueva
+			(specialty.id_career === parseInt(form.value.id_career) || specialty.career_id === parseInt(form.value.id_career)) // Pertenece a la carrera
+		);
+
+		if (newSpecialty) {
+			form.value.id_specialty = newSpecialty.id;
+			console.log('Nueva especialidad detectada y seleccionada:', newSpecialty.name);
+			pendingSpecialtySelection.value = false;
+		}
+	}
+}, { deep: true });
+
 const filteredCareers = computed(() => {
 	if (!props.institution?.id) return [];
 
@@ -34,7 +188,6 @@ const filteredCareers = computed(() => {
 			career.institution?.id === props.institution.id;
 	});
 });
-
 
 const filteredSpecialties = computed(() => {
 	if (!form.value.id_career) return [];
@@ -96,9 +249,9 @@ const addStudent = () => {
 		errors.value.control_number = "Este número de control ya ha sido registrado";
 		return;
 	}
-	
+
 	if (form.value.id_specialty === "null" || form.value.id_specialty === "") {
-	form.value.id_specialty = null;
+		form.value.id_specialty = null;
 	}
 
 	const newStudent = {
@@ -177,7 +330,6 @@ const clearForm = () => {
 	errors.value = {};
 };
 
-
 watch(() => form.value.id_career, (newCareerId) => {
 	if (newCareerId) {
 		if (form.value.id_specialty) {
@@ -201,21 +353,21 @@ watch(() => props.institution, (newInstitution) => {
 });
 
 const initializeStudents = () => {
-if (props.modelValue?.dual_project_students && Array.isArray(props.modelValue.dual_project_students)) {
-	students.value = props.modelValue.dual_project_students.map(s => ({
-		...s,
-		student: {
-			...s.student,
-			specialty:
-				s.student.id_specialty === null
-					? { id: null, name: 'Sin especialidad' }
-					: s.student.specialty
-		}
-	}));
-	console.log('Estudiantes inicializados:', students.value.length);
-} else {
-	students.value = [];
-}
+	if (props.modelValue?.dual_project_students && Array.isArray(props.modelValue.dual_project_students)) {
+		students.value = props.modelValue.dual_project_students.map(s => ({
+			...s,
+			student: {
+				...s.student,
+				specialty:
+					s.student.id_specialty === null
+						? { id: null, name: 'Sin especialidad' }
+						: s.student.specialty
+			}
+		}));
+		console.log('Estudiantes inicializados:', students.value.length);
+	} else {
+		students.value = [];
+	}
 };
 
 onMounted(() => {
@@ -231,19 +383,6 @@ defineExpose({
 
 <template>
 	<div class="space-y-8">
-		<!-- Información de la institución seleccionada
-		<div v-if="institution" class="bg-blue-50 p-4 rounded-lg border border-blue-200">
-			<div class="flex items-center justify-between">
-				<div>
-					<h3 class="text-lg font-semibold text-blue-800">Institución seleccionada</h3>
-					<p class="text-blue-600">{{ institution.name }}</p>
-				</div>
-				<div class="text-sm text-blue-500">
-					{{ filteredCareers.length }} carrera(s) disponible(s)
-				</div>
-			</div>
-		</div>-->
-
 		<div class="bg-white p-6 rounded-lg shadow-md space-y-4">
 			<h2 class="text-xl font-bold text-brand-900">Registro de Estudiante</h2>
 
@@ -299,37 +438,55 @@ defineExpose({
 					<p v-if="errors.semester" class="text-red-500 text-sm mt-1">{{ errors.semester }}</p>
 				</div>
 
+				<!-- Campo de Carrera con botón crear -->
 				<div>
 					<label class="block text-sm font-medium text-gray-700 mb-1">Carrera *</label>
-					<select
-						v-model="form.id_career"
-						class="input"
-						:class="{ 'border-red-500': errors.id_career }"
-						:disabled="!institution || filteredCareers.length === 0">
-						<option value="">Selecciona carrera</option>
-						<option v-for="c in filteredCareers" :key="c.id" :value="c.id">{{ c.name }}</option>
-					</select>
+					<div class="flex gap-2">
+						<select
+							v-model="form.id_career"
+							class="input flex-1"
+							:class="{ 'border-red-500': errors.id_career }"
+							:disabled="!institution || filteredCareers.length === 0">
+							<option value="">Selecciona carrera</option>
+							<option v-for="c in filteredCareers" :key="c.id" :value="c.id">{{ c.name }}</option>
+						</select>
+						<btn-create
+							:table="'Carrera'"
+							class="flex-shrink-0"
+							tooltip="Crear nueva carrera"
+							:disabled="!institution"
+							@open="({ mode, pk, table }) => openCareerModal(mode, pk, table)" />
+					</div>
 					<p v-if="errors.id_career" class="text-red-500 text-sm mt-1">{{ errors.id_career }}</p>
 					<p v-if="institution && filteredCareers.length === 0" class="text-yellow-600 text-sm mt-1">
 						No hay carreras disponibles para esta institución
 					</p>
 				</div>
 
+				<!-- Campo de Especialidad con botón crear -->
 				<div>
 					<label class="block text-sm font-medium text-gray-700 mb-1">Especialidad</label>
-					<select
-						v-model="form.id_specialty"
-						class="input"
-						:class="{ 'border-red-500': errors.id_specialty }"
-						:disabled="!institution || !form.id_career">
-						<option value="">Selecciona especialidad</option>
-						<option value="null">Sin especialidad</option>
-						<option v-for="s in filteredSpecialties" :key="s.id" :value="s.id">{{ s.name }}</option>
-					</select>
+					<div class="flex gap-2">
+						<select
+							v-model="form.id_specialty"
+							class="input flex-1"
+							:class="{ 'border-red-500': errors.id_specialty }"
+							:disabled="!institution || !form.id_career">
+							<option value="">Selecciona especialidad</option>
+							<option value="null">Sin especialidad</option>
+							<option v-for="s in filteredSpecialties" :key="s.id" :value="s.id">{{ s.name }}</option>
+						</select>
+						<btn-create
+							:table="'Especialidad'"
+							class="flex-shrink-0"
+							tooltip="Crear nueva especialidad"
+							:disabled="!institution || !form.id_career"
+							@open="({ mode, pk, table }) => openSpecialtyModal(mode, pk, table)" />
+					</div>
 					<p v-if="errors.id_specialty" class="text-red-500 text-sm mt-1">{{ errors.id_specialty }}</p>
 
 					<p v-if="form.id_career && filteredSpecialties.length === 0" class="text-[#800020]  text-sm mt-1">
-						Esta carrera no tiene especialidades registradas. Puedes seleccionar “Sin especialidad”.
+						Esta carrera no tiene especialidades registradas. Puedes seleccionar "Sin especialidad" o crear una nueva.
 					</p>
 				</div>
 
@@ -441,6 +598,18 @@ defineExpose({
 				El sistema calculará automáticamente el total de participantes.
 			</p>
 		</div>
+
+		<mdl-careers
+			:show="showCareerModal"
+			:data="careerModalData"
+			@close="closeCareerModal"
+			@saved="handleSavedCareer" />
+
+		<mdl-specialties
+			:show="showSpecialtyModal"
+			:data="specialtyModalData"
+			@close="closeSpecialtyModal"
+			@saved="handleSavedSpecialty" />
 	</div>
 </template>
 

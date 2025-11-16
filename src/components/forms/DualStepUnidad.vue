@@ -1,7 +1,6 @@
 <script setup>
-import { ref, computed, defineProps, defineEmits, watch, onMounted, onBeforeUnmount } from 'vue';
+import { ref, computed, defineProps, defineEmits, watch, onMounted } from 'vue';
 import Datepicker from '@vuepic/vue-datepicker';
-import { VTooltip } from 'floating-vue'
 import '@vuepic/vue-datepicker/dist/main.css';
 import 'floating-vue/dist/style.css';
 import btnCreate from '../../components/buttons/btnCreate.vue';
@@ -436,7 +435,7 @@ onMounted(() => {
 
 					<div ref="areaDropdownRef">
 						<label class="label flex items-center gap-1">
-							Área de la Actividad Dual
+							Clasificación General de la Proyecto Dual
 							<button
 								v-tooltip="fieldHelpTexts.id_dual_area"
 								type="button"
@@ -719,12 +718,12 @@ onMounted(() => {
 			<div class="bg-gray-50 rounded-xl p-6 border border-gray-200">
 				<h3 class="text-lg font-semibold text-brand-800 mb-4 flex items-center">
 					<span class="w-6 h-6 bg-brand-100 rounded-full flex items-center justify-center text-brand-800 text-sm mr-2">6</span>
-					Estado de la Actividad
+					Estado del Proyecto Dual
 				</h3>
 				<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
 					<div>
 						<label class="label flex items-center gap-1">
-							Actividad Concluida
+							Proyecto Dual Concluido
 							<button
 								v-tooltip="fieldHelpTexts.is_concluded"
 								type="button"
