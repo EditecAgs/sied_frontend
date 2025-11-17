@@ -2,7 +2,7 @@
 	<div class="bg-white rounded-xl shadow-lg overflow-hidden">
 		<div class="px-6 py-4 bg-gradient-to-r from-brand-800 to-brand-900">
 			<div class="flex justify-between items-center">
-				<h2 class="text-xl font-bold text-white">Gestión de Microcredenciales</h2>
+				<h2 class="text-xl font-bold text-white">Gestión de Diplomados</h2>
 				<button
 					class="flex items-center gap-1 px-4 py-2 bg-white/10 hover:bg-white/20 text-white rounded-lg backdrop-blur-sm transition-all"
 					@click="clearFilters">
@@ -48,37 +48,37 @@
 								<circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" />
 								<path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z" />
 							</svg>
-							<p class="text-gray-500">Cargando microcredenciales...</p>
+							<p class="text-gray-500">Cargando diplomados...</p>
 						</td>
 					</tr>
 
 					<tr
-						v-for="(micro, index) in paginatedMicroCredentials"
-						:key="micro.id ?? index"
+						v-for="(diplomado, index) in paginatedDiplomados"
+						:key="diplomado.id ?? index"
 						class="border-b border-gray-100 hover:bg-brand-50/30 transition-colors even:bg-gray-50">
 						<td class="px-5 py-3 text-sm border-r border-gray-100 font-medium text-brand-900">
-							{{ micro.name }}
+							{{ diplomado.name }}
 						</td>
 						<td class="px-5 py-3 text-sm border-r border-gray-100 text-gray-700">
-							{{ micro.organization || 'N/A' }}
+							{{ diplomado.organization || 'N/A' }}
 						</td>
 						<td class="px-5 py-3 text-sm border-r border-gray-100 text-gray-500">
-							{{ micro.description || 'Sin descripción' }}
+							{{ diplomado.description || 'Sin descripción' }}
 						</td>
 						<td class="px-5 py-3 text-sm border-r border-gray-100 text-gray-500">
-							{{ micro.type == 'academic' ? 'Académico' : 'No Académico' }}	
+							{{ diplomado.type == 'academic' ? 'Académico' : 'No Académico' }}	
 						</td>
 						<td class="px-5 py-3 text-sm">
 							<div class="flex space-x-2">
-								<btnEdit :table="'Microcredencial'" :pk="micro.id ?? index" @open="(data) => $emit('open', data)" />
-								<btnDelete :table="'micro-credentials'" :pk="micro.id ?? index" @open-confirm="(payload) => $emit('open-confirm', payload)" />
+								<btnEdit :table="'Diplomado'" :pk="diplomado.id ?? index" @open="(data) => $emit('open', data)" />
+								<btnDelete :table="'diplomados'" :pk="diplomado.id ?? index" @open-confirm="(payload) => $emit('open-confirm', payload)" />
 							</div>
 						</td>
 					</tr>
 
-					<tr v-if="!isLoading && filteredMicroCredentials.length === 0">
+					<tr v-if="!isLoading && filteredDiplomados.length === 0">
 						<td colspan="4" class="px-5 py-8 text-center">
-							<p class="text-gray-500">No se encontraron microcredenciales registradas</p>
+							<p class="text-gray-500">No se encontraron diplomados registrados</p>
 						</td>
 					</tr>
 				</tbody>
@@ -87,7 +87,7 @@
 
 		<div v-if="!isLoading" class="px-6 py-3 bg-gray-50 border-t border-gray-200 flex justify-between items-center">
 			<span class="text-xs text-gray-600">
-				Mostrando {{ paginatedMicroCredentials.length }} de {{ filteredMicroCredentials.length }} registros
+				Mostrando {{ paginatedDiplomados.length }} de {{ filteredDiplomados.length }} registros
 			</span>
 			<div class="flex items-center space-x-2">
 				<select v-model="rowsPerPage" class="text-xs border border-gray-300 rounded px-2 py-1 text-gray-700">
@@ -114,9 +114,11 @@
 import { ref, computed, onMounted, watch } from "vue";
 import btnEdit from "../../../components/buttons/btnEdit.vue";
 import btnDelete from "../../../components/buttons/btnDelete.vue";
-import { getMicroCredentials } from '../../../services/dual_projects/micro-credentials';
 
-const microCredentials = ref([]);
+
+import { getDiplomas } from '../../../services/dual_projects/diplomas';
+
+const diplomados = ref([]);
 const isLoading = ref(false);
 
 const filters = ref({
@@ -129,24 +131,25 @@ const filters = ref({
 const rowsPerPage = ref(10);
 const currentPage = ref(1);
 
-const filteredMicroCredentials = computed(() => {
-	return microCredentials.value.filter(micro => {
+const filteredDiplomados = computed(() => {
+	return diplomados.value.filter(dipl => {
 		return (
-			micro.name.toLowerCase().includes(filters.value.name.toLowerCase()) &&
-			(micro.organization || '').toLowerCase().includes(filters.value.organization.toLowerCase()) &&
-			(micro.description || '').toLowerCase().includes(filters.value.description.toLowerCase()) &&
-			(micro.type || 'Academico').toLowerCase().includes(filters.value.type.toLowerCase())
+			dipl.name.toLowerCase().includes(filters.value.name.toLowerCase()) &&
+			(dipl.organization || '').toLowerCase().includes(filters.value.organization.toLowerCase()) &&
+			(dipl.description || '').toLowerCase().includes(filters.value.description.toLowerCase()) &&
+			(dipl.type || 'Academico').toLowerCase().includes(filters.value.type.toLowerCase())
 		);
 	});
 });
 
-const totalPages = computed(() => Math.ceil(filteredMicroCredentials.value.length / rowsPerPage.value));
-const paginatedMicroCredentials = computed(() => {
+const totalPages = computed(() => Math.ceil(filteredDiplomados.value.length / rowsPerPage.value));
+
+const paginatedDiplomados = computed(() => {
 	const start = (currentPage.value - 1) * rowsPerPage.value;
-	return filteredMicroCredentials.value.slice(start, start + rowsPerPage.value);
+	return filteredDiplomados.value.slice(start, start + rowsPerPage.value);
 });
 
-watch([filteredMicroCredentials, rowsPerPage], () => {
+watch([filteredDiplomados, rowsPerPage], () => {
 	if (currentPage.value > totalPages.value) {
 		currentPage.value = 1;
 	}
@@ -164,9 +167,10 @@ const clearFilters = () => {
 
 const fetchData = () => {
 	isLoading.value = true;
-	getMicroCredentials()
+	getDiplomas()
 		.then(({ data }) => {
-			microCredentials.value = data;
+			diplomados.value = data;
+			console.log(data);
 		})
 		.finally(() => {
 			isLoading.value = false;

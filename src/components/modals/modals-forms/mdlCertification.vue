@@ -1,13 +1,14 @@
 <script setup lang="ts">
 import { defineProps, defineEmits, reactive, watchEffect, ref, onMounted, onBeforeUnmount } from 'vue'
 import axios from 'axios'
-import { showMicroCredential } from "../../../services/dual_projects/micro-credentials.js"
+import { showCertification } from "../../../services/dual_projects/certifications.js"
 
 const emit = defineEmits(['close', 'saved'])
 const isLoading = ref(false)
 const errorMessage = ref<string>('')
+
 const alvRoute = ref()
-alvRoute.value = axios.defaults.baseURL + 'micro-credentials'
+alvRoute.value = axios.defaults.baseURL + 'certifications'
 const alvMethod = ref<'POST' | 'PUT'>('POST')
 
 const activeTooltip = ref<string | null>(null)
@@ -15,10 +16,10 @@ const tooltipPosition = ref({ x: 0, y: 0 })
 const tooltipTimeout = ref<number | null>(null)
 
 const fieldHelpTexts: Record<string, string> = {
-	name: "Nombre oficial de la microcredencial",
-	organization: "Nombre de la organización, empresa o institución que emite la microcredencial.",
-	description: "Breve descripción del contenido o propósito de la microcredencial.",
-	image: "Imagen o logotipo representativo de la microcredencial "
+	name: "Nombre oficial de la certificación.",
+	organization: "Nombre de la organización, empresa o institución que emite el certificado.",
+	description: "Breve descripción del contenido o propósito del certificado.",
+	image: "Imagen o logotipo representativo del certificado."
 }
 
 const toggleTooltip = (field: string, event: MouseEvent) => {
@@ -44,7 +45,6 @@ const handleClickOutside = (event: MouseEvent) => {
         hideTooltip()
     }
 }
-
 
 onMounted(() => document.addEventListener('click', handleClickOutside))
 onBeforeUnmount(() => document.removeEventListener('click', handleClickOutside))
@@ -98,27 +98,27 @@ const handleImageUpload = (event: Event) => {
 
 watchEffect(() => {
 	if (props.data.mode === 'edit' && props.data.pk !== null) {
-		alvRoute.value = `${axios.defaults.baseURL}micro-credentials/${props.data.pk}`
+		alvRoute.value = `${axios.defaults.baseURL}certifications/${props.data.pk}`
 		alvMethod.value = 'PUT'
 		isLoading.value = true
 
-		showMicroCredential(props.data.pk)
+		showCertification(props.data.pk)
 			.then((res) => {
-				const mc = res.data
+				const cert = res.data
 				Object.keys(form).forEach((key) => {
-					if (mc[key] !== undefined) {
-						form[key as keyof typeof form] = mc[key]
+					if (cert[key] !== undefined) {
+						form[key as keyof typeof form] = cert[key]
 					}
 				})
 			})
 			.catch((error) => {
-				console.error('Error al cargar la microcredencial:', error)
+				console.error('Error al cargar la certificación:', error)
 			})
 			.finally(() => {
 				isLoading.value = false
 			})
 	} else if (props.data.mode === 'create') {
-		alvRoute.value = `${axios.defaults.baseURL}micro-credentials`
+		alvRoute.value = `${axios.defaults.baseURL}certifications`
 		alvMethod.value = 'POST'
 		Object.keys(form).forEach((key) => {
 			form[key as keyof typeof form] = ''
@@ -150,7 +150,7 @@ watchEffect(() => {
 				<div
 					class="flex items-center justify-between bg-brand-900 -mx-8 -mt-8 px-8 py-4 rounded-t-2xl">
 					<h4 class="text-xl font-semibold text-white">
-						{{ data.mode === 'create' ? `Crear Microcredenciales y Certificados` : `Editar Microcredenciales y Certificados` }}
+						{{ data.mode === 'create' ? `Crear Certificación` : `Editar Certificación` }}
 					</h4>
 					<div class="flex items-center gap-4">
 						<div
@@ -165,7 +165,7 @@ watchEffect(() => {
 				</div>
 
 				<alv-form
-					id="MicroCredentialForm"
+					id="CertificationForm"
 					:action="alvRoute"
 					:data-object="form"
 					:method="alvMethod"
@@ -182,48 +182,31 @@ watchEffect(() => {
 						<div class="form-error">
 							<label class="flex items-center gap-1 text-sm font-medium text-gray-700 mb-1">
 								Nombre*
-								<button
-									type="button" class="help-icon text-gray-400 hover:text-brand-600 cursor-help"
+								<button type="button" class="help-icon text-gray-400 hover:text-brand-600 cursor-help"
 									@click="toggleTooltip('name', $event)" @mouseleave="hideTooltipDelayed">?</button>
 							</label>
-							<input
-								v-model="form.name"
-								type="text"
-								name="name"
-								required
-								class="w-full px-3 py-2 border rounded-md"
-								:disabled="isLoading" />
+							<input v-model="form.name" type="text" name="name" required
+								class="w-full px-3 py-2 border rounded-md" :disabled="isLoading" />
 						</div>
 
 						<div class="form-error">
 							<label class="flex items-center gap-1 text-sm font-medium text-gray-700 mb-1">
 								Organización*
-								<button
-									type="button" class="help-icon text-gray-400 hover:text-brand-600 cursor-help"
+								<button type="button" class="help-icon text-gray-400 hover:text-brand-600 cursor-help"
 									@click="toggleTooltip('organization', $event)" @mouseleave="hideTooltipDelayed">?</button>
 							</label>
-							<input
-								v-model="form.organization"
-								type="text"
-								name="organization"
-								required
-								class="w-full px-3 py-2 border rounded-md"
-								:disabled="isLoading" />
+							<input v-model="form.organization" type="text" name="organization" required
+								class="w-full px-3 py-2 border rounded-md" :disabled="isLoading" />
 						</div>
 
 						<div class="form-error">
 							<label class="flex items-center gap-1 text-sm font-medium text-gray-700 mb-1">
 								Descripción
-								<button
-									type="button" class="help-icon text-gray-400 hover:text-brand-600 cursor-help"
+								<button type="button" class="help-icon text-gray-400 hover:text-brand-600 cursor-help"
 									@click="toggleTooltip('description', $event)" @mouseleave="hideTooltipDelayed">?</button>
 							</label>
-							<textarea
-								v-model="form.description"
-								name="description"
-								rows="3"
-								class="w-full px-3 py-2 border rounded-md"
-								:disabled="isLoading" />
+							<textarea v-model="form.description" name="description" rows="3"
+								class="w-full px-3 py-2 border rounded-md" :disabled="isLoading" />
 						</div>
 						<div class="form-error">
 							<label class="block text-gray-800 font-semibold mb-2">Tipo</label>
@@ -234,17 +217,13 @@ watchEffect(() => {
 								<option value="no_academic">No Académico</option>
 							</select>
 						</div>
-
 						<div class="form-error">
 							<label class="flex items-center gap-1 text-sm font-medium text-gray-700 mb-1">
 								Imagen
-								<button
-									type="button" class="help-icon text-gray-400 hover:text-brand-600 cursor-help"
+								<button type="button" class="help-icon text-gray-400 hover:text-brand-600 cursor-help"
 									@click="toggleTooltip('image', $event)" @mouseleave="hideTooltipDelayed">?</button>
 							</label>
-							<input
-								type="file"
-								accept="image/*"
+							<input type="file" accept="image/*"
 								class="w-full px-3 py-2 border rounded-md"
 								:disabled="isLoading"
 								@change="handleImageUpload" />
@@ -254,19 +233,11 @@ watchEffect(() => {
 						</div>
 					</div>
 
-					<div
-						class="flex justify-end gap-3 mt-6 pt-4 border-t border-gray-200 sticky bottom-0 bg-transparent z-10">
-						<button
-							type="button"
-							class="px-5 py-2 rounded-lg bg-gray-100 hover:bg-gray-200"
-							:disabled="isLoading"
-							@click="emit('close')">
+					<div class="flex justify-end gap-3 mt-6 pt-4 border-t border-gray-200 sticky bottom-0 bg-transparent z-10">
+						<button type="button" class="px-5 py-2 rounded-lg bg-gray-100 hover:bg-gray-200" :disabled="isLoading" @click="emit('close')">
 							Cancelar
 						</button>
-						<button
-							form="MicroCredentialForm"
-							class="px-6 py-2 rounded-lg bg-gradient-to-r from-brand-700 to-brand-900 text-white font-semibold"
-							:disabled="isLoading">
+						<button form="CertificationForm" class="px-6 py-2 rounded-lg bg-gradient-to-r from-brand-700 to-brand-900 text-white font-semibold" :disabled="isLoading">
 							<span>Guardar</span>
 						</button>
 					</div>
