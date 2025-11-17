@@ -109,6 +109,9 @@ watchEffect(() => {
 					if (mc[key] !== undefined) {
 						form[key as keyof typeof form] = mc[key]
 					}
+					if (!form.image) {
+						form.image = 'images/insignia.jpg';
+					}
 				})
 			})
 			.catch((error) => {
@@ -150,7 +153,7 @@ watchEffect(() => {
 				<div
 					class="flex items-center justify-between bg-brand-900 -mx-8 -mt-8 px-8 py-4 rounded-t-2xl">
 					<h4 class="text-xl font-semibold text-white">
-						{{ data.mode === 'create' ? `Crear Microcredenciales y Certificados` : `Editar Microcredenciales y Certificados` }}
+						{{ data.mode === 'create' ? `Crear Microcredencial` : `Editar Microcredencial` }}
 					</h4>
 					<div class="flex items-center gap-4">
 						<div
@@ -253,24 +256,23 @@ watchEffect(() => {
 							</div>
 						</div>
 					</div>
-
-					<div
-						class="flex justify-end gap-3 mt-6 pt-4 border-t border-gray-200 sticky bottom-0 bg-transparent z-10">
-						<button
-							type="button"
-							class="px-5 py-2 rounded-lg bg-gray-100 hover:bg-gray-200"
-							:disabled="isLoading"
-							@click="emit('close')">
-							Cancelar
-						</button>
-						<button
-							form="MicroCredentialForm"
-							class="px-6 py-2 rounded-lg bg-gradient-to-r from-brand-700 to-brand-900 text-white font-semibold"
-							:disabled="isLoading">
-							<span>Guardar</span>
-						</button>
-					</div>
 				</alv-form>
+				<div
+					class="flex justify-end gap-3 mt-6 pt-4 border-t border-gray-200 sticky bottom-0 bg-transparent z-10">
+					<button
+						type="button"
+						class="px-5 py-2 rounded-lg bg-gray-100 hover:bg-gray-200"
+						:disabled="isLoading"
+						@click="emit('close')">
+						Cancelar
+					</button>
+					<button
+						form="MicroCredentialForm"
+						class="px-6 py-2 rounded-lg bg-gradient-to-r from-brand-700 to-brand-900 text-white font-semibold"
+						:disabled="isLoading">
+						<span>Guardar</span>
+					</button>
+				</div>
 			</div>
 		</div>
 	</transition>

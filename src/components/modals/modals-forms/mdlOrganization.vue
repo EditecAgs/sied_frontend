@@ -247,7 +247,7 @@ const afterError = (res: any) => {
 			<div class="bg-white rounded-2xl shadow-2xl w-full max-w-4xl p-8 relative max-h-[90vh] flex flex-col overflow-hidden" style="background-image: url('/images/background/bg-white-flores.png');">
 				<div class="flex items-center justify-between bg-brand-900 -mx-8 -mt-8 px-8 py-4 rounded-t-2xl">
 					<h4 class="text-xl font-semibold text-white">
-						{{ data.mode === 'create' ? `Crear ${data.table}` : `Editar ${data.table}` }}
+						{{ data.mode === 'create' ? `Crear Organización` : `Editar ${data.table}` }}
 					</h4>
 					<div class="flex items-center gap-4">
 						<div v-if="isLoading" class="w-6 h-6 border-4 border-white/40 border-t-white rounded-full animate-spin" />

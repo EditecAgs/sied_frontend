@@ -370,7 +370,7 @@ defineExpose({
 <template>
 	<div class="space-y-8">
 		<div class="bg-white p-6 rounded-lg shadow-md space-y-4">
-			<h2 class="text-xl font-bold text-brand-900">Registro de Estudiante</h2>
+			<h2 class="text-xl font-bold text-brand-900">Registro del Estudiante</h2>
 
 			<div v-if="!institution" class="bg-yellow-50 p-4 rounded-lg border border-yellow-200">
 				<p class="text-yellow-700">⚠️ Primero debe seleccionar una institución en el paso anterior</p>

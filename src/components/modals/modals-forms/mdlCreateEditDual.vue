@@ -122,7 +122,6 @@ const reloadSpecialties = async () => {
 	}
 };
 
-
 const handleCareersUpdate = async () => {
 	console.log('Evento update:careers recibido');
 	await reloadCareers();
@@ -139,27 +138,22 @@ const handleInstitutionsUpdate = (newInstitutions: any[]) => {
 };
 
 const handleOrganizationsUpdate = (newOrganizations: any[]) => {
-	console.log('Organizaciones actualizadas desde el hijo:', newOrganizations.length);
 	organizations.value = newOrganizations;
 };
 
 const handleMicroCredentialsUpdate = (newMicroCredentials: any[]) => {
-	console.log('Microcredenciales actualizadas desde el hijo:', newMicroCredentials.length);
 	microCredentials.value = newMicroCredentials;
 };
 
 const handleDiplomasUpdate = (newDiplomas: any[]) => {
-	console.log('Diplomas actualizados desde el hijo:', newDiplomas.length);
 	diplomas.value = newDiplomas;
 };
 
 const handleCertificationsUpdate = (newCertifications: any[]) => {
-	console.log('Certificaciones actualizadas desde el hijo:', newCertifications.length);
 	certifications.value = newCertifications;
 };
 
 const handleDualTypesUpdate = (newDualTypes: any[]) => {
-	console.log('Tipos duales actualizados desde el hijo:', newDualTypes.length);
 	dualTypes.value = newDualTypes;
 };
 
@@ -200,7 +194,6 @@ const formData = reactive({
 		amount: '0',
 		qualification: '0',
 		max_qualification: '10',
-		advisor: '',
 		is_concluded: 0,
 		is_hired: 0,
 		hired_observation: '',
@@ -208,10 +201,13 @@ const formData = reactive({
 		micro_credentials: [],
 		certifications: [],
 		diplomas: [],
-		description: ''
+		description: '',
+		internal_advisor_name: '',
+		internal_advisor_qualification: null,
+		external_advisor_name: '',
+		external_advisor_qualification: null
 	}
 });
-
 
 const canSubmit = computed(() => {
 	if (currentStep.value === 2) {
@@ -254,7 +250,6 @@ const resetForm = () => {
 		amount: '0',
 		qualification: '0',
 		max_qualification: '10',
-		advisor: '',
 		is_concluded: 0,
 		is_hired: 0,
 		hired_observation: '',
@@ -262,7 +257,11 @@ const resetForm = () => {
 		micro_credentials: [],
 		certifications: [],
 		diplomas: [],
-		description: ''
+		description: '',
+		internal_advisor_name: '',
+		internal_advisor_qualification: null,
+		external_advisor_name: '',
+		external_advisor_qualification: null
 	};
 	reportaModeloDual.value = null;
 	currentStep.value = 0;
@@ -318,7 +317,6 @@ watch(
 					economic_support: project.dual_project_reports?.economic_support?.id ?? '',
 					amount: String(project.dual_project_reports?.amount ?? ''),
 					qualification: project.dual_project_reports?.qualification ?? '',
-					advisor: project.dual_project_reports?.advisor ?? '',
 					is_concluded: project.dual_project_reports?.is_concluded ?? 0,
 					is_hired: project.dual_project_reports?.is_hired ?? 0,
 					hired_observation: project.dual_project_reports?.hired_observation ?? '',
@@ -327,7 +325,11 @@ watch(
 					micro_credentials: project.dual_project_reports?.micro_credentials?.map(m => m.id) || [],
 					certifications: project.dual_project_reports?.certifications?.map(c => c.id) || [],
 					diplomas: project.dual_project_reports?.diplomas?.map(d => d.id) || [],
-					description: project.dual_project_reports?.description ?? ''
+					description: project.dual_project_reports?.description ?? '',
+					internal_advisor_name: project.dual_project_reports?.internal_advisor_name ?? '',
+					internal_advisor_qualification: project.dual_project_reports?.internal_advisor_qualification ?? null,
+					external_advisor_name: project.dual_project_reports?.external_advisor_name ?? '',
+					external_advisor_qualification: project.dual_project_reports?.external_advisor_qualification ?? null
 				};
 
 				reportaModeloDual.value = newData.mode === 'complete' ? true : !!project.dual_project_reports;
@@ -363,12 +365,49 @@ const handleNextOrSubmit = async () => {
 			return;
 		}
 		nextStep();
-	}  else if (currentStep.value === 1) {
-		const isValid = await stepUnidadDualRef.value?.validate?.();
-		if (!isValid) return;
-		nextStep();
-	} else if (currentStep.value === 2) {
+	} else if (currentStep.value === 1) {
+		console.log('🔍 Validando paso 1 (Unidad Dual)');
+		console.log('Referencia del componente:', stepUnidadDualRef.value);
 
+		if (!stepUnidadDualRef.value) {
+			console.log('❌ Referencia del componente no disponible');
+			return;
+		}
+
+		if (!stepUnidadDualRef.value.validate) {
+			console.log('❌ Método validate no disponible');
+			return;
+		}
+
+		try {
+			const validationResult = stepUnidadDualRef.value.validate();
+			console.log('Tipo de resultado:', typeof validationResult);
+
+			let isValid;
+			if (validationResult instanceof Promise) {
+				console.log('🔄 Validación asíncrona detectada');
+				isValid = await validationResult;
+			} else {
+				console.log('⚡ Validación síncrona detectada');
+				isValid = validationResult;
+			}
+
+			console.log('¿Es válido?', isValid);
+
+			if (!isValid) {
+				console.log('❌ Validación falló - mostrando errores en UI');
+				// Forzar actualización de UI para mostrar errores
+				await nextTick();
+				return;
+			}
+
+			console.log('✅ Validación exitosa - avanzando al siguiente paso');
+			nextStep();
+		} catch (error) {
+			console.error('💥 Error durante validación:', error);
+			return;
+		}
+	} else if (currentStep.value === 2) {
 		const studentCount = formData.personal.dual_project_students?.length || 0;
 
 		if (studentCount < 1) {
@@ -457,9 +496,8 @@ const imprimirYGuardar = async () => {
 				status_document: Number(formData.unidadDual.status_document),
 				economic_support: Number(formData.unidadDual.economic_support),
 				amount: Number(formData.unidadDual.amount),
-				qualification: formData.unidadDual.qualification,
-				max_qualification: String(formData.unidadDual.max_qualification) || 10,
-				advisor: formData.unidadDual.advisor,
+				qualification: Number(formData.unidadDual.qualification) || null,
+				max_qualification: String(formData.unidadDual.max_qualification) || '10',
 				is_concluded: formData.unidadDual.is_concluded,
 				is_hired: formData.unidadDual.is_hired,
 				hired_observation: formData.unidadDual.hired_observation,
@@ -467,9 +505,14 @@ const imprimirYGuardar = async () => {
 				description: formData.unidadDual.description,
 				micro_credentials: formData.unidadDual.micro_credentials,
 				certifications: formData.unidadDual.certifications,
-				diplomas: formData.unidadDual.diplomas
+				diplomas: formData.unidadDual.diplomas,
+				internal_advisor_name: formData.unidadDual.internal_advisor_name || '',
+				internal_advisor_qualification: Number(formData.unidadDual.internal_advisor_qualification) || null,
+				external_advisor_name: formData.unidadDual.external_advisor_name || '',
+				external_advisor_qualification: Number(formData.unidadDual.external_advisor_qualification) || null
 			};
 		}
+
 
 		const currentData = JSON.stringify(formData);
 		if (props.data.mode === 'create') {
@@ -487,11 +530,14 @@ const imprimirYGuardar = async () => {
 	} catch (err: any) {
 		if (axios.isAxiosError(err) && err.response) {
 			console.error('422 Response data:', err.response.data);
+			console.error('❌ Error de validación:', err.response.data.errors);
 		} else {
 			console.error('Error al enviar el formulario:', err);
 		}
 	}
 };
+
+
 
 const handleInstitutionSaved = () => {
 	closeModal();
@@ -624,7 +670,7 @@ const closeModalAndReset = () => {
 						@click="handleNextOrSubmit">
 						{{
 							currentStep === steps.length - 1 ||
-								(currentStep === 0 && reportaModeloDual === false)
+							(currentStep === 0 && reportaModeloDual === false)
 								? 'Enviar'
 								: 'Siguiente'
 						}}

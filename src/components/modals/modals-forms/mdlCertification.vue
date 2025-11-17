@@ -110,6 +110,9 @@ watchEffect(() => {
 						form[key as keyof typeof form] = cert[key]
 					}
 				})
+				if (!form.image) {
+					form.image = 'images/insignia.jpg';
+				}
 			})
 			.catch((error) => {
 				console.error('Error al cargar la certificación:', error)
@@ -219,7 +222,7 @@ watchEffect(() => {
 						</div>
 						<div class="form-error">
 							<label class="flex items-center gap-1 text-sm font-medium text-gray-700 mb-1">
-								Imagen
+								Insignia
 								<button type="button" class="help-icon text-gray-400 hover:text-brand-600 cursor-help"
 									@click="toggleTooltip('image', $event)" @mouseleave="hideTooltipDelayed">?</button>
 							</label>
@@ -232,16 +235,15 @@ watchEffect(() => {
 							</div>
 						</div>
 					</div>
-
-					<div class="flex justify-end gap-3 mt-6 pt-4 border-t border-gray-200 sticky bottom-0 bg-transparent z-10">
-						<button type="button" class="px-5 py-2 rounded-lg bg-gray-100 hover:bg-gray-200" :disabled="isLoading" @click="emit('close')">
-							Cancelar
-						</button>
-						<button form="CertificationForm" class="px-6 py-2 rounded-lg bg-gradient-to-r from-brand-700 to-brand-900 text-white font-semibold" :disabled="isLoading">
-							<span>Guardar</span>
-						</button>
-					</div>
 				</alv-form>
+				<div class="flex justify-end gap-3 mt-6 pt-4 border-t border-gray-200 sticky bottom-0 bg-transparent z-10">
+					<button type="button" class="px-5 py-2 rounded-lg bg-gray-100 hover:bg-gray-200" :disabled="isLoading" @click="emit('close')">
+						Cancelar
+					</button>
+					<button form="CertificationForm" class="px-6 py-2 rounded-lg bg-gradient-to-r from-brand-700 to-brand-900 text-white font-semibold" :disabled="isLoading">
+						<span>Guardar</span>
+					</button>
+				</div>
 			</div>
 		</div>
 	</transition>
