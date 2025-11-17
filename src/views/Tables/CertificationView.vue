@@ -2,18 +2,18 @@
 	<AdminLayout>
 		<PageBreadcrumb :pageTitle="currentPageTitle" />
 		<div class="space-y-5 sm:space-y-6">
-			<ComponentCard title="Catálogo de Microcredenciales">
-				<btn-create :table="'Microcredenciales'" @open="({ mode, pk, table}) => openModal(mode, pk, table)" class="divide-error-900 hover:divide-error-800" />
-				<mdlMicroCredential
+			<ComponentCard title="Certificaciónes">
+				<btn-create :table="'Certificaciónes'" @open="({ mode, pk, table}) => openModal(mode, pk, table)" class="divide-error-900 hover:divide-error-800" />
+				<mdlCertification
 					:show="showModal"
 					:data="modalData"
 					@close="closeModal"
 					@saved="handleSaved" />
-				<TableMicroCredentials
+				<TableCertifications
 					ref="tableRef"
 					@open="({ mode, pk, table }) => openModal(mode, pk, table)"
 					@open-confirm="openDeleteModal" />
-				<mdlDeleteMicroCredential
+				<mdlDeleteCertification
 					:show="showDeleteModal"
 					:table="deleteTarget.table"
 					:pk="deleteTarget.pk"
@@ -29,13 +29,12 @@ import { ref } from "vue";
 import PageBreadcrumb from "../../components/common/PageBreadcrumb.vue";
 import AdminLayout from "../../components/layouts/AdminLayout.vue";
 import ComponentCard from "../../components/common/componentCard.vue";
-import TableMicroCredentials from "../../components/tables/basic-tables/TableMicroCredentials.vue";
+import TableCertifications from "../../components/tables/basic-tables/TableCertifications.vue";
 import btnCreate from "../../components/buttons/btnCreate.vue";
-import mdlMicroCredential from '../../components/modals/modals-forms/mdlMicroCredential.vue';
+import mdlCertification from '../../components/modals/modals-forms/mdlCertification.vue';
 import { useModal } from "../../composables/UseModal";
-import mdlDeleteMicroCredential from "../../components/modals/delete-only/mdlDeleteMicroCredential.vue"
-
-const currentPageTitle = ref("Microcredenciales");
+import mdlDeleteCertification from "../../components/modals/delete-only/mdlDeleteCertification.vue"
+const currentPageTitle = ref("Certificaciones");
 const { showModal, modalData, openModal, closeModal } = useModal();
 
 const tableRef = ref(null);

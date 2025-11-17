@@ -1,13 +1,14 @@
 <script setup lang="ts">
 import { defineProps, defineEmits, reactive, watchEffect, ref, onMounted, onBeforeUnmount } from 'vue'
 import axios from 'axios'
-import { showMicroCredential } from "../../../services/dual_projects/micro-credentials.js"
+import { showDiplomas } from "../../../services/dual_projects/diplomas";
 
 const emit = defineEmits(['close', 'saved'])
 const isLoading = ref(false)
 const errorMessage = ref<string>('')
+
 const alvRoute = ref()
-alvRoute.value = axios.defaults.baseURL + 'micro-credentials'
+alvRoute.value = axios.defaults.baseURL + 'diplomas'
 const alvMethod = ref<'POST' | 'PUT'>('POST')
 
 const activeTooltip = ref<string | null>(null)
@@ -15,10 +16,10 @@ const tooltipPosition = ref({ x: 0, y: 0 })
 const tooltipTimeout = ref<number | null>(null)
 
 const fieldHelpTexts: Record<string, string> = {
-	name: "Nombre oficial de la microcredencial",
-	organization: "Nombre de la organización, empresa o institución que emite la microcredencial.",
-	description: "Breve descripción del contenido o propósito de la microcredencial.",
-	image: "Imagen o logotipo representativo de la microcredencial "
+	name: "Nombre oficial del diplomado.",
+	organization: "Nombre de la organización que emite el diplomado.",
+	description: "Descripción breve del diplomado.",
+	image: "Imagen o logotipo relacionado con el diplomado."
 }
 
 const toggleTooltip = (field: string, event: MouseEvent) => {
@@ -44,7 +45,6 @@ const handleClickOutside = (event: MouseEvent) => {
         hideTooltip()
     }
 }
-
 
 onMounted(() => document.addEventListener('click', handleClickOutside))
 onBeforeUnmount(() => document.removeEventListener('click', handleClickOutside))
@@ -98,27 +98,27 @@ const handleImageUpload = (event: Event) => {
 
 watchEffect(() => {
 	if (props.data.mode === 'edit' && props.data.pk !== null) {
-		alvRoute.value = `${axios.defaults.baseURL}micro-credentials/${props.data.pk}`
+		alvRoute.value = `${axios.defaults.baseURL}diplomas/${props.data.pk}`
 		alvMethod.value = 'PUT'
 		isLoading.value = true
 
-		showMicroCredential(props.data.pk)
+		showDiplomas(props.data.pk)
 			.then((res) => {
-				const mc = res.data
+				const dp = res.data
 				Object.keys(form).forEach((key) => {
-					if (mc[key] !== undefined) {
-						form[key as keyof typeof form] = mc[key]
+					if (dp[key] !== undefined) {
+						form[key as keyof typeof form] = dp[key]
 					}
 				})
 			})
 			.catch((error) => {
-				console.error('Error al cargar la microcredencial:', error)
+				console.error('Error al cargar el diplomado:', error)
 			})
 			.finally(() => {
 				isLoading.value = false
 			})
 	} else if (props.data.mode === 'create') {
-		alvRoute.value = `${axios.defaults.baseURL}micro-credentials`
+		alvRoute.value = `${axios.defaults.baseURL}diplomas`
 		alvMethod.value = 'POST'
 		Object.keys(form).forEach((key) => {
 			form[key as keyof typeof form] = ''
@@ -126,6 +126,7 @@ watchEffect(() => {
 	}
 })
 </script>
+
 
 <template>
 	<div

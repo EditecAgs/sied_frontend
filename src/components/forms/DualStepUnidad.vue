@@ -5,14 +5,18 @@ import '@vuepic/vue-datepicker/dist/main.css';
 import 'floating-vue/dist/style.css';
 import btnCreate from '../../components/buttons/btnCreate.vue';
 import mdlOrganization from '../modals/modals-forms/mdlOrganization.vue';
+import mdlCertification from '../modals/modals-forms/mdlCertification.vue';
+import mdlDiploma from '../modals/modals-forms/mdlDiploma.vue';
 import mdlMicroCredential from '../modals/modals-forms/mdlMicroCredential.vue';
 import mdlDualType from "../../components/modals/modals-forms/mdlDualType.vue";
 import { useModal } from '../../composables/UseModal';
 import { getOrganizations } from '../../services/organizations/organizations.js';
 import { getMicroCredentials } from '../../services/dual_projects/micro-credentials';
+import { getCertifications } from '../../services/dual_projects/certifications.js';
+import { getDiplomas } from '../../services/dual_projects/diplomas';
 import { getDualTypes } from '../../services/dual_projects/dual-types';
 
-const emit = defineEmits(['update:modelValue', 'update:organizations', 'update:microCredentials', 'update:dualTypes']);
+const emit = defineEmits(['update:modelValue', 'update:organizations', 'update:microCredentials', 'update:dualTypes', 'update:certifications', 'update:diplomas']);
 const props = defineProps({
   modelValue: { type: Object, required: true },
   areas: Array,
@@ -20,11 +24,15 @@ const props = defineProps({
   agreementStatuses: Array,
   supportTypes: Array,
   dualTypes: Array,
-  microCredentials: Array
+  microCredentials: Array,
+  certifications: Array,
+  diplomas: Array
 });
 
 const { showModal, modalData, openModal, closeModal } = useModal();
 const { showModal: showMicroModal, modalData: microModalData, openModal: openMicroModal, closeModal: closeMicroModal } = useModal();
+const { showModal: showCertificationModal, modalData: certificationModalData, openModal: openCertificationModal, closeModal: closeCertificationModal } = useModal();
+const { showModal: showDiplomaModal, modalData: diplomaModalData, openModal: openDiplomaModal, closeModal: closeDiplomaModal } = useModal();
 const { showModal: showDualTypeModal, modalData: dualTypeModalData, openModal: openDualTypeModal, closeModal: closeDualTypeModal } = useModal();
 
 const maxQualification = ref(props.modelValue.max_qualification || '');
@@ -59,6 +67,36 @@ const searchMicro = ref('');
 const showMicroDropdown = ref(false);
 const microDropdownRef = ref(null);
 
+const allCertifications = ref(props.certifications || []);
+const selectedCertifications = ref([]);
+const searchCertification = ref('');
+const showCertificationDropdown = ref(false);
+const certificationDropdownRef = ref(null);
+
+// REFS SIMPLIFICADAS PARA ASESORES
+const internalAdvisorName = ref(props.modelValue.internal_advisor_name || '');
+const internalAdvisorQualification = ref(props.modelValue.internal_advisor_qualification || null);
+const externalAdvisorName = ref(props.modelValue.external_advisor_name || '');
+const externalAdvisorQualification = ref(props.modelValue.external_advisor_qualification || null);
+
+const averageQualification = computed(() => {
+  const intQ = Number(internalAdvisorQualification.value) || 0;
+  const extQ = Number(externalAdvisorQualification.value) || 0;
+  
+  if (internalAdvisorQualification.value != null && 
+      externalAdvisorQualification.value != null &&
+      internalAdvisorQualification.value !== '' && 
+      externalAdvisorQualification.value !== '') {
+    return ((intQ + extQ) / 2).toFixed(2);
+  }
+  return '';
+});
+
+const allDiplomas = ref(props.diplomas || []);
+const selectedDiplomas = ref([]);
+const searchDiploma = ref('');
+const showDiplomaDropdown = ref(false);
+const diplomaDropdownRef = ref(null);
 
 const isAmountDisabled = ref(false);
 const amountField = ref(null);
@@ -78,10 +116,45 @@ const fieldHelpTexts = {
   advisor: "Persona responsable de guiar al estudiante (interno: institución, externo: organización).",
   is_concluded: "Marca si la actividad ya finalizó.",
   is_hired: "Indica si el estudiante fue contratado después de la actividad.",
-  micro_credentials: "Microcredenciales o certificaciones emitidas al finalizar la actividad.",
+  micro_credentials: "Microcredenciales  emitidas al finalizar la actividad.",
+  certifications: "Certificaciones emitidas al finalizar la actividad.",
+  diplomas: "Diplomados emitidos al finalizar la actividad.",
   description: "Proporcione una breve descripción de la modalidad seleccionada, indicando sus características o propósito.",
 };
 
+// WATCHERS SIMPLIFICADOS PARA ASESORES
+watch(internalAdvisorName, (newName) => {
+  update('internal_advisor_name', newName);
+});
+
+watch(externalAdvisorName, (newName) => {
+  update('external_advisor_name', newName);
+});
+
+watch(internalAdvisorQualification, (newQual) => {
+  update('internal_advisor_qualification', newQual);
+  updateQualificationAverage();
+});
+
+watch(externalAdvisorQualification, (newQual) => {
+  update('external_advisor_qualification', newQual);
+  updateQualificationAverage();
+});
+
+const updateQualificationAverage = () => {
+  const intQ = Number(internalAdvisorQualification.value) || 0;
+  const extQ = Number(externalAdvisorQualification.value) || 0;
+  
+  if (internalAdvisorQualification.value != null && 
+      externalAdvisorQualification.value != null &&
+      internalAdvisorQualification.value !== '' && 
+      externalAdvisorQualification.value !== '') {
+    const avg = ((intQ + extQ) / 2).toFixed(2);
+    update('qualification', Number(avg));
+  } else {
+    update('qualification', null);
+  }
+};
 
 watch(() => props.modelValue.economic_support, (newSupportId, oldSupportId) => {
   if (newSupportId === 1) {
@@ -104,18 +177,27 @@ watch(() => props.supportTypes, (newTypes) => {
   }
 });
 
-
-
 const initializeMicroCredentials = () => {
   selectedMicroCredentials.value = (props.modelValue.micro_credentials || [])
       .map(id => allMicroCredentials.value.find(m => Number(m.id) === Number(id)))
       .filter(Boolean);
 };
 
+const initializeCertifications = () => {
+  selectedCertifications.value = (props.modelValue.certifications || [])
+	  .map(id => allCertifications.value.find(c => Number(c.id) === Number(id)))
+	  .filter(Boolean);
+};
+
+const initializeDiplomas = () => {
+  selectedDiplomas.value = (props.modelValue.diplomas || [])
+	  .map(id => allDiplomas.value.find(d => Number(d.id) === Number(id)))
+	  .filter(Boolean);
+};
+
 const handleSavedOrganization = async () => {
   try {
     const res = await getOrganizations();
-
     emit('update:organizations', res.data);
 
     const newOrganization = res.data?.[res.data.length - 1];
@@ -124,7 +206,6 @@ const handleSavedOrganization = async () => {
     }
 
     closeModal();
-
     setTimeout(() => {
       showOrganizationDropdown.value = true;
       searchOrganization.value = '';
@@ -139,11 +220,8 @@ const handleSavedOrganization = async () => {
 const handleSavedMicroCredential = async () => {
   try {
     const res = await getMicroCredentials();
-
     emit('update:microCredentials', res.data);
-
     closeMicroModal();
-
     setTimeout(() => {
       showMicroDropdown.value = true;
       searchMicro.value = '';
@@ -155,10 +233,41 @@ const handleSavedMicroCredential = async () => {
   }
 };
 
+const handleSavedCertification = async () => {
+  try {
+    const res = await getCertifications();
+	emit('update:certifications', res.data);
+	closeCertificationModal();
+	setTimeout(() => {
+	  showCertificationDropdown.value = true;
+	  searchCertification.value = '';
+	}, 100);
+
+  } catch (error) {
+	console.error('Error al recargar certificaciones:', error);
+	closeCertificationModal();
+  }
+};
+
+const handleSavedDiploma = async () => {
+  try {
+	const res = await getDiplomas();
+	emit('update:diplomas', res.data);
+	closeDiplomaModal();
+	setTimeout(() => {
+	  showDiplomaDropdown.value = true;
+	  searchDiploma.value = '';
+	}, 100);
+
+  } catch (error) {
+	console.error('Error al recargar diplomados:', error);
+	closeDiplomaModal();
+  }
+};
+
 const handleSavedDualType = async () => {
   try {
     const res = await getDualTypes();
-
     emit('update:dualTypes', res.data);
 
     const newDualType = res.data?.[res.data.length - 1];
@@ -167,7 +276,6 @@ const handleSavedDualType = async () => {
     }
 
     closeDualTypeModal();
-
     setTimeout(() => {
       showDualTypeDropdown.value = true;
       searchDualType.value = newDualType?.name || '';
@@ -180,6 +288,7 @@ const handleSavedDualType = async () => {
 };
 
 const initializeSearchValues = () => {
+  // Inicialización básica sin conflictos
   if (props.modelValue.id_dual_area) {
     const area = props.areas?.find(a => a.id === props.modelValue.id_dual_area);
     searchArea.value = area?.name || '';
@@ -214,20 +323,26 @@ const initializeSearchValues = () => {
   }
 
   initializeMicroCredentials();
+  initializeCertifications();
+  initializeDiplomas();
 };
 
 const filteredAreas = computed(() =>
     !searchArea.value ? props.areas || [] : (props.areas || []).filter(a => a.name.toLowerCase().includes(searchArea.value.toLowerCase()))
 );
+
 const filteredOrganizations = computed(() =>
     !searchOrganization.value ? props.organizations || [] : (props.organizations || []).filter(o => o.name.toLowerCase().includes(searchOrganization.value.toLowerCase()))
 );
+
 const filteredStatuses = computed(() =>
     !searchStatus.value ? props.agreementStatuses || [] : (props.agreementStatuses || []).filter(s => s.name.toLowerCase().includes(searchStatus.value.toLowerCase()))
 );
+
 const filteredSupports = computed(() =>
     !searchSupport.value ? props.supportTypes || [] : (props.supportTypes || []).filter(s => s.name.toLowerCase().includes(searchSupport.value.toLowerCase()))
 );
+
 const filteredDualTypes = computed(() =>
     !searchDualType.value ? props.dualTypes || [] : (props.dualTypes || []).filter(d => d.name.toLowerCase().includes(searchDualType.value.toLowerCase()))
 );
@@ -243,7 +358,6 @@ const isQualificationDisabled = computed(() => {
 	return props.modelValue.is_concluded !== 1;
 });
 
-
 const filteredMicro = computed(() =>
     !searchMicro.value
         ? allMicroCredentials.value.filter(m => !selectedMicroCredentials.value.some(s => s.id === m.id))
@@ -254,6 +368,26 @@ const filteredMicro = computed(() =>
         )
 );
 
+const filteredCertifications = computed(() =>
+	!searchCertification.value
+		? allCertifications.value.filter(c => !selectedCertifications.value.some(s => s.id === c.id))
+		: allCertifications.value.filter(
+			c =>
+				c.name.toLowerCase().includes(searchCertification.value.toLowerCase()) &&
+				!selectedCertifications.value.some(s => s.id === c.id)
+		)
+);
+
+const filteredDiplomas = computed(() =>
+	!searchDiploma.value
+		? allDiplomas.value.filter(d => !selectedDiplomas.value.some(s => s.id === d.id))
+		: allDiplomas.value.filter(
+			d =>
+				d.name.toLowerCase().includes(searchDiploma.value.toLowerCase()) &&
+				!selectedDiplomas.value.some(s => s.id === d.id)
+		)
+);
+
 const handleClickOutside = (event) => {
   if (areaDropdownRef.value && !areaDropdownRef.value.contains(event.target)) showAreaDropdown.value = false;
   if (organizationDropdownRef.value && !organizationDropdownRef.value.contains(event.target)) showOrganizationDropdown.value = false;
@@ -261,6 +395,8 @@ const handleClickOutside = (event) => {
   if (supportDropdownRef.value && !supportDropdownRef.value.contains(event.target)) showSupportDropdown.value = false;
   if (dualTypeDropdownRef.value && !dualTypeDropdownRef.value.contains(event.target)) showDualTypeDropdown.value = false;
   if (microDropdownRef.value && !microDropdownRef.value.contains(event.target)) showMicroDropdown.value = false;
+  if (certificationDropdownRef.value && !certificationDropdownRef.value.contains(event.target)) showCertificationDropdown.value = false;
+  if (diplomaDropdownRef.value && !diplomaDropdownRef.value.contains(event.target)) showDiplomaDropdown.value = false;
 };
 
 const update = (field, value) => {
@@ -313,6 +449,30 @@ const addMicroCredential = (micro) => {
   showMicroDropdown.value = false;
 };
 
+const addCertification = (certification) => {
+  if (!selectedCertifications.value.some(c => c.id === certification.id)) {
+	selectedCertifications.value.push(certification);
+  }
+  emit('update:modelValue', {
+	...props.modelValue,
+	certifications: selectedCertifications.value.map(c => Number(c.id))
+  });
+  searchCertification.value = '';
+  showCertificationDropdown.value = false;
+};
+
+const addDiploma = (diploma) => {
+  if (!selectedDiplomas.value.some(d => d.id === diploma.id)) {
+	selectedDiplomas.value.push(diploma);
+  }
+  emit('update:modelValue', {
+	...props.modelValue,
+	diplomas: selectedDiplomas.value.map(d => Number(d.id))
+  });
+  searchDiploma.value = '';
+  showDiplomaDropdown.value = false;
+};
+
 const removeMicroCredential = (micro) => {
   selectedMicroCredentials.value = selectedMicroCredentials.value.filter(m => m.id !== micro.id);
   emit('update:modelValue', {
@@ -321,24 +481,39 @@ const removeMicroCredential = (micro) => {
   });
 };
 
-watch(() => props.modelValue, () => initializeSearchValues(), { deep: true });
-watch(() => props.modelValue.micro_credentials, () => initializeMicroCredentials());
-watch(() => props.microCredentials, (val) => {
-  allMicroCredentials.value = val || [];
-  initializeMicroCredentials();
-});
+const removeCertification = (certification) => {
+  selectedCertifications.value = selectedCertifications.value.filter(c => c.id !== certification.id);
+  emit('update:modelValue', {
+	...props.modelValue,
+	certifications: selectedCertifications.value.map(c => Number(c.id))
+  });
+};
+
+const removeDiploma = (diploma) => {
+  selectedDiplomas.value = selectedDiplomas.value.filter(d => d.id !== diploma.id);
+  emit('update:modelValue', {
+	...props.modelValue,
+	diplomas: selectedDiplomas.value.map(d => Number(d.id))
+  });
+};
+
+// WATCHERS LIMPIOS - SIN CONFLICTOS
 watch(period_start, (val) => {
   if (val) update('period_start', new Date(val).toISOString().slice(0, 10));
 });
+
 watch(period_end, (val) => {
   if (val) update('period_end', new Date(val).toISOString().slice(0, 10));
 });
+
 watch(searchDualType, (val) => {
   if (!val) update('dual_type_id', '');
 });
+
 watch(() => props.modelValue.max_qualification, (newVal) => {
   maxQualification.value = newVal != null ? newVal.toString() : '';
 });
+
 watch(maxQualification, (newVal) => {
   update('max_qualification', newVal ? Number(newVal) : '');
 });
@@ -348,6 +523,8 @@ watch(() => props.modelValue.is_concluded, (newVal) => {
     update('is_hired', 0);
   }
 });
+
+// ELIMINÉ TODOS LOS WATCHERS CONFLICTIVOS
 
 const validate = () => {
   const requiredFields = [
@@ -390,7 +567,6 @@ defineExpose({ validate });
 onMounted(() => {
   document.addEventListener('click', handleClickOutside);
   initializeSearchValues();
-
   if (props.modelValue.economic_support === 1) {
     isAmountDisabled.value = true;
     if (props.modelValue.amount !== 0) {
@@ -398,7 +574,6 @@ onMounted(() => {
     }
   }
 });
-
 </script>
 
 <template>
@@ -714,183 +889,213 @@ onMounted(() => {
 				</div>
 			</div>
 
+<div class="bg-gray-50 rounded-xl p-6 border border-gray-200">
+  <h3 class="text-lg font-semibold text-brand-800 mb-6 flex items-center">
+    <span class="w-6 h-6 bg-brand-100 rounded-full flex items-center justify-center text-brand-800 text-sm mr-2">6</span>
+    Estado del Proyecto Dual
+  </h3>
 
-			<div class="bg-gray-50 rounded-xl p-6 border border-gray-200">
-				<h3 class="text-lg font-semibold text-brand-800 mb-4 flex items-center">
-					<span class="w-6 h-6 bg-brand-100 rounded-full flex items-center justify-center text-brand-800 text-sm mr-2">6</span>
-					Estado del Proyecto Dual
-				</h3>
-				<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-					<div>
-						<label class="label flex items-center gap-1">
-							Proyecto Dual Concluido
-							<button
-								v-tooltip="fieldHelpTexts.is_concluded"
-								type="button"
-								class="help-icon text-gray-400 hover:text-brand-600 cursor-help transition-colors">
-								?
-							</button>
-						</label>
-						<select
-							class="input"
-							:value="modelValue.is_concluded"
-							@change="update('is_concluded', parseInt($event.target.value))">
-							<option :value="0">No</option>
-							<option :value="1">Sí</option>
-						</select>
-					</div>
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
 
-					<div>
-						<label class="label flex items-center gap-1">
-							Contratado
-							<button
-								v-tooltip="fieldHelpTexts.is_hired"
-								type="button"
-								class="help-icon text-gray-400 hover:text-brand-600 cursor-help transition-colors">
-								?
-							</button>
-						</label>
+    <div>
+      <label class="label flex items-center gap-1">
+        Proyecto Dual Concluido
+        <button v-tooltip="fieldHelpTexts.is_concluded" type="button"
+          class="help-icon text-gray-400 hover:text-brand-600 cursor-help transition-colors">?</button>
+      </label>
 
-						<div class="relative">
-							<select
-								class="input w-full"
-								:class="{
-									'opacity-50 cursor-not-allowed bg-gray-100': isHiredDisabled,
-									'cursor-pointer': !isHiredDisabled
-								}"
-								:disabled="isHiredDisabled"
-								:value="modelValue.is_hired"
-								@change="update('is_hired', parseInt($event.target.value))">
-								<option :value="0">No</option>
-								<option :value="1">Sí</option>
-							</select>
+      <select
+        class="input"
+        :value="modelValue.is_concluded"
+        @change="update('is_concluded', parseInt($event.target.value))">
+        <option :value="0">No</option>
+        <option :value="1">Sí</option>
+      </select>
+    </div>
 
-							<div
-								v-if="isHiredDisabled"
-								v-tooltip="'Primero debe marcar, Sí, en Actividad Concluida'"
-								class="absolute inset-0 flex items-center justify-center bg-gray-100 bg-opacity-80 rounded-lg cursor-not-allowed">
-								<span class="text-gray-500 text-sm font-medium">No disponible</span>
-							</div>
-						</div>
+    <div>
+      <label class="label flex items-center gap-1">
+        Contratado
+        <button v-tooltip="fieldHelpTexts.is_hired" type="button"
+          class="help-icon text-gray-400 hover:text-brand-600 cursor-help transition-colors">?</button>
+      </label>
 
-						<p v-if="isHiredDisabled" class="text-xs text-gray-500 mt-1 flex items-center">
-							<svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
-								<path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" />
-							</svg>
-							Disponible cuando la actividad esté concluida
-						</p>
-					</div>
-				</div>
+      <div class="relative">
+        <select
+          class="input w-full"
+          :class="{
+            'opacity-50 cursor-not-allowed bg-gray-100': isHiredDisabled,
+            'cursor-pointer': !isHiredDisabled
+          }"
+          :disabled="isHiredDisabled"
+          :value="modelValue.is_hired"
+          @change="update('is_hired', parseInt($event.target.value))">
+          <option :value="0">No</option>
+          <option :value="1">Sí</option>
+        </select>
 
-				<div v-if="modelValue.is_hired === 1" class="mt-4">
-					<label class="label flex items-center gap-1">
-						Observaciones de Contratación
-						<button
-							v-tooltip="fieldHelpTexts.hired_observation"
-							type="button"
-							class="help-icon text-gray-400 hover:text-brand-600 cursor-help transition-colors">
-							?
-						</button>
-					</label>
-					<textarea
-						class="input min-h-[80px]"
-						placeholder="Detalles sobre la contratación (opcional)"
-						:value="modelValue.hired_observation || ''"
-						@input="update('hired_observation', $event.target.value)" />
-					<p class="text-xs text-gray-500 mt-1">Campo opcional para notas sobre la contratación</p>
-				</div>
+        <div
+          v-if="isHiredDisabled"
+          v-tooltip="'Primero debe marcar Sí en Proyecto Concluido'"
+          class="absolute inset-0 flex items-center justify-center bg-gray-100 bg-opacity-80 rounded-lg cursor-not-allowed">
+          <span class="text-gray-500 text-sm font-medium">No disponible</span>
+        </div>
+      </div>
 
-				<div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
-					<div>
-						<label class="label flex items-center gap-1">
-							Escala de evaluacion
-							<button
-								v-tooltip="fieldHelpTexts.max_qualification"
-								type="button"
-								class="help-icon text-gray-400 hover:text-brand-600 cursor-help transition-colors">
-								?
-							</button>
-						</label>
-						<select
-							v-model="modelValue.max_qualification"
-							class="input"
-							:class="{
-								'opacity-50 cursor-not-allowed bg-gray-100': isQualificationDisabled,
-								'cursor-pointer': !isQualificationDisabled
-							}"
-							:disabled="isQualificationDisabled"
-							@change="update('max_qualification', Number(modelValue.max_qualification))">
-							<option value="">Seleccione...</option>
-							<option value="10">10</option>
-							<option value="100">100</option>
-						</select>
-						<p v-if="errors.max_qualification" class="error-msg">{{ errors.max_qualification }}</p>
-					</div>
+      <p v-if="isHiredDisabled" class="text-xs text-gray-500 mt-1 flex items-center">
+        <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+          <path fill-rule="evenodd"
+            d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
+            clip-rule="evenodd" />
+        </svg>
+        Disponible cuando la actividad esté concluida
+      </p>
+    </div>
+  </div>
 
-					<div>
-						<label class="label flex items-center gap-1">
-							Calificación
-							<button
-								v-tooltip="fieldHelpTexts.qualification"
-								type="button"
-								class="help-icon text-gray-400 hover:text-brand-600 cursor-help transition-colors">
-								?
-							</button>
-						</label>
 
-						<div class="relative">
-							<input
-								type="number"
-								class="input w-full"
-								:class="{
-									'opacity-50 cursor-not-allowed bg-gray-100': isQualificationDisabled,
-									'cursor-pointer': !isQualificationDisabled
-								}"
-								:disabled="isQualificationDisabled"
-								:min="0"
-								:max="modelValue.max_qualification || 100"
-								:value="modelValue.qualification"
-								@input="update('qualification', Number($event.target.value))" />
+  <div v-if="modelValue.is_hired === 1" class="mt-4">
+    <label class="label flex items-center gap-1">
+      Observaciones de Contratación
+      <button v-tooltip="fieldHelpTexts.hired_observation" type="button"
+        class="help-icon text-gray-400 hover:text-brand-600 cursor-help transition-colors">?</button>
+    </label>
 
-							<div
-								v-if="isQualificationDisabled"
-								v-tooltip="'Primero debe marcar, Sí, en Actividad Concluida'"
-								class="absolute inset-0 flex items-center justify-center bg-gray-100 bg-opacity-80 rounded-lg cursor-not-allowed">
-								<span class="text-gray-500 text-sm font-medium">No disponible</span>
-							</div>
-						</div>
+    <textarea
+      class="input min-h-[80px]"
+      placeholder="Detalles sobre la contratación (opcional)"
+      :value="modelValue.hired_observation || ''"
+      @input="update('hired_observation', $event.target.value)" />
 
-						<p v-if="errors.qualification" class="error-msg">{{ errors.qualification }}</p>
+    <p class="text-xs text-gray-500 mt-1">Campo opcional para notas sobre la contratación</p>
+  </div>
 
-						<p v-if="isQualificationDisabled" class="text-xs text-gray-500 mt-1 flex items-center">
-							<svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
-								<path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" />
-							</svg>
-							Disponible cuando la actividad esté concluida
-						</p>
-					</div>
-				</div>
+  <!-- ESCALA DE EVALUACIÓN -->
+  <div class="mt-8">
+    <label class="label flex items-center gap-1">
+      Escala de evaluación
+      <button v-tooltip="fieldHelpTexts.max_qualification" type="button"
+        class="help-icon text-gray-400 hover:text-brand-600 cursor-help transition-colors">?</button>
+    </label>
 
-				<div>
-					<label class="label flex items-center gap-1">
-						Asesor
-						<button
-							v-tooltip="fieldHelpTexts.advisor"
-							type="button"
-							class="help-icon text-gray-400 hover:text-brand-600 cursor-help transition-colors">
-							?
-						</button>
-					</label>
-					<select
-						class="input" :value="modelValue.advisor"
-						@change="update('advisor', $event.target.value)">
-						<option value="">Seleccione...</option>
-						<option value="interno">Interno</option>
-						<option value="externo">Externo</option>
-					</select>
-					<p v-if="errors.advisor" class="error-msg">{{ errors.advisor }}</p>
-				</div>
-			</div>
+    <select
+      v-model="modelValue.max_qualification"
+      class="input w-full md:w-64"
+      :class="{
+        'opacity-50 cursor-not-allowed bg-gray-100': isQualificationDisabled,
+        'cursor-pointer': !isQualificationDisabled
+      }"
+      :disabled="isQualificationDisabled"
+      @change="update('max_qualification', Number(modelValue.max_qualification))">
+      <option value="">Seleccione...</option>
+      <option value="10">10</option>
+      <option value="100">100</option>
+    </select>
+
+    <p v-if="errors.max_qualification" class="error-msg">{{ errors.max_qualification }}</p>
+
+      <p v-if="isHiredDisabled" class="text-xs text-gray-500 mt-1 flex items-center">
+        <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+          <path fill-rule="evenodd"
+            d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
+            clip-rule="evenodd" />
+        </svg>
+        Disponible cuando la actividad esté concluida
+      </p>
+  </div>
+
+  <!-- NOMBRES Y CALIFICACIONES -->
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-10">
+
+    <div>
+      <label class="label flex items-center gap-1">Asesor Interno</label>
+      <input
+        type="text"
+        class="input"
+        v-model="internalAdvisorName"
+        placeholder="Nombre del asesor interno"
+        :disabled="modelValue.is_concluded !== 1" />
+
+      <p v-if="isHiredDisabled" class="text-xs text-gray-500 mt-1 flex items-center">
+        <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+          <path fill-rule="evenodd"
+            d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
+            clip-rule="evenodd" />
+        </svg>
+        Disponible cuando la actividad esté concluida
+      </p>
+
+      <div v-if="internalAdvisorName" class="mt-3">
+        <label class="label flex items-center gap-1">Calificación Asesor Interno</label>
+<input 
+  type="number" 
+  min="0" 
+  :max="modelValue.max_qualification || 100" 
+  class="input" 
+  v-model.number="internalAdvisorQualification" 
+  :disabled="modelValue.is_concluded !== 1" 
+  placeholder="0"
+  @blur="update('internal_advisor_qualification', internalAdvisorQualification)"
+/>
+      </div>
+    </div>
+
+    <div>
+      <label class="label flex items-center gap-1">Asesor Externo</label>
+      <input
+        type="text"
+        class="input"
+        v-model="externalAdvisorName"
+        placeholder="Nombre del asesor externo"
+        :disabled="modelValue.is_concluded !== 1" />
+
+      <p v-if="isHiredDisabled" class="text-xs text-gray-500 mt-1 flex items-center">
+        <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+          <path fill-rule="evenodd"
+            d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
+            clip-rule="evenodd" />
+        </svg>
+        Disponible cuando la actividad esté concluida
+      </p>
+
+      <div v-if="externalAdvisorName" class="mt-3">
+        <label class="label flex items-center gap-1">Calificación Asesor Externo</label>
+<input 
+  type="number" 
+  min="0" 
+  :max="modelValue.max_qualification || 100" 
+  class="input" 
+  v-model.number="externalAdvisorQualification" 
+  :disabled="modelValue.is_concluded !== 1" 
+  placeholder="0"
+  @blur="update('external_advisor_qualification', externalAdvisorQualification)"
+/>
+      </div>
+    </div>
+
+    <!-- CALIFICACIÓN PROMEDIO -->
+    <div class="md:col-span-2 mt-4">
+      <label class="label flex items-center gap-1">Calificación Promedio</label>
+
+      <input
+        v-if="internalAdvisorQualification !== null && externalAdvisorQualification !== null"
+        type="number"
+        class="input bg-gray-100 cursor-not-allowed"
+        :value="averageQualification"
+        disabled />
+
+      <div
+        v-else
+        class="input bg-gray-100 cursor-not-allowed text-gray-500 flex items-center">
+        <span class="text-sm">
+          Primero llena las calificaciones del asesor interno y externo
+        </span>
+      </div>
+    </div>
+  </div>
+</div>
+
+
 
 			<div class="bg-gray-50 rounded-xl p-6 border border-gray-200 space-y-4">
 				<h3 class="text-lg font-semibold text-brand-800 mb-4 flex items-center">
@@ -938,7 +1143,99 @@ onMounted(() => {
 					</span>
 				</div>
 			</div>
+			<div class="bg-gray-50 rounded-xl p-6 border border-gray-200 space-y-4">
+				<h3 class="text-lg font-semibold text-brand-800 mb-4 flex items-center">
+					<span class="w-6 h-6 bg-brand-100 rounded-full flex items-center justify-center text-brand-800 text-sm mr-2">8</span>
+					Certificaciones
+				</h3>
 
+				<div ref="certificationDropdownRef" class="relative">
+					<label class="label flex items-center gap-1">
+						Certificaciones
+						<button
+							v-tooltip="fieldHelpTexts.certifications"
+							type="button"
+							class="help-icon text-gray-400 hover:text-brand-600 cursor-help transition-colors">
+							?
+						</button>
+					</label>
+					<div class="flex items-center gap-2">
+						<input
+							v-model="searchCertification"
+							class="input flex-1"
+							placeholder="Buscar certificado..."
+							@focus="showCertificationDropdown = true"
+							@input="showCertificationDropdown = true" />
+
+						<btn-create
+							:table="'Certificado'"
+							@open="({ mode, pk, table}) => openCertificationModal(mode, pk, table)" />
+					</div>
+
+					<ul v-if="showCertificationDropdown && filteredCertifications.length" class="absolute top-full left-0 w-full mt-1 dropdown z-10">
+						<li
+							v-for="certification in filteredCertifications" :key="certification.id"
+							class="dropdown-item"
+							@click="addCertification(certification)">
+							{{ certification.name }}
+						</li>
+					</ul>
+				</div>
+
+				<div class="flex flex-wrap gap-2 mt-2">
+					<span v-for="certification in selectedCertifications" :key="certification.id" class="bg-brand-100 text-brand-800 px-3 py-1 rounded-full flex items-center gap-2">
+						{{ certification.name }}
+						<button type="button" class="text-red-500 hover:text-red-700 font-bold" @click="removeCertification(certification)">×</button>
+					</span>
+				</div>
+			</div>
+			<div class="bg-gray-50 rounded-xl p-6 border border-gray-200 space-y-4">
+				<h3 class="text-lg font-semibold text-brand-800 mb-4 flex items-center">
+					<span class="w-6 h-6 bg-brand-100 rounded-full flex items-center justify-center text-brand-800 text-sm mr-2">9</span>
+					Diplomas
+				</h3>
+
+				<div ref="diplomaDropdownRef" class="relative">
+					<label class="label flex items-center gap-1">
+						Diplomas
+						<button
+							v-tooltip="fieldHelpTexts.diplomas"
+							type="button"
+							class="help-icon text-gray-400 hover:text-brand-600 cursor-help transition-colors">
+							?
+						</button>
+					</label>
+					<div class="flex items-center gap-2">
+						<input
+							v-model="searchDiploma"
+							class="input flex-1"
+							placeholder="Buscar diploma..."
+							@focus="showDiplomaDropdown = true"
+							@input="showDiplomaDropdown = true" />
+
+						<btn-create
+							:table="'Diploma'"
+							@open="({ mode, pk, table}) => openDiplomaModal(mode, pk, table)" />
+					</div>
+
+
+					<ul v-if="showDiplomaDropdown && filteredDiplomas.length" class="absolute top-full left-0 w-full mt-1 dropdown z-10">
+						<li
+							v-for="diploma in filteredDiplomas" :key="diploma.id"
+							class="dropdown-item"
+							@click="addDiploma(diploma)">
+							{{ diploma.name }}
+						</li>
+					</ul>
+				</div>
+
+				<div class="flex flex-wrap gap-2 mt-2">
+					<span v-for="diploma in selectedDiplomas" :key="diploma.id" class="bg-brand-100 text-brand-800 px-3 py-1 rounded-full flex items-center gap-2">
+						{{ diploma.name }}
+						<button type="button" class="text-red-500 hover:text-red-700 font-bold" @click="removeDiploma(diploma)">×</button>
+					</span>
+				</div>
+			</div>
 			<mdl-organization
 				:show="showModal" :data="modalData"
 				@close="closeModal" @saved="handleSavedOrganization" />
@@ -946,6 +1243,12 @@ onMounted(() => {
 			<mdlMicroCredential
 				:show="showMicroModal" :data="microModalData"
 				@close="closeMicroModal" @saved="handleSavedMicroCredential" />
+			<mdlCertification
+				:show="showCertificationModal" :data="certificationModalData"
+				@close="closeCertificationModal" @saved="handleSavedCertification" />
+			<mdlDiploma
+				:show="showDiplomaModal" :data="diplomaModalData"
+				@close="closeDiplomaModal" @saved="handleSavedDiploma" />
 
 			<mdlDualType
 				:show="showDualTypeModal"

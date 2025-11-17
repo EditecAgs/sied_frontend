@@ -17,6 +17,8 @@ import { getDocumentStatuses } from '../../../services/dual_projects/documents-s
 import { getEconomicSupports } from '../../../services/dual_projects/economic-supports.js';
 import { getDualTypes } from '../../../services/dual_projects/dual-types';
 import { getMicroCredentials } from '../../../services/dual_projects/micro-credentials';
+import { getCertifications } from '../../../services/dual_projects/certifications.js';
+import { getDiplomas } from '../../../services/dual_projects/diplomas.js';
 
 const emit = defineEmits(['close', 'saved']);
 // eslint-disable-next-line vue/valid-define-props
@@ -50,6 +52,8 @@ const dualTypes = ref([]);
 const noChangesDetected = ref(false);
 const originalFormData = ref<any>(null);
 const microCredentials = ref([]);
+const certifications = ref([]);
+const diplomas = ref([]);
 
 const personalStepKey = ref(0);
 
@@ -64,7 +68,9 @@ const LoadDependence = async () => {
 		supportsRes,
 		orgsRes,
 		typesRes,
-		microRes
+		microRes,
+		certRes,
+		dpRes
 	] = await Promise.all([
 		getInstitutions(),
 		getCareers(),
@@ -75,7 +81,9 @@ const LoadDependence = async () => {
 		getEconomicSupports(),
 		getOrganizations(),
 		getDualTypes(),
-		getMicroCredentials()
+		getMicroCredentials(),
+		getCertifications(),
+		getDiplomas()
 	]);
 
 	institutions.value = institutionsRes.data;
@@ -88,6 +96,8 @@ const LoadDependence = async () => {
 	organizations.value = orgsRes.data;
 	dualTypes.value = typesRes.data;
 	microCredentials.value = microRes.data;
+	certifications.value = certRes.data;
+	diplomas.value = dpRes.data;
 };
 
 // Funciones para recargar carreras y especialidades
@@ -139,6 +149,16 @@ const handleMicroCredentialsUpdate = (newMicroCredentials: any[]) => {
 	microCredentials.value = newMicroCredentials;
 };
 
+const handleDiplomasUpdate = (newDiplomas: any[]) => {
+	console.log('Diplomas actualizados desde el hijo:', newDiplomas.length);
+	diplomas.value = newDiplomas;
+};
+
+const handleCertificationsUpdate = (newCertifications: any[]) => {
+	console.log('Certificaciones actualizadas desde el hijo:', newCertifications.length);
+	certifications.value = newCertifications;
+};
+
 const handleDualTypesUpdate = (newDualTypes: any[]) => {
 	console.log('Tipos duales actualizados desde el hijo:', newDualTypes.length);
 	dualTypes.value = newDualTypes;
@@ -187,6 +207,8 @@ const formData = reactive({
 		hired_observation: '',
 		dual_type_id: '',
 		micro_credentials: [],
+		certifications: [],
+		diplomas: [],
 		description: ''
 	}
 });
@@ -239,6 +261,8 @@ const resetForm = () => {
 		hired_observation: '',
 		dual_type_id: '',
 		micro_credentials: [],
+		certifications: [],
+		diplomas: [],
 		description: ''
 	};
 	reportaModeloDual.value = null;
@@ -302,6 +326,8 @@ watch(
 					dual_type_id: project.dual_project_reports?.dual_type?.id ?? '',
 					max_qualification: project.dual_project_reports?.max_qualification ?? '',
 					micro_credentials: project.dual_project_reports?.micro_credentials?.map(m => m.id) || [],
+					certifications: project.dual_project_reports?.certifications?.map(c => c.id) || [],
+					diplomas: project.dual_project_reports?.diplomas?.map(d => d.id) || [],
 					description: project.dual_project_reports?.description ?? ''
 				};
 
@@ -440,7 +466,9 @@ const imprimirYGuardar = async () => {
 				hired_observation: formData.unidadDual.hired_observation,
 				dual_type_id: Number(formData.unidadDual.dual_type_id),
 				description: formData.unidadDual.description,
-				micro_credentials: formData.unidadDual.micro_credentials
+				micro_credentials: formData.unidadDual.micro_credentials,
+				certifications: formData.unidadDual.certifications,
+				diplomas: formData.unidadDual.diplomas
 			};
 		}
 
@@ -554,8 +582,12 @@ const closeModalAndReset = () => {
 							:organizations="organizations"
 							:dualTypes="dualTypes"
 							:microCredentials="microCredentials"
+							:certifications="certifications"
+							:diplomas="diplomas"
 							@update:organizations="handleOrganizationsUpdate"
 							@update:microCredentials="handleMicroCredentialsUpdate"
+							@update:certifications="handleCertificationsUpdate"
+							@update:diplomas="handleDiplomasUpdate"
 							@update:dualTypes="handleDualTypesUpdate" />
 						<DualStepPersonal
 							v-else-if="currentStep === 2"
