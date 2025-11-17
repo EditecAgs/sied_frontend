@@ -14,7 +14,6 @@ const props = defineProps({
 
 const emit = defineEmits(['update:modelValue', 'validate', 'update:careers', 'update:specialties']);
 
-// Modales para carreras y especialidades
 const { showModal: showCareerModal, modalData: careerModalData, openModal: openCareerModal, closeModal: closeCareerModal } = useModal();
 const { showModal: showSpecialtyModal, modalData: specialtyModalData, openModal: openSpecialtyModal, closeModal: closeSpecialtyModal } = useModal();
 
@@ -33,26 +32,19 @@ const form = ref({
 
 const errors = ref({});
 
-// Variables para controlar la selección automática
 const pendingCareerSelection = ref(false);
 const pendingSpecialtySelection = ref(false);
 
-// Funciones para manejar el guardado de carreras y especialidades
 const handleSavedCareer = async () => {
 	try {
-		// Emitir evento para actualizar las carreras en el componente padre
 		emit('update:careers');
-
-		// Marcar que debemos seleccionar la nueva carrera
+		
 		pendingCareerSelection.value = true;
 
-		// Cerrar el modal
 		closeCareerModal();
 
-		// Intentar seleccionar después de un delay para dar tiempo a que se actualicen las props
 		setTimeout(() => {
 			if (props.careers && props.careers.length > 0 && pendingCareerSelection.value) {
-				// Buscar la última carrera que pertenezca a la institución actual
 				const latestCareer = [...props.careers]
 					.reverse()
 					.find(career =>
@@ -94,19 +86,15 @@ const handleSavedCareer = async () => {
 
 const handleSavedSpecialty = async () => {
 	try {
-		// Emitir evento para actualizar las especialidades en el componente padre
+	
 		emit('update:specialties');
-
-		// Marcar que debemos seleccionar la nueva especialidad
+		
 		pendingSpecialtySelection.value = true;
 
-		// Cerrar el modal
 		closeSpecialtyModal();
-
-		// Intentar seleccionar después de un delay para dar tiempo a que se actualicen las props
+		
 		setTimeout(() => {
 			if (props.specialties && props.specialties.length > 0 && pendingSpecialtySelection.value && form.value.id_career) {
-				// Buscar la última especialidad que pertenezca a la carrera actual
 				const latestSpecialty = [...props.specialties]
 					.reverse()
 					.find(specialty =>
@@ -119,7 +107,6 @@ const handleSavedSpecialty = async () => {
 					console.log('Nueva especialidad seleccionada automáticamente:', latestSpecialty.name);
 					pendingSpecialtySelection.value = false;
 				} else {
-					// Si no encontramos una especialidad para esta carrera, intentar de nuevo en 500ms
 					setTimeout(() => {
 						if (pendingSpecialtySelection.value && props.specialties && props.specialties.length > 0 && form.value.id_career) {
 							const retrySpecialty = [...props.specialties]
@@ -146,13 +133,13 @@ const handleSavedSpecialty = async () => {
 	}
 };
 
-// Watchers para detectar cuando se actualizan las props y seleccionar automáticamente
+
 watch(() => props.careers, (newCareers, oldCareers) => {
 	if (pendingCareerSelection.value && newCareers && newCareers.length > 0) {
-		// Si hay una nueva carrera y estamos esperando seleccionar
+
 		const newCareer = newCareers.find(career =>
-			!oldCareers?.find(old => old.id === career.id) && // Es nueva
-			(career.id_institution === props.institution?.id || career.institution_id === props.institution?.id) // Pertenece a la institución
+			!oldCareers?.find(old => old.id === career.id) && 
+			(career.id_institution === props.institution?.id || career.institution_id === props.institution?.id)
 		);
 
 		if (newCareer) {
@@ -165,10 +152,9 @@ watch(() => props.careers, (newCareers, oldCareers) => {
 
 watch(() => props.specialties, (newSpecialties, oldSpecialties) => {
 	if (pendingSpecialtySelection.value && newSpecialties && newSpecialties.length > 0 && form.value.id_career) {
-		// Si hay una nueva especialidad y estamos esperando seleccionar
 		const newSpecialty = newSpecialties.find(specialty =>
-			!oldSpecialties?.find(old => old.id === specialty.id) && // Es nueva
-			(specialty.id_career === parseInt(form.value.id_career) || specialty.career_id === parseInt(form.value.id_career)) // Pertenece a la carrera
+			!oldSpecialties?.find(old => old.id === specialty.id) && 
+			(specialty.id_career === parseInt(form.value.id_career) || specialty.career_id === parseInt(form.value.id_career))
 		);
 
 		if (newSpecialty) {
@@ -437,8 +423,7 @@ defineExpose({
 						:disabled="!institution" />
 					<p v-if="errors.semester" class="text-red-500 text-sm mt-1">{{ errors.semester }}</p>
 				</div>
-
-				<!-- Campo de Carrera con botón crear -->
+				
 				<div>
 					<label class="block text-sm font-medium text-gray-700 mb-1">Carrera *</label>
 					<div class="flex gap-2">
@@ -462,8 +447,7 @@ defineExpose({
 						No hay carreras disponibles para esta institución
 					</p>
 				</div>
-
-				<!-- Campo de Especialidad con botón crear -->
+				
 				<div>
 					<label class="block text-sm font-medium text-gray-700 mb-1">Especialidad</label>
 					<div class="flex gap-2">

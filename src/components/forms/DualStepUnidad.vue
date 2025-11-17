@@ -435,7 +435,7 @@ onMounted(() => {
 
 					<div ref="areaDropdownRef">
 						<label class="label flex items-center gap-1">
-							Clasificación General de la Proyecto Dual
+							Clasificación General del Proyecto Dual
 							<button
 								v-tooltip="fieldHelpTexts.id_dual_area"
 								type="button"

@@ -4,7 +4,7 @@
                p-6 sm:p-8 shadow-md dark:border-gray-700 dark:bg-gray-900/90">
 		<div class="mb-6">
 			<h3 class="text-lg font-semibold text-gray-600 dark:text-white">
-				Promedio de apoyos económicos
+				Promedio de Apoyos Económicos
 			</h3>
 			<p class="mt-1 text-gray-500 text-sm dark:text-gray-400">
 				Monto promedio de los apoyos registrados

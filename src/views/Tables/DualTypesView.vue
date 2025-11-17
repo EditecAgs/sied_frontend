@@ -2,8 +2,8 @@
 	<AdminLayout>
 		<PageBreadcrumb :pageTitle="currentPageTitle" />
 		<div class="space-y-5 sm:space-y-6">
-			<ComponentCard title="Catálogo de Tipos de Actividades Duales">
-				<btn-create :table="'Tipo de actividad dual'" @open="({ mode, pk, table}) => openModal(mode, pk, table)" class="divide-error-900 hover:divide-error-800" />
+			<ComponentCard title="Catálogo de Tipos de Modelo Dual">
+				<btn-create :table="'Tipo de Modelo Dual'" @open="({ mode, pk, table}) => openModal(mode, pk, table)" class="divide-error-900 hover:divide-error-800" />
 				<mdlDualType
 					:show="showModal"
 					:data="modalData"
@@ -35,7 +35,7 @@ import mdlDualType from '../../components/modals/modals-forms/mdlDualType.vue';
 import { useModal } from "../../composables/UseModal";
 import mdlDeleteDualType from "../../components/modals/delete-only/mdlDeleteDualType.vue"
 
-const currentPageTitle = ref("Tipos de Actividades Duales");
+const currentPageTitle = ref("Tipo de Modelo Dual");
 const { showModal, modalData, openModal, closeModal } = useModal();
 
 const tableRef = ref(null);

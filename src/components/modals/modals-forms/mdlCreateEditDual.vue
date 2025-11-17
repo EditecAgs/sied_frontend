@@ -90,7 +90,6 @@ const LoadDependence = async () => {
 	microCredentials.value = microRes.data;
 };
 
-// Funciones para recargar carreras y especialidades
 const reloadCareers = async () => {
 	try {
 		console.log('Recargando carreras...');
@@ -113,7 +112,7 @@ const reloadSpecialties = async () => {
 	}
 };
 
-// Manejadores para las actualizaciones desde el componente hijo
+
 const handleCareersUpdate = async () => {
 	console.log('Evento update:careers recibido');
 	await reloadCareers();
@@ -593,7 +592,7 @@ const closeModalAndReset = () => {
 						@click="handleNextOrSubmit">
 						{{
 							currentStep === steps.length - 1 ||
-							(currentStep === 0 && reportaModeloDual === false)
+								(currentStep === 0 && reportaModeloDual === false)
 								? 'Enviar'
 								: 'Siguiente'
 						}}

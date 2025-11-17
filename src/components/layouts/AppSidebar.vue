@@ -88,7 +88,6 @@
 													},
 												]" />
 										</button>
-										<!-- Si el enlace es interno, usa router-link -->
 										<router-link
 											v-else-if="item.path && !item.path.startsWith('http')"
 											:to="item.path"
@@ -254,7 +253,7 @@ const menuGroups = computed(() => {
 					subItems: [
 						...(userType.value === 0 ? [{ name: 'Usuarios', path: '/basic-tables', pro: false }] : []),
 						{ name: 'Apoyo Económico', path: '/economic-table', pro: false },
-						{ name: 'Áreas Duales', path: '/dual_Area-table', pro: false },
+						{ name: 'Clasificación General del Proyecto Dual', path: '/dual_Area-table', pro: false },
 						{ name: 'Carreras', path: '/careers-table', pro: false },
 						{ name: 'Cámaras', path: '/Clusters-table', pro: false },
 						{ name: 'Especialidades', path: '/specialties-table', pro: false },
@@ -267,7 +266,7 @@ const menuGroups = computed(() => {
 						{ name: 'Sectores', path: '/sectors-table', pro: false },
 						{ name: 'Subsistemas', path: '/subsystem-table', pro: false },
 						{ name: 'Tipo de Organización ', path: '/type-table', pro: false },
-						{ name: 'Tipo de Actividad Dual', path: '/dual_type-table', pro: false },
+						{ name: 'Tipo de Modelo Dual', path: '/dual_type-table', pro: false },
 					].filter(Boolean),
 				},
 			],

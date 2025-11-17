@@ -3,7 +3,7 @@
 		class="overflow-hidden rounded-2xl border border-gray-200 bg-[rgb(211,211,210)]/50 px-6 pt-6 shadow-md dark:border-gray-700 dark:bg-gray-900 sm:px-8 sm:pt-8">
 		<div class="flex items-center justify-between mb-5">
 			<h3 class="text-xl font-semibold text-gray-600 dark:text-white">
-				Organizaciones por alcance
+				Organizaciones por Operación
 			</h3>
 
 			<div class="relative h-fit" />
