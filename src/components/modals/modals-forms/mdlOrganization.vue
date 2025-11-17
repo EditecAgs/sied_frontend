@@ -60,7 +60,6 @@ const types = ref([])
 const sectors = ref([])
 const clusters = ref([])
 
-
 const sectorDropdownOpen = ref(false)
 const searchQuery = ref('')
 
@@ -78,6 +77,13 @@ const highlightedSectors = [
 	'Automotriz y Electromovilidad'
 ];
 
+const formatSectorName = (sector: any) => {
+	if (highlightedSectors.includes(sector.name)) {
+		return `${sector.name} (SM)`;
+	}
+	return sector.name;
+};
+
 const filteredSectors = computed(() => {
 	if (!sectors.value) return [];
 
@@ -91,14 +97,15 @@ const filteredSectors = computed(() => {
 
 	return filtered.map(sector => ({
 		...sector,
-		isHighlighted: highlightedSectors.includes(sector.name)
+		isHighlighted: highlightedSectors.includes(sector.name),
+		displayName: formatSectorName(sector)
 	}));
 });
 
 const selectedSectorName = computed(() => {
 	if (!form.id_sector || !sectors.value) return '';
 	const sector = sectors.value.find(s => s.id === form.id_sector);
-	return sector ? sector.name : '';
+	return sector ? formatSectorName(sector) : '';
 });
 
 const toggleSectorDropdown = () => {
@@ -355,7 +362,13 @@ const afterError = (res: any) => {
 													'font-semibold text-brand-700': sector.isHighlighted,
 													'text-gray-700': !sector.isHighlighted
 												}">
-												{{ sector.name }}
+												<!-- Mostrar el nombre formateado con (SM) para sectores destacados -->
+												<span v-if="sector.isHighlighted" class="font-bold text-brand-700">
+													{{ sector.displayName }}
+												</span>
+												<span v-else>
+													{{ sector.displayName }}
+												</span>
 											</div>
 											<div
 												v-if="filteredSectors.length === 0"
@@ -596,5 +609,13 @@ const afterError = (res: any) => {
 		height: 100%;
 		z-index: 40;
 	}
+}
+
+.font-bold {
+	font-weight: 700;
+}
+
+.text-brand-700 {
+	color: #931f44;
 }
 </style>

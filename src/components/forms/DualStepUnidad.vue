@@ -93,6 +93,9 @@ const averageQualification = computed(() => {
 		externalAdvisorQualification.value !== '') {
 		return ((intQ + extQ) / 2).toFixed(2);
 	}
+	if (bothQualificationsPresent.value) {
+		return ((intQ + extQ) / 2).toFixed(2);
+	}
 	return '';
 });
 
@@ -465,6 +468,13 @@ const isHiredDisabled = computed(() => {
 
 const isQualificationDisabled = computed(() => {
 	return props.modelValue.is_concluded !== 1;
+});
+
+const bothQualificationsPresent = computed(() => {
+	return internalAdvisorQualification.value !== null &&
+		internalAdvisorQualification.value !== '' &&
+		externalAdvisorQualification.value !== null &&
+		externalAdvisorQualification.value !== '';
 });
 
 const filteredMicro = computed(() =>
@@ -1173,7 +1183,7 @@ onMounted(() => {
 									d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
 									clip-rule="evenodd" />
 							</svg>
-							Disponible cuando la actividad esté concluida
+							Disponible cuando el proyecto esté concluido
 						</p>
 					</div>
 				</div>
@@ -1227,7 +1237,7 @@ onMounted(() => {
 								d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
 								clip-rule="evenodd" />
 						</svg>
-						Disponible cuando la actividad esté concluida
+						Disponible cuando el proyecto esté concluido
 					</p>
 				</div>
 
@@ -1248,7 +1258,7 @@ onMounted(() => {
 									d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
 									clip-rule="evenodd" />
 							</svg>
-							Disponible cuando la actividad esté concluida
+							Disponible cuando el proyecto esté concluido
 						</p>
 
 						<div v-if="internalAdvisorName" class="mt-3">
@@ -1286,7 +1296,7 @@ onMounted(() => {
 									d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
 									clip-rule="evenodd" />
 							</svg>
-							Disponible cuando la actividad esté concluida
+							Disponible cuando el proyecto esté concluido
 						</p>
 
 						<div v-if="externalAdvisorName" class="mt-3">
@@ -1308,23 +1318,13 @@ onMounted(() => {
 						</div>
 					</div>
 
-					<div class="md:col-span-2 mt-4">
+					<div v-if="bothQualificationsPresent" class="md:col-span-2 mt-4">
 						<label class="label flex items-center gap-1">Calificación Final</label>
-
 						<input
-							v-if="internalAdvisorQualification !== null && externalAdvisorQualification !== null"
 							type="number"
 							class="input bg-gray-100 cursor-not-allowed"
 							:value="averageQualification"
 							disabled />
-
-						<div
-							v-else
-							class="input bg-gray-100 cursor-not-allowed text-gray-500 flex items-center">
-							<span class="text-sm">
-								Primero llena las calificaciones del asesor interno y externo
-							</span>
-						</div>
 					</div>
 				</div>
 			</div>
