@@ -114,7 +114,7 @@ const fieldHelpTexts = {
 	dual_type_id: "Selecciona el tipo de modalidad que tendrá la actividad dual: Desarrollo de proyecto, Rotación de puestos, Práctica en área, Residencias Profesionales, Servicio Social, etc.",
 	id_organization: "Selecciona la empresa, institución u organismo donde se desarrollará el proyecto dual. Cada organización incluye datos como tipo, sector, tamaño y ubicación.",
 	period_start: "Día en que comenzará formalmente la actividad dual.",
-	period_end: "Día en que se dará por concluido la actividad.",
+	period_end: "Día en que se dará por concluido la actividad. Solo es obligatorio si el proyecto ya ha concluido.",
 	status_document: "Situación actual del convenio relacionado al proyecto (firmado o en trámite).",
 	economic_support: "Forma en la que la organización brinda apoyo (ejemplo: beca, transporte, alimentación, honorarios).",
 	amount: "Cantidad monetaria o equivalente proporcionada como apoyo.",
@@ -128,7 +128,6 @@ const fieldHelpTexts = {
 	description: "Proporcione una breve descripción de la modalidad seleccionada, indicando sus características o propósito.",
 };
 
-// Función para obtener clase CSS basada en validación
 const getValidationClass = (fieldName) => {
 	if (!showValidationErrors.value) return '';
 
@@ -136,12 +135,15 @@ const getValidationClass = (fieldName) => {
 		return 'input-error';
 	}
 
-	// Para campos requeridos que están llenos
 	const requiredFields = [
-		'name_report', 'id_organization', 'id_dual_area', 'period_start', 'period_end',
+		'name_report', 'id_organization', 'id_dual_area', 'period_start',
 		'status_document', 'economic_support', 'amount', 'is_concluded',
 		'is_hired', 'dual_type_id'
 	];
+
+	if (fieldName === 'period_end' && props.modelValue.is_concluded === 1 && props.modelValue.period_end) {
+		return 'input-success';
+	}
 
 	if (requiredFields.includes(fieldName) && props.modelValue[fieldName]) {
 		return 'input-success';
@@ -150,7 +152,6 @@ const getValidationClass = (fieldName) => {
 	return '';
 };
 
-// Función para mostrar resumen de errores en modal
 const getValidationSummary = () => {
 	const errorCount = Object.keys(errors.value).length;
 	if (errorCount === 0) return null;
@@ -630,7 +631,11 @@ watch(period_start, (val) => {
 });
 
 watch(period_end, (val) => {
-	if (val) update('period_end', new Date(val).toISOString().slice(0, 10));
+	if (val) {
+		update('period_end', new Date(val).toISOString().slice(0, 10));
+	} else {
+		update('period_end', null);
+	}
 });
 
 watch(searchDualType, (val) => {
@@ -658,9 +663,9 @@ const validate = () => {
 	showValidationErrors.value = true;
 
 	const requiredFields = [
-		'name_report','id_organization','id_dual_area','period_start','period_end',
-		'status_document','economic_support','amount','is_concluded',
-		'is_hired','dual_type_id'
+		'name_report', 'id_organization', 'id_dual_area', 'period_start',
+		'status_document', 'economic_support', 'amount', 'is_concluded',
+		'is_hired', 'dual_type_id'
 	];
 
 	let isValid = true;
@@ -676,14 +681,23 @@ const validate = () => {
 		}
 	}
 
+	if (props.modelValue.is_concluded === 1) {
+		if (!props.modelValue.period_end) {
+			errors.value.period_end = 'La fecha de fin es obligatoria cuando el proyecto está concluido';
+			isValid = false;
+			console.log('❌ Fecha de fin requerida para proyecto concluido');
+		}
+	}
+
 	if (props.modelValue.amount < 0) {
 		errors.value.amount = 'El monto debe ser mayor o igual a 0';
 		isValid = false;
 		console.log('❌ Monto negativo');
 	}
 
-	const start = new Date(props.modelValue.period_start);
-	const end = new Date(props.modelValue.period_end);
+	const start = props.modelValue.period_start ? new Date(props.modelValue.period_start) : null;
+	const end = props.modelValue.period_end ? new Date(props.modelValue.period_end) : null;
+
 	if (start && end && start > end) {
 		errors.value.period_end = 'La fecha de fin debe ser posterior a la fecha de inicio';
 		isValid = false;
@@ -998,7 +1012,7 @@ onMounted(() => {
 					<div>
 						<label class="label flex items-center gap-1">
 							Fecha de Fin
-							<span class="text-red-500">*</span>
+							<span v-if="modelValue.is_concluded === 1" class="text-red-500">*</span>
 							<button
 								v-tooltip="fieldHelpTexts.period_end"
 								type="button"
@@ -1007,9 +1021,15 @@ onMounted(() => {
 							</button>
 						</label>
 						<Datepicker
-							v-model="period_end" placeholder="Seleccione la fecha" :enable-time-picker="false"
-							class="input" :class="getValidationClass('period_end')" />
+							v-model="period_end"
+							placeholder="Seleccione la fecha"
+							:enable-time-picker="false"
+							class="input"
+							:class="getValidationClass('period_end')" />
 						<p v-if="errors.period_end" class="error-msg">{{ errors.period_end }}</p>
+						<p v-if="modelValue.is_concluded !== 1" class="text-xs text-gray-500 mt-1">
+							Opcional para proyectos en curso
+						</p>
 					</div>
 				</div>
 

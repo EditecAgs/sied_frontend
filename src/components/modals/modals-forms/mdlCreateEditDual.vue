@@ -217,7 +217,7 @@ const canSubmit = computed(() => {
 	return true;
 });
 
-const formatDate = (date: string | Date): string => {
+const formatDate = (date: string | Date | null): string => {
 	if (!date) return '';
 	const d = new Date(date);
 	return d.toISOString().slice(0, 10);
@@ -459,8 +459,15 @@ const imprimirYGuardar = async () => {
 				id_institution: Number(formData.academico.id_institution)
 			};
 		} else {
+			// Validación actualizada para period_end
 			if (!formData.unidadDual.name_report || !formData.unidadDual.id_organization || !formData.unidadDual.id_dual_area) {
 				alert('Debes llenar todos los campos de la Unidad Dual');
+				return;
+			}
+
+			// Validar period_end solo si el proyecto está concluido
+			if (formData.unidadDual.is_concluded === 1 && !formData.unidadDual.period_end) {
+				alert('La fecha de fin es obligatoria cuando el proyecto está concluido');
 				return;
 			}
 
@@ -491,7 +498,7 @@ const imprimirYGuardar = async () => {
 				id_organization: Number(formData.unidadDual.id_organization),
 				id_dual_area: Number(formData.unidadDual.id_dual_area),
 				period_start: formatDate(formData.unidadDual.period_start),
-				period_end: formatDate(formData.unidadDual.period_end),
+				period_end: formatDate(formData.unidadDual.period_end), // Puede ser null/empty
 				period_observation: formData.unidadDual.period_observation,
 				status_document: Number(formData.unidadDual.status_document),
 				economic_support: Number(formData.unidadDual.economic_support),
@@ -512,7 +519,6 @@ const imprimirYGuardar = async () => {
 				external_advisor_qualification: Number(formData.unidadDual.external_advisor_qualification) || null
 			};
 		}
-
 
 		const currentData = JSON.stringify(formData);
 		if (props.data.mode === 'create') {
