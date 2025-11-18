@@ -4,10 +4,10 @@
                p-6 sm:p-8 shadow-md dark:border-gray-700 dark:bg-gray-900/90">
 		<div class="mb-6">
 			<h3 class="text-lg font-semibold text-gray-600 dark:text-white">
-				Proyectos por tipo de actividad dual
+				Proyectos por Tipo de Modelo Dual
 			</h3>
 			<p class="mt-1 text-gray-500 text-sm dark:text-gray-400">
-				Distribución de proyectos según el tipo de actividad dual registrada
+				Distribución de proyectos según el tipo de modelo dual registrada
 			</p>
 		</div>
 

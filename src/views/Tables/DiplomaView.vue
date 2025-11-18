@@ -2,18 +2,18 @@
 	<AdminLayout>
 		<PageBreadcrumb :pageTitle="currentPageTitle" />
 		<div class="space-y-5 sm:space-y-6">
-			<ComponentCard title="Catálogo de Tipos de Modelo Dual">
-				<btn-create :table="'Tipo de Modelo Dual'" @open="({ mode, pk, table}) => openModal(mode, pk, table)" class="divide-error-900 hover:divide-error-800" />
-				<mdlDualType
+			<ComponentCard title="Catálogo de Diplomados">
+				<btn-create :table="'Diplomados'" @open="({ mode, pk, table}) => openModal(mode, pk, table)" class="divide-error-900 hover:divide-error-800" />
+				<mdlDiploma
 					:show="showModal"
 					:data="modalData"
 					@close="closeModal"
 					@saved="handleSaved" />
-				<TableDualType
+				<TableDiplomas
 					ref="tableRef"
 					@open="({ mode, pk, table }) => openModal(mode, pk, table)"
 					@open-confirm="openDeleteModal" />
-				<mdlDeleteDualType
+				<mdlDeleteDiploma
 					:show="showDeleteModal"
 					:table="deleteTarget.table"
 					:pk="deleteTarget.pk"
@@ -29,13 +29,12 @@ import { ref } from "vue";
 import PageBreadcrumb from "../../components/common/PageBreadcrumb.vue";
 import AdminLayout from "../../components/layouts/AdminLayout.vue";
 import ComponentCard from "../../components/common/componentCard.vue";
-import TableDualType from "../../components/tables/basic-tables/TableDualType.vue";
+import TableDiplomas from "../../components/tables/basic-tables/TableDiplomas.vue";
 import btnCreate from "../../components/buttons/btnCreate.vue";
-import mdlDualType from '../../components/modals/modals-forms/mdlDualType.vue';
+import mdlDiploma from '../../components/modals/modals-forms/mdlDiploma.vue';
 import { useModal } from "../../composables/UseModal";
-import mdlDeleteDualType from "../../components/modals/delete-only/mdlDeleteDualType.vue"
-
-const currentPageTitle = ref("Tipo de Modelo Dual");
+import mdlDeleteDiploma from "../../components/modals/delete-only/mdlDeleteDiploma.vue"
+const currentPageTitle = ref("Diplomados");
 const { showModal, modalData, openModal, closeModal } = useModal();
 
 const tableRef = ref(null);

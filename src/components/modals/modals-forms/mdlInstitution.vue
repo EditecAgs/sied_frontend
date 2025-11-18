@@ -1,6 +1,8 @@
 <script setup lang="ts">
-import { defineProps, defineEmits, reactive, watchEffect, watch, ref, onMounted, onBeforeUnmount } from 'vue'
+import { defineProps, defineEmits, reactive, watchEffect, watch, ref, onMounted } from 'vue'
 import axios from 'axios'
+import { VTooltip } from 'floating-vue'
+import 'floating-vue/dist/style.css'
 import { getStates } from '../../../services/location/states.js'
 import { getMunicipalities } from '../../../services/location/municipalities.js'
 import { getAcademicPeriods } from '../../../services/institutions/academic-periods.js'
@@ -26,7 +28,7 @@ const afterError = (error) => {
 		console.error('Error inesperado:', error)
 	}
 }
-
+// eslint-disable-next-line vue/valid-define-props
 const props = defineProps<{
 	show: boolean
 	data: {
@@ -59,9 +61,7 @@ const allMunicipalities = ref([])
 const subsystems = ref([])
 const academic_periods = ref([])
 
-const activeTooltip = ref<string | null>(null)
-const tooltipPosition = ref({ x: 0, y: 0 })
-const tooltipTimeout = ref<number | null>(null)
+const vTooltip = VTooltip
 
 const fieldHelpTexts: Record<string, string> = {
 	name: "Nombre oficial de la institución educativa.",
@@ -76,31 +76,6 @@ const fieldHelpTexts: Record<string, string> = {
 	id_municipality: "Selecciona el municipio correspondiente al estado elegido.",
 	image: "Imagen o logotipo representativo de la institución."
 }
-
-const toggleTooltip = (field: string, event: MouseEvent) => {
-	const target = event.currentTarget as HTMLElement
-	const rect = target.getBoundingClientRect()
-	tooltipPosition.value = { x: rect.left + rect.width / 2, y: rect.top - 10 }
-	activeTooltip.value = activeTooltip.value === field ? null : field
-}
-
-const hideTooltip = () => (activeTooltip.value = null)
-const hideTooltipDelayed = () => {
-	tooltipTimeout.value = window.setTimeout(() => hideTooltip(), 200)
-}
-const cancelHideTooltip = () => {
-	if (tooltipTimeout.value) clearTimeout(tooltipTimeout.value)
-}
-
-const handleClickOutside = (event: MouseEvent) => {
-	if (!event.target.closest('.help-icon') && !event.target.closest('.tooltip-box')) {
-		hideTooltip()
-	}
-}
-
-onMounted(() => document.addEventListener('click', handleClickOutside))
-onBeforeUnmount(() => document.removeEventListener('click', handleClickOutside))
-
 
 const LoadDependence = async () => {
 	try {
@@ -185,16 +160,6 @@ const onFileChange = (event: Event) => {
 </script>
 
 <template>
-	<div
-		v-if="activeTooltip"
-		class="tooltip-box fixed z-[999] max-w-xs bg-gray-800 text-white text-sm rounded-lg p-3 shadow-lg transition-opacity duration-200"
-		:style="{ left: `${tooltipPosition.x}px`, top: `${tooltipPosition.y}px`, transform: 'translate(-50%, -100%)' }"
-		@mouseenter="cancelHideTooltip"
-		@mouseleave="hideTooltipDelayed">
-		{{ fieldHelpTexts[activeTooltip] }}
-		<div class="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-gray-800" />
-	</div>
-
 	<transition name="fade-scale">
 		<div v-if="show" class="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm" style="margin-top: 0px" @click.self="emit('close')">
 			<div class="bg-white rounded-2xl shadow-2xl w-full max-w-4xl p-8 relative max-h-[85vh] flex flex-col overflow-hidden" style="background-image: url('/images/background/bg-white-flores.png');">
@@ -218,8 +183,9 @@ const onFileChange = (event: Event) => {
 							<label class="flex items-center gap-1 text-sm font-medium text-gray-700 mb-1">
 								Nombre*
 								<button
-									type="button" class="help-icon text-gray-400 hover:text-brand-600 cursor-help"
-									@click="toggleTooltip('name', $event)" @mouseleave="hideTooltipDelayed">?</button>
+									type="button"
+									v-tooltip="fieldHelpTexts.name"
+									class="help-icon text-gray-400 hover:text-brand-600 cursor-help">?</button>
 							</label>
 							<input v-model="form.name" type="text" name="name" required class="w-full px-3 py-2 border rounded-md" />
 						</div>
@@ -227,8 +193,9 @@ const onFileChange = (event: Event) => {
 							<label class="flex items-center gap-1 text-sm font-medium text-gray-700 mb-1">
 								Tipo*
 								<button
-									type="button" class="help-icon text-gray-400 hover:text-brand-600 cursor-help"
-									@click="toggleTooltip('type', $event)" @mouseleave="hideTooltipDelayed">?</button>
+									type="button"
+									v-tooltip="fieldHelpTexts.type"
+									class="help-icon text-gray-400 hover:text-brand-600 cursor-help">?</button>
 							</label>
 							<select v-model="form.type" name="type" required class="w-full px-3 py-2 border rounded-md">
 								<option value="Pública">Pública</option>
@@ -241,22 +208,71 @@ const onFileChange = (event: Event) => {
 					<div class="border-t pt-4 mb-6">
 						<h5 class="text-md font-semibold text-brand-800 mb-3">Dirección</h5>
 						<div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-							<template v-for="field in ['street','external_number','internal_number','neighborhood','postal_code','city']" :key="field">
-								<div class="form-error">
-									<label class="flex items-center gap-1 text-sm font-medium text-gray-700 mb-1">
-										{{ field === 'street' ? 'Calle*' :
-											field === 'external_number' ? 'Número Exterior*' :
-											field === 'internal_number' ? 'Número Interior' :
-											field === 'neighborhood' ? 'Colonia*' :
-											field === 'postal_code' ? 'Código Postal*' :
-											'Ciudad*' }}
-										<button
-											type="button" class="help-icon text-gray-400 hover:text-brand-600 cursor-help"
-											@click="toggleTooltip(field, $event)" @mouseleave="hideTooltipDelayed">?</button>
-									</label>
-									<input v-model="form[field]" :name="field" class="w-full px-3 py-2 border rounded-md" />
-								</div>
-							</template>
+							<div class="form-error">
+								<label class="flex items-center gap-1 text-sm font-medium text-gray-700 mb-1">
+									Calle*
+									<button
+										type="button"
+										v-tooltip="fieldHelpTexts.street"
+										class="help-icon text-gray-400 hover:text-brand-600 cursor-help">?</button>
+								</label>
+								<input v-model="form.street" name="street" required class="w-full px-3 py-2 border rounded-md" />
+							</div>
+
+							<div class="form-error">
+								<label class="flex items-center gap-1 text-sm font-medium text-gray-700 mb-1">
+									Número Exterior*
+									<button
+										type="button"
+										v-tooltip="fieldHelpTexts.external_number"
+										class="help-icon text-gray-400 hover:text-brand-600 cursor-help">?</button>
+								</label>
+								<input v-model="form.external_number" name="external_number" required class="w-full px-3 py-2 border rounded-md" />
+							</div>
+
+							<div>
+								<label class="flex items-center gap-1 text-sm font-medium text-gray-700 mb-1">
+									Número Interior
+									<button
+										type="button"
+										v-tooltip="fieldHelpTexts.internal_number"
+										class="help-icon text-gray-400 hover:text-brand-600 cursor-help">?</button>
+								</label>
+								<input v-model="form.internal_number" name="internal_number" class="w-full px-3 py-2 border rounded-md" />
+							</div>
+
+							<div class="form-error">
+								<label class="flex items-center gap-1 text-sm font-medium text-gray-700 mb-1">
+									Colonia*
+									<button
+										type="button"
+										v-tooltip="fieldHelpTexts.neighborhood"
+										class="help-icon text-gray-400 hover:text-brand-600 cursor-help">?</button>
+								</label>
+								<input v-model="form.neighborhood" name="neighborhood" required class="w-full px-3 py-2 border rounded-md" />
+							</div>
+
+							<div class="form-error">
+								<label class="flex items-center gap-1 text-sm font-medium text-gray-700 mb-1">
+									Código Postal*
+									<button
+										type="button"
+										v-tooltip="fieldHelpTexts.postal_code"
+										class="help-icon text-gray-400 hover:text-brand-600 cursor-help">?</button>
+								</label>
+								<input v-model="form.postal_code" name="postal_code" required class="w-full px-3 py-2 border rounded-md" />
+							</div>
+
+							<div class="form-error">
+								<label class="flex items-center gap-1 text-sm font-medium text-gray-700 mb-1">
+									Ciudad*
+									<button
+										type="button"
+										v-tooltip="fieldHelpTexts.city"
+										class="help-icon text-gray-400 hover:text-brand-600 cursor-help">?</button>
+								</label>
+								<input v-model="form.city" name="city" required class="w-full px-3 py-2 border rounded-md" />
+							</div>
 						</div>
 					</div>
 
@@ -265,8 +281,9 @@ const onFileChange = (event: Event) => {
 							<label class="flex items-center gap-1 text-sm font-medium text-gray-700 mb-1">
 								Estado*
 								<button
-									type="button" class="help-icon text-gray-400 hover:text-brand-600 cursor-help"
-									@click="toggleTooltip('id_state', $event)" @mouseleave="hideTooltipDelayed">?</button>
+									type="button"
+									v-tooltip="fieldHelpTexts.id_state"
+									class="help-icon text-gray-400 hover:text-brand-600 cursor-help">?</button>
 							</label>
 							<select v-model="form.id_state" name="id_state" class="w-full px-3 py-2 border rounded-md">
 								<option value="">Selecciona tu Estado</option>
@@ -277,8 +294,9 @@ const onFileChange = (event: Event) => {
 							<label class="flex items-center gap-1 text-sm font-medium text-gray-700 mb-1">
 								Municipio*
 								<button
-									type="button" class="help-icon text-gray-400 hover:text-brand-600 cursor-help"
-									@click="toggleTooltip('id_municipality', $event)" @mouseleave="hideTooltipDelayed">?</button>
+									type="button"
+									v-tooltip="fieldHelpTexts.id_municipality"
+									class="help-icon text-gray-400 hover:text-brand-600 cursor-help">?</button>
 							</label>
 							<select v-model="form.id_municipality" name="id_municipality" class="w-full px-3 py-2 border rounded-md">
 								<option value="">Selecciona tu Municipio</option>
@@ -291,20 +309,20 @@ const onFileChange = (event: Event) => {
 						<label class="flex items-center gap-1 text-sm font-medium text-gray-700 mb-1">
 							Imagen
 							<button
-								type="button" class="help-icon text-gray-400 hover:text-brand-600 cursor-help"
-								@click="toggleTooltip('image', $event)" @mouseleave="hideTooltipDelayed">?</button>
+								type="button"
+								v-tooltip="fieldHelpTexts.image"
+								class="help-icon text-gray-400 hover:text-brand-600 cursor-help">?</button>
 						</label>
 						<input type="file" accept="image/*" class="w-full px-3 py-2 border rounded-md" @change="onFileChange" />
 						<div v-if="form.image_path" class="mt-2">
 							<img :src="form.image_path" alt="Vista previa" class="h-24 object-contain border rounded-md" />
 						</div>
 					</div>
-
-					<div class="flex justify-end gap-3 mt-6 pt-4 border-t border-transparent sticky bottom-0 bg-transparent z-10">
-						<button type="button" class="px-5 py-2 rounded-lg bg-gray-100 text-gray-700 font-semibold hover:bg-gray-200" @click="emit('close')">Cancelar</button>
-						<button form="InstitutionForm" class="px-6 py-2 rounded-lg bg-gradient-to-r from-brand-700 to-brand-900 text-white font-semibold">Guardar</button>
-					</div>
 				</alv-form>
+				<div class="flex justify-end gap-3  pt-4 border-t border-transparent sticky bottom-0 bg-transparent z-10">
+					<button type="button" class="px-5 py-2 rounded-lg bg-gray-100 text-gray-700 font-semibold hover:bg-gray-200" @click="emit('close')">Cancelar</button>
+					<button form="InstitutionForm" class="px-6 py-2 rounded-lg bg-gradient-to-r from-brand-700 to-brand-900 text-white font-semibold">Guardar</button>
+				</div>
 			</div>
 		</div>
 	</transition>
@@ -324,5 +342,9 @@ const onFileChange = (event: Event) => {
 .fade-scale-leave-from {
 	opacity: 1;
 	transform: scale(1);
+}
+
+.help-icon {
+	@apply w-4 h-4 flex items-center justify-center rounded-full border border-current text-xs font-bold;
 }
 </style>

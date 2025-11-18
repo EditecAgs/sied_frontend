@@ -26,6 +26,8 @@ export default [
     'SpecialtiesTable',
     'TypeTable',
 	'MicroCredentialsTable',
+	'CertificationsTable',
+	'DiplomasTable',
 	'StudentsTable',
 	'Dual_TypeTable',
     'Logs',

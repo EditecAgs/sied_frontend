@@ -24,7 +24,6 @@ const filteredCareers = computed(() => {
 	);
 });
 
-
 const hasCareersForInstitution = computed(() => {
 	if (!form.id_institution) return true;
 	return filteredCareers.value.length > 0;
@@ -58,6 +57,14 @@ const form = reactive({
 })
 
 
+watch(() => props.show, async (newVal) => {
+	if (newVal) {
+		console.log('🔄 Modal de especialidades abierta, recargando carreras...')
+		await loadSelectData()
+		console.log('✅ Carreras recargadas:', careers.value.length)
+	}
+})
+
 watch(() => form.id_institution, (newInstitutionId, oldInstitutionId) => {
 	if (newInstitutionId !== oldInstitutionId) {
 		if (form.id_career) {
@@ -80,7 +87,7 @@ const loadSelectData = async () => {
 		careers.value = careersData
 		institutions.value = institutionsData
 	} catch (error) {
-		console.error('Error cargando opciones:', error)
+		console.error('❌ Error cargando opciones:', error)
 	}
 }
 

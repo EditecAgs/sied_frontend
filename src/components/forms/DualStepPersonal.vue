@@ -1,5 +1,11 @@
 <script setup>
-import { ref, computed, defineProps, defineEmits, watch, onMounted } from "vue";
+import { ref, computed, defineProps, defineEmits, watch, onMounted, nextTick } from "vue";
+import { VTooltip } from 'floating-vue'
+import 'floating-vue/dist/style.css'
+import btnCreate from '../../components/buttons/btnCreate.vue';
+import mdlCareers from '../modals/modals-forms/mdlCareers.vue';
+import mdlSpecialties from '../modals/modals-forms/mdlSpecialties.vue';
+import { useModal } from '../../composables/UseModal';
 
 const props = defineProps({
 	modelValue: Object,
@@ -8,7 +14,10 @@ const props = defineProps({
 	institution: Object
 });
 
-const emit = defineEmits(['update:modelValue', 'validate']);
+const emit = defineEmits(['update:modelValue', 'validate', 'update:careers', 'update:specialties']);
+
+const { showModal: showCareerModal, modalData: careerModalData, openModal: openCareerModal, closeModal: closeCareerModal } = useModal();
+const { showModal: showSpecialtyModal, modalData: specialtyModalData, openModal: openSpecialtyModal, closeModal: closeSpecialtyModal } = useModal();
 
 const localModel = ref({...props.modelValue});
 const students = ref([]);
@@ -25,6 +34,149 @@ const form = ref({
 
 const errors = ref({});
 
+const pendingCareerSelection = ref(false);
+const pendingSpecialtySelection = ref(false);
+
+const fieldHelpTexts = {
+	control_number: 'Número de control o matrícula único del estudiante en la institución educativa.',
+	name_student: 'Nombre(s) del estudiante.',
+	lastname: 'Apellidos del estudiante.',
+	gender: 'Género con el que se identifica el estudiante.',
+	semester: 'Periodo académico actual del estudiante (generalmente semestres o cuatrimestres).',
+	id_career: 'Carrera o programa educativo en el que está inscrito el estudiante.',
+	id_specialty: 'Especialidad o área de enfoque dentro de la carrera (opcional).'
+}
+
+const vTooltip = VTooltip
+
+const handleSavedCareer = async () => {
+	try {
+		emit('update:careers');
+
+		pendingCareerSelection.value = true;
+
+		closeCareerModal();
+
+		setTimeout(() => {
+			if (props.careers && props.careers.length > 0 && pendingCareerSelection.value) {
+				const latestCareer = [...props.careers]
+					.reverse()
+					.find(career =>
+						career.id_institution === props.institution?.id ||
+						career.institution_id === props.institution?.id
+					);
+
+				if (latestCareer) {
+					form.value.id_career = latestCareer.id;
+					console.log('Nueva carrera seleccionada automáticamente:', latestCareer.name);
+					pendingCareerSelection.value = false;
+				} else {
+					setTimeout(() => {
+						if (pendingCareerSelection.value && props.careers && props.careers.length > 0) {
+							const retryCareer = [...props.careers]
+								.reverse()
+								.find(career =>
+									career.id_institution === props.institution?.id ||
+									career.institution_id === props.institution?.id
+								);
+							if (retryCareer) {
+								form.value.id_career = retryCareer.id;
+								console.log('Nueva carrera seleccionada en reintento:', retryCareer.name);
+								pendingCareerSelection.value = false;
+							}
+						}
+					}, 500);
+				}
+			}
+		}, 800);
+
+	} catch (error) {
+		console.error('Error al guardar carrera:', error);
+		closeCareerModal();
+		pendingCareerSelection.value = false;
+	}
+};
+
+const handleSavedSpecialty = async () => {
+	try {
+
+		emit('update:specialties');
+
+		pendingSpecialtySelection.value = true;
+
+		closeSpecialtyModal();
+
+		setTimeout(() => {
+			if (props.specialties && props.specialties.length > 0 && pendingSpecialtySelection.value && form.value.id_career) {
+				const latestSpecialty = [...props.specialties]
+					.reverse()
+					.find(specialty =>
+						specialty.id_career === parseInt(form.value.id_career) ||
+						specialty.career_id === parseInt(form.value.id_career)
+					);
+
+				if (latestSpecialty) {
+					form.value.id_specialty = latestSpecialty.id;
+					console.log('Nueva especialidad seleccionada automáticamente:', latestSpecialty.name);
+					pendingSpecialtySelection.value = false;
+				} else {
+					setTimeout(() => {
+						if (pendingSpecialtySelection.value && props.specialties && props.specialties.length > 0 && form.value.id_career) {
+							const retrySpecialty = [...props.specialties]
+								.reverse()
+								.find(specialty =>
+									specialty.id_career === parseInt(form.value.id_career) ||
+									specialty.career_id === parseInt(form.value.id_career)
+								);
+							if (retrySpecialty) {
+								form.value.id_specialty = retrySpecialty.id;
+								console.log('Nueva especialidad seleccionada en reintento:', retrySpecialty.name);
+								pendingSpecialtySelection.value = false;
+							}
+						}
+					}, 500);
+				}
+			}
+		}, 800);
+
+	} catch (error) {
+		console.error('Error al guardar especialidad:', error);
+		closeSpecialtyModal();
+		pendingSpecialtySelection.value = false;
+	}
+};
+
+watch(() => props.careers, (newCareers, oldCareers) => {
+	if (pendingCareerSelection.value && newCareers && newCareers.length > 0) {
+
+		const newCareer = newCareers.find(career =>
+			!oldCareers?.find(old => old.id === career.id) &&
+			(career.id_institution === props.institution?.id || career.institution_id === props.institution?.id)
+		);
+
+		if (newCareer) {
+			form.value.id_career = newCareer.id;
+			console.log('Nueva carrera detectada y seleccionada:', newCareer.name);
+			pendingCareerSelection.value = false;
+		}
+	}
+}, { deep: true });
+
+watch(() => props.specialties, (newSpecialties, oldSpecialties) => {
+	if (pendingSpecialtySelection.value && newSpecialties && newSpecialties.length > 0 && form.value.id_career) {
+		const newSpecialty = newSpecialties.find(specialty =>
+			!oldSpecialties?.find(old => old.id === specialty.id) &&
+			(specialty.id_career === parseInt(form.value.id_career) || specialty.career_id === parseInt(form.value.id_career))
+		);
+
+		if (newSpecialty) {
+			form.value.id_specialty = newSpecialty.id;
+			console.log('Nueva especialidad detectada y seleccionada:', newSpecialty.name);
+			pendingSpecialtySelection.value = false;
+		}
+	}
+}, { deep: true });
+
 const filteredCareers = computed(() => {
 	if (!props.institution?.id) return [];
 
@@ -34,7 +186,6 @@ const filteredCareers = computed(() => {
 			career.institution?.id === props.institution.id;
 	});
 });
-
 
 const filteredSpecialties = computed(() => {
 	if (!form.value.id_career) return [];
@@ -96,9 +247,9 @@ const addStudent = () => {
 		errors.value.control_number = "Este número de control ya ha sido registrado";
 		return;
 	}
-	
+
 	if (form.value.id_specialty === "null" || form.value.id_specialty === "") {
-	form.value.id_specialty = null;
+		form.value.id_specialty = null;
 	}
 
 	const newStudent = {
@@ -177,7 +328,6 @@ const clearForm = () => {
 	errors.value = {};
 };
 
-
 watch(() => form.value.id_career, (newCareerId) => {
 	if (newCareerId) {
 		if (form.value.id_specialty) {
@@ -201,21 +351,21 @@ watch(() => props.institution, (newInstitution) => {
 });
 
 const initializeStudents = () => {
-if (props.modelValue?.dual_project_students && Array.isArray(props.modelValue.dual_project_students)) {
-	students.value = props.modelValue.dual_project_students.map(s => ({
-		...s,
-		student: {
-			...s.student,
-			specialty:
-				s.student.id_specialty === null
-					? { id: null, name: 'Sin especialidad' }
-					: s.student.specialty
-		}
-	}));
-	console.log('Estudiantes inicializados:', students.value.length);
-} else {
-	students.value = [];
-}
+	if (props.modelValue?.dual_project_students && Array.isArray(props.modelValue.dual_project_students)) {
+		students.value = props.modelValue.dual_project_students.map(s => ({
+			...s,
+			student: {
+				...s.student,
+				specialty:
+					s.student.id_specialty === null
+						? { id: null, name: 'Sin especialidad' }
+						: s.student.specialty
+			}
+		}));
+		console.log('Estudiantes inicializados:', students.value.length);
+	} else {
+		students.value = [];
+	}
 };
 
 onMounted(() => {
@@ -231,21 +381,8 @@ defineExpose({
 
 <template>
 	<div class="space-y-8">
-		<!-- Información de la institución seleccionada
-		<div v-if="institution" class="bg-blue-50 p-4 rounded-lg border border-blue-200">
-			<div class="flex items-center justify-between">
-				<div>
-					<h3 class="text-lg font-semibold text-blue-800">Institución seleccionada</h3>
-					<p class="text-blue-600">{{ institution.name }}</p>
-				</div>
-				<div class="text-sm text-blue-500">
-					{{ filteredCareers.length }} carrera(s) disponible(s)
-				</div>
-			</div>
-		</div>-->
-
 		<div class="bg-white p-6 rounded-lg shadow-md space-y-4">
-			<h2 class="text-xl font-bold text-brand-900">Registro de Estudiante</h2>
+			<h2 class="text-xl font-bold text-brand-900">Registro del Estudiante</h2>
 
 			<div v-if="!institution" class="bg-yellow-50 p-4 rounded-lg border border-yellow-200">
 				<p class="text-yellow-700">⚠️ Primero debe seleccionar una institución en el paso anterior</p>
@@ -253,7 +390,13 @@ defineExpose({
 
 			<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
 				<div>
-					<label class="block text-sm font-medium text-gray-700 mb-1">No. Control o Matricula *</label>
+					<label class="flex items-center gap-1 text-sm font-medium text-gray-700 mb-1">
+						No. Control o Matricula *
+						<button
+							v-tooltip="fieldHelpTexts.control_number"
+							type="button"
+							class="help-icon text-gray-400 hover:text-brand-600 cursor-help">?</button>
+					</label>
 					<input
 						v-model="form.control_number"
 						class="input"
@@ -264,7 +407,13 @@ defineExpose({
 				</div>
 
 				<div>
-					<label class="block text-sm font-medium text-gray-700 mb-1">Nombre *</label>
+					<label class="flex items-center gap-1 text-sm font-medium text-gray-700 mb-1">
+						Nombre *
+						<button
+							v-tooltip="fieldHelpTexts.name_student"
+							type="button"
+							class="help-icon text-gray-400 hover:text-brand-600 cursor-help">?</button>
+					</label>
 					<input
 						v-model="form.name_student"
 						class="input"
@@ -275,7 +424,13 @@ defineExpose({
 				</div>
 
 				<div>
-					<label class="block text-sm font-medium text-gray-700 mb-1">Apellidos *</label>
+					<label class="flex items-center gap-1 text-sm font-medium text-gray-700 mb-1">
+						Apellidos *
+						<button
+							v-tooltip="fieldHelpTexts.lastname"
+							type="button"
+							class="help-icon text-gray-400 hover:text-brand-600 cursor-help">?</button>
+					</label>
 					<input
 						v-model="form.lastname"
 						class="input"
@@ -286,29 +441,49 @@ defineExpose({
 				</div>
 
 				<div>
-					<label class="block text-sm font-medium text-gray-700 mb-1"> Periodo académico *</label>
+					<label class="flex items-center gap-1 text-sm font-medium text-gray-700 mb-1">
+						Periodo académico *
+						<button
+							v-tooltip="fieldHelpTexts.semester"
+							type="button"
+							class="help-icon text-gray-400 hover:text-brand-600 cursor-help">?</button>
+					</label>
 					<input
 						v-model="form.semester"
 						type="number"
 						min="1"
 						max="12"
 						class="input"
-						placeholder=" Periodo académico (1-12)"
+						placeholder="Periodo académico (1-12)"
 						:class="{ 'border-red-500': errors.semester }"
 						:disabled="!institution" />
 					<p v-if="errors.semester" class="text-red-500 text-sm mt-1">{{ errors.semester }}</p>
 				</div>
 
 				<div>
-					<label class="block text-sm font-medium text-gray-700 mb-1">Carrera *</label>
-					<select
-						v-model="form.id_career"
-						class="input"
-						:class="{ 'border-red-500': errors.id_career }"
-						:disabled="!institution || filteredCareers.length === 0">
-						<option value="">Selecciona carrera</option>
-						<option v-for="c in filteredCareers" :key="c.id" :value="c.id">{{ c.name }}</option>
-					</select>
+					<label class="flex items-center gap-1 text-sm font-medium text-gray-700 mb-1">
+						Carrera *
+						<button
+							v-tooltip="fieldHelpTexts.id_career"
+							type="button"
+							class="help-icon text-gray-400 hover:text-brand-600 cursor-help">?</button>
+					</label>
+					<div class="flex gap-2">
+						<select
+							v-model="form.id_career"
+							class="input flex-1"
+							:class="{ 'border-red-500': errors.id_career }"
+							:disabled="!institution || filteredCareers.length === 0">
+							<option value="">Selecciona carrera</option>
+							<option v-for="c in filteredCareers" :key="c.id" :value="c.id">{{ c.name }}</option>
+						</select>
+						<btn-create
+							:table="'Carrera'"
+							class="flex-shrink-0"
+							tooltip="Crear nueva carrera"
+							:disabled="!institution"
+							@open="({ mode, pk, table }) => openCareerModal(mode, pk, table)" />
+					</div>
 					<p v-if="errors.id_career" class="text-red-500 text-sm mt-1">{{ errors.id_career }}</p>
 					<p v-if="institution && filteredCareers.length === 0" class="text-yellow-600 text-sm mt-1">
 						No hay carreras disponibles para esta institución
@@ -316,25 +491,45 @@ defineExpose({
 				</div>
 
 				<div>
-					<label class="block text-sm font-medium text-gray-700 mb-1">Especialidad</label>
-					<select
-						v-model="form.id_specialty"
-						class="input"
-						:class="{ 'border-red-500': errors.id_specialty }"
-						:disabled="!institution || !form.id_career">
-						<option value="">Selecciona especialidad</option>
-						<option value="null">Sin especialidad</option>
-						<option v-for="s in filteredSpecialties" :key="s.id" :value="s.id">{{ s.name }}</option>
-					</select>
+					<label class="flex items-center gap-1 text-sm font-medium text-gray-700 mb-1">
+						Especialidad
+						<button
+							v-tooltip="fieldHelpTexts.id_specialty"
+							type="button"
+							class="help-icon text-gray-400 hover:text-brand-600 cursor-help">?</button>
+					</label>
+					<div class="flex gap-2">
+						<select
+							v-model="form.id_specialty"
+							class="input flex-1"
+							:class="{ 'border-red-500': errors.id_specialty }"
+							:disabled="!institution || !form.id_career">
+							<option value="">Selecciona especialidad</option>
+							<option value="null">Sin especialidad</option>
+							<option v-for="s in filteredSpecialties" :key="s.id" :value="s.id">{{ s.name }}</option>
+						</select>
+						<btn-create
+							:table="'Especialidad'"
+							class="flex-shrink-0"
+							tooltip="Crear nueva especialidad"
+							:disabled="!institution || !form.id_career"
+							@open="({ mode, pk, table }) => openSpecialtyModal(mode, pk, table)" />
+					</div>
 					<p v-if="errors.id_specialty" class="text-red-500 text-sm mt-1">{{ errors.id_specialty }}</p>
 
 					<p v-if="form.id_career && filteredSpecialties.length === 0" class="text-[#800020]  text-sm mt-1">
-						Esta carrera no tiene especialidades registradas. Puedes seleccionar “Sin especialidad”.
+						Esta carrera no tiene especialidades registradas. Puedes seleccionar "Sin especialidad" o crear una nueva.
 					</p>
 				</div>
 
 				<div class="md:col-span-2">
-					<label class="block text-sm font-medium text-gray-700 mb-2">Género *</label>
+					<label class="flex items-center gap-1 text-sm font-medium text-gray-700 mb-2">
+						Género *
+						<button
+							v-tooltip="fieldHelpTexts.gender"
+							type="button"
+							class="help-icon text-gray-400 hover:text-brand-600 cursor-help">?</button>
+					</label>
 					<div class="flex gap-6">
 						<label class="flex items-center">
 							<input
@@ -391,35 +586,35 @@ defineExpose({
 			<div class="overflow-x-auto">
 				<table class="min-w-full">
 					<thead>
-						<tr class="bg-brand-800 text-white">
-							<th class="px-4 py-2 text-left">No. Control o Matricula</th>
-							<th class="px-4 py-2 text-left">Nombre</th>
-							<th class="px-4 py-2 text-left">Apellidos</th>
-							<th class="px-4 py-2 text-left">Semestre</th>
-							<th class="px-4 py-2 text-left">Carrera</th>
-							<th class="px-4 py-2 text-left">Especialidad</th>
-							<th class="px-4 py-2 text-left">Género</th>
-							<th class="px-4 py-2 text-left">Acciones</th>
-						</tr>
+					<tr class="bg-brand-800 text-white">
+						<th class="px-4 py-2 text-left">No. Control o Matricula</th>
+						<th class="px-4 py-2 text-left">Nombre</th>
+						<th class="px-4 py-2 text-left">Apellidos</th>
+						<th class="px-4 py-2 text-left">Semestre</th>
+						<th class="px-4 py-2 text-left">Carrera</th>
+						<th class="px-4 py-2 text-left">Especialidad</th>
+						<th class="px-4 py-2 text-left">Género</th>
+						<th class="px-4 py-2 text-left">Acciones</th>
+					</tr>
 					</thead>
 					<tbody>
-						<tr v-for="(s, i) in students" :key="i" class="border-b hover:bg-gray-50">
-							<td class="px-4 py-2 font-mono">{{ s.student.control_number }}</td>
-							<td class="px-4 py-2">{{ s.student.name }}</td>
-							<td class="px-4 py-2">{{ s.student.lastname }}</td>
-							<td class="px-4 py-2 text-center">{{ s.student.semester }}</td>
-							<td class="px-4 py-2">{{ s.student.career?.name || 'N/A' }}</td>
-							<td class="px-4 py-2">{{ s.student.specialty?.name || 'Sin especialidad' }}</td>
-							<td class="px-4 py-2">{{ s.student.gender }}</td>
-							<td class="px-4 py-2">
-								<button
-									class="text-red-500 hover:text-red-700 px-2 py-1 rounded transition"
-									title="Eliminar estudiante"
-									@click="removeStudent(i)">
-									Eliminar
-								</button>
-							</td>
-						</tr>
+					<tr v-for="(s, i) in students" :key="i" class="border-b hover:bg-gray-50">
+						<td class="px-4 py-2 font-mono">{{ s.student.control_number }}</td>
+						<td class="px-4 py-2">{{ s.student.name }}</td>
+						<td class="px-4 py-2">{{ s.student.lastname }}</td>
+						<td class="px-4 py-2 text-center">{{ s.student.semester }}</td>
+						<td class="px-4 py-2">{{ s.student.career?.name || 'N/A' }}</td>
+						<td class="px-4 py-2">{{ s.student.specialty?.name || 'Sin especialidad' }}</td>
+						<td class="px-4 py-2">{{ s.student.gender }}</td>
+						<td class="px-4 py-2">
+							<button
+								class="text-red-500 hover:text-red-700 px-2 py-1 rounded transition"
+								title="Eliminar estudiante"
+								@click="removeStudent(i)">
+								Eliminar
+							</button>
+						</td>
+					</tr>
 					</tbody>
 				</table>
 			</div>
@@ -441,11 +636,27 @@ defineExpose({
 				El sistema calculará automáticamente el total de participantes.
 			</p>
 		</div>
+
+		<mdl-careers
+			:show="showCareerModal"
+			:data="careerModalData"
+			@close="closeCareerModal"
+			@saved="handleSavedCareer" />
+
+		<mdl-specialties
+			:show="showSpecialtyModal"
+			:data="specialtyModalData"
+			@close="closeSpecialtyModal"
+			@saved="handleSavedSpecialty" />
 	</div>
 </template>
 
 <style scoped>
 .input {
 	@apply w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-500 focus:border-transparent transition-colors;
+}
+
+.help-icon {
+	@apply w-4 h-4 flex items-center justify-center rounded-full border border-current text-xs font-bold;
 }
 </style>

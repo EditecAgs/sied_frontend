@@ -1,6 +1,12 @@
 <script setup lang="ts">
 import { defineProps, defineEmits, reactive, ref, onMounted, watch, watchEffect, computed, onBeforeUnmount } from 'vue'
 import axios from 'axios'
+import { VTooltip } from 'floating-vue'
+import 'floating-vue/dist/style.css'
+import btnCreate from '../../buttons/btnCreate.vue';
+import mdlSectors from '../modals-forms/mdlSectors.vue';
+import mdlClusters from '../modals-forms/mdlClusters.vue';
+import { useModal } from "../../../composables/UseModal";
 import { getStates } from '../../../services/location/states.js'
 import { getMunicipalities } from '../../../services/location/municipalities.js'
 import { showOrganization } from '../../../services/organizations/organizations'
@@ -12,6 +18,11 @@ const emit = defineEmits(['close', 'saved'])
 const isLoading = ref(false)
 const alvRoute = ref()
 const alvMethod = ref('POST')
+
+const { showModal: showSectorModal, modalData: sectorModalData, openModal: openSectorModal, closeModal: closeSectorModal } = useModal();
+const { showModal: showClusterModal, modalData: clusterModalData, openModal: openClusterModal, closeModal: closeClusterModal } = useModal();
+
+const tableRef = ref(null);
 
 // eslint-disable-next-line vue/valid-define-props
 const props = defineProps<{
@@ -49,12 +60,110 @@ const types = ref([])
 const sectors = ref([])
 const clusters = ref([])
 
+const sectorDropdownOpen = ref(false)
+const searchQuery = ref('')
+
+const highlightedSectors = [
+	'Agroindustrial',
+	'Textiles, Vestuario y Cuero',
+	'Química',
+	'Tecnologías de la Información y Comunicaciones',
+	'Farmacéutico y Dispositivos Médicos',
+	'Energía',
+	'Calzado',
+	'Bienes de consumo y economía circular',
+	'Aeroespacial',
+	'Semiconductores',
+	'Automotriz y Electromovilidad'
+];
+
+const formatSectorName = (sector: any) => {
+	if (highlightedSectors.includes(sector.name)) {
+		return `${sector.name} (SM)`;
+	}
+	return sector.name;
+};
+
+const filteredSectors = computed(() => {
+	if (!sectors.value) return [];
+
+	let filtered = sectors.value;
+
+	if (searchQuery.value) {
+		filtered = sectors.value.filter(sector =>
+			sector.name.toLowerCase().includes(searchQuery.value.toLowerCase())
+		);
+	}
+
+	return filtered.map(sector => ({
+		...sector,
+		isHighlighted: highlightedSectors.includes(sector.name),
+		displayName: formatSectorName(sector)
+	}));
+});
+
+const selectedSectorName = computed(() => {
+	if (!form.id_sector || !sectors.value) return '';
+	const sector = sectors.value.find(s => s.id === form.id_sector);
+	return sector ? formatSectorName(sector) : '';
+});
+
+const toggleSectorDropdown = () => {
+	sectorDropdownOpen.value = !sectorDropdownOpen.value;
+	searchQuery.value = '';
+};
+
+const selectSector = (sector: any) => {
+	form.id_sector = sector.id;
+	sectorDropdownOpen.value = false;
+	searchQuery.value = '';
+};
+
+const closeSectorDropdown = () => {
+	sectorDropdownOpen.value = false;
+	searchQuery.value = '';
+};
+
+const handleSavedSector = async () => {
+	try {
+		const sectorsRes = await getSectors();
+		sectors.value = sectorsRes.data;
+
+		const newSector = sectorsRes.data[sectorsRes.data.length - 1];
+		if (newSector) {
+			form.id_sector = newSector.id;
+		}
+
+		closeSectorModal();
+	} catch (error) {
+		console.error('Error al recargar sectores:', error);
+		closeSectorModal();
+	}
+};
+
+const handleSavedCluster = async () => {
+	try {
+		const clustersRes = await getClusters();
+		clusters.value = clustersRes.data;
+
+		const newCluster = clustersRes.data[clustersRes.data.length - 1];
+		if (newCluster) {
+			if (newCluster.type === 'Nacional') {
+				form.id_cluster = newCluster.id;
+			} else if (newCluster.type === 'Local') {
+				form.id_cluster_local = newCluster.id;
+			}
+		}
+
+		closeClusterModal();
+	} catch (error) {
+		console.error('Error al recargar clusters:', error);
+		closeClusterModal();
+	}
+};
+
 const clustersNacionales = computed(() => clusters.value.filter(c => c.type === 'Nacional'))
 const clustersLocales = computed(() => clusters.value.filter(c => c.type === 'Local'))
-
-const activeTooltip = ref<string | null>(null)
-const tooltipPosition = ref({ x: 0, y: 0 })
-const tooltipTimeout = ref<number | null>(null)
 
 const fieldHelpTexts: Record<string, string> = {
 	name: 'Nombre completo de la organización o empresa.',
@@ -74,27 +183,7 @@ const fieldHelpTexts: Record<string, string> = {
 	id_municipality: 'Municipio correspondiente.'
 }
 
-const toggleTooltip = (field: string, event: MouseEvent) => {
-	const target = event.currentTarget as HTMLElement
-	const rect = target.getBoundingClientRect()
-	tooltipPosition.value = { x: rect.left + rect.width / 2, y: rect.top - 10 }
-	activeTooltip.value = activeTooltip.value === field ? null : field
-}
-const hideTooltip = () => (activeTooltip.value = null)
-const hideTooltipDelayed = () => {
-	tooltipTimeout.value = window.setTimeout(() => hideTooltip(), 200)
-}
-const cancelHideTooltip = () => {
-	if (tooltipTimeout.value) clearTimeout(tooltipTimeout.value)
-}
-const handleClickOutside = (event: MouseEvent) => {
-	if (!event.target.closest('.help-icon') && !event.target.closest('.tooltip-box')) {
-		hideTooltip()
-	}
-}
-onMounted(() => document.addEventListener('click', handleClickOutside))
-onBeforeUnmount(() => document.removeEventListener('click', handleClickOutside))
-
+const vTooltip = VTooltip
 
 const loadDependents = async () => {
 	try {
@@ -158,16 +247,6 @@ const afterError = (res: any) => {
 </script>
 
 <template>
-	<div
-		v-if="activeTooltip"
-		class="tooltip-box fixed z-[999] max-w-xs bg-gray-800 text-white text-sm rounded-lg p-3 shadow-lg transition-opacity duration-200"
-		:style="{ left: `${tooltipPosition.x}px`, top: `${tooltipPosition.y}px`, transform: 'translate(-50%, -100%)' }"
-		@mouseenter="cancelHideTooltip"
-		@mouseleave="hideTooltipDelayed">
-		{{ fieldHelpTexts[activeTooltip] }}
-		<div class="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-gray-800" />
-	</div>
-
 	<transition name="fade-scale">
 		<div
 			v-if="show" class="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm"
@@ -175,7 +254,7 @@ const afterError = (res: any) => {
 			<div class="bg-white rounded-2xl shadow-2xl w-full max-w-4xl p-8 relative max-h-[90vh] flex flex-col overflow-hidden" style="background-image: url('/images/background/bg-white-flores.png');">
 				<div class="flex items-center justify-between bg-brand-900 -mx-8 -mt-8 px-8 py-4 rounded-t-2xl">
 					<h4 class="text-xl font-semibold text-white">
-						{{ data.mode === 'create' ? `Crear ${data.table}` : `Editar ${data.table}` }}
+						{{ data.mode === 'create' ? `Crear Organización` : `Editar ${data.table}` }}
 					</h4>
 					<div class="flex items-center gap-4">
 						<div v-if="isLoading" class="w-6 h-6 border-4 border-white/40 border-t-white rounded-full animate-spin" />
@@ -195,7 +274,10 @@ const afterError = (res: any) => {
 						<div class="form-error">
 							<label class="flex items-center gap-1 text-sm font-medium text-gray-700 mb-1">
 								Nombre*
-								<button type="button" class="help-icon text-gray-400 hover:text-brand-600 cursor-help" @click="toggleTooltip('name', $event)" @mouseleave="hideTooltipDelayed">?</button>
+								<button
+									v-tooltip="fieldHelpTexts.name"
+									type="button"
+									class="help-icon text-gray-400 hover:text-brand-600 cursor-help">?</button>
 							</label>
 							<input v-model="form.name" name="name" required class="w-full px-3 py-2 border rounded-md" />
 						</div>
@@ -203,7 +285,10 @@ const afterError = (res: any) => {
 						<div class="form-error">
 							<label class="flex items-center gap-1 text-sm font-medium text-gray-700 mb-1">
 								Tamaño*
-								<button type="button" class="help-icon text-gray-400 hover:text-brand-600 cursor-help" @click="toggleTooltip('size', $event)" @mouseleave="hideTooltipDelayed">?</button>
+								<button
+									v-tooltip="fieldHelpTexts.size"
+									type="button"
+									class="help-icon text-gray-400 hover:text-brand-600 cursor-help">?</button>
 							</label>
 							<select v-model="form.size" name="size" required class="w-full px-3 py-2 border rounded-md">
 								<option value="">Selecciona tamaño</option>
@@ -217,7 +302,10 @@ const afterError = (res: any) => {
 						<div class="form-error">
 							<label class="flex items-center gap-1 text-sm font-medium text-gray-700 mb-1">
 								Tipo*
-								<button type="button" class="help-icon text-gray-400 hover:text-brand-600 cursor-help" @click="toggleTooltip('id_type', $event)" @mouseleave="hideTooltipDelayed">?</button>
+								<button
+									v-tooltip="fieldHelpTexts.id_type"
+									type="button"
+									class="help-icon text-gray-400 hover:text-brand-600 cursor-help">?</button>
 							</label>
 							<select v-model="form.id_type" name="id_type" required class="w-full px-3 py-2 border rounded-md">
 								<option value="">Selecciona tipo</option>
@@ -228,40 +316,138 @@ const afterError = (res: any) => {
 						<div class="form-error">
 							<label class="flex items-center gap-1 text-sm font-medium text-gray-700 mb-1">
 								Sector*
-								<button type="button" class="help-icon text-gray-400 hover:text-brand-600 cursor-help" @click="toggleTooltip('id_sector', $event)" @mouseleave="hideTooltipDelayed">?</button>
+								<button
+									v-tooltip="fieldHelpTexts.id_sector"
+									type="button"
+									class="help-icon text-gray-400 hover:text-brand-600 cursor-help">?</button>
 							</label>
-							<select v-model="form.id_sector" name="id_sector" required class="w-full px-3 py-2 border rounded-md">
-								<option value="">Selecciona sector</option>
-								<option v-for="sector in sectors" :key="sector.id" :value="sector.id">{{ sector.name }}</option>
-							</select>
+
+							<div class="flex gap-2 relative">
+								<div class="w-full relative">
+									<div
+										@click="toggleSectorDropdown"
+										class="w-full px-3 py-2 border rounded-md bg-white cursor-pointer flex items-center justify-between"
+										:class="{ 'border-brand-600': sectorDropdownOpen }">
+										<span v-if="selectedSectorName" class="text-gray-700">
+											{{ selectedSectorName }}
+										</span>
+										<span v-else class="text-gray-400">Selecciona sector</span>
+										<svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+											<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+										</svg>
+									</div>
+
+									<input type="hidden" :name="'id_sector'" :value="form.id_sector" />
+
+									<div
+										v-if="sectorDropdownOpen"
+										class="absolute z-50 w-full mt-1 bg-white border border-gray-200 rounded-md shadow-lg max-h-60 overflow-y-auto">
+										<div class="p-2 border-b">
+											<input
+												v-model="searchQuery"
+												type="text"
+												placeholder="Buscar sector..."
+												class="w-full px-3 py-2 border rounded-md text-sm"
+												@click.stop />
+										</div>
+
+										<div class="py-1">
+											<div
+												v-for="sector in filteredSectors"
+												:key="sector.id"
+												@click="selectSector(sector)"
+												class="px-3 py-2 cursor-pointer hover:bg-gray-100 transition-colors"
+												:class="{
+													'bg-brand-50 text-brand-700': form.id_sector === sector.id,
+													'font-semibold text-brand-700': sector.isHighlighted,
+													'text-gray-700': !sector.isHighlighted
+												}">
+												<!-- Mostrar el nombre formateado con (SM) para sectores destacados -->
+												<span v-if="sector.isHighlighted" class="font-bold text-brand-700">
+													{{ sector.displayName }}
+												</span>
+												<span v-else>
+													{{ sector.displayName }}
+												</span>
+											</div>
+											<div
+												v-if="filteredSectors.length === 0"
+												class="px-3 py-2 text-gray-500 text-sm text-center">
+												No se encontraron sectores
+											</div>
+										</div>
+									</div>
+								</div>
+
+								<btn-create
+									:table="'Sector'"
+									class="flex-shrink-0"
+									tooltip="Crear nuevo sector"
+									@open="({ mode, pk, table }) => openSectorModal(mode, pk, table)" />
+							</div>
 						</div>
 
 						<div class="form-error">
 							<label class="flex items-center gap-1 text-sm font-medium text-gray-700 mb-1">
 								Cámara (cluster) Nacional*
-								<button type="button" class="help-icon text-gray-400 hover:text-brand-600 cursor-help" @click="toggleTooltip('id_cluster', $event)" @mouseleave="hideTooltipDelayed">?</button>
+								<button
+									v-tooltip="fieldHelpTexts.id_cluster"
+									type="button"
+									class="help-icon text-gray-400 hover:text-brand-600 cursor-help">?</button>
 							</label>
-							<select v-model="form.id_cluster" name="id_cluster" required class="w-full px-3 py-2 border rounded-md">
-								<option value="">Selecciona cluster nacional</option>
-								<option v-for="cluster in clustersNacionales" :key="cluster.id" :value="cluster.id">{{ cluster.name }}</option>
-							</select>
+							<div class="flex gap-2">
+								<select
+									v-model="form.id_cluster"
+									name="id_cluster"
+									required
+									class="w-full px-3 py-2 border rounded-md flex-1">
+									<option value="">Selecciona cluster nacional</option>
+									<option v-for="cluster in clustersNacionales" :key="cluster.id" :value="cluster.id">
+										{{ cluster.name }}
+									</option>
+								</select>
+								<btn-create
+									:table="'Cámara'"
+									class="flex-shrink-0"
+									tooltip="Crear nueva cámara"
+									@open="({ mode, pk, table }) => openClusterModal(mode, pk, table)" />
+							</div>
 						</div>
 
 						<div class="form-error">
 							<label class="flex items-center gap-1 text-sm font-medium text-gray-700 mb-1">
 								Cámara (cluster) Local*
-								<button type="button" class="help-icon text-gray-400 hover:text-brand-600 cursor-help" @click="toggleTooltip('id_cluster_local', $event)" @mouseleave="hideTooltipDelayed">?</button>
+								<button
+									v-tooltip="fieldHelpTexts.id_cluster_local"
+									type="button"
+									class="help-icon text-gray-400 hover:text-brand-600 cursor-help">?</button>
 							</label>
-							<select v-model="form.id_cluster_local" name="id_cluster_local" required class="w-full px-3 py-2 border rounded-md">
-								<option value="">Selecciona cluster local</option>
-								<option v-for="cluster in clustersLocales" :key="cluster.id" :value="cluster.id">{{ cluster.name }}</option>
-							</select>
+							<div class="flex gap-2">
+								<select
+									v-model="form.id_cluster_local"
+									name="id_cluster_local"
+									required
+									class="w-full px-3 py-2 border rounded-md flex-1">
+									<option value="">Selecciona cluster local</option>
+									<option v-for="cluster in clustersLocales" :key="cluster.id" :value="cluster.id">
+										{{ cluster.name }}
+									</option>
+								</select>
+								<btn-create
+									:table="'Cámara'"
+									class="flex-shrink-0"
+									tooltip="Crear nueva cámara"
+									@open="({ mode, pk, table }) => openClusterModal(mode, pk, table)" />
+							</div>
 						</div>
 
 						<div class="form-error">
 							<label class="flex items-center gap-1 text-sm font-medium text-gray-700 mb-1">
-								Alcance*
-								<button type="button" class="help-icon text-gray-400 hover:text-brand-600 cursor-help" @click="toggleTooltip('scope', $event)" @mouseleave="hideTooltipDelayed">?</button>
+								Operación de la organización *
+								<button
+									v-tooltip="fieldHelpTexts.scope"
+									type="button"
+									class="help-icon text-gray-400 hover:text-brand-600 cursor-help">?</button>
 							</label>
 							<select v-model="form.scope" name="scope" required class="w-full px-3 py-2 border rounded-md">
 								<option value="">Selecciona alcance</option>
@@ -279,7 +465,10 @@ const afterError = (res: any) => {
 							<div class="form-error">
 								<label class="flex items-center gap-1 text-sm font-medium text-gray-700 mb-1">
 									Calle*
-									<button type="button" class="help-icon text-gray-400 hover:text-brand-600 cursor-help" @click="toggleTooltip('street', $event)" @mouseleave="hideTooltipDelayed">?</button>
+									<button
+										v-tooltip="fieldHelpTexts.street"
+										type="button"
+										class="help-icon text-gray-400 hover:text-brand-600 cursor-help">?</button>
 								</label>
 								<input v-model="form.street" name="street" required class="w-full px-3 py-2 border rounded-md" />
 							</div>
@@ -287,7 +476,10 @@ const afterError = (res: any) => {
 							<div class="form-error">
 								<label class="flex items-center gap-1 text-sm font-medium text-gray-700 mb-1">
 									Número Exterior*
-									<button type="button" class="help-icon text-gray-400 hover:text-brand-600 cursor-help" @click="toggleTooltip('external_number', $event)" @mouseleave="hideTooltipDelayed">?</button>
+									<button
+										v-tooltip="fieldHelpTexts.external_number"
+										type="button"
+										class="help-icon text-gray-400 hover:text-brand-600 cursor-help">?</button>
 								</label>
 								<input v-model="form.external_number" name="external_number" required class="w-full px-3 py-2 border rounded-md" />
 							</div>
@@ -295,7 +487,10 @@ const afterError = (res: any) => {
 							<div>
 								<label class="flex items-center gap-1 text-sm font-medium text-gray-700 mb-1">
 									Número Interior
-									<button type="button" class="help-icon text-gray-400 hover:text-brand-600 cursor-help" @click="toggleTooltip('internal_number', $event)" @mouseleave="hideTooltipDelayed">?</button>
+									<button
+										v-tooltip="fieldHelpTexts.internal_number"
+										type="button"
+										class="help-icon text-gray-400 hover:text-brand-600 cursor-help">?</button>
 								</label>
 								<input v-model="form.internal_number" name="internal_number" class="w-full px-3 py-2 border rounded-md" />
 							</div>
@@ -303,7 +498,10 @@ const afterError = (res: any) => {
 							<div class="form-error">
 								<label class="flex items-center gap-1 text-sm font-medium text-gray-700 mb-1">
 									Colonia*
-									<button type="button" class="help-icon text-gray-400 hover:text-brand-600 cursor-help" @click="toggleTooltip('neighborhood', $event)" @mouseleave="hideTooltipDelayed">?</button>
+									<button
+										v-tooltip="fieldHelpTexts.neighborhood"
+										type="button"
+										class="help-icon text-gray-400 hover:text-brand-600 cursor-help">?</button>
 								</label>
 								<input v-model="form.neighborhood" name="neighborhood" required class="w-full px-3 py-2 border rounded-md" />
 							</div>
@@ -311,7 +509,10 @@ const afterError = (res: any) => {
 							<div class="form-error">
 								<label class="flex items-center gap-1 text-sm font-medium text-gray-700 mb-1">
 									Código Postal*
-									<button type="button" class="help-icon text-gray-400 hover:text-brand-600 cursor-help" @click="toggleTooltip('postal_code', $event)" @mouseleave="hideTooltipDelayed">?</button>
+									<button
+										v-tooltip="fieldHelpTexts.postal_code"
+										type="button"
+										class="help-icon text-gray-400 hover:text-brand-600 cursor-help">?</button>
 								</label>
 								<input v-model="form.postal_code" name="postal_code" required class="w-full px-3 py-2 border rounded-md" />
 							</div>
@@ -319,7 +520,10 @@ const afterError = (res: any) => {
 							<div>
 								<label class="flex items-center gap-1 text-sm font-medium text-gray-700 mb-1">
 									Ciudad
-									<button type="button" class="help-icon text-gray-400 hover:text-brand-600 cursor-help" @click="toggleTooltip('city', $event)" @mouseleave="hideTooltipDelayed">?</button>
+									<button
+										v-tooltip="fieldHelpTexts.city"
+										type="button"
+										class="help-icon text-gray-400 hover:text-brand-600 cursor-help">?</button>
 								</label>
 								<input v-model="form.city" name="city" class="w-full px-3 py-2 border rounded-md" />
 							</div>
@@ -330,7 +534,10 @@ const afterError = (res: any) => {
 						<div class="form-error">
 							<label class="flex items-center gap-1 text-sm font-medium text-gray-700 mb-1">
 								Estado*
-								<button type="button" class="help-icon text-gray-400 hover:text-brand-600 cursor-help" @click="toggleTooltip('id_state', $event)" @mouseleave="hideTooltipDelayed">?</button>
+								<button
+									v-tooltip="fieldHelpTexts.id_state"
+									type="button"
+									class="help-icon text-gray-400 hover:text-brand-600 cursor-help">?</button>
 							</label>
 							<select v-model="form.id_state" name="id_state" class="w-full px-3 py-2 border rounded-md">
 								<option value="">Selecciona tu Estado</option>
@@ -341,7 +548,10 @@ const afterError = (res: any) => {
 						<div class="form-error">
 							<label class="flex items-center gap-1 text-sm font-medium text-gray-700 mb-1">
 								Municipio*
-								<button type="button" class="help-icon text-gray-400 hover:text-brand-600 cursor-help" @click="toggleTooltip('id_municipality', $event)" @mouseleave="hideTooltipDelayed">?</button>
+								<button
+									v-tooltip="fieldHelpTexts.id_municipality"
+									type="button"
+									class="help-icon text-gray-400 hover:text-brand-600 cursor-help">?</button>
 							</label>
 							<select v-model="form.id_municipality" name="id_municipality" class="w-full px-3 py-2 border rounded-md">
 								<option value="">Selecciona tu Municipio</option>
@@ -349,16 +559,27 @@ const afterError = (res: any) => {
 							</select>
 						</div>
 					</div>
-
-					<div class="flex justify-end gap-3 mt-6 pt-4 border-t border-gray-200 sticky bottom-0 bg-transparent z-10">
-						<button type="button" class="px-5 py-2 rounded-lg bg-gray-100 text-gray-700 font-semibold hover:bg-gray-200" :disabled="isLoading" @click="emit('close')">
-							Cancelar
-						</button>
-						<button form="OrganizationForm" class="px-6 py-2 rounded-lg bg-gradient-to-r from-brand-700 to-brand-900 text-white font-semibold hover:brightness-110" :disabled="isLoading">
-							{{ data.mode === 'create' ? 'Crear' : 'Guardar' }}
-						</button>
-					</div>
 				</alv-form>
+				<div class="flex justify-end gap-3  pt-4 border-t border-gray-200 sticky bottom-0 bg-transparent z-10">
+					<button type="button" class="px-5 py-2 rounded-lg bg-gray-100 text-gray-700 font-semibold hover:bg-gray-200" :disabled="isLoading" @click="emit('close')">
+						Cancelar
+					</button>
+					<button form="OrganizationForm" class="px-6 py-2 rounded-lg bg-gradient-to-r from-brand-700 to-brand-900 text-white font-semibold hover:brightness-110" :disabled="isLoading">
+						{{ data.mode === 'create' ? 'Crear' : 'Guardar' }}
+					</button>
+				</div>
+
+				<mdl-sectors
+					:show="showSectorModal"
+					:data="sectorModalData"
+					@close="closeSectorModal"
+					@saved="handleSavedSector" />
+
+				<mdl-clusters
+					:show="showClusterModal"
+					:data="clusterModalData"
+					@close="closeClusterModal"
+					@saved="handleSavedCluster" />
 			</div>
 		</div>
 	</transition>
@@ -374,7 +595,27 @@ const afterError = (res: any) => {
 	opacity: 0;
 	transform: scale(0.95);
 }
-.tooltip-box {
-	pointer-events: auto;
+
+.help-icon {
+	@apply w-4 h-4 flex items-center justify-center rounded-full border border-current text-xs font-bold;
+}
+
+:deep() {
+	.dropdown-backdrop {
+		position: fixed;
+		top: 0;
+		left: 0;
+		width: 100%;
+		height: 100%;
+		z-index: 40;
+	}
+}
+
+.font-bold {
+	font-weight: 700;
+}
+
+.text-brand-700 {
+	color: #931f44;
 }
 </style>

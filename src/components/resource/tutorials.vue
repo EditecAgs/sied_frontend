@@ -65,7 +65,7 @@ const modulos = ref([
 	duracion: "1 minuto",
 	imagen: "/images/tutorial/login.png",
 	nombre: "Módulo Inicio de sesión",
-	link: "https://drive.google.com/file/d/1BZizdLsb5vBPL4zNgHbfVQgoJSp_-1RT/view?usp=sharing"
+	link: "https://www.youtube.com/watch?v=2Xj9Yx9Y3ww"
   },
   {
     titulo: "Dashboard",

@@ -156,3 +156,17 @@ export function getProjectsByDualType() {
 	});
 }
 
+export function getOrganizationsByCluster() {
+	return new Promise((resolve, reject) => {
+		axios
+			.get('organizations/cluster/count')
+			.then((response) => {
+				resolve(response);
+			})
+			.catch((error) => {
+				reject(error);
+			});
+	});
+}
+
+

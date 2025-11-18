@@ -196,12 +196,6 @@ watch(
 	{ deep: true }
 );
 
-watch(
-	filteredInstitutions,
-	(newFiltered) => {
-		console.log('Filtered institutions updated:', newFiltered.length);
-	}
-);
 </script>
 
 <template>

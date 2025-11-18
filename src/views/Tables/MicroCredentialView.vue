@@ -2,8 +2,8 @@
 	<AdminLayout>
 		<PageBreadcrumb :pageTitle="currentPageTitle" />
 		<div class="space-y-5 sm:space-y-6">
-			<ComponentCard title="Catálogo de Microcredenciales y Certificados">
-				<btn-create :table="'Microcredenciales o Certificaciones'" @open="({ mode, pk, table}) => openModal(mode, pk, table)" class="divide-error-900 hover:divide-error-800" />
+			<ComponentCard title="Catálogo de Microcredenciales">
+				<btn-create :table="'Microcredenciales'" @open="({ mode, pk, table}) => openModal(mode, pk, table)" class="divide-error-900 hover:divide-error-800" />
 				<mdlMicroCredential
 					:show="showModal"
 					:data="modalData"
@@ -35,7 +35,7 @@ import mdlMicroCredential from '../../components/modals/modals-forms/mdlMicroCre
 import { useModal } from "../../composables/UseModal";
 import mdlDeleteMicroCredential from "../../components/modals/delete-only/mdlDeleteMicroCredential.vue"
 
-const currentPageTitle = ref("Microcredenciales y Certificados");
+const currentPageTitle = ref("Microcredenciales");
 const { showModal, modalData, openModal, closeModal } = useModal();
 
 const tableRef = ref(null);

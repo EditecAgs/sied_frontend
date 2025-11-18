@@ -2,7 +2,7 @@
 	<div class="bg-white rounded-xl shadow-lg overflow-hidden">
 		<div class="px-6 py-4 bg-gradient-to-r from-brand-800 to-brand-900">
 			<div class="flex justify-between items-center">
-				<h2 class="text-xl font-bold text-white">Gestión de Microcredenciales</h2>
+				<h2 class="text-xl font-bold text-white">Gestión de Certificaciones</h2>
 				<button
 					class="flex items-center gap-1 px-4 py-2 bg-white/10 hover:bg-white/20 text-white rounded-lg backdrop-blur-sm transition-all"
 					@click="clearFilters">
@@ -24,6 +24,7 @@
 						<th class="px-5 py-3 text-left text-sm font-semibold border-b border-brand-700/50 border-r border-brand-700/30 w-2/12">Tipo</th>
 						<th class="px-5 py-3 text-left text-sm font-semibold border-b border-brand-700/50 w-2/12">Opciones</th>
 					</tr>
+
 					<tr class="bg-brand-800/60 text-white">
 						<th class="px-5 py-2 border-b border-brand-700/50 border-r border-brand-700/30">
 							<input v-model="filters.name" class="w-full bg-white/10 border-none text-white placeholder-white/60 rounded px-3 py-1 text-xs focus:outline-none focus:ring-1 focus:ring-white/50" placeholder="Buscar..." />
@@ -43,42 +44,42 @@
 
 				<tbody>
 					<tr v-if="isLoading">
-						<td colspan="4" class="py-12 text-center">
+						<td colspan="5" class="py-12 text-center">
 							<svg class="animate-spin h-8 w-8 text-brand-800 mx-auto mb-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
 								<circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" />
 								<path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z" />
 							</svg>
-							<p class="text-gray-500">Cargando microcredenciales...</p>
+							<p class="text-gray-500">Cargando certificaciones...</p>
 						</td>
 					</tr>
 
 					<tr
-						v-for="(micro, index) in paginatedMicroCredentials"
-						:key="micro.id ?? index"
+						v-for="(certification, index) in paginatedCertifications"
+						:key="certification.id ?? index"
 						class="border-b border-gray-100 hover:bg-brand-50/30 transition-colors even:bg-gray-50">
 						<td class="px-5 py-3 text-sm border-r border-gray-100 font-medium text-brand-900">
-							{{ micro.name }}
+							{{ certification.name }}
 						</td>
 						<td class="px-5 py-3 text-sm border-r border-gray-100 text-gray-700">
-							{{ micro.organization || 'N/A' }}
+							{{ certification.organization || 'N/A' }}
 						</td>
 						<td class="px-5 py-3 text-sm border-r border-gray-100 text-gray-500">
-							{{ micro.description || 'Sin descripción' }}
+							{{ certification.description || 'Sin descripción' }}
 						</td>
 						<td class="px-5 py-3 text-sm border-r border-gray-100 text-gray-500">
-							{{ micro.type == 'academic' ? 'Académico' : 'No Académico' }}	
+							{{ certification.type == 'academic' ? 'Académico' : 'No Académico' }}	
 						</td>
 						<td class="px-5 py-3 text-sm">
 							<div class="flex space-x-2">
-								<btnEdit :table="'Microcredencial'" :pk="micro.id ?? index" @open="(data) => $emit('open', data)" />
-								<btnDelete :table="'micro-credentials'" :pk="micro.id ?? index" @open-confirm="(payload) => $emit('open-confirm', payload)" />
+								<btnEdit :table="'Certificacion'" :pk="certification.id" @open="(data) => $emit('open', data)" />
+								<btnDelete :table="'certifications'" :pk="certification.id" @open-confirm="(payload) => $emit('open-confirm', payload)" />
 							</div>
 						</td>
 					</tr>
 
-					<tr v-if="!isLoading && filteredMicroCredentials.length === 0">
-						<td colspan="4" class="px-5 py-8 text-center">
-							<p class="text-gray-500">No se encontraron microcredenciales registradas</p>
+					<tr v-if="!isLoading && filteredCertifications.length === 0">
+						<td colspan="5" class="px-5 py-8 text-center">
+							<p class="text-gray-500">No se encontraron certificaciones registradas</p>
 						</td>
 					</tr>
 				</tbody>
@@ -87,7 +88,7 @@
 
 		<div v-if="!isLoading" class="px-6 py-3 bg-gray-50 border-t border-gray-200 flex justify-between items-center">
 			<span class="text-xs text-gray-600">
-				Mostrando {{ paginatedMicroCredentials.length }} de {{ filteredMicroCredentials.length }} registros
+				Mostrando {{ paginatedCertifications.length }} de {{ filteredCertifications.length }} registros
 			</span>
 			<div class="flex items-center space-x-2">
 				<select v-model="rowsPerPage" class="text-xs border border-gray-300 rounded px-2 py-1 text-gray-700">
@@ -114,9 +115,9 @@
 import { ref, computed, onMounted, watch } from "vue";
 import btnEdit from "../../../components/buttons/btnEdit.vue";
 import btnDelete from "../../../components/buttons/btnDelete.vue";
-import { getMicroCredentials } from '../../../services/dual_projects/micro-credentials';
+import { getCertifications } from '../../../services/dual_projects/certifications';
 
-const microCredentials = ref([]);
+const certifications = ref([]);
 const isLoading = ref(false);
 
 const filters = ref({
@@ -129,28 +130,34 @@ const filters = ref({
 const rowsPerPage = ref(10);
 const currentPage = ref(1);
 
-const filteredMicroCredentials = computed(() => {
-	return microCredentials.value.filter(micro => {
+
+const filteredCertifications = computed(() => {
+	return certifications.value.filter(cert => {
 		return (
-			micro.name.toLowerCase().includes(filters.value.name.toLowerCase()) &&
-			(micro.organization || '').toLowerCase().includes(filters.value.organization.toLowerCase()) &&
-			(micro.description || '').toLowerCase().includes(filters.value.description.toLowerCase()) &&
-			(micro.type || 'Academico').toLowerCase().includes(filters.value.type.toLowerCase())
+			(cert.name || '').toLowerCase().includes(filters.value.name.toLowerCase()) &&
+			(cert.organization || '').toLowerCase().includes(filters.value.organization.toLowerCase()) &&
+			(cert.description || '').toLowerCase().includes(filters.value.description.toLowerCase()) &&
+			(cert.type || 'Academico').toLowerCase().includes(filters.value.type.toLowerCase())
 		);
 	});
 });
 
-const totalPages = computed(() => Math.ceil(filteredMicroCredentials.value.length / rowsPerPage.value));
-const paginatedMicroCredentials = computed(() => {
+
+const totalPages = computed(() =>
+	Math.ceil(filteredCertifications.value.length / rowsPerPage.value)
+);
+
+const paginatedCertifications = computed(() => {
 	const start = (currentPage.value - 1) * rowsPerPage.value;
-	return filteredMicroCredentials.value.slice(start, start + rowsPerPage.value);
+	return filteredCertifications.value.slice(start, start + rowsPerPage.value);
 });
 
-watch([filteredMicroCredentials, rowsPerPage], () => {
+watch([filteredCertifications, rowsPerPage], () => {
 	if (currentPage.value > totalPages.value) {
 		currentPage.value = 1;
 	}
 });
+
 
 const clearFilters = () => {
 	filters.value = {
@@ -164,9 +171,10 @@ const clearFilters = () => {
 
 const fetchData = () => {
 	isLoading.value = true;
-	getMicroCredentials()
+	getCertifications()
 		.then(({ data }) => {
-			microCredentials.value = data;
+			certifications.value = data;
+            console.log(data);
 		})
 		.finally(() => {
 			isLoading.value = false;
@@ -178,6 +186,6 @@ onMounted(() => {
 });
 
 defineExpose({
-	fetchData: fetchData,
+	fetchData
 });
 </script>
