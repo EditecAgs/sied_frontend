@@ -334,6 +334,7 @@ const handleSavedMicroCredential = async () => {
 	try {
 		const res = await getMicroCredentials();
 		emit('update:microCredentials', res.data);
+		allMicroCredentials.value = res.data;
 		closeMicroModal();
 		setTimeout(() => {
 			showMicroDropdown.value = true;
@@ -350,6 +351,7 @@ const handleSavedCertification = async () => {
 	try {
 		const res = await getCertifications();
 		emit('update:certifications', res.data);
+		allCertifications.value = res.data;
 		closeCertificationModal();
 		setTimeout(() => {
 			showCertificationDropdown.value = true;
@@ -366,6 +368,7 @@ const handleSavedDiploma = async () => {
 	try {
 		const res = await getDiplomas();
 		emit('update:diplomas', res.data);
+		allDiplomas.value = res.data;
 		closeDiplomaModal();
 		setTimeout(() => {
 			showDiplomaDropdown.value = true;
@@ -1365,7 +1368,7 @@ onMounted(() => {
 							v-for="micro in filteredMicro" :key="micro.id"
 							class="dropdown-item"
 							@click="addMicroCredential(micro)">
-							{{ micro.name }}
+							{{ micro.name }}-{{ micro.organization }}
 						</li>
 					</ul>
 				</div>
@@ -1411,7 +1414,7 @@ onMounted(() => {
 							v-for="certification in filteredCertifications" :key="certification.id"
 							class="dropdown-item"
 							@click="addCertification(certification)">
-							{{ certification.name }}
+							{{ certification.name }}-{{ certification.organization }}
 						</li>
 					</ul>
 				</div>
@@ -1458,7 +1461,7 @@ onMounted(() => {
 							v-for="diploma in filteredDiplomas" :key="diploma.id"
 							class="dropdown-item"
 							@click="addDiploma(diploma)">
-							{{ diploma.name }}
+							{{ diploma.name }}-{{ diploma.organization }}
 						</li>
 					</ul>
 				</div>
