@@ -31,11 +31,17 @@
 					<div class="col-span-12 xl:col-span-4 grid gap-4 md:gap-6 auto-rows-max">
 						<customer-demographic class="h-auto" @loaded="onChildLoaded" />
 						<AverageAmountByEconomicSupport class="h-auto" @loaded="onChildLoaded" />
-
 					</div>
 
 					<div class="col-span-12 ">
 						<ProjectsByDualType class="h-auto" @loaded="onChildLoaded" />
+					</div>
+
+					<div class="col-span-12">
+						<div class="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
+							<OrganizationsByNationalCluster class="h-auto" @loaded="onChildLoaded" />
+							<OrganizationsByLocalCluster class="h-auto" @loaded="onChildLoaded" />
+						</div>
 					</div>
 				</div>
 			</div>
@@ -58,7 +64,8 @@ import ProjectsByEconomicSupport from '../components/ecommerce/ProjectsByEconomi
 import AverageAmountByEconomicSupport from '../components/ecommerce/AverageAmountByEconomicSupport.vue';
 import LoadingScreen from '../components/layouts/LoadingScreen.vue';
 import ProjectsByDualType from '../components/ecommerce/ProjectsByDualType.vue';
-
+import OrganizationsByLocalCluster from '../components/ecommerce/OrganizationsByLocalCluster.vue';
+import OrganizationsByNationalCluster from '../components/ecommerce/OrganizationsByNationalCluster.vue';
 export default {
 	name: 'Ecommerce',
 	components: {
@@ -77,6 +84,8 @@ export default {
 		SectorsMexicoMetric,
 		LoadingScreen,
 		ProjectsByDualType,
+		OrganizationsByLocalCluster,
+		OrganizationsByNationalCluster,
 	},
 	data() {
 		return {

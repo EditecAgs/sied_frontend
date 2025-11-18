@@ -37,6 +37,8 @@ import UserActivityLogger from "../views/Others/UserActivityLogger.vue";
 import AccesLogs from "../views/Others/AccesLogs.vue";
 import Tutorials from "../views/Others/Tutorials.vue";
 import ResetPassword from "../views/Auth/ResetPassword.vue";
+import CertificationView from "../views/Tables/CertificationView.vue";
+import DiplomaView from "../views/Tables/DiplomaView.vue";
 
 
 
@@ -80,6 +82,8 @@ const routes = [
     { path: '/blank', name: 'Blank', component: BlankPage },
     { path: '/tutorials', name: 'Tutorials', component: Tutorials },
     { path: '/reset-password', name: 'ResetPassword', component: ResetPassword },
+	{ path: '/certifications-table', name: 'CertificationsTable', component: CertificationView },
+	{ path: '/diplomas-table', name: 'DiplomasTable', component: DiplomaView },
     {
         path: '/logs',
         name: 'Logs',

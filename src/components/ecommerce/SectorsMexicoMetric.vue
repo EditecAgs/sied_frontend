@@ -4,7 +4,7 @@
 		style="background: linear-gradient(to top, rgba(211, 211, 210, 0.8) 30%, rgba(159, 129, 60, 0.8) 100%);">
 
 		<h3 class="text-xl font-semibold text-stone-50 dark:text-gray-100 mb-6 text-center">
-			Sectores de Proyectos del Plan México
+			Proyectos por Sectores del Plan México
 		</h3>
 
 		<div class="max-w-full overflow-x-auto custom-scrollbar" v-if="projects_by_sector_mexico.length > 0">

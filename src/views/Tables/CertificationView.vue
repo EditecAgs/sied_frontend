@@ -2,18 +2,18 @@
 	<AdminLayout>
 		<PageBreadcrumb :pageTitle="currentPageTitle" />
 		<div class="space-y-5 sm:space-y-6">
-			<ComponentCard title="Catálogo de Tipos de Modelo Dual">
-				<btn-create :table="'Tipo de Modelo Dual'" @open="({ mode, pk, table}) => openModal(mode, pk, table)" class="divide-error-900 hover:divide-error-800" />
-				<mdlDualType
+			<ComponentCard title="Certificaciónes">
+				<btn-create :table="'Certificaciónes'" @open="({ mode, pk, table}) => openModal(mode, pk, table)" class="divide-error-900 hover:divide-error-800" />
+				<mdlCertification
 					:show="showModal"
 					:data="modalData"
 					@close="closeModal"
 					@saved="handleSaved" />
-				<TableDualType
+				<TableCertifications
 					ref="tableRef"
 					@open="({ mode, pk, table }) => openModal(mode, pk, table)"
 					@open-confirm="openDeleteModal" />
-				<mdlDeleteDualType
+				<mdlDeleteCertification
 					:show="showDeleteModal"
 					:table="deleteTarget.table"
 					:pk="deleteTarget.pk"
@@ -29,13 +29,12 @@ import { ref } from "vue";
 import PageBreadcrumb from "../../components/common/PageBreadcrumb.vue";
 import AdminLayout from "../../components/layouts/AdminLayout.vue";
 import ComponentCard from "../../components/common/componentCard.vue";
-import TableDualType from "../../components/tables/basic-tables/TableDualType.vue";
+import TableCertifications from "../../components/tables/basic-tables/TableCertifications.vue";
 import btnCreate from "../../components/buttons/btnCreate.vue";
-import mdlDualType from '../../components/modals/modals-forms/mdlDualType.vue';
+import mdlCertification from '../../components/modals/modals-forms/mdlCertification.vue';
 import { useModal } from "../../composables/UseModal";
-import mdlDeleteDualType from "../../components/modals/delete-only/mdlDeleteDualType.vue"
-
-const currentPageTitle = ref("Tipo de Modelo Dual");
+import mdlDeleteCertification from "../../components/modals/delete-only/mdlDeleteCertification.vue"
+const currentPageTitle = ref("Certificaciones");
 const { showModal, modalData, openModal, closeModal } = useModal();
 
 const tableRef = ref(null);

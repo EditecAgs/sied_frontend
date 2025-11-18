@@ -2,7 +2,7 @@
 	<div class="bg-white rounded-xl shadow-lg overflow-hidden">
 		<div class="px-6 py-4 bg-gradient-to-r from-brand-800 to-brand-900">
 			<div class="flex justify-between items-center">
-				<h2 class="text-xl font-bold text-white">Gestión de Actividades Duales</h2>
+				<h2 class="text-xl font-bold text-white">Gestión de Proyectos Duales</h2>
 				<button
 					class="flex items-center gap-1 px-4 py-2 bg-white/10 hover:bg-white/20 text-white rounded-lg backdrop-blur-sm transition-all"
 					@click="clearFilters">
@@ -21,7 +21,7 @@
 						<th class="px-5 py-3 text-left text-sm font-semibold border-b border-brand-700/50 border-r border-brand-700/30">Nombre</th>
 						<th class="px-5 py-3 text-left text-sm font-semibold border-b border-brand-700/50 border-r border-brand-700/30">Estatus</th>
 						<th class="px-5 py-3 text-left text-sm font-semibold border-b border-brand-700/50 border-r border-brand-700/30">Institución</th>
-						<th class="px-5 py-3 text-left text-sm font-semibold border-b border-brand-700/50 border-r border-brand-700/30">Área</th>
+						<th class="px-5 py-3 text-left text-sm font-semibold border-b border-brand-700/50 border-r border-brand-700/30">Clasificación General</th>
 						<th class="px-5 py-3 text-left text-sm font-semibold border-b border-brand-700/50 border-r border-brand-700/30">Organización</th>
 						<th class="px-5 py-3 text-left text-sm font-semibold border-b border-brand-700/50 border-r border-brand-700/30">Estado Convenio</th>
 						<th class="px-5 py-3 text-left text-sm font-semibold border-b border-brand-700/50">Opciones</th>
@@ -163,7 +163,7 @@ const filters = ref({
 	status_document: ''
 });
 
-// 📌 Traemos institution y user_type desde localStorage
+
 const institutionId = JSON.parse(localStorage.getItem("institution"))?.id;
 const userType = parseInt(localStorage.getItem("user_type"), 10);
 
