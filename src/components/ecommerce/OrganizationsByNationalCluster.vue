@@ -7,7 +7,7 @@
 			Organizaciones por Cámaras Nacionales
 		</h3>
 
-		<div class="w-full" v-if="nationalClusters.length > 0">
+		<div class="w-full" v-if="filteredNationalClusters.length > 0">
 			<div class="relative h-80 md:h-96 lg:h-108">
 				<BarChart :data="chartData" :options="chartOptions" />
 			</div>
@@ -37,8 +37,16 @@ const palette = [
 	'#65A30D', '#EA580C', '#BE123C', '#0F766E', '#4338CA'
 ]
 
+// Computed para filtrar y ordenar los datos
+const filteredNationalClusters = computed(() => {
+	return nationalClusters.value
+		.filter(item => item.organization_count > 0) // Excluir las que no tienen organizaciones
+		.sort((a, b) => b.organization_count - a.organization_count) // Ordenar descendente por cantidad de organizaciones
+		.slice(0, 5) // Tomar solo las primeras 5
+})
+
 const chartData = computed(() => ({
-	labels: nationalClusters.value.map(item => {
+	labels: filteredNationalClusters.value.map(item => {
 		const name = item.cluster_name;
 		if (name.length > 40) {
 			return name.substring(0, 40) + '...';
@@ -48,8 +56,8 @@ const chartData = computed(() => ({
 	datasets: [
 		{
 			label: 'Número de Organizaciones',
-			data: nationalClusters.value.map(item => item.organization_count),
-			backgroundColor: nationalClusters.value.map((_, index) =>
+			data: filteredNationalClusters.value.map(item => item.organization_count),
+			backgroundColor: filteredNationalClusters.value.map((_, index) =>
 				palette[index % palette.length]
 			),
 			borderWidth: 2,
@@ -72,7 +80,7 @@ const chartOptions = {
 			callbacks: {
 				title: function(context) {
 					const index = context[0].dataIndex;
-					return nationalClusters.value[index]?.cluster_name || '';
+					return filteredNationalClusters.value[index]?.cluster_name || '';
 				},
 				label: function(context) {
 					const value = context.parsed.y;
@@ -159,7 +167,8 @@ const fetchData = async () => {
 		nationalClusters.value = result.data.nacionales || []
 
 		console.log('Cámaras nacionales recibidas:', nationalClusters.value.length)
-		console.log('Datos de cámaras nacionales:', nationalClusters.value)
+		console.log('Cámaras nacionales filtradas:', filteredNationalClusters.value.length)
+		console.log('Datos de cámaras nacionales filtradas:', filteredNationalClusters.value)
 
 	} catch (error) {
 		console.error('Error al cargar cámaras nacionales:', error)

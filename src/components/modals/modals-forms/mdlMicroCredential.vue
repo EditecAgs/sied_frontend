@@ -240,7 +240,7 @@ watchEffect(() => {
 
 						<div class="form-error">
 							<label class="flex items-center gap-1 text-sm font-medium text-gray-700 mb-1">
-								Imagen
+								Insignia
 								<button
 									type="button" class="help-icon text-gray-400 hover:text-brand-600 cursor-help"
 									@click="toggleTooltip('image', $event)" @mouseleave="hideTooltipDelayed">?</button>

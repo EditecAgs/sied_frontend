@@ -1,5 +1,7 @@
 <script setup>
 import { ref, computed, defineProps, defineEmits, watch, onMounted, nextTick } from "vue";
+import { VTooltip } from 'floating-vue'
+import 'floating-vue/dist/style.css'
 import btnCreate from '../../components/buttons/btnCreate.vue';
 import mdlCareers from '../modals/modals-forms/mdlCareers.vue';
 import mdlSpecialties from '../modals/modals-forms/mdlSpecialties.vue';
@@ -35,10 +37,22 @@ const errors = ref({});
 const pendingCareerSelection = ref(false);
 const pendingSpecialtySelection = ref(false);
 
+const fieldHelpTexts = {
+	control_number: 'Número de control o matrícula único del estudiante en la institución educativa.',
+	name_student: 'Nombre(s) del estudiante.',
+	lastname: 'Apellidos del estudiante.',
+	gender: 'Género con el que se identifica el estudiante.',
+	semester: 'Periodo académico actual del estudiante (generalmente semestres o cuatrimestres).',
+	id_career: 'Carrera o programa educativo en el que está inscrito el estudiante.',
+	id_specialty: 'Especialidad o área de enfoque dentro de la carrera (opcional).'
+}
+
+const vTooltip = VTooltip
+
 const handleSavedCareer = async () => {
 	try {
 		emit('update:careers');
-		
+
 		pendingCareerSelection.value = true;
 
 		closeCareerModal();
@@ -57,7 +71,6 @@ const handleSavedCareer = async () => {
 					console.log('Nueva carrera seleccionada automáticamente:', latestCareer.name);
 					pendingCareerSelection.value = false;
 				} else {
-					// Si no encontramos una carrera para esta institución, intentar de nuevo en 500ms
 					setTimeout(() => {
 						if (pendingCareerSelection.value && props.careers && props.careers.length > 0) {
 							const retryCareer = [...props.careers]
@@ -86,13 +99,13 @@ const handleSavedCareer = async () => {
 
 const handleSavedSpecialty = async () => {
 	try {
-	
+
 		emit('update:specialties');
-		
+
 		pendingSpecialtySelection.value = true;
 
 		closeSpecialtyModal();
-		
+
 		setTimeout(() => {
 			if (props.specialties && props.specialties.length > 0 && pendingSpecialtySelection.value && form.value.id_career) {
 				const latestSpecialty = [...props.specialties]
@@ -133,12 +146,11 @@ const handleSavedSpecialty = async () => {
 	}
 };
 
-
 watch(() => props.careers, (newCareers, oldCareers) => {
 	if (pendingCareerSelection.value && newCareers && newCareers.length > 0) {
 
 		const newCareer = newCareers.find(career =>
-			!oldCareers?.find(old => old.id === career.id) && 
+			!oldCareers?.find(old => old.id === career.id) &&
 			(career.id_institution === props.institution?.id || career.institution_id === props.institution?.id)
 		);
 
@@ -153,7 +165,7 @@ watch(() => props.careers, (newCareers, oldCareers) => {
 watch(() => props.specialties, (newSpecialties, oldSpecialties) => {
 	if (pendingSpecialtySelection.value && newSpecialties && newSpecialties.length > 0 && form.value.id_career) {
 		const newSpecialty = newSpecialties.find(specialty =>
-			!oldSpecialties?.find(old => old.id === specialty.id) && 
+			!oldSpecialties?.find(old => old.id === specialty.id) &&
 			(specialty.id_career === parseInt(form.value.id_career) || specialty.career_id === parseInt(form.value.id_career))
 		);
 
@@ -378,7 +390,13 @@ defineExpose({
 
 			<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
 				<div>
-					<label class="block text-sm font-medium text-gray-700 mb-1">No. Control o Matricula *</label>
+					<label class="flex items-center gap-1 text-sm font-medium text-gray-700 mb-1">
+						No. Control o Matricula *
+						<button
+							v-tooltip="fieldHelpTexts.control_number"
+							type="button"
+							class="help-icon text-gray-400 hover:text-brand-600 cursor-help">?</button>
+					</label>
 					<input
 						v-model="form.control_number"
 						class="input"
@@ -389,7 +407,13 @@ defineExpose({
 				</div>
 
 				<div>
-					<label class="block text-sm font-medium text-gray-700 mb-1">Nombre *</label>
+					<label class="flex items-center gap-1 text-sm font-medium text-gray-700 mb-1">
+						Nombre *
+						<button
+							v-tooltip="fieldHelpTexts.name_student"
+							type="button"
+							class="help-icon text-gray-400 hover:text-brand-600 cursor-help">?</button>
+					</label>
 					<input
 						v-model="form.name_student"
 						class="input"
@@ -400,7 +424,13 @@ defineExpose({
 				</div>
 
 				<div>
-					<label class="block text-sm font-medium text-gray-700 mb-1">Apellidos *</label>
+					<label class="flex items-center gap-1 text-sm font-medium text-gray-700 mb-1">
+						Apellidos *
+						<button
+							v-tooltip="fieldHelpTexts.lastname"
+							type="button"
+							class="help-icon text-gray-400 hover:text-brand-600 cursor-help">?</button>
+					</label>
 					<input
 						v-model="form.lastname"
 						class="input"
@@ -411,21 +441,33 @@ defineExpose({
 				</div>
 
 				<div>
-					<label class="block text-sm font-medium text-gray-700 mb-1"> Periodo académico *</label>
+					<label class="flex items-center gap-1 text-sm font-medium text-gray-700 mb-1">
+						Periodo académico *
+						<button
+							v-tooltip="fieldHelpTexts.semester"
+							type="button"
+							class="help-icon text-gray-400 hover:text-brand-600 cursor-help">?</button>
+					</label>
 					<input
 						v-model="form.semester"
 						type="number"
 						min="1"
 						max="12"
 						class="input"
-						placeholder=" Periodo académico (1-12)"
+						placeholder="Periodo académico (1-12)"
 						:class="{ 'border-red-500': errors.semester }"
 						:disabled="!institution" />
 					<p v-if="errors.semester" class="text-red-500 text-sm mt-1">{{ errors.semester }}</p>
 				</div>
-				
+
 				<div>
-					<label class="block text-sm font-medium text-gray-700 mb-1">Carrera *</label>
+					<label class="flex items-center gap-1 text-sm font-medium text-gray-700 mb-1">
+						Carrera *
+						<button
+							v-tooltip="fieldHelpTexts.id_career"
+							type="button"
+							class="help-icon text-gray-400 hover:text-brand-600 cursor-help">?</button>
+					</label>
 					<div class="flex gap-2">
 						<select
 							v-model="form.id_career"
@@ -447,9 +489,15 @@ defineExpose({
 						No hay carreras disponibles para esta institución
 					</p>
 				</div>
-				
+
 				<div>
-					<label class="block text-sm font-medium text-gray-700 mb-1">Especialidad</label>
+					<label class="flex items-center gap-1 text-sm font-medium text-gray-700 mb-1">
+						Especialidad
+						<button
+							v-tooltip="fieldHelpTexts.id_specialty"
+							type="button"
+							class="help-icon text-gray-400 hover:text-brand-600 cursor-help">?</button>
+					</label>
 					<div class="flex gap-2">
 						<select
 							v-model="form.id_specialty"
@@ -475,7 +523,13 @@ defineExpose({
 				</div>
 
 				<div class="md:col-span-2">
-					<label class="block text-sm font-medium text-gray-700 mb-2">Género *</label>
+					<label class="flex items-center gap-1 text-sm font-medium text-gray-700 mb-2">
+						Género *
+						<button
+							v-tooltip="fieldHelpTexts.gender"
+							type="button"
+							class="help-icon text-gray-400 hover:text-brand-600 cursor-help">?</button>
+					</label>
 					<div class="flex gap-6">
 						<label class="flex items-center">
 							<input
@@ -532,35 +586,35 @@ defineExpose({
 			<div class="overflow-x-auto">
 				<table class="min-w-full">
 					<thead>
-						<tr class="bg-brand-800 text-white">
-							<th class="px-4 py-2 text-left">No. Control o Matricula</th>
-							<th class="px-4 py-2 text-left">Nombre</th>
-							<th class="px-4 py-2 text-left">Apellidos</th>
-							<th class="px-4 py-2 text-left">Semestre</th>
-							<th class="px-4 py-2 text-left">Carrera</th>
-							<th class="px-4 py-2 text-left">Especialidad</th>
-							<th class="px-4 py-2 text-left">Género</th>
-							<th class="px-4 py-2 text-left">Acciones</th>
-						</tr>
+					<tr class="bg-brand-800 text-white">
+						<th class="px-4 py-2 text-left">No. Control o Matricula</th>
+						<th class="px-4 py-2 text-left">Nombre</th>
+						<th class="px-4 py-2 text-left">Apellidos</th>
+						<th class="px-4 py-2 text-left">Semestre</th>
+						<th class="px-4 py-2 text-left">Carrera</th>
+						<th class="px-4 py-2 text-left">Especialidad</th>
+						<th class="px-4 py-2 text-left">Género</th>
+						<th class="px-4 py-2 text-left">Acciones</th>
+					</tr>
 					</thead>
 					<tbody>
-						<tr v-for="(s, i) in students" :key="i" class="border-b hover:bg-gray-50">
-							<td class="px-4 py-2 font-mono">{{ s.student.control_number }}</td>
-							<td class="px-4 py-2">{{ s.student.name }}</td>
-							<td class="px-4 py-2">{{ s.student.lastname }}</td>
-							<td class="px-4 py-2 text-center">{{ s.student.semester }}</td>
-							<td class="px-4 py-2">{{ s.student.career?.name || 'N/A' }}</td>
-							<td class="px-4 py-2">{{ s.student.specialty?.name || 'Sin especialidad' }}</td>
-							<td class="px-4 py-2">{{ s.student.gender }}</td>
-							<td class="px-4 py-2">
-								<button
-									class="text-red-500 hover:text-red-700 px-2 py-1 rounded transition"
-									title="Eliminar estudiante"
-									@click="removeStudent(i)">
-									Eliminar
-								</button>
-							</td>
-						</tr>
+					<tr v-for="(s, i) in students" :key="i" class="border-b hover:bg-gray-50">
+						<td class="px-4 py-2 font-mono">{{ s.student.control_number }}</td>
+						<td class="px-4 py-2">{{ s.student.name }}</td>
+						<td class="px-4 py-2">{{ s.student.lastname }}</td>
+						<td class="px-4 py-2 text-center">{{ s.student.semester }}</td>
+						<td class="px-4 py-2">{{ s.student.career?.name || 'N/A' }}</td>
+						<td class="px-4 py-2">{{ s.student.specialty?.name || 'Sin especialidad' }}</td>
+						<td class="px-4 py-2">{{ s.student.gender }}</td>
+						<td class="px-4 py-2">
+							<button
+								class="text-red-500 hover:text-red-700 px-2 py-1 rounded transition"
+								title="Eliminar estudiante"
+								@click="removeStudent(i)">
+								Eliminar
+							</button>
+						</td>
+					</tr>
 					</tbody>
 				</table>
 			</div>
@@ -600,5 +654,9 @@ defineExpose({
 <style scoped>
 .input {
 	@apply w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-500 focus:border-transparent transition-colors;
+}
+
+.help-icon {
+	@apply w-4 h-4 flex items-center justify-center rounded-full border border-current text-xs font-bold;
 }
 </style>

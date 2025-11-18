@@ -7,7 +7,7 @@
 			Organizaciones por Cámaras Locales
 		</h3>
 
-		<div class="w-full" v-if="localClusters.length > 0">
+		<div class="w-full" v-if="filteredLocalClusters.length > 0">
 			<div class="relative h-80 md:h-96 lg:h-108">
 				<BarChart :data="chartData" :options="chartOptions" />
 			</div>
@@ -37,8 +37,15 @@ const palette = [
 	'#65A30D', '#EA580C', '#BE123C', '#0F766E', '#4338CA'
 ]
 
+const filteredLocalClusters = computed(() => {
+	return localClusters.value
+		.filter(item => item.organization_count > 0)
+		.sort((a, b) => b.organization_count - a.organization_count)
+		.slice(0, 5)
+})
+
 const chartData = computed(() => ({
-	labels: localClusters.value.map(item => {
+	labels: filteredLocalClusters.value.map(item => {
 		const name = item.cluster_name;
 		if (name.length > 40) {
 			return name.substring(0, 40) + '...';
@@ -48,8 +55,8 @@ const chartData = computed(() => ({
 	datasets: [
 		{
 			label: 'Número de Organizaciones',
-			data: localClusters.value.map(item => item.organization_count),
-			backgroundColor: localClusters.value.map((_, index) =>
+			data: filteredLocalClusters.value.map(item => item.organization_count),
+			backgroundColor: filteredLocalClusters.value.map((_, index) =>
 				palette[index % palette.length]
 			),
 			borderWidth: 2,
@@ -72,7 +79,7 @@ const chartOptions = {
 			callbacks: {
 				title: function(context) {
 					const index = context[0].dataIndex;
-					return localClusters.value[index]?.cluster_name || '';
+					return filteredLocalClusters.value[index]?.cluster_name || '';
 				},
 				label: function(context) {
 					const value = context.parsed.y;
@@ -159,7 +166,8 @@ const fetchData = async () => {
 		localClusters.value = result.data.locales || []
 
 		console.log('Cámaras locales recibidas:', localClusters.value.length)
-		console.log('Datos de cámaras locales:', localClusters.value)
+		console.log('Cámaras locales filtradas:', filteredLocalClusters.value.length)
+		console.log('Datos de cámaras locales filtradas:', filteredLocalClusters.value)
 
 	} catch (error) {
 		console.error('Error al cargar cámaras locales:', error)
