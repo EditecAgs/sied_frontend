@@ -33,6 +33,7 @@ const props = defineProps<{
 
 const { showModal, modalData, openModal, closeModal } = useModal();
 const isLoading = ref(false);
+const isSubmitting = ref(false);
 const currentStep = ref(0);
 const reportaModeloDual = ref<boolean>(false);
 
@@ -348,6 +349,10 @@ watch(
 );
 
 const handleNextOrSubmit = async () => {
+	if (isSubmitting.value) {
+		return;
+	}
+
 	if (currentStep.value === 0) {
 		if (reportaModeloDual.value === null) {
 			alert('Debes seleccionar si este seguimiento incluye información del Modelo Dual');
@@ -446,7 +451,13 @@ const prevStep = async () => {
 };
 
 const imprimirYGuardar = async () => {
+	if (isSubmitting.value) {
+		return;
+	}
+
 	try {
+		isSubmitting.value = true;
+
 		let payload: Record<string, any>;
 
 		if (reportaModeloDual.value === false) {
@@ -459,13 +470,11 @@ const imprimirYGuardar = async () => {
 				id_institution: Number(formData.academico.id_institution)
 			};
 		} else {
-			// Validación actualizada para period_end
 			if (!formData.unidadDual.name_report || !formData.unidadDual.id_organization || !formData.unidadDual.id_dual_area) {
 				alert('Debes llenar todos los campos de la Unidad Dual');
 				return;
 			}
 
-			// Validar period_end solo si el proyecto está concluido
 			if (formData.unidadDual.is_concluded === 1 && !formData.unidadDual.period_end) {
 				alert('La fecha de fin es obligatoria cuando el proyecto está concluido');
 				return;
@@ -540,10 +549,10 @@ const imprimirYGuardar = async () => {
 		} else {
 			console.error('Error al enviar el formulario:', err);
 		}
+	} finally {
+		isSubmitting.value = false;
 	}
 };
-
-
 
 const handleInstitutionSaved = () => {
 	closeModal();
@@ -667,19 +676,32 @@ const closeModalAndReset = () => {
 					No se detectaron cambios en el formulario.
 				</p>
 				<div class="flex justify-between pt-4 border-t">
-					<button :disabled="currentStep === 0" class="btn" @click="prevStep">
+					<button
+						:disabled="currentStep === 0 || isSubmitting"
+						class="btn disabled:bg-gray-300 disabled:cursor-not-allowed"
+						@click="prevStep">
 						Anterior
 					</button>
 					<button
-						class="btn bg-brand-800 text-white hover:bg-brand-900"
-						:disabled="currentStep === steps.length - 1 && !canSubmit"
+						class="btn bg-brand-800 text-white hover:bg-brand-900 disabled:bg-gray-400 disabled:cursor-not-allowed relative"
+						:disabled="(currentStep === steps.length - 1 && !canSubmit) || isSubmitting"
 						@click="handleNextOrSubmit">
-						{{
-							currentStep === steps.length - 1 ||
-							(currentStep === 0 && reportaModeloDual === false)
-								? 'Enviar'
-								: 'Siguiente'
-						}}
+						<div
+							v-if="isSubmitting"
+							class="absolute left-3 top-1/2 transform -translate-y-1/2">
+							<div class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+						</div>
+
+						<span :class="{ 'ml-4': isSubmitting }">
+							{{
+								isSubmitting
+									? 'Enviando...'
+									: currentStep === steps.length - 1 ||
+										(currentStep === 0 && reportaModeloDual === false)
+										? 'Enviar'
+										: 'Siguiente'
+							}}
+						</span>
 					</button>
 				</div>
 
