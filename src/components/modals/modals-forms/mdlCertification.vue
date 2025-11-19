@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { defineProps, defineEmits, reactive, watchEffect, ref, onMounted, onBeforeUnmount } from 'vue'
 import axios from 'axios'
+import { VTooltip } from 'floating-vue'
+import 'floating-vue/dist/style.css'
 import { showCertification } from "../../../services/dual_projects/certifications.js"
 
 const emit = defineEmits(['close', 'saved'])
@@ -11,9 +13,8 @@ const alvRoute = ref()
 alvRoute.value = axios.defaults.baseURL + 'certifications'
 const alvMethod = ref<'POST' | 'PUT'>('POST')
 
-const activeTooltip = ref<string | null>(null)
-const tooltipPosition = ref({ x: 0, y: 0 })
-const tooltipTimeout = ref<number | null>(null)
+// Eliminamos la lógica manual de tooltips y usamos floating-vue
+const vTooltip = VTooltip
 
 const fieldHelpTexts: Record<string, string> = {
 	name: "Nombre oficial de la certificación.",
@@ -24,48 +25,8 @@ const fieldHelpTexts: Record<string, string> = {
 	hours: "Número de horas que representa la certificación."
 }
 
-const toggleTooltip = (field: string, event: MouseEvent) => {
-	const target = event.currentTarget as HTMLElement
-	const rect = target.getBoundingClientRect()
-	tooltipPosition.value = { x: rect.left + rect.width / 2, y: rect.top - 10 }
-	activeTooltip.value = activeTooltip.value === field ? null : field
-}
-
-const hideTooltip = () => (activeTooltip.value = null)
-const hideTooltipDelayed = () => {
-	tooltipTimeout.value = window.setTimeout(() => hideTooltip(), 200)
-}
-const cancelHideTooltip = () => {
-	if (tooltipTimeout.value) clearTimeout(tooltipTimeout.value)
-}
-
-const handleClickOutside = (event: MouseEvent) => {
-    const target = event.target as HTMLElement | null
-    if (!target) return
-
-    if (!target.closest('.help-icon') && !target.closest('.tooltip-box')) {
-        hideTooltip()
-    }
-}
-
-onMounted(() => document.addEventListener('click', handleClickOutside))
-onBeforeUnmount(() => document.removeEventListener('click', handleClickOutside))
-
-const afterDone = (response: any) => {
-	console.log(response.data + ' guardado exitosamente')
-	errorMessage.value = ''
-	emit('saved')
-	emit('close')
-}
-
-const afterError = (error: any) => {
-	if (error.response?.status === 422) {
-		errorMessage.value = error.response?.data?.message || 'Algunos campos no son válidos'
-	} else {
-		errorMessage.value = error.message || 'Ocurrió un error inesperado'
-	}
-	console.error('Error al enviar:', error.response?.data || error.message)
-}
+// Eliminamos todas las funciones de tooltip manuales
+// ya que floating-vue se encargará de esto
 
 // eslint-disable-next-line vue/valid-define-props
 const props = defineProps<{
@@ -131,19 +92,25 @@ watchEffect(() => {
 		})
 	}
 })
+
+const afterDone = (response: any) => {
+	console.log(response.data + ' guardado exitosamente')
+	errorMessage.value = ''
+	emit('saved')
+	emit('close')
+}
+
+const afterError = (error: any) => {
+	if (error.response?.status === 422) {
+		errorMessage.value = error.response?.data?.message || 'Algunos campos no son válidos'
+	} else {
+		errorMessage.value = error.message || 'Ocurrió un error inesperado'
+	}
+	console.error('Error al enviar:', error.response?.data || error.message)
+}
 </script>
 
 <template>
-	<div
-		v-if="activeTooltip"
-		class="tooltip-box fixed z-[999] max-w-xs bg-gray-800 text-white text-sm rounded-lg p-3 shadow-lg transition-opacity duration-200"
-		:style="{ left: `${tooltipPosition.x}px`, top: `${tooltipPosition.y}px`, transform: 'translate(-50%, -100%)' }"
-		@mouseenter="cancelHideTooltip"
-		@mouseleave="hideTooltipDelayed">
-		{{ fieldHelpTexts[activeTooltip] }}
-		<div class="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-gray-800" />
-	</div>
-
 	<transition name="fade-scale">
 		<div
 			v-if="show"
@@ -188,34 +155,50 @@ watchEffect(() => {
 						<div class="form-error">
 							<label class="flex items-center gap-1 text-sm font-medium text-gray-700 mb-1">
 								Nombre*
-								<button type="button" class="help-icon text-gray-400 hover:text-brand-600 cursor-help"
-									@click="toggleTooltip('name', $event)" @mouseleave="hideTooltipDelayed">?</button>
+								<button
+									v-tooltip="fieldHelpTexts.name"
+									type="button"
+									class="help-icon text-gray-400 hover:text-brand-600 cursor-help">?</button>
 							</label>
-							<input v-model="form.name" type="text" name="name" required
+							<input
+								v-model="form.name" type="text" name="name" required
 								class="w-full px-3 py-2 border rounded-md" :disabled="isLoading" />
 						</div>
 
 						<div class="form-error">
 							<label class="flex items-center gap-1 text-sm font-medium text-gray-700 mb-1">
 								Organización*
-								<button type="button" class="help-icon text-gray-400 hover:text-brand-600 cursor-help"
-									@click="toggleTooltip('organization', $event)" @mouseleave="hideTooltipDelayed">?</button>
+								<button
+									v-tooltip="fieldHelpTexts.organization"
+									type="button"
+									class="help-icon text-gray-400 hover:text-brand-600 cursor-help">?</button>
 							</label>
-							<input v-model="form.organization" type="text" name="organization" required
+							<input
+								v-model="form.organization" type="text" name="organization" required
 								class="w-full px-3 py-2 border rounded-md" :disabled="isLoading" />
 						</div>
 
 						<div class="form-error">
 							<label class="flex items-center gap-1 text-sm font-medium text-gray-700 mb-1">
 								Descripción
-								<button type="button" class="help-icon text-gray-400 hover:text-brand-600 cursor-help"
-									@click="toggleTooltip('description', $event)" @mouseleave="hideTooltipDelayed">?</button>
+								<button
+									v-tooltip="fieldHelpTexts.description"
+									type="button"
+									class="help-icon text-gray-400 hover:text-brand-600 cursor-help">?</button>
 							</label>
-							<textarea v-model="form.description" name="description" rows="3"
+							<textarea
+								v-model="form.description" name="description" rows="3"
 								class="w-full px-3 py-2 border rounded-md" :disabled="isLoading" />
 						</div>
+
 						<div class="form-error">
-							<label class="block text-gray-800 font-semibold mb-2">Tipo</label>
+							<label class="flex items-center gap-1 text-sm font-medium text-gray-700 mb-1">
+								Tipo
+								<button
+									v-tooltip="fieldHelpTexts.type"
+									type="button"
+									class="help-icon text-gray-400 hover:text-brand-600 cursor-help">?</button>
+							</label>
 							<select
 								v-model="form.type"
 								class="w-full border border-gray-300 rounded-lg px-4 py-2 text-gray-800 focus:ring-2 focus:ring-brand-900 focus:outline-none">
@@ -223,27 +206,34 @@ watchEffect(() => {
 								<option value="no_academic">No Académico</option>
 							</select>
 						</div>
+
 						<div class="form-error">
 							<label class="flex items-center gap-1 text-sm font-medium text-gray-700 mb-1">
 								Horas
-								<button type="button" class="help-icon text-gray-400 hover:text-brand-600 cursor-help"
-									@click="toggleTooltip('hours', $event)" @mouseleave="hideTooltipDelayed">?</button>
-						</label>
-						<input
-							v-model="form.hours"
-							type="number"
-							name="hours"
-							min="0"
-							class="w-full px-3 py-2 border rounded-md"
-							:disabled="isLoading" />
+								<button
+									v-tooltip="fieldHelpTexts.hours"
+									type="button"
+									class="help-icon text-gray-400 hover:text-brand-600 cursor-help">?</button>
+							</label>
+							<input
+								v-model="form.hours"
+								type="number"
+								name="hours"
+								min="0"
+								class="w-full px-3 py-2 border rounded-md"
+								:disabled="isLoading" />
 						</div>
+
 						<div class="form-error">
 							<label class="flex items-center gap-1 text-sm font-medium text-gray-700 mb-1">
 								Insignia
-								<button type="button" class="help-icon text-gray-400 hover:text-brand-600 cursor-help"
-									@click="toggleTooltip('image', $event)" @mouseleave="hideTooltipDelayed">?</button>
+								<button
+									v-tooltip="fieldHelpTexts.image"
+									type="button"
+									class="help-icon text-gray-400 hover:text-brand-600 cursor-help">?</button>
 							</label>
-							<input type="file" accept="image/*"
+							<input
+								type="file" accept="image/*"
 								class="w-full px-3 py-2 border rounded-md"
 								:disabled="isLoading"
 								@change="handleImageUpload" />
@@ -253,6 +243,7 @@ watchEffect(() => {
 						</div>
 					</div>
 				</alv-form>
+
 				<div class="flex justify-end gap-3 mt-6 pt-4 border-t border-gray-200 sticky bottom-0 bg-transparent z-10">
 					<button type="button" class="px-5 py-2 rounded-lg bg-gray-100 hover:bg-gray-200" :disabled="isLoading" @click="emit('close')">
 						Cancelar
@@ -280,5 +271,9 @@ watchEffect(() => {
 .fade-scale-leave-from {
 	opacity: 1;
 	transform: scale(1);
+}
+
+.help-icon {
+	@apply w-4 h-4 flex items-center justify-center rounded-full border border-current text-xs font-bold;
 }
 </style>

@@ -200,7 +200,7 @@ import {
 	ListIcon,
 	FolderIcon,
 	HistoryIcon,
-	accesIcon
+	accesIcon, BarChartIcon,
 } from '../../icons';
 import { useSidebar } from '../../composables/useSidebar';
 
@@ -228,9 +228,25 @@ const menuGroups = computed(() => {
 			title: 'Menú',
 			items: [
 				{
-					icon: GridIcon,
 					name: 'Dashboard',
-					path: '/dashboard',
+					icon: BarChartIcon,
+					subItems: [
+						{
+							icon: GridIcon,
+							name: 'Dashboard General',
+							path: '/dashboard',
+						},
+						{
+							icon: GridIcon,
+							name: 'Estadísticas por Estado',
+							path: '',
+						},
+						{
+							icon: GridIcon,
+							name: 'Estadísticas por Institucion',
+							path: '',
+						}
+					]
 				},
 				{
 					icon: UserCircleIcon,
