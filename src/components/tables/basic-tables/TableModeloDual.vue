@@ -19,23 +19,26 @@
       <table class="min-w-full">
         <thead>
           <tr class="bg-brand-800/80 text-white">
+                        <th class="px-5 py-3 text-left text-sm font-semibold border-b border-brand-700/50 border-r border-brand-700/30">Estatus</th>
 			<th class="px-5 py-3 text-left text-sm font-semibold border-b border-brand-700/50 border-r border-brand-700/30">Estudiantes</th>
 			<th class="px-5 py-3 text-left text-sm font-semibold border-b border-brand-700/50 border-r border-brand-700/30">Institución</th>
 			<th class="px-5 py-3 text-left text-sm font-semibold border-b border-brand-700/50 border-r border-brand-700/30">País Institución</th>
 			<th class="px-5 py-3 text-left text-sm font-semibold border-b border-brand-700/50 border-r border-brand-700/30">Ciudad Institución</th>
-            <th class="px-5 py-3 text-left text-sm font-semibold border-b border-brand-700/50 border-r border-brand-700/30">Nombre</th>
-            <th class="px-5 py-3 text-left text-sm font-semibold border-b border-brand-700/50 border-r border-brand-700/30">Estatus</th>
-            <th class="px-5 py-3 text-left text-sm font-semibold border-b border-brand-700/50 border-r border-brand-700/30">Área</th>
             <th class="px-5 py-3 text-left text-sm font-semibold border-b border-brand-700/50 border-r border-brand-700/30">Organización</th>
 			<th class="px-5 py-3 text-left text-sm font-semibold border-b border-brand-700/50 border-r border-brand-700/30">Ciudad Organización</th>
 			<th class="px-5 py-3 text-left text-sm font-semibold border-b border-brand-700/50 border-r border-brand-700/30">Estado Organización</th>
 			<th class="px-5 py-3 text-left text-sm font-semibold border-b border-brand-700/50 border-r border-brand-700/30">Sector Organización</th>
-			<th class="px-5 py-3 text-left text-sm font-semibold border-b border-brand-700/50 border-r border-brand-700/30">Tipo Organización</th> 
+			<th class="px-5 py-3 text-left text-sm font-semibold border-b border-brand-700/50 border-r border-brand-700/30">Tipo Organización</th>
+                  <th class="px-5 py-3 text-left text-sm font-semibold border-b border-brand-700/50 border-r border-brand-700/30">Nombre</th> 
              <th class="px-5 py-3 text-left text-sm font-semibold border-b border-brand-700/50 border-r border-brand-700/30">Estado Convenio</th>
+                         <th class="px-5 py-3 text-left text-sm font-semibold border-b border-brand-700/50 border-r border-brand-700/30">Área</th>
             <th class="px-5 py-3 text-left text-sm font-semibold border-b border-brand-700/50">Opciones</th>
           </tr>
 
           <tr class="bg-brand-800/60 text-white">
+                        <th class="px-5 py-2 border-b border-brand-700/50 border-r border-brand-700/30">
+              <input v-model="filters.has_report" class="w-full bg-white/10 border-none text-white rounded px-3 py-1 text-xs" />
+            </th>
 			<th class="px-5 py-2 border-b border-brand-700/50 border-r border-brand-700/30">
               <input v-model="filters.student_name" class="w-full bg-white/10 border-none text-white rounded px-3 py-1 text-xs" />
             </th>
@@ -47,15 +50,6 @@
             </th>
 			<th class="px-5 py-2 border-b border-brand-700/50 border-r border-brand-700/30">
               <input v-model="filters.institution_city" class="w-full bg-white/10 border-none text-white rounded px-3 py-1 text-xs" />
-            </th>
-			<th class="px-5 py-2 border-b border-brand-700/50 border-r border-brand-700/30">
-              <input v-model="filters.project_name" class="w-full bg-white/10 border-none text-white rounded px-3 py-1 text-xs" />
-            </th>
-            <th class="px-5 py-2 border-b border-brand-700/50 border-r border-brand-700/30">
-              <input v-model="filters.has_report" class="w-full bg-white/10 border-none text-white rounded px-3 py-1 text-xs" />
-            </th>
-            <th class="px-5 py-2 border-b border-brand-700/50 border-r border-brand-700/30">
-              <input v-model="filters.area" class="w-full bg-white/10 border-none text-white rounded px-3 py-1 text-xs" />
             </th>
             <th class="px-5 py-2 border-b border-brand-700/50 border-r border-brand-700/30">
               <input v-model="filters.organization_name" class="w-full bg-white/10 border-none text-white rounded px-3 py-1 text-xs" />
@@ -72,8 +66,14 @@
 			<th class="px-5 py-2 border-b border-brand-700/50 border-r border-brand-700/30">
 			  <input v-model="filters.organization_type" class="w-full bg-white/10 border-none text-white rounded px-3 py-1 text-xs" />
             </th>
+            			<th class="px-5 py-2 border-b border-brand-700/50 border-r border-brand-700/30">
+              <input v-model="filters.project_name" class="w-full bg-white/10 border-none text-white rounded px-3 py-1 text-xs" />
+            </th>
             <th class="px-5 py-2 border-b border-brand-700/50 border-r border-brand-700/30">
               <input v-model="filters.status_document" class="w-full bg-white/10 border-none text-white rounded px-3 py-1 text-xs" />
+            </th>
+                        <th class="px-5 py-2 border-b border-brand-700/50 border-r border-brand-700/30">
+              <input v-model="filters.area" class="w-full bg-white/10 border-none text-white rounded px-3 py-1 text-xs" />
             </th>
             <th class="px-5 py-2 border-b border-brand-700/50" />
           </tr>
@@ -90,6 +90,11 @@
             v-for="(project, index) in paginatedProjects"
             :key="project.id ?? index"
             class="border-b border-gray-100 hover:bg-brand-50/30 transition-colors even:bg-gray-50">
+                        <td class="px-5 py-3 text-sm border-r border-gray-100">
+              <span :class="project.has_report ? 'text-green-600 font-semibold' : 'text-yellow-600 font-semibold'">
+                {{ project.has_report ? 'Completado' : 'Incompleto' }}
+              </span>
+            </td>
 		  	<td class="px-5 py-3 text-sm border-r border-gray-100 flex justify-center items-center">
   <template v-if="project.student_name && project.student_name.trim() !== ''">
     <button
@@ -107,21 +112,15 @@
 			<td class="px-5 py-3 text-sm border-r border-gray-100">{{ project.institution_name }}</td>
 			<td class="px-5 py-3 text-sm border-r border-gray-100">{{ project.institution_state }}</td>
 			<td class="px-5 py-3 text-sm border-r border-gray-100">{{ project.institution_city }}</td>
-            <td class="px-5 py-3 text-sm border-r border-gray-100">{{ project.project_name }}</td>
 
-            <td class="px-5 py-3 text-sm border-r border-gray-100">
-              <span :class="project.has_report ? 'text-green-600 font-semibold' : 'text-yellow-600 font-semibold'">
-                {{ project.has_report ? 'Completado' : 'Incompleto' }}
-              </span>
-            </td>
-
-            <td class="px-5 py-3 text-sm border-r border-gray-100">{{ project.area }}</td>
             <td class="px-5 py-3 text-sm border-r border-gray-100">{{ project.organization_name }}</td>
 			<td class="px-5 py-3 text-sm border-r border-gray-100">{{ project.organization_city }}</td>
 			<td class="px-5 py-3 text-sm border-r border-gray-100">{{ project.organization_state }}</td>
 			<td class="px-5 py-3 text-sm border-r border-gray-100">{{ project.organization_sector }}</td>
 			<td class="px-5 py-3 text-sm border-r border-gray-100">{{ project.organization_type }}</td>
+                  <td class="px-5 py-3 text-sm border-r border-gray-100">{{ project.project_name }}</td>
             <td class="px-5 py-3 text-sm border-r border-gray-100">{{ project.status_document }}</td>
+                        <td class="px-5 py-3 text-sm border-r border-gray-100">{{ project.area }}</td>
  
 
             <td class="px-5 py-3 text-sm">
