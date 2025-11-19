@@ -22,6 +22,7 @@
 						<th class="px-5 py-3 text-left text-sm font-semibold border-b border-brand-700/50 border-r border-brand-700/30 w-3/12">Organización</th>
 						<th class="px-5 py-3 text-left text-sm font-semibold border-b border-brand-700/50 border-r border-brand-700/30 w-4/12">Descripción</th>
 						<th class="px-5 py-3 text-left text-sm font-semibold border-b border-brand-700/50 border-r border-brand-700/30 w-2/12">Tipo</th>
+						<th class="px-5 py-3 text-left text-sm font-semibold border-b border-brand-700/50 border-r border-brand-700/30 w-1/12">Horas</th>
 						<th class="px-5 py-3 text-left text-sm font-semibold border-b border-brand-700/50 w-2/12">Opciones</th>
 					</tr>
 
@@ -37,6 +38,9 @@
 						</th>
 						<th class="px-5 py-2 border-b border-brand-700/50 border-r border-brand-700/30">
 							<input v-model="filters.type" class="w-full bg-white/10 border-none text-white placeholder-white/60 rounded px-3 py-1 text-xs focus:outline-none focus:ring-1 focus:ring-white/50" placeholder="Buscar..." />
+						</th>
+						<th class="px-5 py-2 border-b border-brand-700/50 border-r border-brand-700/30">
+							<input v-model="filters.hours" class="w-full bg-white/10 border-none text-white placeholder-white/60 rounded px-3 py-1 text-xs focus:outline-none focus:ring-1 focus:ring-white/50" placeholder="Buscar..." />
 						</th>
 						<th class="px-5 py-2 border-b border-brand-700/50" />
 					</tr>
@@ -68,6 +72,9 @@
 						</td>
 						<td class="px-5 py-3 text-sm border-r border-gray-100 text-gray-500">
 							{{ certification.type == 'academic' ? 'Académico' : 'No Académico' }}	
+						</td>
+						<td class="px-5 py-3 text-sm border-r border-gray-100 text-gray-500">
+							{{ certification.hours || 'N/A' }}
 						</td>
 						<td class="px-5 py-3 text-sm">
 							<div class="flex space-x-2">
@@ -124,7 +131,8 @@ const filters = ref({
 	name: '',
 	organization: '',
 	description: '',
-	type: ''
+	type: '',
+	hours: ''
 });
 
 const rowsPerPage = ref(10);
@@ -137,7 +145,11 @@ const filteredCertifications = computed(() => {
 			(cert.name || '').toLowerCase().includes(filters.value.name.toLowerCase()) &&
 			(cert.organization || '').toLowerCase().includes(filters.value.organization.toLowerCase()) &&
 			(cert.description || '').toLowerCase().includes(filters.value.description.toLowerCase()) &&
-			(cert.type || 'Academico').toLowerCase().includes(filters.value.type.toLowerCase())
+			(cert.type || 'Academico').toLowerCase().includes(filters.value.type.toLowerCase()) &&
+						(filters.value.hours === '' 
+				? true 
+				: String(cert.hours ?? '').includes(filters.value.hours)
+			)
 		);
 	});
 });
@@ -164,7 +176,8 @@ const clearFilters = () => {
 		name: '',
 		organization: '',
 		description: '',
-		type: ''
+		type: '',
+		hours: ''
 	};
 	currentPage.value = 1;
 };

@@ -164,8 +164,9 @@ onMounted(() => {
 
 const steps = [
 	{ title: 'Información de Institución' },
+	{ title: 'Datos Personales' },
 	{ title: 'Unidad Dual' },
-	{ title: 'Datos Personales' }
+
 ];
 
 const formData = reactive({
@@ -371,7 +372,33 @@ const handleNextOrSubmit = async () => {
 		}
 		nextStep();
 	} else if (currentStep.value === 1) {
-		console.log('🔍 Validando paso 1 (Unidad Dual)');
+
+		const studentCount = formData.personal.dual_project_students?.length || 0;
+
+		if (studentCount < 1) {
+			alert('Debes agregar al menos 1 estudiante.');
+			return;
+		}
+
+		if (!stepPersonalRef.value) return;
+
+		let isValid;
+		const validationResult = stepPersonalRef.value.validate?.();
+		if (validationResult instanceof Promise) {
+			isValid = await validationResult;
+		} else {
+			isValid = validationResult;
+		}
+
+		if (!isValid) {
+			await nextTick();
+			return;
+		}
+
+		nextStep();
+	} else if (currentStep.value === 2) {
+		
+		console.log('🔍 Validando paso 2 (Unidad Dual)');
 		console.log('Referencia del componente:', stepUnidadDualRef.value);
 
 		if (!stepUnidadDualRef.value) {
@@ -379,13 +406,13 @@ const handleNextOrSubmit = async () => {
 			return;
 		}
 
-		if (!stepUnidadDualRef.value.validate) {
+		if (!stepUnidadDualRef.value?.validate) {
 			console.log('❌ Método validate no disponible');
 			return;
 		}
 
 		try {
-			const validationResult = stepUnidadDualRef.value.validate();
+			const validationResult = stepUnidadDualRef.value?.validate();
 			console.log('Tipo de resultado:', typeof validationResult);
 
 			let isValid;
@@ -401,28 +428,13 @@ const handleNextOrSubmit = async () => {
 
 			if (!isValid) {
 				console.log('❌ Validación falló - mostrando errores en UI');
-				// Forzar actualización de UI para mostrar errores
 				await nextTick();
 				return;
 			}
 
 			console.log('✅ Validación exitosa - avanzando al siguiente paso');
-			nextStep();
 		} catch (error) {
 			console.error('💥 Error durante validación:', error);
-			return;
-		}
-	} else if (currentStep.value === 2) {
-		const studentCount = formData.personal.dual_project_students?.length || 0;
-
-		if (studentCount < 1) {
-			alert('Debes agregar al menos 1 estudiante.');
-			return;
-		}
-
-		const isValid = stepPersonalRef.value?.validate ? stepPersonalRef.value.validate() : false;
-
-		if (!isValid) {
 			return;
 		}
 
@@ -630,8 +642,21 @@ const closeModalAndReset = () => {
 							:mode="props.data.mode"
 							@submitSinUnidadDual="imprimirYGuardar"
 							@update:institutions="handleInstitutionsUpdate" />
+						<DualStepPersonal
+							v-else-if="currentStep === 1"
+							:key="'personal-step-' + personalStepKey"
+							ref="stepPersonalRef"
+							v-model="formData.personal"
+							:careers="careers"
+							:specialties="specialties"
+							:institution="{
+								id: formData.academico.id_institution,
+								name: institutions.find(i => i.id === formData.academico.id_institution)?.name || ''
+							}"
+							@update:careers="handleCareersUpdate"
+							@update:specialties="handleSpecialtiesUpdate" />
 						<DualStepUnidad
-							v-else-if="currentStep === 1 && reportaModeloDual"
+							v-else-if="currentStep === 2 && reportaModeloDual"
 							ref="stepUnidadDualRef"
 							:key="'unidad-step-' + currentStep"
 							v-model="formData.unidadDual"
@@ -649,19 +674,7 @@ const closeModalAndReset = () => {
 							@update:certifications="handleCertificationsUpdate"
 							@update:diplomas="handleDiplomasUpdate"
 							@update:dualTypes="handleDualTypesUpdate" />
-						<DualStepPersonal
-							v-else-if="currentStep === 2"
-							:key="'personal-step-' + personalStepKey"
-							ref="stepPersonalRef"
-							v-model="formData.personal"
-							:careers="careers"
-							:specialties="specialties"
-							:institution="{
-								id: formData.academico.id_institution,
-								name: institutions.find(i => i.id === formData.academico.id_institution)?.name || ''
-							}"
-							@update:careers="handleCareersUpdate"
-							@update:specialties="handleSpecialtiesUpdate" />
+
 					</template>
 					<template v-else>
 						<div class="flex justify-center items-center h-full">

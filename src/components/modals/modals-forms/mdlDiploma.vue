@@ -19,7 +19,9 @@ const fieldHelpTexts: Record<string, string> = {
 	name: "Nombre oficial del diplomado.",
 	organization: "Nombre de la organización que emite el diplomado.",
 	description: "Descripción breve del diplomado.",
-	image: "Imagen o logotipo relacionado con el diplomado."
+	image: "Imagen o logotipo relacionado con el diplomado.",
+	type: "Tipo de diplomado: Académico o No Académico.",
+	hours: "Número de horas que representa el diplomado."
 }
 
 const toggleTooltip = (field: string, event: MouseEvent) => {
@@ -81,7 +83,8 @@ const form = reactive({
 	organization: '',
 	description: '',
 	image: '',
-	type: ''
+	type: '',
+	hours: ''
 })
 
 const handleImageUpload = (event: Event) => {
@@ -238,7 +241,21 @@ watchEffect(() => {
 								<option value="no_academic">No Académico</option>
 							</select>
 						</div>
-
+						<div class="form-error">
+							<label class="flex items-center gap-1 text-sm font-medium text-gray-700 mb-1">
+								Horas
+								<button
+									type="button" class="help-icon text-gray-400 hover:text-brand-600 cursor-help"
+									@click="toggleTooltip('hours', $event)" @mouseleave="hideTooltipDelayed">?</button>
+							</label>
+							<input
+								v-model="form.hours"
+								type="number"
+								name="hours"
+								min="0"
+								class="w-full px-3 py-2 border rounded-md"
+								:disabled="isLoading" />
+						</div>
 						<div class="form-error">
 							<label class="flex items-center gap-1 text-sm font-medium text-gray-700 mb-1">
 								Imagen

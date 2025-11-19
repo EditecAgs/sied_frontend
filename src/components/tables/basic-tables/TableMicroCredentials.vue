@@ -19,10 +19,17 @@
 				<thead>
 					<tr class="bg-brand-800/80 text-white">
 						<th class="px-5 py-3 text-left text-sm font-semibold border-b border-brand-700/50 border-r border-brand-700/30 w-3/12">Nombre</th>
-						<th class="px-5 py-3 text-left text-sm font-semibold border-b border-brand-700/50 border-r border-brand-700/30 w-3/12">Organización</th>
+
+						<th class="px-5 py-3 text-left text-sm font-semibold border-b border-brand-700/50 border-r border-brand-700/30 w-2/12">Organización</th>
+
 						<th class="px-5 py-3 text-left text-sm font-semibold border-b border-brand-700/50 border-r border-brand-700/30 w-4/12">Descripción</th>
+
 						<th class="px-5 py-3 text-left text-sm font-semibold border-b border-brand-700/50 border-r border-brand-700/30 w-2/12">Tipo</th>
+
+						<th class="px-5 py-3 text-left text-sm font-semibold border-b border-brand-700/50 border-r border-brand-700/30 w-2/12">Horas</th>
+
 						<th class="px-5 py-3 text-left text-sm font-semibold border-b border-brand-700/50 w-2/12">Opciones</th>
+
 					</tr>
 					<tr class="bg-brand-800/60 text-white">
 						<th class="px-5 py-2 border-b border-brand-700/50 border-r border-brand-700/30">
@@ -36,6 +43,9 @@
 						</th>
 						<th class="px-5 py-2 border-b border-brand-700/50 border-r border-brand-700/30">
 							<input v-model="filters.type" class="w-full bg-white/10 border-none text-white placeholder-white/60 rounded px-3 py-1 text-xs focus:outline-none focus:ring-1 focus:ring-white/50" placeholder="Buscar..." />
+						</th>
+						<th class="px-5 py-2 border-b border-brand-700/50 border-r border-brand-700/30">
+							<input v-model="filters.hours" class="w-full bg-white/10 border-none text-white placeholder-white/60 rounded px-3 py-1 text-xs focus:outline-none focus:ring-1 focus:ring-white/50" placeholder="Buscar..." />
 						</th>
 						<th class="px-5 py-2 border-b border-brand-700/50" />
 					</tr>
@@ -67,6 +77,9 @@
 						</td>
 						<td class="px-5 py-3 text-sm border-r border-gray-100 text-gray-500">
 							{{ micro.type == 'academic' ? 'Académico' : 'No Académico' }}	
+						</td>
+						<td class="px-5 py-3 text-sm border-r border-gray-100 text-gray-700">
+							{{ micro.hours || 0 }}
 						</td>
 						<td class="px-5 py-3 text-sm">
 							<div class="flex space-x-2">
@@ -123,7 +136,8 @@ const filters = ref({
 	name: '',
 	organization: '',
 	description: '',
-	type: ''
+	type: '',
+	hours: ''
 });
 
 const rowsPerPage = ref(10);
@@ -135,11 +149,15 @@ const filteredMicroCredentials = computed(() => {
 			micro.name.toLowerCase().includes(filters.value.name.toLowerCase()) &&
 			(micro.organization || '').toLowerCase().includes(filters.value.organization.toLowerCase()) &&
 			(micro.description || '').toLowerCase().includes(filters.value.description.toLowerCase()) &&
-			(micro.type || 'Academico').toLowerCase().includes(filters.value.type.toLowerCase())
+			(micro.type || '').toLowerCase().includes(filters.value.type.toLowerCase()) &&
+
+			(filters.value.hours === '' 
+				? true 
+				: String(micro.hours ?? '').includes(filters.value.hours)
+			)
 		);
 	});
 });
-
 const totalPages = computed(() => Math.ceil(filteredMicroCredentials.value.length / rowsPerPage.value));
 const paginatedMicroCredentials = computed(() => {
 	const start = (currentPage.value - 1) * rowsPerPage.value;
@@ -157,7 +175,8 @@ const clearFilters = () => {
 		name: '',
 		organization: '',
 		description: '',
-		type: ''
+		type: '',
+		hours: ''
 	};
 	currentPage.value = 1;
 };

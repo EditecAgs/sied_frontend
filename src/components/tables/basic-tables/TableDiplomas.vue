@@ -22,6 +22,7 @@
 						<th class="px-5 py-3 text-left text-sm font-semibold border-b border-brand-700/50 border-r border-brand-700/30 w-3/12">Organización</th>
 						<th class="px-5 py-3 text-left text-sm font-semibold border-b border-brand-700/50 border-r border-brand-700/30 w-4/12">Descripción</th>
 						<th class="px-5 py-3 text-left text-sm font-semibold border-b border-brand-700/50 border-r border-brand-700/30 w-2/12">Tipo</th>
+						<th class="px-5 py-3 text-left text-sm font-semibold border-b border-brand-700/50 border-r border-brand-700/30 w-1/12">Horas</th>
 						<th class="px-5 py-3 text-left text-sm font-semibold border-b border-brand-700/50 w-2/12">Opciones</th>
 					</tr>
 					<tr class="bg-brand-800/60 text-white">
@@ -36,6 +37,9 @@
 						</th>
 						<th class="px-5 py-2 border-b border-brand-700/50 border-r border-brand-700/30">
 							<input v-model="filters.type" class="w-full bg-white/10 border-none text-white placeholder-white/60 rounded px-3 py-1 text-xs focus:outline-none focus:ring-1 focus:ring-white/50" placeholder="Buscar..." />
+						</th>
+						<th class="px-5 py-2 border-b border-brand-700/50 border-r border-brand-700/30">
+							<input v-model="filters.hours" class="w-full bg-white/10 border-none text-white placeholder-white/60 rounded px-3 py-1 text-xs focus:outline-none focus:ring-1 focus:ring-white/50" placeholder="Buscar..." />
 						</th>
 						<th class="px-5 py-2 border-b border-brand-700/50" />
 					</tr>
@@ -67,6 +71,9 @@
 						</td>
 						<td class="px-5 py-3 text-sm border-r border-gray-100 text-gray-500">
 							{{ diplomado.type == 'academic' ? 'Académico' : 'No Académico' }}	
+						</td>
+						<td class="px-5 py-3 text-sm border-r border-gray-100 text-gray-500">
+							{{ diplomado.hours || 'N/A' }}
 						</td>
 						<td class="px-5 py-3 text-sm">
 							<div class="flex space-x-2">
@@ -125,7 +132,8 @@ const filters = ref({
 	name: '',
 	organization: '',
 	description: '',
-	type: ''
+	type: '',
+	hours: ''
 });
 
 const rowsPerPage = ref(10);
@@ -137,7 +145,11 @@ const filteredDiplomados = computed(() => {
 			dipl.name.toLowerCase().includes(filters.value.name.toLowerCase()) &&
 			(dipl.organization || '').toLowerCase().includes(filters.value.organization.toLowerCase()) &&
 			(dipl.description || '').toLowerCase().includes(filters.value.description.toLowerCase()) &&
-			(dipl.type || 'Academico').toLowerCase().includes(filters.value.type.toLowerCase())
+			(dipl.type || 'Academico').toLowerCase().includes(filters.value.type.toLowerCase()) &&
+						(filters.value.hours === '' 
+				? true 
+				: String(dipl.hours ?? '').includes(filters.value.hours)
+			)
 		);
 	});
 });
@@ -160,7 +172,8 @@ const clearFilters = () => {
 		name: '',
 		organization: '',
 		description: '',
-		type: ''
+		type: '',
+		hours: ''
 	};
 	currentPage.value = 1;
 };
