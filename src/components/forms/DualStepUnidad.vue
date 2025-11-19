@@ -248,7 +248,6 @@ watch(externalAdvisorQualification, (newValue) => {
 	}
 });
 
-// Modificar el watch de los nombres para que siempre se actualicen
 watch(internalAdvisorName, (newName) => {
 	update('internal_advisor_name', newName);
 });
@@ -257,13 +256,11 @@ watch(externalAdvisorName, (newName) => {
 	update('external_advisor_name', newName);
 });
 
-// Modificar el watch de las calificaciones para que solo se actualicen si el proyecto está concluido
 watch(internalAdvisorQualification, (newQual) => {
 	if (areQualificationsEnabled.value && validateQualification(newQual, 'internal_advisor_qualification')) {
 		update('internal_advisor_qualification', newQual);
 		updateQualificationAverage();
 	} else if (!areQualificationsEnabled.value && newQual !== null && newQual !== '') {
-		// Resetear si se intenta llenar cuando no está concluido
 		internalAdvisorQualification.value = null;
 		update('internal_advisor_qualification', null);
 	}
@@ -566,7 +563,6 @@ const handleClickOutside = (event) => {
 	if (diplomaDropdownRef.value && !diplomaDropdownRef.value.contains(event.target)) showDiplomaDropdown.value = false;
 };
 
-// Modificar la función update para las calificaciones
 const update = (field, value) => {
 	// Si son campos de calificación y el proyecto no está concluido, no actualizar
 	if ((field === 'internal_advisor_qualification' || field === 'external_advisor_qualification') &&
@@ -1511,12 +1507,12 @@ onMounted(() => {
 			<div v-if="showCredentialsSection" class="bg-gray-50 rounded-xl p-6 border border-gray-200 space-y-4">
 				<h3 class="text-lg font-semibold text-brand-800 mb-4 flex items-center">
 					<span class="w-6 h-6 bg-brand-100 rounded-full flex items-center justify-center text-brand-800 text-sm mr-2">9</span>
-					Diplomas
+					Diplomados
 				</h3>
 
 				<div ref="diplomaDropdownRef" class="relative">
 					<label class="label flex items-center gap-1">
-						Diplomas
+						Diplomados
 						<button
 							v-tooltip="fieldHelpTexts.diplomas"
 							type="button"
