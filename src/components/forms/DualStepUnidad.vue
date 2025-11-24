@@ -1202,7 +1202,7 @@ onMounted(() => {
 
 			<div class="bg-gray-50 rounded-xl p-6 border border-gray-200">
 				<h3 class="text-lg font-semibold text-brand-800 mb-6 flex items-center">
-					<span class="w-6 h-6 bg-brand-100 rounded-full flex items-center justify-center text-brand-800 text-sm mr-2">6</span>
+					<span class="w-6 h-6 bg-brand-100 rounded-full flex items-center justify-center text-brand-800 text-sm mr-2">5</span>
 					Estado del Proyecto Dual
 				</h3>
 
@@ -1411,7 +1411,7 @@ onMounted(() => {
 
 			<div v-if="showCredentialsSection" class="bg-gray-50 rounded-xl p-6 border border-gray-200 space-y-4">
 				<h3 class="text-lg font-semibold text-brand-800 mb-4 flex items-center">
-					<span class="w-6 h-6 bg-brand-100 rounded-full flex items-center justify-center text-brand-800 text-sm mr-2">7</span>
+					<span class="w-6 h-6 bg-brand-100 rounded-full flex items-center justify-center text-brand-800 text-sm mr-2">6</span>
 					Microcredenciales
 				</h3>
 
@@ -1456,10 +1456,9 @@ onMounted(() => {
 				</div>
 			</div>
 
-			<!-- Sección de Certificaciones - Solo visible cuando el proyecto está concluido -->
 			<div v-if="showCredentialsSection" class="bg-gray-50 rounded-xl p-6 border border-gray-200 space-y-4">
 				<h3 class="text-lg font-semibold text-brand-800 mb-4 flex items-center">
-					<span class="w-6 h-6 bg-brand-100 rounded-full flex items-center justify-center text-brand-800 text-sm mr-2">8</span>
+					<span class="w-6 h-6 bg-brand-100 rounded-full flex items-center justify-center text-brand-800 text-sm mr-2">7</span>
 					Certificaciones
 				</h3>
 
@@ -1506,7 +1505,7 @@ onMounted(() => {
 
 			<div v-if="showCredentialsSection" class="bg-gray-50 rounded-xl p-6 border border-gray-200 space-y-4">
 				<h3 class="text-lg font-semibold text-brand-800 mb-4 flex items-center">
-					<span class="w-6 h-6 bg-brand-100 rounded-full flex items-center justify-center text-brand-800 text-sm mr-2">9</span>
+					<span class="w-6 h-6 bg-brand-100 rounded-full flex items-center justify-center text-brand-800 text-sm mr-2">8</span>
 					Diplomados
 				</h3>
 

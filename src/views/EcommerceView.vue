@@ -43,6 +43,13 @@
 							<OrganizationsByLocalCluster class="h-auto" @loaded="onChildLoaded" />
 						</div>
 					</div>
+
+					<div class="col-span-12">
+						<div class="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
+							<ProjectsByClusterLocal class="h-auto" @loaded="onChildLoaded" />
+							<ProjectsByClusterNacional class="h-auto" @loaded="onChildLoaded" />
+						</div>
+					</div>
 				</div>
 			</div>
 		</admin-layout>
@@ -66,6 +73,8 @@ import LoadingScreen from '../components/layouts/LoadingScreen.vue';
 import ProjectsByDualType from '../components/ecommerce/ProjectsByDualType.vue';
 import OrganizationsByLocalCluster from '../components/ecommerce/OrganizationsByLocalCluster.vue';
 import OrganizationsByNationalCluster from '../components/ecommerce/OrganizationsByNationalCluster.vue';
+import ProjectsByClusterLocal from '../components/ecommerce/ProjectsByClusterLocal.vue';
+import ProjectsByClusterNacional from '../components/ecommerce/ProjectsByClusterNacional.vue';
 export default {
 	name: 'Ecommerce',
 	components: {
@@ -86,6 +95,8 @@ export default {
 		ProjectsByDualType,
 		OrganizationsByLocalCluster,
 		OrganizationsByNationalCluster,
+		ProjectsByClusterLocal,
+		ProjectsByClusterNacional,
 	},
 	data() {
 		return {

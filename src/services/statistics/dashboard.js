@@ -169,4 +169,17 @@ export function getOrganizationsByCluster() {
 	});
 }
 
+export function getProjectsByCluster() {
+	return new Promise((resolve, reject) => {
+		axios
+			.get('projects/cluster/count')
+			.then((response) => {
+				resolve(response);
+			})
+			.catch((error) => {
+				reject(error);
+			});
+	});
+}
+
 
