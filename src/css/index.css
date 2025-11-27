@@ -399,7 +399,7 @@
     }
 
     .apexcharts-tooltip-text {
-        @apply !text-theme-xs !text-gray-700 dark:!text-white/90;
+        @apply !text-xs !text-gray-700 dark:!text-white/90;
     }
 
     .apexcharts-tooltip-text-y-value {

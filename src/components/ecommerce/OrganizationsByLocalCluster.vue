@@ -1,196 +1,285 @@
 <template>
-	<div
-		class="overflow-hidden rounded-2xl border border-gray-200 p-6 shadow-sm dark:border-gray-700"
-		style="background: linear-gradient(to top, rgba(211, 211, 210, 0.8) 30%, rgba(159, 129, 60, 0.8) 100%);">
-
-		<h3 class="text-xl font-semibold text-stone-50 dark:text-gray-100 mb-6 text-center">
-			Organizaciones por Cámaras Locales
-		</h3>
-
-		<div class="w-full" v-if="filteredLocalClusters.length > 0">
-			<div class="relative h-80 md:h-96 lg:h-108">
-				<BarChart :data="chartData" :options="chartOptions" />
+	<div class="overflow-hidden rounded-2xl border border-gray-200 bg-[rgb(211,211,210)]/50 p-6 shadow-sm dark:border-gray-700">
+		<div class="flex justify-between pb-4 mb-4 border-b border-light">
+			<div class="flex items-center">
+				<div class="w-12 h-12 bg-neutral-primary-medium border border-default-medium flex items-center justify-center rounded-full me-3">
+					<svg class="w-7 h-7 text-body" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
+						<path stroke="currentColor" stroke-linecap="round" stroke-width="2" d="M4.5 17H4a1 1 0 0 1-1-1 3 3 0 0 1 3-3h1m0-3.05A2.5 2.5 0 1 1 9 5.5M19.5 17h.5a1 1 0 0 0 1-1 3 3 0 0 0-3-3h-1m0-3.05a2.5 2.5 0 1 0-2-4.45m.5 13.5h-7a1 1 0 0 1-1-1 3 3 0 0 1 3-3h3a3 3 0 0 1 3 3 1 1 0 0 1-1 1Zm-1-9.5a2.5 2.5 0 1 1-5 0 2.5 2.5 0 0 1 5 0Z" />
+					</svg>
+				</div>
+				<div>
+					<h5 class="text-2xl font-semibold text-heading">{{ totalOrganizations }}</h5>
+					<p class="text-sm text-body">Organizaciones totales</p>
+				</div>
 			</div>
 		</div>
 
-		<p v-else class="text-center text-gray-500 dark:text-gray-400 py-8">
-			No hay datos disponibles para mostrar
-		</p>
+		<div class="grid grid-cols-2">
+			<dl class="flex items-center">
+				<dt class="text-body text-sm font-normal me-1 ">Organizaciones Locales:</dt>
+				<dd class="text-heading text-sm font-semibold mr-8">{{ totalLocalOrganizations }}</dd>
+			</dl>
+			<dl class="flex items-center justify-end">
+				<dt class="text-body text-sm font-normal me-1">Organizaciones Nacionales:</dt>
+				<dd class="text-heading text-sm font-semibold">{{ totalNationalOrganizations }}</dd>
+			</dl>
+		</div>
+
+		<div id="column-chart" class="apexcharts-custom" />
+
+		<div class="grid grid-cols-1 items-center border-light border-t justify-between" />
 	</div>
 </template>
 
 <script setup>
-import { ref, onMounted, computed } from 'vue'
-import { Chart as ChartJS, Title, Tooltip, Legend, BarElement, CategoryScale, LinearScale } from 'chart.js'
-import { Bar } from 'vue-chartjs'
-import { getOrganizationsByCluster } from '../../services/statistics/dashboard'
-
-ChartJS.register(Title, Tooltip, Legend, BarElement, CategoryScale, LinearScale)
+import { ref, onMounted, computed, watch } from 'vue'
+import { getOrganizationsByCluster, getRegisteredOrganizationsCount } from '../../services/statistics/dashboard'
 
 const localClusters = ref([])
+const nationalClusters = ref([])
+const totalOrganizationsCount = ref(0)
 
-const BarChart = Bar
-
-const palette = [
-	'#9C2131', '#C9A236', '#3A4A5F', '#707070', '#C4C4C4',
-	'#6B7280', '#B45309', '#9CA3AF', '#7C3AED', '#0891B2',
-	'#65A30D', '#EA580C', '#BE123C', '#0F766E', '#4338CA'
-]
-
-const filteredLocalClusters = computed(() => {
-	return localClusters.value
-		.filter(item => item.organization_count > 0)
-		.sort((a, b) => b.organization_count - a.organization_count)
-		.slice(0, 5)
+const totalOrganizations = computed(() => {
+	return totalOrganizationsCount.value
 })
 
-const chartData = computed(() => ({
-	labels: filteredLocalClusters.value.map(item => {
-		const name = item.cluster_name;
-		if (name.length > 40) {
-			return name.substring(0, 40) + '...';
-		}
-		return name;
-	}),
-	datasets: [
-		{
-			label: 'Número de Organizaciones',
-			data: filteredLocalClusters.value.map(item => item.organization_count),
-			backgroundColor: filteredLocalClusters.value.map((_, index) =>
-				palette[index % palette.length]
-			),
-			borderWidth: 2,
-			borderColor: '#fff',
-			borderRadius: 4,
-			barPercentage: 0.7,
-			categoryPercentage: 0.8
-		}
-	]
-}))
+const totalLocalOrganizations = computed(() => {
+	return localClusters.value.reduce((sum, item) => sum + item.organization_count, 0)
+})
 
-const chartOptions = {
-	responsive: true,
-	maintainAspectRatio: false,
-	plugins: {
-		legend: {
-			display: false
+const totalNationalOrganizations = computed(() => {
+	return nationalClusters.value.reduce((sum, item) => sum + item.organization_count, 0)
+})
+
+
+const allUniqueClusters = computed(() => {
+	const clusterMap = new Map()
+
+	const allNames = [
+		...localClusters.value.map(item => item.cluster_name),
+		...nationalClusters.value.map(item => item.cluster_name)
+	]
+
+	const uniqueNames = [...new Set(allNames)]
+
+	return uniqueNames.map(name => {
+		const localCluster = localClusters.value.find(item => item.cluster_name === name)
+		const nationalCluster = nationalClusters.value.find(item => item.cluster_name === name)
+
+		return {
+			name: name,
+			localCount: localCluster ? localCluster.organization_count : 0,
+			nationalCount: nationalCluster ? nationalCluster.organization_count : 0,
+			totalCount: (localCluster ? localCluster.organization_count : 0) +
+				(nationalCluster ? nationalCluster.organization_count : 0)
+		}
+	}).sort((a, b) => b.totalCount - a.totalCount)
+})
+
+const chartData = computed(() => {
+	const categories = allUniqueClusters.value.map(item => item.name)
+
+
+	const localData = allUniqueClusters.value.map(item => item.localCount)
+	const nationalData = allUniqueClusters.value.map(item => item.nationalCount)
+
+	return {
+		categories,
+		localData,
+		nationalData,
+		fullNames: allUniqueClusters.value.map(item => item.name)
+	}
+})
+
+const renderChart = () => {
+	if (!document.getElementById("column-chart") || typeof ApexCharts === 'undefined') {
+		return
+	}
+
+	const brandColor = "#9C2131"
+	const brandSecondaryColor = "#C9A236"
+
+	const chartHeight = Math.max(320, allUniqueClusters.value.length * 60)
+
+	const options = {
+		colors: [brandColor, brandSecondaryColor],
+		series: [
+			{
+				name: "Organizaciones Locales",
+				color: brandColor,
+				data: chartData.value.categories.map((category, index) => ({
+					x: category,
+					y: chartData.value.localData[index]
+				}))
+			},
+			{
+				name: "Organizaciones Nacionales",
+				color: brandSecondaryColor,
+				data: chartData.value.categories.map((category, index) => ({
+					x: category,
+					y: chartData.value.nationalData[index]
+				}))
+			}
+		],
+		chart: {
+			type: "bar",
+			height: `${chartHeight}px`,
+			fontFamily: "Inter, sans-serif",
+			toolbar: {
+				show: false,
+			},
+		},
+		plotOptions: {
+			bar: {
+				horizontal: true,
+				columnWidth: "70%",
+				borderRadiusApplication: "end",
+				borderRadius: 4,
+			},
 		},
 		tooltip: {
-			callbacks: {
-				title: function(context) {
-					const index = context[0].dataIndex;
-					return filteredLocalClusters.value[index]?.cluster_name || '';
-				},
-				label: function(context) {
-					const value = context.parsed.y;
-					return `Organizaciones: ${value}`;
-				}
-			},
-			backgroundColor: 'rgba(0, 0, 0, 0.8)',
-			titleFont: {
-				size: 12,
-				family: "'Outfit', sans-serif"
-			},
-			bodyFont: {
-				size: 11,
-				family: "'Outfit', sans-serif"
-			},
-			padding: 10
-		}
-	},
-	scales: {
-		y: {
-			beginAtZero: true,
-			title: {
-				display: true,
-				text: 'Número de Organizaciones',
-				color: '#374151',
-				font: {
-					size: 12,
-					family: "'Outfit', sans-serif",
-					weight: 'bold'
-				},
-				padding: { top: 0, bottom: 10 }
-			},
-			ticks: {
-				color: '#374151',
-				font: {
-					size: 11,
-					family: "'Outfit', sans-serif"
-				},
-				stepSize: 1,
-				padding: 5
-			},
-			grid: {
-				color: 'rgba(255, 255, 255, 0.3)',
-				drawBorder: false
+			shared: true,
+			intersect: false,
+			style: {
+				fontSize: '12px',
+				fontFamily: 'Inter, sans-serif'
 			}
 		},
-		x: {
-			title: {
-				display: false
-			},
-			ticks: {
-				color: '#374151',
-				font: {
-					size: 10,
-					family: "'Outfit', sans-serif",
-					weight: '500'
+		states: {
+			hover: {
+				filter: {
+					type: "darken",
+					value: 1,
 				},
-				maxRotation: 45,
-				minRotation: 0,
-				autoSkip: true,
-				autoSkipPadding: 10,
-				padding: 8
 			},
-			grid: {
-				display: false
-			}
-		}
-	},
-	layout: {
-		padding: {
-			left: 10,
-			right: 10,
-			top: 10,
-			bottom: 20
-		}
+		},
+		stroke: {
+			show: true,
+			width: 0,
+			colors: ["transparent"],
+		},
+		grid: {
+			show: false,
+			strokeDashArray: 4,
+			padding: {
+				left: 2,
+				right: 2,
+				top: -14
+			},
+		},
+		dataLabels: {
+			enabled: false,
+		},
+		legend: {
+			show: false,
+		},
+		xaxis: {
+			floating: false,
+			labels: {
+				show: true,
+				style: {
+					fontFamily: "Inter, sans-serif",
+					fontSize: '11px',
+					fontWeight: '400',
+					cssClass: 'text-gray-600 dark:text-gray-400'
+				}
+			},
+			axisBorder: {
+				show: false,
+			},
+			axisTicks: {
+				show: false,
+			},
+		},
+		yaxis: {
+			labels: {
+				show: true,
+				style: {
+					fontFamily: "Inter, sans-serif",
+					fontSize: '11px',
+					fontWeight: '400',
+					cssClass: 'text-gray-600 dark:text-gray-400'
+				}
+			},
+		},
+		fill: {
+			opacity: 1,
+		},
 	}
+
+	const existingChart = document.querySelector('#column-chart .apexcharts-canvas')
+	if (existingChart) {
+		existingChart.remove()
+	}
+
+	const chart = new ApexCharts(document.getElementById("column-chart"), options)
+	chart.render()
 }
 
 const fetchData = async () => {
 	try {
+
 		const response = await getOrganizationsByCluster()
 		const result = response.data
 
 		localClusters.value = result.data.locales || []
+		nationalClusters.value = result.data.nacionales || []
 
-		console.log('Cámaras locales recibidas:', localClusters.value.length)
-		console.log('Cámaras locales filtradas:', filteredLocalClusters.value.length)
-		console.log('Datos de cámaras locales filtradas:', filteredLocalClusters.value)
+
+		const orgResponse = await getRegisteredOrganizationsCount()
+		totalOrganizationsCount.value = orgResponse.data.count
+
+		console.log('Datos cargados:', {
+			totalOrganizations: totalOrganizations.value,
+			totalLocalOrganizations: totalLocalOrganizations.value,
+			totalNationalOrganizations: totalNationalOrganizations.value,
+			uniqueClusters: allUniqueClusters.value
+		})
+
+		setTimeout(renderChart, 100)
 
 	} catch (error) {
-		console.error('Error al cargar cámaras locales:', error)
+		console.error('Error al cargar datos de cámaras:', error)
 	}
 }
 
+
+watch([localClusters, nationalClusters], () => {
+	if (allUniqueClusters.value.length > 0) {
+		setTimeout(renderChart, 100)
+	}
+})
+
 onMounted(() => {
 	fetchData()
+
+	if (typeof ApexCharts === 'undefined') {
+		const script = document.createElement('script')
+		script.src = 'https://cdn.jsdelivr.net/npm/apexcharts'
+		script.onload = () => {
+			setTimeout(renderChart, 100)
+		}
+		document.head.appendChild(script)
+	}
 })
 </script>
 
 <style scoped>
-@media (max-width: 768px) {
-	:deep(.chartjs-render-monitor) {
-		transform: scale(0.9);
-		transform-origin: center;
-	}
+#column-chart {
+	min-height: 320px;
 }
 
-@media (max-width: 640px) {
-	:deep(.chartjs-render-monitor) {
-		transform: scale(0.8);
-		transform-origin: center;
-	}
+:deep(.apexcharts-tooltip) {
+	font-size: 12px !important;
+	font-family: 'Inter', sans-serif !important;
+}
+
+:deep(.apexcharts-tooltip-text) {
+	font-size: 11px !important;
+	color: #374151 !important;
+}
+
+:deep(.dark .apexcharts-tooltip-text) {
+	color: rgba(255, 255, 255, 0.9) !important;
 }
 </style>
