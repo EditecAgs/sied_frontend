@@ -138,8 +138,7 @@
 							</td>
 						</tr>
 
-						<tr
-							v-for="(project, index) in paginatedProjects"
+						<tr v-for="(project, index) in dualProjects"
 							:key="project.id ?? index"
 							class="border-b border-gray-100 hover:bg-brand-50/30 transition-colors even:bg-gray-50">
 							<!-- Columna: Estatus -->
@@ -237,7 +236,7 @@
 							</td>
 						</tr>
 
-						<tr v-if="!isLoading && filteredProjects.length === 0">
+						<tr v-if="!isLoading && dualProjects.length === 0">
 							<td :colspan="visibleHeaderColumns.length" class="px-5 py-8 text-center text-gray-500">
 								<div class="flex flex-col items-center justify-center">
 									<svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 text-gray-400 mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -253,12 +252,67 @@
 			</div>
 		</div>
 
-		<div class="px-6 py-3 bg-gradient-to-r from-gray-50 to-gray-100 border-t border-gray-200 flex justify-between items-center">
-			<span class="text-xs text-gray-600 font-medium">Mostrando {{ paginatedProjects.length }} de {{ filteredProjects.length }} registros</span>
-			<span class="text-xs text-gray-500 bg-white px-2 py-1 rounded border border-gray-200">
-				{{ visibleHeaderColumns.length }} columnas visibles
-			</span>
+<div class="px-6 py-3 bg-gradient-to-r from-gray-50 to-gray-100 border-t border-gray-200 flex justify-between items-center">
+	<div class="flex items-center space-x-4">
+		<span class="text-xs text-gray-600 font-medium">
+			Mostrando {{ fromItem }} a {{ toItem }} de {{ totalItems }} registros
+		</span>
+		
+		<div class="flex items-center space-x-2">
+			<label class="text-xs text-gray-600 font-medium">Filas por página:</label>
+			<select 
+				v-model="rowsPerPage" 
+				class="text-xs border border-gray-300 rounded px-2 py-1 focus:outline-none focus:ring-1 focus:ring-brand-800">
+				<option value="5">5</option>
+				<option value="10">10</option>
+				<option value="20">20</option>
+				<option value="30">30</option>
+			</select>
 		</div>
+	</div>
+	
+	<div class="flex items-center space-x-2">
+		<button 
+			@click="prevPage" 
+			:disabled="currentPage === 1"
+			:class="[
+				'px-3 py-1 text-xs rounded border',
+				currentPage === 1 
+					? 'bg-gray-100 text-gray-400 border-gray-300 cursor-not-allowed' 
+					: 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
+			]">
+			‹ Anterior
+		</button>
+		
+		<div class="flex items-center space-x-1">
+			<span class="text-xs text-gray-600 px-2">Página</span>
+			<input 
+				type="number" 
+				v-model.number="currentPage" 
+				@change="goToPage(currentPage)"
+				:min="1" 
+				:max="totalPages"
+				class="w-12 text-xs border border-gray-300 rounded px-2 py-1 text-center focus:outline-none focus:ring-1 focus:ring-brand-800" />
+			<span class="text-xs text-gray-600 px-2">de {{ totalPages }}</span>
+		</div>
+		
+		<button 
+			@click="nextPage" 
+			:disabled="currentPage === totalPages"
+			:class="[
+				'px-3 py-1 text-xs rounded border',
+				currentPage === totalPages 
+					? 'bg-gray-100 text-gray-400 border-gray-300 cursor-not-allowed' 
+					: 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
+			]">
+			Siguiente ›
+		</button>
+	</div>
+	
+	<span class="text-xs text-gray-500 bg-white px-2 py-1 rounded border border-gray-200">
+		{{ visibleHeaderColumns.length }} columnas visibles
+	</span>
+</div>
 	</div>
 
 	<div v-if="showStudentModal" class="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
@@ -339,19 +393,18 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue';
+import { ref, computed, onMounted, watch } from 'vue';
 import btnEdit from '../../../components/buttons/btnEdit.vue';
 import btnDelete from '../../../components/buttons/btnDelete.vue';
-import { getReportedDualProjects, getUnreportedDualProjects } from '../../../services/dual_projects/dual_projects';
+import { getAllDualProjects } from '../../../services/dual_projects/dual_projects';
 
-// Estado para mostrar/ocultar columnas
+
 const showColumnSelector = ref(false);
 const visibleColumns = ref([
 	'status', 'students', 'institution_name', 'organization_name',
 	'project_name', 'agreement', 'project_status', 'options'
 ]);
 
-// Definición de todas las columnas disponibles
 const availableColumns = [
 	{ key: 'status', label: 'Estatus', filterable: true },
 	{ key: 'students', label: 'Estudiantes', filterable: true },
@@ -373,7 +426,7 @@ const availableColumns = [
 	{ key: 'options', label: 'Opciones', filterable: false }
 ];
 
-// Funciones para manejar columnas
+
 const toggleColumn = (columnKey) => {
 	const index = visibleColumns.value.indexOf(columnKey);
 	if (index > -1) {
@@ -388,14 +441,14 @@ const showAllColumns = () => {
 };
 
 const hideAllColumns = () => {
-	visibleColumns.value = ['status', 'students', 'options']; // Columnas mínimas
+	visibleColumns.value = ['status', 'students', 'options'];
 };
 
 const isColumnVisible = (columnKey) => {
 	return visibleColumns.value.includes(columnKey);
 };
 
-// Columnas del header filtradas por visibilidad
+
 const visibleHeaderColumns = computed(() => {
 	return availableColumns.filter(col => visibleColumns.value.includes(col.key));
 });
@@ -407,22 +460,15 @@ const showCertificationsModal = ref(false);
 const selectedStudents = ref([]);
 const selectedCertifications = ref([]);
 
-const openStudentModal = (project) => {
-	selectedStudents.value = project.student_name
-		.split(',')
-		.map(str => {
-			const [name, career, specialty] = str.split('–').map(s => s.trim());
-			return { name, career, specialty };
-		});
-	showStudentModal.value = true;
-};
 
-const openCertificationsModal = (project) => {
-	selectedCertifications.value = project.certifications || [];
-	showCertificationsModal.value = true;
-};
+const rowsPerPage = ref(10);
+const currentPage = ref(1);
+const totalPages = ref(1);
+const totalItems = ref(0);
+const fromItem = ref(0);
+const toItem = ref(0);
 
-// Filters se actualiza para incluir todas las columnas
+
 const filters = ref({
 	status: '',
 	students: '',
@@ -443,8 +489,20 @@ const filters = ref({
 	area: ''
 });
 
-const institutionId = JSON.parse(localStorage.getItem("institution"))?.id;
-const userType = parseInt(localStorage.getItem("user_type"), 10);
+watch(filters, () => {
+	currentPage.value = 1;
+	fetchDualProjects();
+}, { deep: true });
+
+
+watch(currentPage, () => {
+	fetchDualProjects();
+});
+
+watch(rowsPerPage, () => {
+	currentPage.value = 1;
+	fetchDualProjects();
+});
 
 const clearFilters = () => {
 	filters.value = {
@@ -468,44 +526,113 @@ const clearFilters = () => {
 	};
 };
 
-const rowsPerPage = ref(10);
-const currentPage = ref(1);
+const fetchDualProjects = async () => {
+	isLoading.value = true;
 
-const filteredProjects = computed(() => {
-	const f = filters.value;
+	try {
+		const params = {
+			page: currentPage.value,
+			per_page: rowsPerPage.value,
+			filters: {}
+		};
 
-	return dualProjects.value.filter(project => {
-		const statusText = project.has_report ? 'completado' : 'incompleto';
-		const institutionMatch = userType === 0 || project.institution_id === institutionId;
+		Object.keys(filters.value).forEach(key => {
+			if (filters.value[key] && filters.value[key].trim() !== '') {
+				params.filters[key] = filters.value[key];
+			}
+		});
 
-		return (
-			institutionMatch &&
-			project.project_name.toLowerCase().includes(f.project_name.toLowerCase()) &&
-			statusText.includes(f.status.toLowerCase()) &&
-			project.institution_name.toLowerCase().includes(f.institution_name.toLowerCase()) &&
-			(project.institution_state || '').toLowerCase().includes((f.institution_state || '').toLowerCase()) &&
-			project.institution_city.toLowerCase().includes(f.institution_city.toLowerCase()) &&
-			project.area.toLowerCase().includes(f.area.toLowerCase()) &&
-			project.organization_name.toLowerCase().includes(f.organization_name.toLowerCase()) &&
-			(project.organization_state || '').toLowerCase().includes((f.organization_state || '').toLowerCase()) &&
-			(project.organization_city || '').toLowerCase().includes((f.organization_city || '').toLowerCase()) &&
-			(project.organization_sector || '').toLowerCase().includes((f.organization_sector || '').toLowerCase()) &&
-			(project.organization_type || '').toLowerCase().includes((f.organization_type || '').toLowerCase()) &&
-			(project.education_type || '').toLowerCase().includes((f.education_type || '').toLowerCase()) &&
-			(project.agreement || '').toLowerCase().includes((f.agreement || '').toLowerCase()) &&
-			(project.project_status || '').toLowerCase().includes((f.project_status || '').toLowerCase()) &&
-			(project.grade || '').toLowerCase().includes((f.grade || '').toLowerCase()) &&
-			(JSON.stringify(project.certifications) || '').toLowerCase().includes((f.certifications || '').toLowerCase()) &&
-			project.student_name.toLowerCase().includes(f.students.toLowerCase())
-		);
-	});
-});
+		const response = await getAllDualProjects(params);
+		const data = response.data?.data || [];
+		const meta = response.data?.meta || {};
 
-const totalPages = computed(() => Math.ceil(filteredProjects.value.length / rowsPerPage.value));
-const paginatedProjects = computed(() => {
-	const start = (currentPage.value - 1) * rowsPerPage.value;
-	return filteredProjects.value.slice(start, start + rowsPerPage.value);
-});
+		dualProjects.value = data.map(project => {
+			const certifications = project.certifications || [];
+			
+			return {
+				id: project.id,
+				has_report: project.has_report,
+				project_name: project.project_name || 'Por definir',
+				institution_id: project.institution_id,
+				institution_name: project.institution_name || 'Por definir',
+				institution_state: project.institution_state || 'Por definir',
+				institution_city: project.institution_city || 'Por definir',
+				area: project.area || 'Por definir',
+				organization_name: project.organization_name || 'Por definir',
+				organization_state: project.organization_state || 'Por definir',
+				organization_city: project.organization_city || 'Por definir',
+				organization_sector: project.organization_sector || 'Por definir',
+				organization_type: project.organization_type || 'Por definir',
+				education_type: project.education_type || 'Por definir',
+				agreement: project.agreement || 'Por definir',
+				project_status: project.project_status || 'Por definir',
+				grade: project.grade || 'N/A',
+				certifications: certifications,
+				status_document: project.status_document || 'Por definir',
+				student_name: project.student_name || '',
+				raw_students: project.raw_students || []
+			};
+		});
+
+		totalItems.value = meta.total || 0;
+		totalPages.value = meta.last_page || 1;
+		fromItem.value = meta.from || 0;
+		toItem.value = meta.to || 0;
+
+		console.log('📊 Paginación correcta desde backend:', {
+			total: totalItems.value,
+			from: fromItem.value,
+			to: toItem.value,
+			per_page: meta.per_page || rowsPerPage.value,
+			current_page: meta.current_page || currentPage.value,
+			last_page: totalPages.value
+		});
+
+	} catch (error) {
+		console.error('📌 Error al cargar proyectos:', {
+			nombre: error.name,
+			mensaje: error.message,
+			stack: error.stack,
+			response: error.response?.data
+		});
+
+		if (error.response) {
+			console.error('📡 Respuesta del servidor:', {
+				status: error.response.status,
+				statusText: error.response.statusText,
+				data: error.response.data
+			});
+		}
+		
+		dualProjects.value = [];
+		totalItems.value = 0;
+		totalPages.value = 1;
+		fromItem.value = 0;
+		toItem.value = 0;
+	} finally {
+		isLoading.value = false;
+	}
+};
+
+const nextPage = () => {
+	if (currentPage.value < totalPages.value) {
+		currentPage.value++;
+	}
+};
+
+const prevPage = () => {
+	if (currentPage.value > 1) {
+		currentPage.value--;
+	}
+};
+
+const goToPage = (page) => {
+	if (page >= 1 && page <= totalPages.value) {
+		currentPage.value = page;
+	} else {
+		console.warn(`⚠️ Página ${page} fuera de rango. Total de páginas: ${totalPages.value}`);
+	}
+};
 
 const getAgreementClass = (agreement) => {
 	const agreementLower = agreement?.toLowerCase() || '';
@@ -521,7 +648,7 @@ const getAgreementClass = (agreement) => {
 
 const getStatusClass = (status) => {
 	const statusLower = status?.toLowerCase() || '';
-	if (statusLower.includes('completado') || statusLower.includes('finalizado')) {
+	if (statusLower.includes('completado') || statusLower.includes('finalizado') || statusLower.includes('concluido')) {
 		return 'text-green-600 font-semibold';
 	} else if (statusLower.includes('en progreso') || statusLower.includes('activo')) {
 		return 'text-blue-600 font-semibold';
@@ -534,7 +661,7 @@ const getStatusClass = (status) => {
 };
 
 const getGradeClass = (grade) => {
-	if (!grade) return 'text-gray-600';
+	if (!grade || grade === 'N/A') return 'text-gray-600';
 
 	const numericGrade = parseFloat(grade);
 	if (numericGrade >= 90) return 'text-green-600 font-semibold';
@@ -543,101 +670,29 @@ const getGradeClass = (grade) => {
 	return 'text-red-600 font-semibold';
 };
 
-const fetchDualProjects = async () => {
-	isLoading.value = true;
-
-	try {
-		const [reportedRes, unreportedRes] = await Promise.all([
-			getReportedDualProjects(),
-			getUnreportedDualProjects()
-		]);
-
-		console.log('Datos de proyectos reportados:', reportedRes.data);
-		console.log('Datos de proyectos no reportados:', unreportedRes.data);
-
-		const reported = reportedRes.data.map(project => {
-			const institutionData = project.institution || {};
-			const reportData = project.dual_project_reports || {};
-			const organizationData = project.organization_dual_projects?.organization || {};
-			const certifications = reportData.certifications || [];
-			const microCredentials = reportData.micro_credentials || [];
-			const diplomas = reportData.diplomas || [];
-
-			const allCredentials = [
-				...certifications.map(c => ({ ...c, type: 'Certificación' })),
-				...microCredentials.map(m => ({ ...m, type: 'Microcredencial' })),
-				...diplomas.map(d => ({ ...d, type: 'Diploma' }))
-			];
-
-			const projectStatus = reportData.is_concluded === 1 ? 'Concluido' : 'En progreso';
-
-			return {
-				id: project.id,
-				project_name: reportData.name || 'Por definir',
-				has_report: true,
-				institution_id: institutionData.id,
-				institution_name: institutionData.name || 'Por definir',
-				institution_state: institutionData.state?.name || 'Por definir',
-				institution_city: institutionData.city || 'Por definir',
-				area: reportData.dual_area?.name || 'Por definir',
-				organization_name: organizationData.name || 'Por definir',
-				organization_state: organizationData.state?.name || 'Por definir',
-				organization_city: organizationData.city || organizationData.municipality?.name || 'Por definir',
-				organization_sector: organizationData.sector?.name || 'Por definir',
-				organization_type: organizationData.type?.name || 'Por definir',
-				education_type: reportData.dual_type?.name || 'Por definir',
-				agreement: reportData.status_document?.name || 'Por definir',
-				project_status: projectStatus,
-				grade: reportData.qualification || 'N/A',
-				certifications: allCredentials,
-				status_document: reportData.status_document?.name || 'Por definir',
-				student_name: project.dual_project_students
-					.map(s => {
-						const name = `${s.student?.name ?? ''} ${s.student?.lastname ?? ''}`.trim();
-						const career = s.student?.career?.name ?? 'Sin carrera';
-						const specialty = s.student?.specialty?.name ?? 'Sin especialidad';
-						return `${name} – ${career} – ${specialty}`;
-					})
-					.join(', ')
-			};
-		});
-
-		const unreported = unreportedRes.data.map(project => {
-			const institutionData = project.institution || {};
-			const organizationData = project.organization_dual_projects?.organization || {};
-
-			return {
-				id: project.id,
-				project_name: 'Por definir',
-				has_report: false,
-				institution_id: institutionData.id,
-				institution_name: institutionData.name || 'Por definir',
-				institution_state: institutionData.state?.name || 'Por definir',
-				institution_city: institutionData.city || 'Por definir',
-				area: 'Por definir',
-				organization_name: organizationData.name || 'Por definir',
-				organization_state: organizationData.state?.name || 'Por definir',
-				organization_city: organizationData.city || organizationData.municipality?.name || 'Por definir',
-				organization_sector: organizationData.sector?.name || 'Por definir',
-				organization_type: organizationData.type?.name || 'Por definir',
-				education_type: 'Por definir',
-				agreement: 'Por definir',
-				project_status: 'Por definir',
-				grade: 'N/A',
-				certifications: [],
-				status_document: 'Por definir',
-				student_name: ''
-			};
-		});
-
-		dualProjects.value = [...reported, ...unreported];
-		console.log('Proyectos combinados:', dualProjects.value);
-
-	} catch (error) {
-		console.error('Error al obtener los proyectos duales:', error);
-	} finally {
-		isLoading.value = false;
+const openStudentModal = (project) => {
+	if (project.raw_students && project.raw_students.length > 0) {
+		selectedStudents.value = project.raw_students;
+		showStudentModal.value = true;
+	} 
+	else if (project.student_name && project.student_name.trim() !== '') {
+		selectedStudents.value = project.student_name
+			.split(',')
+			.map(str => {
+				const parts = str.split('–').map(s => s.trim());
+				return {
+					name: parts[0] || '',
+					career: parts[1] || 'Sin carrera',
+					specialty: parts[2] || 'Sin especialidad'
+				};
+			});
+		showStudentModal.value = true;
 	}
+};
+
+const openCertificationsModal = (project) => {
+	selectedCertifications.value = project.certifications || [];
+	showCertificationsModal.value = true;
 };
 
 const studentFilters = ref({
@@ -656,7 +711,10 @@ const filteredStudents = computed(() => {
 	});
 });
 
-onMounted(fetchDualProjects);
+onMounted(() => {
+	fetchDualProjects();
+});
+
 defineExpose({ fetchData: fetchDualProjects });
 </script>
 
