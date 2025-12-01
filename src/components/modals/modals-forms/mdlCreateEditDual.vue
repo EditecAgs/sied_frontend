@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { defineProps, defineEmits, reactive, watch, ref, onMounted, computed, nextTick } from 'vue';
 import axios from 'axios';
+import Swal from 'sweetalert2';
 import DualStepPersonal from '../../forms/DualStepPersonal.vue';
 import DualStepAcademico from '../../forms/DualStepAcademico.vue';
 import DualStepUnidad from '../../forms/DualStepUnidad.vue';
@@ -103,10 +104,8 @@ const LoadDependence = async () => {
 
 const reloadCareers = async () => {
 	try {
-		console.log('Recargando carreras...');
 		const response = await getCareers();
 		careers.value = response.data;
-		console.log('Carreras actualizadas:', careers.value.length);
 	} catch (error) {
 		console.error('Error al recargar carreras:', error);
 	}
@@ -114,27 +113,22 @@ const reloadCareers = async () => {
 
 const reloadSpecialties = async () => {
 	try {
-		console.log('Recargando especialidades...');
 		const response = await getSpecialties();
 		specialties.value = response.data;
-		console.log('Especialidades actualizadas:', specialties.value.length);
 	} catch (error) {
 		console.error('Error al recargar especialidades:', error);
 	}
 };
 
 const handleCareersUpdate = async () => {
-	console.log('Evento update:careers recibido');
 	await reloadCareers();
 };
 
 const handleSpecialtiesUpdate = async () => {
-	console.log('Evento update:specialties recibido');
 	await reloadSpecialties();
 };
 
 const handleInstitutionsUpdate = (newInstitutions: any[]) => {
-	console.log('Instituciones actualizadas desde el hijo:', newInstitutions.length);
 	institutions.value = newInstitutions;
 };
 
@@ -166,7 +160,6 @@ const steps = [
 	{ title: 'Información de Institución' },
 	{ title: 'Datos Personales' },
 	{ title: 'Unidad Dual' },
-
 ];
 
 const formData = reactive({
@@ -338,7 +331,12 @@ watch(
 
 				originalFormData.value = JSON.stringify(formData);
 			} catch (error) {
-				console.error('Error al cargar el proyecto dual:', error);
+				Swal.fire({
+					icon: 'error',
+					title: 'Error',
+					text: 'No se pudo cargar la información del proyecto dual',
+					confirmButtonColor: '#3085d6',
+				});
 			} finally {
 				isLoading.value = false;
 			}
@@ -356,10 +354,14 @@ const handleNextOrSubmit = async () => {
 
 	if (currentStep.value === 0) {
 		if (reportaModeloDual.value === null) {
-			alert('Debes seleccionar si este seguimiento incluye información del Modelo Dual');
+			Swal.fire({
+				icon: 'warning',
+				title: 'Información requerida',
+				text: 'Debes seleccionar si este seguimiento incluye información del Modelo Dual',
+				confirmButtonColor: '#3085d6',
+			});
 			return;
 		}
-
 		const isValid = await stepAcademicoRef.value?.validate?.();
 		if (!isValid) {
 			await nextTick();
@@ -372,11 +374,15 @@ const handleNextOrSubmit = async () => {
 		}
 		nextStep();
 	} else if (currentStep.value === 1) {
-
 		const studentCount = formData.personal.dual_project_students?.length || 0;
 
 		if (studentCount < 1) {
-			alert('Debes agregar al menos 1 estudiante.');
+			Swal.fire({
+				icon: 'warning',
+				title: 'Estudiantes requeridos',
+				text: 'Debes agregar al menos 1 estudiante.',
+				confirmButtonColor: '#3085d6',
+			});
 			return;
 		}
 
@@ -397,44 +403,32 @@ const handleNextOrSubmit = async () => {
 
 		nextStep();
 	} else if (currentStep.value === 2) {
-		
-		console.log('🔍 Validando paso 2 (Unidad Dual)');
-		console.log('Referencia del componente:', stepUnidadDualRef.value);
 
 		if (!stepUnidadDualRef.value) {
-			console.log('❌ Referencia del componente no disponible');
 			return;
 		}
 
 		if (!stepUnidadDualRef.value?.validate) {
-			console.log('❌ Método validate no disponible');
 			return;
 		}
 
 		try {
 			const validationResult = stepUnidadDualRef.value?.validate();
-			console.log('Tipo de resultado:', typeof validationResult);
 
 			let isValid;
 			if (validationResult instanceof Promise) {
-				console.log('🔄 Validación asíncrona detectada');
 				isValid = await validationResult;
 			} else {
-				console.log('⚡ Validación síncrona detectada');
 				isValid = validationResult;
 			}
 
-			console.log('¿Es válido?', isValid);
 
 			if (!isValid) {
-				console.log('❌ Validación falló - mostrando errores en UI');
 				await nextTick();
 				return;
 			}
 
-			console.log('✅ Validación exitosa - avanzando al siguiente paso');
 		} catch (error) {
-			console.error('💥 Error durante validación:', error);
 			return;
 		}
 
@@ -474,7 +468,12 @@ const imprimirYGuardar = async () => {
 
 		if (reportaModeloDual.value === false) {
 			if (!formData.academico.id_institution) {
-				alert('Debes seleccionar una institución');
+				Swal.fire({
+					icon: 'warning',
+					title: 'Institución requerida',
+					text: 'Debes seleccionar una institución',
+					confirmButtonColor: '#3085d6',
+				});
 				return;
 			}
 			payload = {
@@ -483,19 +482,34 @@ const imprimirYGuardar = async () => {
 			};
 		} else {
 			if (!formData.unidadDual.name_report || !formData.unidadDual.id_organization || !formData.unidadDual.id_dual_area) {
-				alert('Debes llenar todos los campos de la Unidad Dual');
+				Swal.fire({
+					icon: 'warning',
+					title: 'Campos requeridos',
+					text: 'Debes llenar todos los campos de la Unidad Dual',
+					confirmButtonColor: '#3085d6',
+				});
 				return;
 			}
 
 			if (formData.unidadDual.is_concluded === 1 && !formData.unidadDual.period_end) {
-				alert('La fecha de fin es obligatoria cuando el proyecto está concluido');
+				Swal.fire({
+					icon: 'warning',
+					title: 'Fecha de fin requerida',
+					text: 'La fecha de fin es obligatoria cuando el proyecto está concluido',
+					confirmButtonColor: '#3085d6',
+				});
 				return;
 			}
 
 			const studentCount = formData.personal.dual_project_students?.length || 0;
 
 			if (studentCount < 1) {
-				alert('Debes agregar al menos 1 estudiante.');
+				Swal.fire({
+					icon: 'warning',
+					title: 'Estudiantes requeridos',
+					text: 'Debes agregar al menos 1 estudiante.',
+					confirmButtonColor: '#3085d6',
+				});
 				return;
 			}
 
@@ -544,22 +558,60 @@ const imprimirYGuardar = async () => {
 		const currentData = JSON.stringify(formData);
 		if (props.data.mode === 'create') {
 			await createDualProject(payload);
+			Swal.fire({
+				icon: 'success',
+				title: '¡Éxito!',
+				text: 'Proyecto dual creado correctamente',
+				confirmButtonColor: '#3085d6',
+			});
 		} else {
 			if (currentData === originalFormData.value) {
 				noChangesDetected.value = true;
+				Swal.fire({
+					icon: 'info',
+					title: 'Sin cambios',
+					text: 'No se detectaron cambios en el formulario.',
+					confirmButtonColor: '#3085d6',
+				});
 				return;
 			}
 			noChangesDetected.value = false;
 			await updateDualProject(props.data.pk, payload);
+			Swal.fire({
+				icon: 'success',
+				title: '¡Éxito!',
+				text: 'Proyecto dual actualizado correctamente',
+				confirmButtonColor: '#3085d6',
+			});
 		}
 		emit('saved');
 		emit('close');
 	} catch (err: any) {
 		if (axios.isAxiosError(err) && err.response) {
-			console.error('422 Response data:', err.response.data);
-			console.error('❌ Error de validación:', err.response.data.errors);
+
+			if (err.response.data.errors) {
+				const errorMessages = Object.values(err.response.data.errors).flat().join('<br>');
+				Swal.fire({
+					icon: 'error',
+					title: 'Error de validación',
+					html: errorMessages,
+					confirmButtonColor: '#3085d6',
+				});
+			} else {
+				Swal.fire({
+					icon: 'error',
+					title: 'Error',
+					text: 'Ocurrió un error al procesar la solicitud',
+					confirmButtonColor: '#3085d6',
+				});
+			}
 		} else {
-			console.error('Error al enviar el formulario:', err);
+			Swal.fire({
+				icon: 'error',
+				title: 'Error',
+				text: 'Ocurrió un error inesperado',
+				confirmButtonColor: '#3085d6',
+			});
 		}
 	} finally {
 		isSubmitting.value = false;
@@ -674,7 +726,6 @@ const closeModalAndReset = () => {
 							@update:certifications="handleCertificationsUpdate"
 							@update:diplomas="handleDiplomasUpdate"
 							@update:dualTypes="handleDualTypesUpdate" />
-
 					</template>
 					<template v-else>
 						<div class="flex justify-center items-center h-full">
@@ -685,9 +736,6 @@ const closeModalAndReset = () => {
 					</template>
 				</div>
 
-				<p v-if="noChangesDetected" class="text-red-500 mt-2">
-					No se detectaron cambios en el formulario.
-				</p>
 				<div class="flex justify-between pt-4 border-t">
 					<button
 						:disabled="currentStep === 0 || isSubmitting"
