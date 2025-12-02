@@ -776,6 +776,7 @@ const closeModalAndReset = () => {
 	</transition>
 </template>
 
+
 <style scoped>
 .btn {
 	@apply px-5 py-2 rounded-lg font-medium transition;
