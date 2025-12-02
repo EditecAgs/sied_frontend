@@ -31,6 +31,14 @@ const menuItems = [
 	{ label: 'Delete', onClick: () => console.log('Delete clicked') },
 ]
 
+const props = defineProps({
+  filtersAdd: {
+    type: Number,
+    default: null 
+  }
+})
+
+
 const series = ref([])
 
 const chartOptions = ref({
@@ -133,7 +141,7 @@ const scopeLabels = {
 
 onMounted(async () => {
 	try {
-		const response = await getOrganizationsByScope()
+		const response = await getOrganizationsByScope(props.filtersAdd)
 		const data = response.data.data
 
 		const labels = data.map(item => scopeLabels[item.scope] ?? 'Otro')

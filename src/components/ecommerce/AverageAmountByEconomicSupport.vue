@@ -62,7 +62,15 @@ import { ref, onMounted } from 'vue'
 import { getAverageAmountByEconomicSupport } from '../../services/statistics/dashboard'
 import { useLoaderNotifier } from '../../composables/useLoaderNotifier'
 
+
 const { notifyLoaded } = useLoaderNotifier()
+
+const props = defineProps({
+  filtersAdd: {
+    type: Number,
+    default: null 
+  }
+})
 
 const averageSupports = ref<{ support_name: string; average_amount: number }[]>([])
 const colors = ['#83181b', '#a34245', '#c36b6f', '#e39499']
@@ -71,7 +79,7 @@ const maxAmount = ref(1)
 
 onMounted(async () => {
 	try {
-		const response = await getAverageAmountByEconomicSupport()
+		const response = await getAverageAmountByEconomicSupport(props.filtersAdd)
 		const data = response.data.data || []
 
 		const validAmounts = data.map(i => i.average_amount || 0)

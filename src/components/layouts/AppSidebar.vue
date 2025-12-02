@@ -244,7 +244,7 @@ const menuGroups = computed(() => {
 						{
 							icon: GridIcon,
 							name: 'Estadísticas por Institucion',
-							path: '',
+							path: '/dashboard-institutions',
 						}
 					]
 				},

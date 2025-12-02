@@ -30,6 +30,12 @@ ChartJS.register(Title, Tooltip, Legend, BarElement, CategoryScale, LinearScale)
 const nationalClusters = ref([])
 
 const BarChart = Bar
+const props = defineProps({
+  filtersAdd: {
+    type: Number,
+    default: null 
+  }
+})
 
 const palette = [
 	'#9C2131', '#C9A236', '#3A4A5F', '#707070', '#C4C4C4',
@@ -160,7 +166,7 @@ const chartOptions = {
 
 const fetchData = async () => {
 	try {
-		const response = await getProjectsByCluster()
+		const response = await getProjectsByCluster(props.filtersAdd)
 		const result = response.data
 
 		nationalClusters.value = result.data.nacionales || []

@@ -82,9 +82,16 @@ interface ProjectByInstitution {
 	image?: string
 }
 
+const props = defineProps({
+  filtersAdd: {
+    type: Number,
+    default: null 
+  }
+})
+
 const dual_projects_by_institution = ref<ProjectByInstitution[]>([])
 
-getProjectsByIntitution().then((data) => {
+getProjectsByIntitution(props.filtersAdd).then((data) => {
 	const items = (data.data.data || []) as ProjectByInstitution[]
 	items.sort((a, b) => b.percentage - a.percentage)
 	dual_projects_by_institution.value = items

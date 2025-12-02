@@ -30,6 +30,12 @@ const series = ref([
 		data: []
 	}
 ])
+const props = defineProps({
+  filtersAdd: {
+    type: Number,
+    default: null 
+  }
+})
 
 const chartOptions = ref({
 	colors: ['#83181b', '#a34245', '#c36b6f', '#e39499'],
@@ -82,7 +88,7 @@ const chartOptions = ref({
 
 onMounted(async () => {
 	try {
-		const response = await getProjectsByEconomicSupport()
+		const response = await getProjectsByEconomicSupport(props.filtersAdd)
 		const data = response.data.data
 
 		const labels = data.map(item => item.support_name)

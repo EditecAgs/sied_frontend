@@ -38,6 +38,12 @@ import { getOrganizationsByCluster, getRegisteredOrganizationsCount } from '../.
 const localClusters = ref([])
 const nationalClusters = ref([])
 const totalOrganizationsCount = ref(0)
+const props = defineProps({
+  filtersAdd: {
+    type: Number,
+    default: null 
+  }
+})
 
 const totalOrganizations = computed(() => {
 	return totalOrganizationsCount.value
@@ -219,14 +225,14 @@ const renderChart = () => {
 const fetchData = async () => {
 	try {
 
-		const response = await getOrganizationsByCluster()
+		const response = await getOrganizationsByCluster(props.filtersAdd)
 		const result = response.data
 
 		localClusters.value = result.data.locales || []
 		nationalClusters.value = result.data.nacionales || []
 
 
-		const orgResponse = await getRegisteredOrganizationsCount()
+		const orgResponse = await getRegisteredOrganizationsCount(props.filtersAdd)
 		totalOrganizationsCount.value = orgResponse.data.count
 
 		console.log('Datos cargados:', {

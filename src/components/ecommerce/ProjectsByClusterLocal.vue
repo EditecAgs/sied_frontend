@@ -25,6 +25,12 @@ import { Chart as ChartJS, Title, Tooltip, Legend, BarElement, CategoryScale, Li
 import { Bar } from 'vue-chartjs'
 import { getProjectsByCluster } from '../../services/statistics/dashboard'
 
+const props = defineProps({
+  filtersAdd: {
+    type: Number,
+    default: null 
+  }
+})
 ChartJS.register(Title, Tooltip, Legend, BarElement, CategoryScale, LinearScale)
 
 const localClusters = ref([])
@@ -160,7 +166,7 @@ const chartOptions = {
 
 const fetchData = async () => {
 	try {
-		const response = await getProjectsByCluster()
+		const response = await getProjectsByCluster(props.filtersAdd)
 		const result = response.data
 
 		localClusters.value = result.data.locales || []
