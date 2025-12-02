@@ -2,12 +2,11 @@
 	<div
 		class="overflow-hidden rounded-2xl border border-gray-200 p-6 shadow-sm dark:border-gray-700"
 		style="background: linear-gradient(to top, rgba(211, 211, 210, 0.8) 30%, rgba(159, 129, 60, 0.8) 100%);">
-
 		<h3 class="text-xl font-semibold text-stone-50 dark:text-gray-100 mb-6 text-center">
 			Proyectos por Sectores del Plan México
 		</h3>
 
-		<div class="max-w-full overflow-x-auto custom-scrollbar" v-if="projects_by_sector_mexico.length > 0">
+		<div v-if="projects_by_sector_mexico.length > 0" class="max-w-full overflow-x-auto custom-scrollbar">
 			<div class="min-w-[500px] flex justify-center">
 				<PieChart :data="chartData" :options="chartOptions" />
 			</div>
@@ -105,7 +104,7 @@ const chartOptions = {
 
 const fetchAllData = async () => {
 	try {
-		const response = await getProjectsBySectorMexico(props.filtersAdd)
+		const response = await getProjectsBySectorMexico(1, props.filtersAdd)
 		const result = response.data
 
 		projects_by_sector_mexico.value = result.data

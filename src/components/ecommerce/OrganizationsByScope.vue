@@ -133,7 +133,7 @@ const chartOptions = ref({
 
 const scopeLabels = {
 	Municipal: 'Municipal',
-	Estatal: 'estatal',
+	Estatal: 'Estatal',
 	Federal: 'Nacional',
 	Internacional: 'Internacional',
 }
