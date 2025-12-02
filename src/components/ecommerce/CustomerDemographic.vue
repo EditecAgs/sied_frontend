@@ -23,7 +23,6 @@
 					:alt="item.institution_name"
 					class="w-10 h-10 rounded-full object-contain border border-gray-300 dark:border-gray-600" />
 
-
 				<div
 					v-else
 					class="w-10 h-10 flex items-center justify-center rounded-full bg-gray-300 dark:bg-gray-700 border border-gray-400 dark:border-gray-600 text-gray-700 dark:text-gray-300">
