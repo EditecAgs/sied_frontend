@@ -60,15 +60,22 @@ const completed_dual_projects = ref({ count: 0 })
 const total_students = ref({ count: 0 })
 const total_Organizations = ref({count: 0})
 
-getCompletedDualProjects().then((data) => {
+const props = defineProps({
+  filtersAdd: {
+    type: Number,
+    default: null 
+  }
+})
+
+getCompletedDualProjects(props.filtersAdd).then((data) => {
   completed_dual_projects.value = data.data
 })
 
-getTotalStudents().then((data) => {
+getTotalStudents(props.filtersAdd).then((data) => {
   total_students.value = data.data
 })
 
-getRegisteredOrganizationsCount().then((data) => {
+getRegisteredOrganizationsCount(props.filtersAdd).then((data) => {
 	total_Organizations.value = data.data
 })
 </script>

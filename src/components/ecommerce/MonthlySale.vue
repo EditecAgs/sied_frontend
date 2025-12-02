@@ -45,6 +45,14 @@ import DropdownMenu from '../common/DropdownMenu.vue'
 import VueApexCharts from 'vue3-apexcharts'
 import { getProjectsCountByMonth } from '../../services/statistics/dashboard'
 
+
+const props = defineProps({
+  filtersAdd: {
+    type: Number,
+    default: null 
+  }
+})
+
 const menuItems = [
   { label: 'View More', onClick: () => console.log('View More clicked') },
   { label: 'Delete', onClick: () => console.log('Delete clicked') },
@@ -130,7 +138,7 @@ const chartOptions = ref({
 
 onMounted(async () => {
   try {
-    const response = await getProjectsCountByMonth()
+    const response = await getProjectsCountByMonth(props.filtersAdd)
     const data = response.data.data
 
     const monthlyData = Array(12).fill(0)

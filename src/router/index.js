@@ -39,6 +39,7 @@ import Tutorials from "../views/Others/Tutorials.vue";
 import ResetPassword from "../views/Auth/ResetPassword.vue";
 import CertificationView from "../views/Tables/CertificationView.vue";
 import DiplomaView from "../views/Tables/DiplomaView.vue";
+import DashboardInstitutions from "../views/DashboardInstitutions.vue"
 
 
 
@@ -84,6 +85,7 @@ const routes = [
     { path: '/reset-password', name: 'ResetPassword', component: ResetPassword },
 	{ path: '/certifications-table', name: 'CertificationsTable', component: CertificationView },
 	{ path: '/diplomas-table', name: 'DiplomasTable', component: DiplomaView },
+    {path: '/dashboard-institutions', name: 'DashboardInstitutions', component: DashboardInstitutions},
     {
         path: '/logs',
         name: 'Logs',

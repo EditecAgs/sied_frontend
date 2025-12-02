@@ -84,9 +84,16 @@ const dual_projects_by_sector = ref([])
 const currentPage = ref(1)
 const lastPage = ref(1)
 
+const props = defineProps({
+  filtersAdd: {
+    type: Number,
+    default: null 
+  }
+})
+
 const fetchPage = async (page) => {
 	try {
-		const response = await getProjectsBySector(page)
+		const response = await getProjectsBySector(page, props.filtersAdd)
 		const result = response.data
 		dual_projects_by_sector.value = result.data
 		currentPage.value = result.pagination.current_page

@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { defineProps, defineEmits, reactive, watch, ref, onMounted, computed, nextTick } from 'vue';
 import axios from 'axios';
+import Swal from 'sweetalert2';
 import DualStepPersonal from '../../forms/DualStepPersonal.vue';
 import DualStepAcademico from '../../forms/DualStepAcademico.vue';
 import DualStepUnidad from '../../forms/DualStepUnidad.vue';
@@ -33,6 +34,7 @@ const props = defineProps<{
 
 const { showModal, modalData, openModal, closeModal } = useModal();
 const isLoading = ref(false);
+const isSubmitting = ref(false);
 const currentStep = ref(0);
 const reportaModeloDual = ref<boolean>(false);
 
@@ -102,10 +104,8 @@ const LoadDependence = async () => {
 
 const reloadCareers = async () => {
 	try {
-		console.log('Recargando carreras...');
 		const response = await getCareers();
 		careers.value = response.data;
-		console.log('Carreras actualizadas:', careers.value.length);
 	} catch (error) {
 		console.error('Error al recargar carreras:', error);
 	}
@@ -113,27 +113,22 @@ const reloadCareers = async () => {
 
 const reloadSpecialties = async () => {
 	try {
-		console.log('Recargando especialidades...');
 		const response = await getSpecialties();
 		specialties.value = response.data;
-		console.log('Especialidades actualizadas:', specialties.value.length);
 	} catch (error) {
 		console.error('Error al recargar especialidades:', error);
 	}
 };
 
 const handleCareersUpdate = async () => {
-	console.log('Evento update:careers recibido');
 	await reloadCareers();
 };
 
 const handleSpecialtiesUpdate = async () => {
-	console.log('Evento update:specialties recibido');
 	await reloadSpecialties();
 };
 
 const handleInstitutionsUpdate = (newInstitutions: any[]) => {
-	console.log('Instituciones actualizadas desde el hijo:', newInstitutions.length);
 	institutions.value = newInstitutions;
 };
 
@@ -163,8 +158,8 @@ onMounted(() => {
 
 const steps = [
 	{ title: 'Información de Institución' },
+	{ title: 'Datos Personales' },
 	{ title: 'Unidad Dual' },
-	{ title: 'Datos Personales' }
 ];
 
 const formData = reactive({
@@ -336,7 +331,12 @@ watch(
 
 				originalFormData.value = JSON.stringify(formData);
 			} catch (error) {
-				console.error('Error al cargar el proyecto dual:', error);
+				Swal.fire({
+					icon: 'error',
+					title: 'Error',
+					text: 'No se pudo cargar la información del proyecto dual',
+					confirmButtonColor: '#3085d6',
+				});
 			} finally {
 				isLoading.value = false;
 			}
@@ -348,12 +348,20 @@ watch(
 );
 
 const handleNextOrSubmit = async () => {
+	if (isSubmitting.value) {
+		return;
+	}
+
 	if (currentStep.value === 0) {
 		if (reportaModeloDual.value === null) {
-			alert('Debes seleccionar si este seguimiento incluye información del Modelo Dual');
+			Swal.fire({
+				icon: 'warning',
+				title: 'Información requerida',
+				text: 'Debes seleccionar si este seguimiento incluye información del Modelo Dual',
+				confirmButtonColor: '#3085d6',
+			});
 			return;
 		}
-
 		const isValid = await stepAcademicoRef.value?.validate?.();
 		if (!isValid) {
 			await nextTick();
@@ -366,58 +374,61 @@ const handleNextOrSubmit = async () => {
 		}
 		nextStep();
 	} else if (currentStep.value === 1) {
-		console.log('🔍 Validando paso 1 (Unidad Dual)');
-		console.log('Referencia del componente:', stepUnidadDualRef.value);
+		const studentCount = formData.personal.dual_project_students?.length || 0;
 
-		if (!stepUnidadDualRef.value) {
-			console.log('❌ Referencia del componente no disponible');
+		if (studentCount < 1) {
+			Swal.fire({
+				icon: 'warning',
+				title: 'Estudiantes requeridos',
+				text: 'Debes agregar al menos 1 estudiante.',
+				confirmButtonColor: '#3085d6',
+			});
 			return;
 		}
 
-		if (!stepUnidadDualRef.value.validate) {
-			console.log('❌ Método validate no disponible');
+		if (!stepPersonalRef.value) return;
+
+		let isValid;
+		const validationResult = stepPersonalRef.value.validate?.();
+		if (validationResult instanceof Promise) {
+			isValid = await validationResult;
+		} else {
+			isValid = validationResult;
+		}
+
+		if (!isValid) {
+			await nextTick();
+			return;
+		}
+
+		nextStep();
+	} else if (currentStep.value === 2) {
+
+		if (!stepUnidadDualRef.value) {
+			return;
+		}
+
+		if (!stepUnidadDualRef.value?.validate) {
 			return;
 		}
 
 		try {
-			const validationResult = stepUnidadDualRef.value.validate();
-			console.log('Tipo de resultado:', typeof validationResult);
+			const validationResult = stepUnidadDualRef.value?.validate();
 
 			let isValid;
 			if (validationResult instanceof Promise) {
-				console.log('🔄 Validación asíncrona detectada');
 				isValid = await validationResult;
 			} else {
-				console.log('⚡ Validación síncrona detectada');
 				isValid = validationResult;
 			}
 
-			console.log('¿Es válido?', isValid);
 
 			if (!isValid) {
-				console.log('❌ Validación falló - mostrando errores en UI');
-				// Forzar actualización de UI para mostrar errores
 				await nextTick();
 				return;
 			}
 
-			console.log('✅ Validación exitosa - avanzando al siguiente paso');
-			nextStep();
 		} catch (error) {
-			console.error('💥 Error durante validación:', error);
-			return;
-		}
-	} else if (currentStep.value === 2) {
-		const studentCount = formData.personal.dual_project_students?.length || 0;
-
-		if (studentCount < 1) {
-			alert('Debes agregar al menos 1 estudiante.');
-			return;
-		}
-
-		const isValid = stepPersonalRef.value?.validate ? stepPersonalRef.value.validate() : false;
-
-		if (!isValid) {
 			return;
 		}
 
@@ -446,12 +457,23 @@ const prevStep = async () => {
 };
 
 const imprimirYGuardar = async () => {
+	if (isSubmitting.value) {
+		return;
+	}
+
 	try {
+		isSubmitting.value = true;
+
 		let payload: Record<string, any>;
 
 		if (reportaModeloDual.value === false) {
 			if (!formData.academico.id_institution) {
-				alert('Debes seleccionar una institución');
+				Swal.fire({
+					icon: 'warning',
+					title: 'Institución requerida',
+					text: 'Debes seleccionar una institución',
+					confirmButtonColor: '#3085d6',
+				});
 				return;
 			}
 			payload = {
@@ -459,22 +481,35 @@ const imprimirYGuardar = async () => {
 				id_institution: Number(formData.academico.id_institution)
 			};
 		} else {
-			// Validación actualizada para period_end
 			if (!formData.unidadDual.name_report || !formData.unidadDual.id_organization || !formData.unidadDual.id_dual_area) {
-				alert('Debes llenar todos los campos de la Unidad Dual');
+				Swal.fire({
+					icon: 'warning',
+					title: 'Campos requeridos',
+					text: 'Debes llenar todos los campos de la Unidad Dual',
+					confirmButtonColor: '#3085d6',
+				});
 				return;
 			}
 
-			// Validar period_end solo si el proyecto está concluido
 			if (formData.unidadDual.is_concluded === 1 && !formData.unidadDual.period_end) {
-				alert('La fecha de fin es obligatoria cuando el proyecto está concluido');
+				Swal.fire({
+					icon: 'warning',
+					title: 'Fecha de fin requerida',
+					text: 'La fecha de fin es obligatoria cuando el proyecto está concluido',
+					confirmButtonColor: '#3085d6',
+				});
 				return;
 			}
 
 			const studentCount = formData.personal.dual_project_students?.length || 0;
 
 			if (studentCount < 1) {
-				alert('Debes agregar al menos 1 estudiante.');
+				Swal.fire({
+					icon: 'warning',
+					title: 'Estudiantes requeridos',
+					text: 'Debes agregar al menos 1 estudiante.',
+					confirmButtonColor: '#3085d6',
+				});
 				return;
 			}
 
@@ -523,27 +558,65 @@ const imprimirYGuardar = async () => {
 		const currentData = JSON.stringify(formData);
 		if (props.data.mode === 'create') {
 			await createDualProject(payload);
+			Swal.fire({
+				icon: 'success',
+				title: '¡Éxito!',
+				text: 'Proyecto dual creado correctamente',
+				confirmButtonColor: '#3085d6',
+			});
 		} else {
 			if (currentData === originalFormData.value) {
 				noChangesDetected.value = true;
+				Swal.fire({
+					icon: 'info',
+					title: 'Sin cambios',
+					text: 'No se detectaron cambios en el formulario.',
+					confirmButtonColor: '#3085d6',
+				});
 				return;
 			}
 			noChangesDetected.value = false;
 			await updateDualProject(props.data.pk, payload);
+			Swal.fire({
+				icon: 'success',
+				title: '¡Éxito!',
+				text: 'Proyecto dual actualizado correctamente',
+				confirmButtonColor: '#3085d6',
+			});
 		}
 		emit('saved');
 		emit('close');
 	} catch (err: any) {
 		if (axios.isAxiosError(err) && err.response) {
-			console.error('422 Response data:', err.response.data);
-			console.error('❌ Error de validación:', err.response.data.errors);
+
+			if (err.response.data.errors) {
+				const errorMessages = Object.values(err.response.data.errors).flat().join('<br>');
+				Swal.fire({
+					icon: 'error',
+					title: 'Error de validación',
+					html: errorMessages,
+					confirmButtonColor: '#3085d6',
+				});
+			} else {
+				Swal.fire({
+					icon: 'error',
+					title: 'Error',
+					text: 'Ocurrió un error al procesar la solicitud',
+					confirmButtonColor: '#3085d6',
+				});
+			}
 		} else {
-			console.error('Error al enviar el formulario:', err);
+			Swal.fire({
+				icon: 'error',
+				title: 'Error',
+				text: 'Ocurrió un error inesperado',
+				confirmButtonColor: '#3085d6',
+			});
 		}
+	} finally {
+		isSubmitting.value = false;
 	}
 };
-
-
 
 const handleInstitutionSaved = () => {
 	closeModal();
@@ -621,8 +694,21 @@ const closeModalAndReset = () => {
 							:mode="props.data.mode"
 							@submitSinUnidadDual="imprimirYGuardar"
 							@update:institutions="handleInstitutionsUpdate" />
+						<DualStepPersonal
+							v-else-if="currentStep === 1"
+							:key="'personal-step-' + personalStepKey"
+							ref="stepPersonalRef"
+							v-model="formData.personal"
+							:careers="careers"
+							:specialties="specialties"
+							:institution="{
+								id: formData.academico.id_institution,
+								name: institutions.find(i => i.id === formData.academico.id_institution)?.name || ''
+							}"
+							@update:careers="handleCareersUpdate"
+							@update:specialties="handleSpecialtiesUpdate" />
 						<DualStepUnidad
-							v-else-if="currentStep === 1 && reportaModeloDual"
+							v-else-if="currentStep === 2 && reportaModeloDual"
 							ref="stepUnidadDualRef"
 							:key="'unidad-step-' + currentStep"
 							v-model="formData.unidadDual"
@@ -640,19 +726,6 @@ const closeModalAndReset = () => {
 							@update:certifications="handleCertificationsUpdate"
 							@update:diplomas="handleDiplomasUpdate"
 							@update:dualTypes="handleDualTypesUpdate" />
-						<DualStepPersonal
-							v-else-if="currentStep === 2"
-							:key="'personal-step-' + personalStepKey"
-							ref="stepPersonalRef"
-							v-model="formData.personal"
-							:careers="careers"
-							:specialties="specialties"
-							:institution="{
-								id: formData.academico.id_institution,
-								name: institutions.find(i => i.id === formData.academico.id_institution)?.name || ''
-							}"
-							@update:careers="handleCareersUpdate"
-							@update:specialties="handleSpecialtiesUpdate" />
 					</template>
 					<template v-else>
 						<div class="flex justify-center items-center h-full">
@@ -663,23 +736,33 @@ const closeModalAndReset = () => {
 					</template>
 				</div>
 
-				<p v-if="noChangesDetected" class="text-red-500 mt-2">
-					No se detectaron cambios en el formulario.
-				</p>
 				<div class="flex justify-between pt-4 border-t">
-					<button :disabled="currentStep === 0" class="btn" @click="prevStep">
+					<button
+						:disabled="currentStep === 0 || isSubmitting"
+						class="btn disabled:bg-gray-300 disabled:cursor-not-allowed"
+						@click="prevStep">
 						Anterior
 					</button>
 					<button
-						class="btn bg-brand-800 text-white hover:bg-brand-900"
-						:disabled="currentStep === steps.length - 1 && !canSubmit"
+						class="btn bg-brand-800 text-white hover:bg-brand-900 disabled:bg-gray-400 disabled:cursor-not-allowed relative"
+						:disabled="(currentStep === steps.length - 1 && !canSubmit) || isSubmitting"
 						@click="handleNextOrSubmit">
-						{{
-							currentStep === steps.length - 1 ||
-							(currentStep === 0 && reportaModeloDual === false)
-								? 'Enviar'
-								: 'Siguiente'
-						}}
+						<div
+							v-if="isSubmitting"
+							class="absolute left-3 top-1/2 transform -translate-y-1/2">
+							<div class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+						</div>
+
+						<span :class="{ 'ml-4': isSubmitting }">
+							{{
+								isSubmitting
+									? 'Enviando...'
+									: currentStep === steps.length - 1 ||
+										(currentStep === 0 && reportaModeloDual === false)
+										? 'Enviar'
+										: 'Siguiente'
+							}}
+						</span>
 					</button>
 				</div>
 
@@ -692,6 +775,7 @@ const closeModalAndReset = () => {
 		</div>
 	</transition>
 </template>
+
 
 <style scoped>
 .btn {
