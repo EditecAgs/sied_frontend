@@ -3,7 +3,7 @@
 		class="overflow-hidden rounded-2xl border border-gray-200 bg-[rgb(211,211,210)]/50 px-6 pt-6 shadow-md dark:border-gray-700 dark:bg-gray-900 sm:px-8 sm:pt-8">
 		<div class="flex items-center justify-between mb-5">
 			<h3 class="text-xl font-semibold text-gray-600 dark:text-white">
-				Proyectos por Clasificación General de la Actividad Dual
+				Proyectos por Clasificación General del Proyecto Dual
 			</h3>
 
 			<div class="relative h-fit">
@@ -49,6 +49,13 @@ const loading = ref(true)
 const series = ref<any[]>([])
 const chartOptions = ref<any>({})
 
+const props = defineProps({
+  filtersAdd: {
+    type: Number,
+    default: null 
+  }
+})
+
 const menuItems = [
 	{ label: 'Exportar', onClick: () => console.log('Exportar clicado') },
 	{ label: 'Actualizar', onClick: () => fetchProjectsByArea() },
@@ -56,7 +63,7 @@ const menuItems = [
 
 const fetchProjectsByArea = async () => {
 	try {
-		const response: any = await getProjectsByArea(1)
+		const response: any = await getProjectsByArea(1, props.filtersAdd)
 		const data = response.data?.data || []
 
 		const areas = data.map(item => item.area_name)

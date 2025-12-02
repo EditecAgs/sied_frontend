@@ -23,7 +23,6 @@
 					:alt="item.institution_name"
 					class="w-10 h-10 rounded-full object-contain border border-gray-300 dark:border-gray-600" />
 
-
 				<div
 					v-else
 					class="w-10 h-10 flex items-center justify-center rounded-full bg-gray-300 dark:bg-gray-700 border border-gray-400 dark:border-gray-600 text-gray-700 dark:text-gray-300">
@@ -82,9 +81,16 @@ interface ProjectByInstitution {
 	image?: string
 }
 
+const props = defineProps({
+  filtersAdd: {
+    type: Number,
+    default: null 
+  }
+})
+
 const dual_projects_by_institution = ref<ProjectByInstitution[]>([])
 
-getProjectsByIntitution().then((data) => {
+getProjectsByIntitution(props.filtersAdd).then((data) => {
 	const items = (data.data.data || []) as ProjectByInstitution[]
 	items.sort((a, b) => b.percentage - a.percentage)
 	dual_projects_by_institution.value = items

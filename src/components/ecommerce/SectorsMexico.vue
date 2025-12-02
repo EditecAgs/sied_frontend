@@ -86,6 +86,13 @@ const projects_by_sector_mexico = ref([])
 const currentPage = ref(1)
 const lastPage = ref(1)
 
+const props = defineProps({
+  filtersAdd: {
+    type: Number,
+    default: null 
+  }
+})
+
 const sectorLogos = {
 	"Agroindustrial": "/images/sectorsMLogo/agroindustrial.svg",
 	"Textiles, Vestuario y Cuero": "/images/sectorsMLogo/textil.svg",
@@ -102,7 +109,7 @@ const sectorLogos = {
 
 const fetchPage = async (page = 1) => {
 	try {
-		const response = await getProjectsBySectorMexico(page)
+		const response = await getProjectsBySectorMexico(page, props.filtersAdd)
 		const result = response.data
 		projects_by_sector_mexico.value = result.data
 		currentPage.value = result.pagination.current_page

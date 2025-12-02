@@ -3,7 +3,7 @@
 		class="overflow-hidden rounded-2xl border border-gray-200 bg-[rgb(211,211,210)]/50 px-6 pt-6 shadow-md dark:border-gray-700 dark:bg-gray-900 sm:px-8 sm:pt-8">
 		<div class="flex items-center justify-between mb-5">
 			<h3 class="text-xl font-semibold text-gray-600 dark:text-white">
-				Organizaciones por Operación
+				Operación de Organizaciones
 			</h3>
 
 			<div class="relative h-fit" />
@@ -30,6 +30,14 @@ const menuItems = [
 	{ label: 'View More', onClick: () => console.log('View More clicked') },
 	{ label: 'Delete', onClick: () => console.log('Delete clicked') },
 ]
+
+const props = defineProps({
+  filtersAdd: {
+    type: Number,
+    default: null 
+  }
+})
+
 
 const series = ref([])
 
@@ -124,16 +132,16 @@ const chartOptions = ref({
 })
 
 const scopeLabels = {
-	Municipal: 'Ámbito municipal',
-	Estatal: 'Ámbito estatal',
-	Federal: 'Ámbito federal',
-	Internacional: 'Ámbito internacional',
+	Municipal: 'Municipal',
+	Estatal: 'Estatal',
+	Federal: 'Nacional',
+	Internacional: 'Internacional',
 }
 
 
 onMounted(async () => {
 	try {
-		const response = await getOrganizationsByScope()
+		const response = await getOrganizationsByScope(props.filtersAdd)
 		const data = response.data.data
 
 		const labels = data.map(item => scopeLabels[item.scope] ?? 'Otro')

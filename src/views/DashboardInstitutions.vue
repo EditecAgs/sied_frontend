@@ -7,39 +7,39 @@
 			<div v-show="!loading" class="min-h-screen w-full bg-cover bg-center bg-fixed">
 				<div class="grid grid-cols-12 gap-4 md:gap-6 p-4 md:p-6 grid-flow-dense">
 					<div class="col-span-12 xl:col-span-7 grid gap-4 md:gap-6 auto-rows-max">
-						<ecommerce-metrics @loaded="onChildLoaded" />
-						<monthly-sale @loaded="onChildLoaded" />
+						<ecommerce-metrics @loaded="onChildLoaded" :filtersAdd="filtersAdd"/>
+						<monthly-sale @loaded="onChildLoaded" :filtersAdd="filtersAdd"/>
 					</div>
 
 					<div class="col-span-12 xl:col-span-5">
 						<div class="h-full max-h-[575px] overflow-y-auto">
-							<SectorsMexico @loaded="onChildLoaded" />
+							<SectorsMexico @loaded="onChildLoaded" :filtersAdd="filtersAdd"/>
 						</div>
 					</div>
 
 					<div class="col-span-12">
-						<statistics-chart class="h-full" @loaded="onChildLoaded" />
+						<statistics-chart class="h-full" @loaded="onChildLoaded" :filtersAdd="filtersAdd"/>
 					</div>
 
 					<div class="col-span-12 xl:col-span-8 grid gap-4 md:gap-6 auto-rows-max">
-						<recent-orders class="h-auto" @loaded="onChildLoaded" />
-						<OrganizationsByScope class="h-auto" @loaded="onChildLoaded" />
-						<ProjectsByEconomicSupport class="h-auto" @loaded="onChildLoaded" />
-						<SectorsMexicoMetric class="h-auto" @loaded="onChildLoaded" />
-						<OrganizationsByLocalCluster class="h-auto" @loaded="onChildLoaded" />
+						<recent-orders class="h-auto" @loaded="onChildLoaded" :filtersAdd="filtersAdd"/>
+						<OrganizationsByScope class="h-auto" @loaded="onChildLoaded" :filtersAdd="filtersAdd"/>
+						<ProjectsByEconomicSupport class="h-auto" @loaded="onChildLoaded" :filtersAdd="filtersAdd"/>
+						<SectorsMexicoMetric class="h-auto" @loaded="onChildLoaded" :filtersAdd="filtersAdd"/>
+						<OrganizationsByLocalCluster class="h-auto" @loaded="onChildLoaded" :filtersAdd="filtersAdd"/>
 					</div>
 
 					<div class="col-span-12 xl:col-span-4 grid gap-4 md:gap-6 auto-rows-max">
-						<customer-demographic class="h-auto" @loaded="onChildLoaded" />
-						<AverageAmountByEconomicSupport class="h-auto" @loaded="onChildLoaded" />
-						<ProjectsByDualType class="h-auto" @loaded="onChildLoaded" />
+						<customer-demographic class="h-auto" @loaded="onChildLoaded" :filtersAdd="filtersAdd"/>
+						<AverageAmountByEconomicSupport class="h-auto" @loaded="onChildLoaded" :filtersAdd="filtersAdd"/>
+						<ProjectsByDualType class="h-auto" @loaded="onChildLoaded" :filtersAdd="filtersAdd"/>
 					</div>
 
 
 					<div class="col-span-12">
 						<div class="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
-							<ProjectsByClusterLocal class="h-auto" @loaded="onChildLoaded" />
-							<ProjectsByClusterNacional class="h-auto" @loaded="onChildLoaded" />
+							<ProjectsByClusterLocal class="h-auto" @loaded="onChildLoaded" :filtersAdd="filtersAdd"/>
+							<ProjectsByClusterNacional class="h-auto" @loaded="onChildLoaded" :filtersAdd="filtersAdd"/>
 						</div>
 					</div>
 				</div>
@@ -88,11 +88,13 @@ export default {
 		ProjectsByClusterLocal,
 		ProjectsByClusterNacional,
 	},
+	//provicional state 2, instituciones 1
 	data() {
 		return {
 			loading: true,
 			loadedChildren: 0,
 			totalChildren: 1,
+			filtersAdd:1
 		};
 	},
 	methods: {

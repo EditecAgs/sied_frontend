@@ -1,5 +1,21 @@
 import axios from 'axios';
 
+export function getAllDualProjects(params = {}) {
+    return new Promise((resolve, reject) => {
+        axios
+            .get('dual-projects/all', { params })
+            .then(resolve)
+            .catch(reject);
+    });
+}
+export function allProjects(){
+	return new Promise((resolve, reject) => {
+		axios
+			.get('dual-projects')
+			.then(resolve)
+			.catch(reject);
+	});
+}
 
 export function getUnreportedDualProjects() {
 	return new Promise((resolve, reject) => {
