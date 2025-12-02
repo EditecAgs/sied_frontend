@@ -29,6 +29,14 @@ ChartJS.register(Title, Tooltip, Legend, ArcElement)
 
 const projects_by_sector_mexico = ref([])
 
+const props = defineProps({
+  filtersAdd: {
+    type: Number,
+    default: null 
+  }
+})
+
+
 const PieChart = Pie
 
 const palette = [
@@ -97,7 +105,7 @@ const chartOptions = {
 
 const fetchAllData = async () => {
 	try {
-		const response = await getProjectsBySectorMexico()
+		const response = await getProjectsBySectorMexico(props.filtersAdd)
 		const result = response.data
 
 		projects_by_sector_mexico.value = result.data

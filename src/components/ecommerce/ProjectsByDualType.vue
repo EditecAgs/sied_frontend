@@ -56,6 +56,12 @@ const chartData = ref({
 	datasets: [{ data: [], backgroundColor: [] }],
 	labels: [],
 })
+const props = defineProps({
+  filtersAdd: {
+    type: Number,
+    default: null 
+  }
+})
 
 const chartOptions = ref({
 	plugins: {
@@ -75,7 +81,7 @@ const colors = ['#83181b', '#a34245', '#c36b6f', '#e39499']
 
 onMounted(async () => {
 	try {
-		const response = await getProjectsByDualType()
+		const response = await getProjectsByDualType(props.filtersAdd)
 		const data = response.data.data || []
 
 		chartData.value = {

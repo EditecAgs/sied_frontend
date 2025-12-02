@@ -49,6 +49,13 @@ const loading = ref(true)
 const series = ref<any[]>([])
 const chartOptions = ref<any>({})
 
+const props = defineProps({
+  filtersAdd: {
+    type: Number,
+    default: null 
+  }
+})
+
 const menuItems = [
 	{ label: 'Exportar', onClick: () => console.log('Exportar clicado') },
 	{ label: 'Actualizar', onClick: () => fetchProjectsByArea() },
@@ -56,7 +63,7 @@ const menuItems = [
 
 const fetchProjectsByArea = async () => {
 	try {
-		const response: any = await getProjectsByArea(1)
+		const response: any = await getProjectsByArea(1, props.filtersAdd)
 		const data = response.data?.data || []
 
 		const areas = data.map(item => item.area_name)

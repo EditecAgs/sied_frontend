@@ -1,6 +1,7 @@
 export default [
     'home',
     'dashboard',
+    'DashboardInstitutions',
     'Profile',
     'FormElements',
     'BasicTables',
