@@ -127,9 +127,7 @@ watchEffect(() => {
 						<button
 							form="DocumentStatusForm"
 							class="flex items-center gap-2 px-6 py-2 rounded-lg bg-gradient-to-r from-brand-700 to-brand-900 text-white font-semibold hover:brightness-110 transition shadow-md"
-							:disabled="isLoading">
-							<span v-if="data.mode !== 'create'">💾</span>
-							<span>Guardar</span>
+							:disabled="isLoading">Guardar
 						</button>
 					</div>
 				</alv-form>

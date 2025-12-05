@@ -16,8 +16,11 @@ alvRoute.value = axios.defaults.baseURL + 'users'
 const alvMethod = ref('POST')
 
 const afterDone = (response) => {
-	console.log(response.data + ' guardado exitosamente')
-	emit('saved')
+	console.log('Institución guardada exitosamente:', response.data)
+
+	const newInstitution = response.data
+
+	emit('saved', newInstitution)
 	emit('close')
 }
 
@@ -28,6 +31,7 @@ const afterError = (error) => {
 		console.error('Error inesperado:', error)
 	}
 }
+
 // eslint-disable-next-line vue/valid-define-props
 const props = defineProps<{
 	show: boolean
@@ -38,7 +42,7 @@ const props = defineProps<{
 	}
 }>()
 
-const form = reactive({
+const baseForm = {
 	name: '',
 	street: '',
 	external_number: '',
@@ -53,7 +57,9 @@ const form = reactive({
 	id_academic_period: null,
 	image: '',
 	image_path: ''
-})
+}
+
+const form = reactive({ ...baseForm })
 
 const states = ref([])
 const municipalities = ref([])
@@ -111,7 +117,13 @@ onMounted(() => {
 	LoadDependence()
 })
 
-watchEffect(() => {
+const resetForm = () => {
+	Object.keys(baseForm).forEach(key => {
+		form[key] = baseForm[key]
+	})
+}
+
+const initModal = () => {
 	if (props.data.mode === 'edit' && props.data.pk !== null) {
 		alvRoute.value = `${axios.defaults.baseURL}institutions/${props.data.pk}`
 		alvMethod.value = 'PUT'
@@ -139,10 +151,32 @@ watchEffect(() => {
 	} else if (props.data.mode === 'create') {
 		alvRoute.value = `${axios.defaults.baseURL}institutions`
 		alvMethod.value = 'POST'
-		Object.keys(form).forEach(k => form[k] = (typeof form[k] === 'string' ? '' : null))
-		form.type = 'Pública'
+
+		setTimeout(() => {
+			resetForm()
+			if (subsystems.value.length > 0) {
+				form.id_subsystem = subsystems.value[0].id
+			}
+			if (academic_periods.value.length > 0) {
+				form.id_academic_period = academic_periods.value[0].id
+			}
+		}, 0)
+	}
+}
+
+
+watch(() => props.show, (newValue) => {
+	if (newValue) {
+		initModal()
 	}
 })
+
+
+watch(() => props.data, () => {
+	if (props.show) {
+		initModal()
+	}
+}, { deep: true })
 
 const onFileChange = (event: Event) => {
 	const target = event.target as HTMLInputElement

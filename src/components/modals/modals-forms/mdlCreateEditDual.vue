@@ -618,6 +618,30 @@ const imprimirYGuardar = async () => {
 	}
 };
 
+const filteredCareersForInstitution = computed(() => {
+	if (!formData.academico.id_institution) return [];
+
+	return careers.value.filter(career =>
+		career.id_institution === formData.academico.id_institution ||
+		career.institution_id === formData.academico.id_institution ||
+		career.institution?.id === formData.academico.id_institution
+	);
+});
+
+const filteredSpecialtiesForInstitution = computed(() => {
+	if (!formData.academico.id_institution) return [];
+
+	return specialties.value.filter(specialty => {
+		// Primero filtrar por carrera que pertenezca a la institución
+		const career = careers.value.find(c => c.id === specialty.id_career || c.id === specialty.career_id);
+		if (!career) return false;
+
+		// Verificar que la carrera pertenezca a la institución
+		return career.id_institution === formData.academico.id_institution ||
+			career.institution_id === formData.academico.id_institution;
+	});
+});
+
 const handleInstitutionSaved = () => {
 	closeModal();
 };
@@ -699,8 +723,8 @@ const closeModalAndReset = () => {
 							:key="'personal-step-' + personalStepKey"
 							ref="stepPersonalRef"
 							v-model="formData.personal"
-							:careers="careers"
-							:specialties="specialties"
+							:careers="filteredCareersForInstitution"
+							:specialties="filteredSpecialtiesForInstitution"
 							:institution="{
 								id: formData.academico.id_institution,
 								name: institutions.find(i => i.id === formData.academico.id_institution)?.name || ''

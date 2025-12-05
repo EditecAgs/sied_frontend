@@ -89,10 +89,8 @@ watchEffect(() => {
 	}
 })
 
-const afterDone = (response: any) => {
-	console.log(response.data + ' guardado exitosamente')
-	errorMessage.value = ''
-	emit('saved')
+const afterDone = (response) => {
+	emit('saved', response.data)
 	emit('close')
 }
 

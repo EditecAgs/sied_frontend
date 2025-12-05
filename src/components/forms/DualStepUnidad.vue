@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed, defineProps, defineEmits, watch, onMounted } from 'vue';
+import { ref, computed, defineProps, defineEmits, watch, onMounted, nextTick } from 'vue';
 import Datepicker from '@vuepic/vue-datepicker';
 import '@vuepic/vue-datepicker/dist/main.css';
 import 'floating-vue/dist/style.css';
@@ -44,7 +44,7 @@ const errors = ref({});
 const showValidationErrors = ref(false);
 const hasAttemptedSubmit = ref(false);
 
-const allDualArea = ref(props.areas || [])
+// Campos de búsqueda y dropdowns
 const searchArea = ref('');
 const showAreaDropdown = ref(false);
 const areaDropdownRef = ref(null);
@@ -68,6 +68,7 @@ const dualTypeDropdownRef = ref(null);
 const period_start = ref(props.modelValue.period_start ? new Date(props.modelValue.period_start) : null);
 const period_end = ref(props.modelValue.period_end ? new Date(props.modelValue.period_end) : null);
 
+// Campos para microcredenciales, certificaciones y diplomas
 const allMicroCredentials = ref(props.microCredentials || []);
 const selectedMicroCredentials = ref([]);
 const searchMicro = ref('');
@@ -80,6 +81,12 @@ const searchCertification = ref('');
 const showCertificationDropdown = ref(false);
 const certificationDropdownRef = ref(null);
 
+const allDiplomas = ref(props.diplomas || []);
+const selectedDiplomas = ref([]);
+const searchDiploma = ref('');
+const showDiplomaDropdown = ref(false);
+const diplomaDropdownRef = ref(null);
+
 // Nombres de asesores siempre editables
 const internalAdvisorName = ref(props.modelValue.internal_advisor_name || '');
 const externalAdvisorName = ref(props.modelValue.external_advisor_name || '');
@@ -88,12 +95,14 @@ const externalAdvisorName = ref(props.modelValue.external_advisor_name || '');
 const internalAdvisorQualification = ref(props.modelValue.internal_advisor_qualification || null);
 const externalAdvisorQualification = ref(props.modelValue.external_advisor_qualification || null);
 
-// Computed para controlar la visibilidad de microcredenciales, certificados y diplomas
+const isAmountDisabled = ref(false);
+const amountField = ref(null);
+
+// Computed properties
 const showCredentialsSection = computed(() => {
 	return props.modelValue.is_concluded === 1;
 });
 
-// Computed para controlar si las calificaciones están habilitadas
 const areQualificationsEnabled = computed(() => {
 	return props.modelValue.is_concluded === 1;
 });
@@ -114,14 +123,69 @@ const averageQualification = computed(() => {
 	return '';
 });
 
-const allDiplomas = ref(props.diplomas || []);
-const selectedDiplomas = ref([]);
-const searchDiploma = ref('');
-const showDiplomaDropdown = ref(false);
-const diplomaDropdownRef = ref(null);
+const filteredAreas = computed(() =>
+	!searchArea.value ? props.areas || [] : (props.areas || []).filter(a => a.name.toLowerCase().includes(searchArea.value.toLowerCase()))
+);
 
-const isAmountDisabled = ref(false);
-const amountField = ref(null);
+const filteredOrganizations = computed(() =>
+	!searchOrganization.value ? props.organizations || [] : (props.organizations || []).filter(o => o.name.toLowerCase().includes(searchOrganization.value.toLowerCase()))
+);
+
+const filteredStatuses = computed(() =>
+	!searchStatus.value ? props.agreementStatuses || [] : (props.agreementStatuses || []).filter(s => s.name.toLowerCase().includes(searchStatus.value.toLowerCase()))
+);
+
+const filteredSupports = computed(() =>
+	!searchSupport.value ? props.supportTypes || [] : (props.supportTypes || []).filter(s => s.name.toLowerCase().includes(searchSupport.value.toLowerCase()))
+);
+
+const filteredDualTypes = computed(() =>
+	!searchDualType.value ? props.dualTypes || [] : (props.dualTypes || []).filter(d => d.name.toLowerCase().includes(searchDualType.value.toLowerCase()))
+);
+
+const firstThreeDualTypes = computed(() => filteredDualTypes.value.slice(0, 3));
+const remainingDualTypes = computed(() => filteredDualTypes.value.slice(3));
+
+const isHiredDisabled = computed(() => {
+	return props.modelValue.is_concluded !== 1;
+});
+
+const bothQualificationsPresent = computed(() => {
+	return internalAdvisorQualification.value !== null &&
+		internalAdvisorQualification.value !== '' &&
+		externalAdvisorQualification.value !== null &&
+		externalAdvisorQualification.value !== '';
+});
+
+const filteredMicro = computed(() =>
+	!searchMicro.value
+		? allMicroCredentials.value.filter(m => !selectedMicroCredentials.value.some(s => s.id === m.id))
+		: allMicroCredentials.value.filter(
+			m =>
+				m.name.toLowerCase().includes(searchMicro.value.toLowerCase()) &&
+				!selectedMicroCredentials.value.some(s => s.id === m.id)
+		)
+);
+
+const filteredCertifications = computed(() =>
+	!searchCertification.value
+		? allCertifications.value.filter(c => !selectedCertifications.value.some(s => s.id === c.id))
+		: allCertifications.value.filter(
+			c =>
+				c.name.toLowerCase().includes(searchCertification.value.toLowerCase()) &&
+				!selectedCertifications.value.some(s => s.id === c.id)
+		)
+);
+
+const filteredDiplomas = computed(() =>
+	!searchDiploma.value
+		? allDiplomas.value.filter(d => !selectedDiplomas.value.some(s => s.id === d.id))
+		: allDiplomas.value.filter(
+			d =>
+				d.name.toLowerCase().includes(searchDiploma.value.toLowerCase()) &&
+				!selectedDiplomas.value.some(s => s.id === d.id)
+		)
+);
 
 const fieldHelpTexts = {
 	name_report: "Escribe el nombre específico del proyecto o actividad dual que se está registrando (ejemplo: 'Laboratorio web de seguridad y privacidad').",
@@ -203,6 +267,7 @@ const resetValidation = () => {
 	errors.value = {};
 };
 
+// Watchers
 watch(() => props.modelValue.max_qualification, (newScale, oldScale) => {
 	if (newScale !== oldScale) {
 		internalAdvisorQualification.value = null;
@@ -212,25 +277,6 @@ watch(() => props.modelValue.max_qualification, (newScale, oldScale) => {
 		update('qualification', null);
 	}
 });
-
-const validateQualification = (value, fieldName) => {
-	if (value === null || value === '' || value === undefined) return true;
-
-	const maxScale = props.modelValue.max_qualification;
-	if (!maxScale) {
-		errors.value[fieldName] = 'Primero seleccione la escala de calificación';
-		return false;
-	}
-
-	const numValue = Number(value);
-	if (numValue < 0 || numValue > maxScale) {
-		errors.value[fieldName] = `La calificación debe estar entre 0 y ${maxScale}`;
-		return false;
-	}
-
-	delete errors.value[fieldName];
-	return true;
-};
 
 watch(internalAdvisorQualification, (newValue) => {
 	if (newValue !== null && newValue !== '') {
@@ -271,26 +317,10 @@ watch(externalAdvisorQualification, (newQual) => {
 		update('external_advisor_qualification', newQual);
 		updateQualificationAverage();
 	} else if (!areQualificationsEnabled.value && newQual !== null && newQual !== '') {
-		// Resetear si se intenta llenar cuando no está concluido
 		externalAdvisorQualification.value = null;
 		update('external_advisor_qualification', null);
 	}
 });
-
-const updateQualificationAverage = () => {
-	const intQ = Number(internalAdvisorQualification.value) || 0;
-	const extQ = Number(externalAdvisorQualification.value) || 0;
-
-	if (internalAdvisorQualification.value != null &&
-		externalAdvisorQualification.value != null &&
-		internalAdvisorQualification.value !== '' &&
-		externalAdvisorQualification.value !== '') {
-		const avg = ((intQ + extQ) / 2).toFixed(2);
-		update('qualification', Number(avg));
-	} else {
-		update('qualification', null);
-	}
-};
 
 watch(() => props.modelValue.economic_support, (newSupportId, oldSupportId) => {
 	if (newSupportId === 1) {
@@ -313,6 +343,71 @@ watch(() => props.supportTypes, (newTypes) => {
 	}
 });
 
+watch(period_start, (val) => {
+	if (val) update('period_start', new Date(val).toISOString().slice(0, 10));
+});
+
+watch(period_end, (val) => {
+	if (val) {
+		update('period_end', new Date(val).toISOString().slice(0, 10));
+	} else {
+		update('period_end', null);
+	}
+});
+
+watch(searchDualType, (val) => {
+	if (!val) update('dual_type_id', '');
+});
+
+watch(() => props.modelValue.max_qualification, (newVal) => {
+	maxQualification.value = newVal != null ? newVal.toString() : '';
+});
+
+watch(maxQualification, (newVal) => {
+	update('max_qualification', newVal ? Number(newVal) : '');
+});
+
+watch(() => props.modelValue.is_concluded, (newVal) => {
+	if (newVal === 0 && props.modelValue.is_hired === 1) {
+		update('is_hired', 0);
+	}
+});
+
+// Funciones
+const validateQualification = (value, fieldName) => {
+	if (value === null || value === '' || value === undefined) return true;
+
+	const maxScale = props.modelValue.max_qualification;
+	if (!maxScale) {
+		errors.value[fieldName] = 'Primero seleccione la escala de calificación';
+		return false;
+	}
+
+	const numValue = Number(value);
+	if (numValue < 0 || numValue > maxScale) {
+		errors.value[fieldName] = `La calificación debe estar entre 0 y ${maxScale}`;
+		return false;
+	}
+
+	delete errors.value[fieldName];
+	return true;
+};
+
+const updateQualificationAverage = () => {
+	const intQ = Number(internalAdvisorQualification.value) || 0;
+	const extQ = Number(externalAdvisorQualification.value) || 0;
+
+	if (internalAdvisorQualification.value != null &&
+		externalAdvisorQualification.value != null &&
+		internalAdvisorQualification.value !== '' &&
+		externalAdvisorQualification.value !== '') {
+		const avg = ((intQ + extQ) / 2).toFixed(2);
+		update('qualification', Number(avg));
+	} else {
+		update('qualification', null);
+	}
+};
+
 const initializeMicroCredentials = () => {
 	selectedMicroCredentials.value = (props.modelValue.micro_credentials || [])
 		.map(id => allMicroCredentials.value.find(m => Number(m.id) === Number(id)))
@@ -331,240 +426,8 @@ const initializeDiplomas = () => {
 		.filter(Boolean);
 };
 
-const handleSavedOrganization = async () => {
-	try {
-		const res = await getOrganizations();
-		emit('update:organizations', res.data);
-
-		const newOrganization = res.data?.[res.data.length - 1];
-		if (newOrganization) {
-			update('id_organization', newOrganization.id);
-		}
-
-		closeModal();
-		setTimeout(() => {
-			showOrganizationDropdown.value = true;
-			searchOrganization.value = '';
-		}, 100);
-
-	} catch (error) {
-		console.error('Error al recargar organizaciones:', error);
-		closeModal();
-	}
-};
-
-const handleSavedArea = async () => {
-	try {
-		const res = await getDualAreas();
-		emit('update:dualAreas', res.data);
-		allDualArea.value = res.data;
-
-		const newArea = res.data?.[res.data.length - 1];
-		if (newArea) {
-			update('id_dual_area', newArea.id);
-		}
-
-		closeAreaModal();
-		setTimeout(() => {
-			showAreaDropdown.value = true;
-			searchArea.value = newArea?.name || '';
-		}, 100);
-
-	} catch (error) {
-		console.error('Error al recargar áreas duales:', error);
-		closeAreaModal();
-	}
-};
-
-const handleSavedMicroCredential = async () => {
-	try {
-		const res = await getMicroCredentials();
-		emit('update:microCredentials', res.data);
-		allMicroCredentials.value = res.data;
-		closeMicroModal();
-		setTimeout(() => {
-			showMicroDropdown.value = true;
-			searchMicro.value = '';
-		}, 100);
-
-	} catch (error) {
-		console.error('Error al recargar microcredenciales:', error);
-		closeMicroModal();
-	}
-};
-
-const handleSavedCertification = async () => {
-	try {
-		const res = await getCertifications();
-		emit('update:certifications', res.data);
-		allCertifications.value = res.data;
-		closeCertificationModal();
-		setTimeout(() => {
-			showCertificationDropdown.value = true;
-			searchCertification.value = '';
-		}, 100);
-
-	} catch (error) {
-		console.error('Error al recargar certificaciones:', error);
-		closeCertificationModal();
-	}
-};
-
-const handleSavedDiploma = async () => {
-	try {
-		const res = await getDiplomas();
-		emit('update:diplomas', res.data);
-		allDiplomas.value = res.data;
-		closeDiplomaModal();
-		setTimeout(() => {
-			showDiplomaDropdown.value = true;
-			searchDiploma.value = '';
-		}, 100);
-
-	} catch (error) {
-		console.error('Error al recargar diplomados:', error);
-		closeDiplomaModal();
-	}
-};
-
-const handleSavedDualType = async () => {
-	try {
-		const res = await getDualTypes();
-		emit('update:dualTypes', res.data);
-
-		const newDualType = res.data?.[res.data.length - 1];
-		if (newDualType) {
-			update('dual_type_id', newDualType.id);
-		}
-
-		closeDualTypeModal();
-		setTimeout(() => {
-			showDualTypeDropdown.value = true;
-			searchDualType.value = newDualType?.name || '';
-		}, 100);
-
-	} catch (error) {
-		console.error('Error al recargar tipos duales:', error);
-		closeDualTypeModal();
-	}
-};
-
-const initializeSearchValues = () => {
-	if (props.modelValue.id_dual_area) {
-		const area = allDualArea.value?.find(a => a.id === props.modelValue.id_dual_area);
-		searchArea.value = area?.name || '';
-	}
-	if (props.modelValue.id_organization) {
-		const org = props.organizations?.find(o => o.id === props.modelValue.id_organization);
-		searchOrganization.value = org?.name || '';
-	}
-	if (props.modelValue.status_document) {
-		const status = props.agreementStatuses?.find(s => s.id === props.modelValue.status_document);
-		searchStatus.value = status?.name || '';
-	}
-	if (props.modelValue.economic_support) {
-		const support = props.supportTypes?.find(s => s.id === props.modelValue.economic_support);
-		searchSupport.value = support?.name || '';
-
-		if (props.modelValue.economic_support === 1) {
-			isAmountDisabled.value = true;
-			if (props.modelValue.amount !== 0) {
-				update('amount', 0);
-			}
-		} else {
-			isAmountDisabled.value = false;
-		}
-	}
-	if (props.modelValue.dual_type_id) {
-		const dualType = props.dualTypes?.find(d => d.id === props.modelValue.dual_type_id);
-		searchDualType.value = dualType?.name || '';
-	}
-	if (props.modelValue.max_qualification) {
-		maxQualification.value = props.modelValue.max_qualification.toString();
-	}
-
-	initializeMicroCredentials();
-	initializeCertifications();
-	initializeDiplomas();
-};
-
-const filteredAreas = computed(() =>
-	!searchArea.value ? allDualArea.value || [] : (allDualArea.value || []).filter(a => a.name.toLowerCase().includes(searchArea.value.toLowerCase()))
-);
-
-const filteredOrganizations = computed(() =>
-	!searchOrganization.value ? props.organizations || [] : (props.organizations || []).filter(o => o.name.toLowerCase().includes(searchOrganization.value.toLowerCase()))
-);
-
-const filteredStatuses = computed(() =>
-	!searchStatus.value ? props.agreementStatuses || [] : (props.agreementStatuses || []).filter(s => s.name.toLowerCase().includes(searchStatus.value.toLowerCase()))
-);
-
-const filteredSupports = computed(() =>
-	!searchSupport.value ? props.supportTypes || [] : (props.supportTypes || []).filter(s => s.name.toLowerCase().includes(searchSupport.value.toLowerCase()))
-);
-
-const filteredDualTypes = computed(() =>
-	!searchDualType.value ? props.dualTypes || [] : (props.dualTypes || []).filter(d => d.name.toLowerCase().includes(searchDualType.value.toLowerCase()))
-);
-
-const firstThreeDualTypes = computed(() => filteredDualTypes.value.slice(0, 3));
-const remainingDualTypes = computed(() => filteredDualTypes.value.slice(3));
-
-const isHiredDisabled = computed(() => {
-	return props.modelValue.is_concluded !== 1;
-});
-
-const bothQualificationsPresent = computed(() => {
-	return internalAdvisorQualification.value !== null &&
-		internalAdvisorQualification.value !== '' &&
-		externalAdvisorQualification.value !== null &&
-		externalAdvisorQualification.value !== '';
-});
-
-const filteredMicro = computed(() =>
-	!searchMicro.value
-		? allMicroCredentials.value.filter(m => !selectedMicroCredentials.value.some(s => s.id === m.id))
-		: allMicroCredentials.value.filter(
-			m =>
-				m.name.toLowerCase().includes(searchMicro.value.toLowerCase()) &&
-				!selectedMicroCredentials.value.some(s => s.id === m.id)
-		)
-);
-
-const filteredCertifications = computed(() =>
-	!searchCertification.value
-		? allCertifications.value.filter(c => !selectedCertifications.value.some(s => s.id === c.id))
-		: allCertifications.value.filter(
-			c =>
-				c.name.toLowerCase().includes(searchCertification.value.toLowerCase()) &&
-				!selectedCertifications.value.some(s => s.id === c.id)
-		)
-);
-
-const filteredDiplomas = computed(() =>
-	!searchDiploma.value
-		? allDiplomas.value.filter(d => !selectedDiplomas.value.some(s => s.id === d.id))
-		: allDiplomas.value.filter(
-			d =>
-				d.name.toLowerCase().includes(searchDiploma.value.toLowerCase()) &&
-				!selectedDiplomas.value.some(s => s.id === d.id)
-		)
-);
-
-const handleClickOutside = (event) => {
-	if (areaDropdownRef.value && !areaDropdownRef.value.contains(event.target)) showAreaDropdown.value = false;
-	if (organizationDropdownRef.value && !organizationDropdownRef.value.contains(event.target)) showOrganizationDropdown.value = false;
-	if (statusDropdownRef.value && !statusDropdownRef.value.contains(event.target)) showStatusDropdown.value = false;
-	if (supportDropdownRef.value && !supportDropdownRef.value.contains(event.target)) showSupportDropdown.value = false;
-	if (dualTypeDropdownRef.value && !dualTypeDropdownRef.value.contains(event.target)) showDualTypeDropdown.value = false;
-	if (microDropdownRef.value && !microDropdownRef.value.contains(event.target)) showMicroDropdown.value = false;
-	if (certificationDropdownRef.value && !certificationDropdownRef.value.contains(event.target)) showCertificationDropdown.value = false;
-	if (diplomaDropdownRef.value && !diplomaDropdownRef.value.contains(event.target)) showDiplomaDropdown.value = false;
-};
-
+// Función update - REVISADA para área y organización
 const update = (field, value) => {
-	// Si son campos de calificación y el proyecto no está concluido, no actualizar
 	if ((field === 'internal_advisor_qualification' || field === 'external_advisor_qualification') &&
 		!areQualificationsEnabled.value) {
 		return;
@@ -579,21 +442,26 @@ const update = (field, value) => {
 	emit('update:modelValue', { ...props.modelValue, [field]: value });
 	if (errors.value[field]) errors.value[field] = '';
 
+	// Lógica para Área (igual que Organización)
 	if (field === 'id_dual_area') {
 		const selected = props.areas?.find(a => a.id === value);
 		searchArea.value = selected?.name || '';
 		showAreaDropdown.value = false;
 	}
+
+	// Lógica para Organización
 	if (field === 'id_organization') {
 		const selected = props.organizations?.find(o => o.id === value);
 		searchOrganization.value = selected?.name || '';
 		showOrganizationDropdown.value = false;
 	}
+
 	if (field === 'status_document') {
 		const selected = props.agreementStatuses?.find(s => s.id === value);
 		searchStatus.value = selected?.name || '';
 		showStatusDropdown.value = false;
 	}
+
 	if (field === 'economic_support') {
 		const selected = props.supportTypes?.find(s => s.id === value);
 		searchSupport.value = selected?.name || '';
@@ -606,11 +474,278 @@ const update = (field, value) => {
 			isAmountDisabled.value = false;
 		}
 	}
+
 	if (field === 'dual_type_id') {
 		const selected = props.dualTypes?.find(d => d.id === value);
 		searchDualType.value = selected?.name || '';
 		showDualTypeDropdown.value = false;
 	}
+};
+
+// Handlers para guardar nuevos registros
+const handleSavedOrganization = async (newOrganization) => {
+	try {
+		const res = await getOrganizations();
+		emit('update:organizations', res.data);
+
+		if (newOrganization) {
+			const justCreatedOrg = res.data.find(
+				org => org.id === newOrganization.id || org.name === newOrganization.name
+			);
+
+			if (justCreatedOrg) {
+				await nextTick();
+
+				update('id_organization', justCreatedOrg.id);
+				searchOrganization.value = justCreatedOrg.name;
+
+				showOrganizationDropdown.value = true;
+
+				setTimeout(() => {
+					showOrganizationDropdown.value = false;
+				}, 1500);
+			}
+		}
+
+		closeModal();
+
+	} catch (error) {
+		console.error('Error al recargar organizaciones:', error);
+		closeModal();
+	}
+};
+const handleSavedArea = async (newArea) => {
+	try {
+		console.log('DEBUG - newArea recibido:', newArea);
+
+		const res = await getDualAreas();
+		emit('update:dualAreas', res.data);
+
+		let justCreatedArea = null;
+
+		if (newArea && newArea.id) {
+			justCreatedArea = res.data.find(area => Number(area.id) === Number(newArea.id));
+		}
+
+		if (!justCreatedArea && newArea && newArea.name) {
+			const matchingAreas = res.data
+				.filter(area => area.name === newArea.name)
+				.sort((a, b) => b.id - a.id);
+
+			if (matchingAreas.length > 0) {
+				justCreatedArea = matchingAreas[0];
+			}
+		}
+
+		console.log('DEBUG - Área encontrada:', justCreatedArea);
+
+		if (justCreatedArea) {
+			await nextTick();
+			update('id_dual_area', justCreatedArea.id);
+			searchArea.value = justCreatedArea.name;
+			showAreaDropdown.value = true;
+			setTimeout(() => { showAreaDropdown.value = false; }, 1500);
+		} else {
+			console.log('DEBUG - No se encontró el área recién creada');
+		}
+
+		closeAreaModal();
+	} catch (error) {
+		console.error('Error al recargar áreas duales:', error);
+		closeAreaModal();
+	}
+};
+
+const handleSavedMicroCredential = async (newMicroCredential) => {
+	try {
+		const res = await getMicroCredentials();
+		emit('update:microCredentials', res.data);
+		allMicroCredentials.value = res.data;
+
+		if (newMicroCredential) {
+			const justCreatedMicro = res.data.find(
+				micro => micro.id === newMicroCredential.id || micro.name === newMicroCredential.name
+			);
+
+			if (justCreatedMicro) {
+				await nextTick();
+
+				if (!selectedMicroCredentials.value.some(m => m.id === justCreatedMicro.id)) {
+					selectedMicroCredentials.value.push(justCreatedMicro);
+					emit('update:modelValue', {
+						...props.modelValue,
+						micro_credentials: selectedMicroCredentials.value.map(m => Number(m.id))
+					});
+				}
+
+				showMicroDropdown.value = true;
+
+				setTimeout(() => {
+					showMicroDropdown.value = false;
+				}, 1500);
+			}
+		}
+
+		closeMicroModal();
+
+	} catch (error) {
+		console.error('Error al recargar microcredenciales:', error);
+		closeMicroModal();
+	}
+};
+
+const handleSavedCertification = async (newCertification) => {
+	try {
+		const res = await getCertifications();
+		emit('update:certifications', res.data);
+		allCertifications.value = res.data;
+
+		if (newCertification) {
+			const justCreatedCert = res.data.find(
+				cert => cert.id === newCertification.id || cert.name === newCertification.name
+			);
+
+			if (justCreatedCert) {
+				await nextTick();
+
+				if (!selectedCertifications.value.some(c => c.id === justCreatedCert.id)) {
+					selectedCertifications.value.push(justCreatedCert);
+					emit('update:modelValue', {
+						...props.modelValue,
+						certifications: selectedCertifications.value.map(c => Number(c.id))
+					});
+				}
+
+				showCertificationDropdown.value = true;
+
+				setTimeout(() => {
+					showCertificationDropdown.value = false;
+				}, 1500);
+			}
+		}
+
+		closeCertificationModal();
+
+	} catch (error) {
+		console.error('Error al recargar certificaciones:', error);
+		closeCertificationModal();
+	}
+};
+
+const handleSavedDiploma = async (newDiploma) => {
+	try {
+		const res = await getDiplomas();
+		emit('update:diplomas', res.data);
+		allDiplomas.value = res.data;
+
+		if (newDiploma) {
+			const justCreatedDiploma = res.data.find(
+				diploma => diploma.id === newDiploma.id || diploma.name === newDiploma.name
+			);
+
+			if (justCreatedDiploma) {
+				await nextTick();
+
+				if (!selectedDiplomas.value.some(d => d.id === justCreatedDiploma.id)) {
+					selectedDiplomas.value.push(justCreatedDiploma);
+					emit('update:modelValue', {
+						...props.modelValue,
+						diplomas: selectedDiplomas.value.map(d => Number(d.id))
+					});
+				}
+
+				showDiplomaDropdown.value = true;
+
+				setTimeout(() => {
+					showDiplomaDropdown.value = false;
+				}, 1500);
+			}
+		}
+
+		closeDiplomaModal();
+
+	} catch (error) {
+		console.error('Error al recargar diplomados:', error);
+		closeDiplomaModal();
+	}
+};
+
+const handleSavedDualType = async (newDualType) => {
+	try {
+		const res = await getDualTypes();
+		emit('update:dualTypes', res.data);
+
+		if (newDualType) {
+			const justCreatedDualType = res.data.find(
+				type => type.id === newDualType.id || type.name === newDualType.name
+			);
+
+			if (justCreatedDualType) {
+				await nextTick();
+
+				update('dual_type_id', justCreatedDualType.id);
+				searchDualType.value = justCreatedDualType.name;
+
+				showDualTypeDropdown.value = true;
+
+				setTimeout(() => {
+					showDualTypeDropdown.value = false;
+				}, 1500);
+			}
+		}
+
+		closeDualTypeModal();
+
+	} catch (error) {
+		console.error('Error al recargar tipos duales:', error);
+		closeDualTypeModal();
+	}
+};
+
+const initializeSearchValues = () => {
+	// Área
+	if (props.modelValue.id_dual_area) {
+		const area = props.areas?.find(a => a.id === props.modelValue.id_dual_area);
+		searchArea.value = area?.name || '';
+	}
+
+	// Organización
+	if (props.modelValue.id_organization) {
+		const org = props.organizations?.find(o => o.id === props.modelValue.id_organization);
+		searchOrganization.value = org?.name || '';
+	}
+
+	if (props.modelValue.status_document) {
+		const status = props.agreementStatuses?.find(s => s.id === props.modelValue.status_document);
+		searchStatus.value = status?.name || '';
+	}
+
+	if (props.modelValue.economic_support) {
+		const support = props.supportTypes?.find(s => s.id === props.modelValue.economic_support);
+		searchSupport.value = support?.name || '';
+
+		if (props.modelValue.economic_support === 1) {
+			isAmountDisabled.value = true;
+			if (props.modelValue.amount !== 0) {
+				update('amount', 0);
+			}
+		} else {
+			isAmountDisabled.value = false;
+		}
+	}
+
+	if (props.modelValue.dual_type_id) {
+		const dualType = props.dualTypes?.find(d => d.id === props.modelValue.dual_type_id);
+		searchDualType.value = dualType?.name || '';
+	}
+
+	if (props.modelValue.max_qualification) {
+		maxQualification.value = props.modelValue.max_qualification.toString();
+	}
+
+	initializeMicroCredentials();
+	initializeCertifications();
+	initializeDiplomas();
 };
 
 const addMicroCredential = (micro) => {
@@ -673,40 +808,16 @@ const removeDiploma = (diploma) => {
 	});
 };
 
-watch(period_start, (val) => {
-	if (val) update('period_start', new Date(val).toISOString().slice(0, 10));
-});
-
-watch(period_end, (val) => {
-	if (val) {
-		update('period_end', new Date(val).toISOString().slice(0, 10));
-	} else {
-		update('period_end', null);
-	}
-});
-
-watch(searchDualType, (val) => {
-	if (!val) update('dual_type_id', '');
-});
-
-watch(() => props.modelValue.max_qualification, (newVal) => {
-	maxQualification.value = newVal != null ? newVal.toString() : '';
-});
-
-watch(maxQualification, (newVal) => {
-	update('max_qualification', newVal ? Number(newVal) : '');
-});
-
-watch(() => props.modelValue.is_concluded, (newVal) => {
-	if (newVal === 0 && props.modelValue.is_hired === 1) {
-		update('is_hired', 0);
-	}
-});
-
-watch(() => props.areas, (newAreas) => {
-	allDualArea.value = newAreas || [];
-}, { immediate: true });
-
+const handleClickOutside = (event) => {
+	if (areaDropdownRef.value && !areaDropdownRef.value.contains(event.target)) showAreaDropdown.value = false;
+	if (organizationDropdownRef.value && !organizationDropdownRef.value.contains(event.target)) showOrganizationDropdown.value = false;
+	if (statusDropdownRef.value && !statusDropdownRef.value.contains(event.target)) showStatusDropdown.value = false;
+	if (supportDropdownRef.value && !supportDropdownRef.value.contains(event.target)) showSupportDropdown.value = false;
+	if (dualTypeDropdownRef.value && !dualTypeDropdownRef.value.contains(event.target)) showDualTypeDropdown.value = false;
+	if (microDropdownRef.value && !microDropdownRef.value.contains(event.target)) showMicroDropdown.value = false;
+	if (certificationDropdownRef.value && !certificationDropdownRef.value.contains(event.target)) showCertificationDropdown.value = false;
+	if (diplomaDropdownRef.value && !diplomaDropdownRef.value.contains(event.target)) showDiplomaDropdown.value = false;
+};
 
 const validate = () => {
 	console.log('=== INICIANDO VALIDACIÓN UNIDAD DUAL ===');
@@ -736,14 +847,14 @@ const validate = () => {
 		if (!props.modelValue.period_end) {
 			errors.value.period_end = 'La fecha de fin es obligatoria cuando el proyecto está concluido';
 			isValid = false;
-			console.log('❌ Fecha de fin requerida para proyecto concluido');
+			console.log('Fecha de fin requerida para proyecto concluido');
 		}
 	}
 
 	if (props.modelValue.amount < 0) {
 		errors.value.amount = 'El monto debe ser mayor o igual a 0';
 		isValid = false;
-		console.log('❌ Monto negativo');
+		console.log('Monto negativo');
 	}
 
 	const start = props.modelValue.period_start ? new Date(props.modelValue.period_start) : null;
@@ -752,20 +863,20 @@ const validate = () => {
 	if (start && end && start > end) {
 		errors.value.period_end = 'La fecha de fin debe ser posterior a la fecha de inicio';
 		isValid = false;
-		console.log('❌ Fechas inválidas');
+		console.log('Fechas inválidas');
 	}
 
 	if (internalAdvisorQualification.value !== null && internalAdvisorQualification.value !== '') {
 		if (!validateQualification(internalAdvisorQualification.value, 'internal_advisor_qualification')) {
 			isValid = false;
-			console.log('❌ Calificación interna inválida');
+			console.log('Calificación interna inválida');
 		}
 	}
 
 	if (externalAdvisorQualification.value !== null && externalAdvisorQualification.value !== '') {
 		if (!validateQualification(externalAdvisorQualification.value, 'external_advisor_qualification')) {
 			isValid = false;
-			console.log('❌ Calificación externa inválida');
+			console.log('Calificación externa inválida');
 		}
 	}
 
@@ -887,6 +998,7 @@ onMounted(() => {
 						<p v-if="errors.name_report" class="error-msg">{{ errors.name_report }}</p>
 					</div>
 
+					<!-- CAMPO DE ÁREA (REESCRITO) -->
 					<div ref="areaDropdownRef">
 						<label class="label flex items-center gap-1">
 							Clasificación General del Proyecto Dual
@@ -1550,6 +1662,7 @@ onMounted(() => {
 				</div>
 			</div>
 
+			<!-- Modals -->
 			<mdl-organization
 				:show="showModal" :data="modalData"
 				@close="closeModal" @saved="handleSavedOrganization" />

@@ -57,7 +57,6 @@ import { defineProps, defineEmits, reactive, ref, watchEffect } from 'vue';
 import axios from 'axios';
 import { showDualType } from '../../../services/dual_projects/dual-types';
 
-// emits
 const emit = defineEmits(['close', 'saved']);
 
 const isLoading = ref(false);
@@ -101,8 +100,8 @@ watchEffect(() => {
 	}
 });
 
-const afterDone = () => {
-	emit('saved');
+const afterDone = (response) => {
+	emit('saved', response.data);
 	emit('close');
 };
 
