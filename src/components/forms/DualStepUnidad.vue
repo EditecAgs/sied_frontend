@@ -1040,7 +1040,7 @@ onMounted(() => {
 
 					<div ref="dualTypeDropdownRef" class="pt-3">
 						<label class="label flex items-center gap-1">
-							Tipo de Educación dual
+							Tipo de Educación Dual
 							<span class="text-red-500">*</span>
 							<button
 								v-tooltip="fieldHelpTexts.dual_type_id"

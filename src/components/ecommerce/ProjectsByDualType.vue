@@ -4,10 +4,10 @@
                p-6 sm:p-8 shadow-md dark:border-gray-700 dark:bg-gray-900/90">
 		<div class="mb-6">
 			<h3 class="text-lg font-semibold text-gray-600 dark:text-white">
-				Proyectos por Tipo de Modelo Dual
+				Proyectos por Tipo de Educacón Dual
 			</h3>
 			<p class="mt-1 text-gray-500 text-sm dark:text-gray-400">
-				Distribución de proyectos según el tipo de modelo dual registrada
+				Distribución de proyectos según el tipo de edicuación dual registrada
 			</p>
 		</div>
 
@@ -59,14 +59,14 @@ const chartData = ref({
 const props = defineProps({
   filtersAdd: {
     type: Number,
-    default: null 
+    default: null
   }
 })
 
 const chartOptions = ref({
 	plugins: {
 		legend: {
-			display: false, 
+			display: false,
 		},
 	},
 	scales: {
@@ -77,7 +77,7 @@ const chartOptions = ref({
 	},
 })
 
-const colors = ['#83181b', '#a34245', '#c36b6f', '#e39499']
+const colors = ['#83181b', '#a34245', '#c36b6f','#A78312','#B8941F','#C9A236', '#D9B95B', '#E6C871',]
 
 onMounted(async () => {
 	try {
@@ -88,7 +88,7 @@ onMounted(async () => {
 			labels: data.map((item) => item.dual_type),
 			datasets: [
 				{
-					label: 'Proyectos por tipo dual',
+					label: 'Proyectos tipo de educación dual',
 					data: data.map((item) => item.total),
 					backgroundColor: colors.slice(0, data.length),
 					borderWidth: 2,

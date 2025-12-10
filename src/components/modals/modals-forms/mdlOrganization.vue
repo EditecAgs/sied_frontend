@@ -388,7 +388,6 @@ const afterError = (res: any) => {
 													'text-gray-700': !sector.isHighlighted
 												}"
 												@click="selectSector(sector)">
-												<!-- Mostrar el nombre formateado con (SM) para sectores destacados -->
 												<span v-if="sector.isHighlighted" class="font-bold text-brand-700">
 													{{ sector.displayName }}
 												</span>
