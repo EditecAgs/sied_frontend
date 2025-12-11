@@ -44,7 +44,6 @@ const errors = ref({});
 const showValidationErrors = ref(false);
 const hasAttemptedSubmit = ref(false);
 
-// Campos de búsqueda y dropdowns
 const searchArea = ref('');
 const showAreaDropdown = ref(false);
 const areaDropdownRef = ref(null);
@@ -68,7 +67,6 @@ const dualTypeDropdownRef = ref(null);
 const period_start = ref(props.modelValue.period_start ? new Date(props.modelValue.period_start) : null);
 const period_end = ref(props.modelValue.period_end ? new Date(props.modelValue.period_end) : null);
 
-// Campos para microcredenciales, certificaciones y diplomas
 const allMicroCredentials = ref(props.microCredentials || []);
 const selectedMicroCredentials = ref([]);
 const searchMicro = ref('');
@@ -87,18 +85,15 @@ const searchDiploma = ref('');
 const showDiplomaDropdown = ref(false);
 const diplomaDropdownRef = ref(null);
 
-// Nombres de asesores siempre editables
 const internalAdvisorName = ref(props.modelValue.internal_advisor_name || '');
 const externalAdvisorName = ref(props.modelValue.external_advisor_name || '');
 
-// Calificaciones solo cuando el proyecto esté concluido
 const internalAdvisorQualification = ref(props.modelValue.internal_advisor_qualification || null);
 const externalAdvisorQualification = ref(props.modelValue.external_advisor_qualification || null);
 
 const isAmountDisabled = ref(false);
 const amountField = ref(null);
 
-// Computed properties
 const showCredentialsSection = computed(() => {
 	return props.modelValue.is_concluded === 1;
 });
@@ -426,7 +421,6 @@ const initializeDiplomas = () => {
 		.filter(Boolean);
 };
 
-// Función update - REVISADA para área y organización
 const update = (field, value) => {
 	if ((field === 'internal_advisor_qualification' || field === 'external_advisor_qualification') &&
 		!areQualificationsEnabled.value) {
@@ -442,14 +436,12 @@ const update = (field, value) => {
 	emit('update:modelValue', { ...props.modelValue, [field]: value });
 	if (errors.value[field]) errors.value[field] = '';
 
-	// Lógica para Área (igual que Organización)
 	if (field === 'id_dual_area') {
 		const selected = props.areas?.find(a => a.id === value);
 		searchArea.value = selected?.name || '';
 		showAreaDropdown.value = false;
 	}
 
-	// Lógica para Organización
 	if (field === 'id_organization') {
 		const selected = props.organizations?.find(o => o.id === value);
 		searchOrganization.value = selected?.name || '';
@@ -482,7 +474,6 @@ const update = (field, value) => {
 	}
 };
 
-// Handlers para guardar nuevos registros
 const handleSavedOrganization = async (newOrganization) => {
 	try {
 		const res = await getOrganizations();
@@ -703,13 +694,13 @@ const handleSavedDualType = async (newDualType) => {
 };
 
 const initializeSearchValues = () => {
-	// Área
+
 	if (props.modelValue.id_dual_area) {
 		const area = props.areas?.find(a => a.id === props.modelValue.id_dual_area);
 		searchArea.value = area?.name || '';
 	}
 
-	// Organización
+
 	if (props.modelValue.id_organization) {
 		const org = props.organizations?.find(o => o.id === props.modelValue.id_organization);
 		searchOrganization.value = org?.name || '';
@@ -998,7 +989,6 @@ onMounted(() => {
 						<p v-if="errors.name_report" class="error-msg">{{ errors.name_report }}</p>
 					</div>
 
-					<!-- CAMPO DE ÁREA (REESCRITO) -->
 					<div ref="areaDropdownRef">
 						<label class="label flex items-center gap-1">
 							Clasificación General del Proyecto Dual

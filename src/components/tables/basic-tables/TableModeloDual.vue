@@ -188,20 +188,44 @@
 								</span>
 							</td>
 							<td v-if="isColumnVisible('grade')" class="px-5 py-3 text-sm border-r border-gray-100 whitespace-nowrap">
-								<span :class="getGradeClass(project.grade)">
+								<span class="text-gray-800 font-medium">
 									{{ project.grade }}
 								</span>
 							</td>
 							<td v-if="isColumnVisible('certifications')" class="px-5 py-3 text-sm border-r border-gray-100 whitespace-nowrap">
 								<template v-if="project.certifications && project.certifications.length > 0">
 									<button
-										class="px-3 py-1 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded text-xs hover:from-blue-500 hover:to-blue-600 transition-all shadow-sm"
+										class="px-3 py-1 bg-gradient-to-r from-brand-800 to-brand-900 text-white rounded text-xs hover:from-brand-700 hover:to-brand-800 transition-all shadow-sm"
 										@click="openCertificationsModal(project)">
 										Ver ({{ project.certifications.length }})
 									</button>
 								</template>
 								<template v-else>
 									<span class="text-gray-500 text-xs">Sin certificaciones</span>
+								</template>
+							</td>
+							<td v-if="isColumnVisible('microcredentials')" class="px-5 py-3 text-sm border-r border-gray-100 whitespace-nowrap">
+								<template v-if="project.microcredentials && project.microcredentials.length > 0">
+									<button
+										class="px-3 py-1 bg-gradient-to-r from-brand-800 to-brand-900 text-white rounded text-xs hover:from-brand-700 hover:to-brand-800 transition-all shadow-sm"
+										@click="openMicrocredentialsModal(project)">
+										Ver ({{ project.microcredentials.length }})
+									</button>
+								</template>
+								<template v-else>
+									<span class="text-gray-500 text-xs">Sin microcredenciales</span>
+								</template>
+							</td>
+							<td v-if="isColumnVisible('certificates')" class="px-5 py-3 text-sm border-r border-gray-100 whitespace-nowrap">
+								<template v-if="project.certificates && project.certificates.length > 0">
+									<button
+										class="px-3 py-1 bg-gradient-to-r from-brand-800 to-brand-900 text-white rounded text-xs hover:from-brand-700 hover:to-brand-800 transition-all shadow-sm"
+										@click="openCertificatesModal(project)">
+										Ver ({{ project.certificates.length }})
+									</button>
+								</template>
+								<template v-else>
+									<span class="text-gray-500 text-xs">Sin diplomados</span>
 								</template>
 							</td>
 							<td v-if="isColumnVisible('area')" class="px-5 py-3 text-sm border-r border-gray-100 whitespace-nowrap">{{ project.area }}</td>
@@ -307,6 +331,7 @@
 		</div>
 	</div>
 
+	<!-- Modal para estudiantes -->
 	<div v-if="showStudentModal" class="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
 		<div class="bg-white rounded-xl p-6 w-3/4 max-w-4xl shadow-xl overflow-x-auto max-h-[80vh]">
 			<h3 class="text-lg font-bold mb-3">Datos de los Estudiantes</h3>
@@ -363,21 +388,70 @@
 		</div>
 	</div>
 
+	<!-- Modal para certificaciones -->
 	<div v-if="showCertificationsModal" class="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
 		<div class="bg-white rounded-xl p-6 w-1/2 max-w-2xl shadow-xl">
-			<h3 class="text-lg font-bold mb-3">Certificaciones y Microcredenciales</h3>
+			<h3 class="text-lg font-bold mb-3">Certificaciones</h3>
 			<div class="space-y-2 max-h-96 overflow-y-auto">
 				<div
 					v-for="(cert, index) in selectedCertifications"
 					:key="index"
 					class="p-3 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
 					<h4 class="font-semibold text-brand-800">{{ cert.name }}</h4>
-					<p class="text-sm text-gray-600">{{ cert.type || 'Sin tipo' }}</p>
-					<p v-if="cert.issue_date" class="text-xs text-gray-500">Emitido: {{ cert.issue_date }}</p>
+					<p class="text-sm text-gray-600">{{ cert.type || 'Certificación' }}</p>
 					<p v-if="cert.organization" class="text-xs text-gray-500">Organización: {{ cert.organization }}</p>
+					<p v-if="cert.description" class="text-xs text-gray-500">Descripción: {{ cert.description }}</p>
+					<p v-if="cert.hours" class="text-xs text-gray-500">Horas: {{ cert.hours }}</p>
+					<p v-if="cert.credential_type" class="text-xs text-gray-500">Tipo: {{ cert.credential_type }}</p>
 				</div>
 			</div>
 			<button class="mt-4 px-4 py-2 bg-gradient-to-r from-brand-800 to-brand-900 text-white rounded-lg hover:from-brand-700 hover:to-brand-800 transition-all shadow-sm" @click="showCertificationsModal = false">
+				Cerrar
+			</button>
+		</div>
+	</div>
+
+	<!-- Modal para microcredenciales -->
+	<div v-if="showMicrocredentialsModal" class="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
+		<div class="bg-white rounded-xl p-6 w-1/2 max-w-2xl shadow-xl">
+			<h3 class="text-lg font-bold mb-3">Microcredenciales</h3>
+			<div class="space-y-2 max-h-96 overflow-y-auto">
+				<div
+					v-for="(micro, index) in selectedMicrocredentials"
+					:key="index"
+					class="p-3 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
+					<h4 class="font-semibold text-brand-800">{{ micro.name }}</h4>
+					<p class="text-sm text-gray-600">{{ micro.type || 'Microcredencial' }}</p>
+					<p v-if="micro.organization" class="text-xs text-gray-500">Organización: {{ micro.organization }}</p>
+					<p v-if="micro.description" class="text-xs text-gray-500">Descripción: {{ micro.description }}</p>
+					<p v-if="micro.hours" class="text-xs text-gray-500">Horas: {{ micro.hours }}</p>
+					<p v-if="micro.credential_type" class="text-xs text-gray-500">Tipo: {{ micro.credential_type }}</p>
+				</div>
+			</div>
+			<button class="mt-4 px-4 py-2 bg-gradient-to-r from-brand-800 to-brand-900 text-white rounded-lg hover:from-brand-700 hover:to-brand-800 transition-all shadow-sm" @click="showMicrocredentialsModal = false">
+				Cerrar
+			</button>
+		</div>
+	</div>
+
+	<!-- Modal para diplomas -->
+	<div v-if="showCertificatesModal" class="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
+		<div class="bg-white rounded-xl p-6 w-1/2 max-w-2xl shadow-xl">
+			<h3 class="text-lg font-bold mb-3">Diplomas</h3>
+			<div class="space-y-2 max-h-96 overflow-y-auto">
+				<div
+					v-for="(cert, index) in selectedCertificates"
+					:key="index"
+					class="p-3 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
+					<h4 class="font-semibold text-brand-800">{{ cert.name }}</h4>
+					<p class="text-sm text-gray-600">{{ cert.type || 'Diploma' }}</p>
+					<p v-if="cert.organization" class="text-xs text-gray-500">Organización: {{ cert.organization }}</p>
+					<p v-if="cert.description" class="text-xs text-gray-500">Descripción: {{ cert.description }}</p>
+					<p v-if="cert.hours" class="text-xs text-gray-500">Horas: {{ cert.hours }}</p>
+					<p v-if="cert.credential_type" class="text-xs text-gray-500">Tipo: {{ cert.credential_type }}</p>
+				</div>
+			</div>
+			<button class="mt-4 px-4 py-2 bg-gradient-to-r from-brand-800 to-brand-900 text-white rounded-lg hover:from-brand-700 hover:to-brand-800 transition-all shadow-sm" @click="showCertificatesModal = false">
 				Cerrar
 			</button>
 		</div>
@@ -392,62 +466,69 @@ import { getAllDualProjects } from '../../../services/dual_projects/dual_project
 
 const showColumnSelector = ref(false);
 const visibleColumns = ref([
-	'status', 'students', 'institution_name', 'organization_name',
-	'project_name', 'agreement', 'project_status', 'options'
+  'status', 'students', 'institution_name', 'organization_name',
+  'project_name', 'agreement', 'project_status', 'certifications',
+  'microcredentials', 'certificates', 'options'
 ]);
 
 const availableColumns = [
-	{ key: 'status', label: 'Estatus', filterable: true },
-	{ key: 'students', label: 'Estudiantes', filterable: true },
-	{ key: 'institution_name', label: 'Institución', filterable: true },
-	{ key: 'institution_state', label: 'Estado Institución', filterable: true },
-	{ key: 'institution_city', label: 'Ciudad Institución', filterable: true },
-	{ key: 'organization_name', label: 'Organización', filterable: true },
-	{ key: 'organization_state', label: 'Estado Organización', filterable: true },
-	{ key: 'organization_city', label: 'Ciudad Organización', filterable: true },
-	{ key: 'organization_sector', label: 'Sector Organización', filterable: true },
-	{ key: 'organization_type', label: 'Tipo Organización', filterable: true },
-	{ key: 'education_type', label: 'Tipo Educación Dual', filterable: true },
-	{ key: 'project_name', label: 'Nombre Proyecto', filterable: true },
-	{ key: 'agreement', label: 'Convenio', filterable: true },
-	{ key: 'project_status', label: 'Estatus Proyecto', filterable: true },
-	{ key: 'grade', label: 'Calificación', filterable: true },
-	{ key: 'certifications', label: 'Certificaciones', filterable: true },
-	{ key: 'area', label: 'Clasificación General', filterable: true },
-	{ key: 'options', label: 'Opciones', filterable: false }
+  { key: 'status', label: 'Estatus', filterable: true },
+  { key: 'students', label: 'Estudiantes', filterable: true },
+  { key: 'institution_name', label: 'Institución', filterable: true },
+  { key: 'institution_state', label: 'Estado Institución', filterable: true },
+  { key: 'institution_city', label: 'Ciudad Institución', filterable: true },
+  { key: 'organization_name', label: 'Organización', filterable: true },
+  { key: 'organization_state', label: 'Estado Organización', filterable: true },
+  { key: 'organization_city', label: 'Ciudad Organización', filterable: true },
+  { key: 'organization_sector', label: 'Sector Organización', filterable: true },
+  { key: 'organization_type', label: 'Tipo Organización', filterable: true },
+  { key: 'education_type', label: 'Tipo Educación Dual', filterable: true },
+  { key: 'project_name', label: 'Nombre Proyecto', filterable: true },
+  { key: 'agreement', label: 'Convenio', filterable: true },
+  { key: 'project_status', label: 'Estatus Proyecto', filterable: true },
+  { key: 'grade', label: 'Calificación', filterable: true },
+  { key: 'certifications', label: 'Certificaciones', filterable: true },
+  { key: 'microcredentials', label: 'Microcredenciales', filterable: true },
+  { key: 'certificates', label: 'Diplomados', filterable: true },
+  { key: 'area', label: 'Clasificación General', filterable: true },
+  { key: 'options', label: 'Opciones', filterable: false }
 ];
 
 const toggleColumn = (columnKey) => {
-	const index = visibleColumns.value.indexOf(columnKey);
-	if (index > -1) {
-		visibleColumns.value.splice(index, 1);
-	} else {
-		visibleColumns.value.push(columnKey);
-	}
+  const index = visibleColumns.value.indexOf(columnKey);
+  if (index > -1) {
+    visibleColumns.value.splice(index, 1);
+  } else {
+    visibleColumns.value.push(columnKey);
+  }
 };
 
 const showAllColumns = () => {
-	visibleColumns.value = availableColumns.map(col => col.key);
+  visibleColumns.value = availableColumns.map(col => col.key);
 };
 
 const hideAllColumns = () => {
-	visibleColumns.value = ['status', 'students', 'options'];
+  visibleColumns.value = ['status', 'students', 'options'];
 };
 
 const isColumnVisible = (columnKey) => {
-	return visibleColumns.value.includes(columnKey);
+  return visibleColumns.value.includes(columnKey);
 };
 
 const visibleHeaderColumns = computed(() => {
-	return availableColumns.filter(col => visibleColumns.value.includes(col.key));
+  return availableColumns.filter(col => visibleColumns.value.includes(col.key));
 });
 
 const dualProjects = ref([]);
 const isLoading = ref(false);
 const showStudentModal = ref(false);
 const showCertificationsModal = ref(false);
+const showMicrocredentialsModal = ref(false);
+const showCertificatesModal = ref(false);
 const selectedStudents = ref([]);
 const selectedCertifications = ref([]);
+const selectedMicrocredentials = ref([]);
+const selectedCertificates = ref([]);
 
 const rowsPerPage = ref(10);
 const currentPage = ref(1);
@@ -457,209 +538,206 @@ const fromItem = ref(0);
 const toItem = ref(0);
 
 const filters = ref({
-	status: '',
-	students: '',
-	institution_name: '',
-	institution_state: '',
-	institution_city: '',
-	organization_name: '',
-	organization_state: '',
-	organization_city: '',
-	organization_sector: '',
-	organization_type: '',
-	education_type: '',
-	project_name: '',
-	agreement: '',
-	project_status: '',
-	grade: '',
-	certifications: '',
-	area: ''
+  status: '',
+  students: '',
+  institution_name: '',
+  institution_state: '',
+  institution_city: '',
+  organization_name: '',
+  organization_state: '',
+  organization_city: '',
+  organization_sector: '',
+  organization_type: '',
+  education_type: '',
+  project_name: '',
+  agreement: '',
+  project_status: '',
+  grade: '',
+  certifications: '',
+  microcredentials: '',
+  certificates: '',
+  area: ''
 });
 
 watch(filters, () => {
-	currentPage.value = 1;
-	fetchDualProjects();
+  currentPage.value = 1;
+  fetchDualProjects();
 }, { deep: true });
 
 watch(currentPage, () => {
-	fetchDualProjects();
+  fetchDualProjects();
 });
 
 watch(rowsPerPage, () => {
-	currentPage.value = 1;
-	fetchDualProjects();
+  currentPage.value = 1;
+  fetchDualProjects();
 });
 
 const clearFilters = () => {
-	filters.value = {
-		status: '',
-		students: '',
-		institution_name: '',
-		institution_state: '',
-		institution_city: '',
-		organization_name: '',
-		organization_state: '',
-		organization_city: '',
-		organization_sector: '',
-		organization_type: '',
-		education_type: '',
-		project_name: '',
-		agreement: '',
-		project_status: '',
-		grade: '',
-		certifications: '',
-		area: ''
-	};
+  filters.value = {
+    status: '',
+    students: '',
+    institution_name: '',
+    institution_state: '',
+    institution_city: '',
+    organization_name: '',
+    organization_state: '',
+    organization_city: '',
+    organization_sector: '',
+    organization_type: '',
+    education_type: '',
+    project_name: '',
+    agreement: '',
+    project_status: '',
+    grade: '',
+    certifications: '',
+    microcredentials: '',
+    certificates: '',
+    area: ''
+  };
 };
 
 const fetchDualProjects = async () => {
-	isLoading.value = true;
+  isLoading.value = true;
 
-	try {
-		const params = {
-			page: currentPage.value,
-			per_page: rowsPerPage.value,
-			filters: {}
-		};
+  try {
+    const params = {
+      page: currentPage.value,
+      per_page: rowsPerPage.value,
+      filters: {}
+    };
 
-		Object.keys(filters.value).forEach(key => {
-			if (filters.value[key] && filters.value[key].trim() !== '') {
-				params.filters[key] = filters.value[key];
-			}
-		});
+    Object.keys(filters.value).forEach(key => {
+      if (filters.value[key] && filters.value[key].trim() !== '') {
+        params.filters[key] = filters.value[key];
+      }
+    });
 
+    const response = await getAllDualProjects(params);
 
-		const response = await getAllDualProjects(params);
+    const data = response.data?.data || [];
+    const meta = response.data?.meta || {};
 
-		const data = response.data?.data || [];
-		const meta = response.data?.meta || {};
+    if (data.length === 0) {
+      console.warn('No se recibieron datos del servidor');
+      dualProjects.value = [];
+      totalItems.value = 0;
+      totalPages.value = 1;
+      fromItem.value = 0;
+      toItem.value = 0;
+      return;
+    }
 
-		console.log(`📊 Datos recibidos: ${data.length} registros`);
-		console.log('🔍 Primer proyecto:', data[0]);
+    dualProjects.value = data;
 
-		if (data.length === 0) {
-			console.warn('No se recibieron datos del servidor');
-			dualProjects.value = [];
-			totalItems.value = 0;
-			totalPages.value = 1;
-			fromItem.value = 0;
-			toItem.value = 0;
-			return;
-		}
+    totalItems.value = meta.total || 0;
+    totalPages.value = meta.last_page || 1;
+    fromItem.value = meta.from || 0;
+    toItem.value = meta.to || 0;
 
-		dualProjects.value = data;
+  } catch (error) {
+    console.error('Error al cargar proyectos:', error);
 
-		totalItems.value = meta.total || 0;
-		totalPages.value = meta.last_page || 1;
-		fromItem.value = meta.from || 0;
-		toItem.value = meta.to || 0;
-
-		dualProjects.value.slice(0, 3).forEach((p, i) => {
-			console.log(`  ${i+1}. ${p.project_name} -> ${p.organization_name} (${p.organization_state})`);
-		});
-
-	} catch (error) {
-		console.error('❌ Error al cargar proyectos:', error);
-
-		dualProjects.value = [];
-		totalItems.value = 0;
-		totalPages.value = 1;
-		fromItem.value = 0;
-		toItem.value = 0;
-	} finally {
-		isLoading.value = false;
-	}
+    dualProjects.value = [];
+    totalItems.value = 0;
+    totalPages.value = 1;
+    fromItem.value = 0;
+    toItem.value = 0;
+  } finally {
+    isLoading.value = false;
+  }
 };
 
 const nextPage = () => {
-	if (currentPage.value < totalPages.value) {
-		currentPage.value++;
-	}
+  if (currentPage.value < totalPages.value) {
+    currentPage.value++;
+  }
 };
 
 const prevPage = () => {
-	if (currentPage.value > 1) {
-		currentPage.value--;
-	}
+  if (currentPage.value > 1) {
+    currentPage.value--;
+  }
 };
 
 const goToPage = (page) => {
-	if (page >= 1 && page <= totalPages.value) {
-		currentPage.value = page;
-	} else {
-		console.warn(`Página ${page} fuera de rango. Total de páginas: ${totalPages.value}`);
-	}
+  if (page >= 1 && page <= totalPages.value) {
+    currentPage.value = page;
+  } else {
+    console.warn(`Página ${page} fuera de rango. Total de páginas: ${totalPages.value}`);
+  }
 };
 
 const getAgreementClass = (agreement) => {
-	const agreementLower = agreement?.toLowerCase() || '';
-	if (agreementLower.includes('activo') || agreementLower.includes('vigente')) {
-		return 'text-green-600 font-semibold';
-	} else if (agreementLower.includes('vencido') || agreementLower.includes('expirado')) {
-		return 'text-red-600 font-semibold';
-	} else if (agreementLower.includes('pendiente') || agreementLower.includes('proceso')) {
-		return 'text-yellow-600 font-semibold';
-	}
-	return 'text-gray-600';
+  const agreementLower = agreement?.toLowerCase() || '';
+  if (agreementLower.includes('activo') || agreementLower.includes('vigente')) {
+    return 'text-green-600 font-semibold';
+  } else if (agreementLower.includes('vencido') || agreementLower.includes('expirado')) {
+    return 'text-red-600 font-semibold';
+  } else if (agreementLower.includes('pendiente') || agreementLower.includes('proceso')) {
+    return 'text-yellow-600 font-semibold';
+  }
+  return 'text-gray-600';
 };
 
 const getStatusClass = (status) => {
-	const statusLower = status?.toLowerCase() || '';
-	if (statusLower.includes('completado') || statusLower.includes('finalizado') || statusLower.includes('concluido')) {
-		return 'text-green-600 font-semibold';
-	} else if (statusLower.includes('en progreso') || statusLower.includes('activo')) {
-		return 'text-blue-600 font-semibold';
-	} else if (statusLower.includes('pendiente') || statusLower.includes('iniciar')) {
-		return 'text-yellow-600 font-semibold';
-	} else if (statusLower.includes('cancelado') || statusLower.includes('suspendido')) {
-		return 'text-red-600 font-semibold';
-	}
-	return 'text-gray-600';
+  const statusLower = status?.toLowerCase() || '';
+  if (statusLower.includes('completado') || statusLower.includes('finalizado') || statusLower.includes('concluido')) {
+    return 'text-green-600 font-semibold';
+  } else if (statusLower.includes('en progreso') || statusLower.includes('activo')) {
+    return 'text-blue-600 font-semibold';
+  } else if (statusLower.includes('pendiente') || statusLower.includes('iniciar')) {
+    return 'text-yellow-600 font-semibold';
+  } else if (statusLower.includes('cancelado') || statusLower.includes('suspendido')) {
+    return 'text-red-600 font-semibold';
+  }
+  return 'text-gray-600';
 };
 
-const getGradeClass = (grade) => {
-	if (!grade || grade === 'N/A') return 'text-gray-600';
-
-	const numericGrade = parseFloat(grade);
-	if (numericGrade >= 90) return 'text-green-600 font-semibold';
-	if (numericGrade >= 80) return 'text-blue-600 font-semibold';
-	if (numericGrade >= 70) return 'text-yellow-600 font-semibold';
-	return 'text-red-600 font-semibold';
-};
 
 const openStudentModal = (project) => {
-	if (project.raw_students && project.raw_students.length > 0) {
-		selectedStudents.value = project.raw_students;
-		showStudentModal.value = true;
-	} else {
-		selectedStudents.value = [];
-		showStudentModal.value = true;
-	}
+  if (project.raw_students && project.raw_students.length > 0) {
+    selectedStudents.value = project.raw_students;
+    showStudentModal.value = true;
+  } else {
+    selectedStudents.value = [];
+    showStudentModal.value = true;
+  }
 };
 
 const openCertificationsModal = (project) => {
-	selectedCertifications.value = project.certifications || [];
-	showCertificationsModal.value = true;
+  selectedCertifications.value = project.certifications || [];
+  showCertificationsModal.value = true;
+};
+
+const openMicrocredentialsModal = (project) => {
+  selectedMicrocredentials.value = project.microcredentials || [];
+  showMicrocredentialsModal.value = true;
+};
+
+const openCertificatesModal = (project) => {
+  selectedCertificates.value = project.certificates || [];
+  showCertificatesModal.value = true;
 };
 
 const studentFilters = ref({
-	name: '',
-	career: '',
-	specialty: ''
+  name: '',
+  career: '',
+  specialty: ''
 });
 
 const filteredStudents = computed(() => {
-	return selectedStudents.value.filter(stud => {
-		return (
-			(stud.name?.toLowerCase() || '').includes(studentFilters.value.name.toLowerCase()) &&
-			(stud.career?.toLowerCase() || '').includes(studentFilters.value.career.toLowerCase()) &&
-			(stud.specialty?.toLowerCase() || '').includes(studentFilters.value.specialty.toLowerCase())
-		);
-	});
+  return selectedStudents.value.filter(stud => {
+    return (
+        (stud.name?.toLowerCase() || '').includes(studentFilters.value.name.toLowerCase()) &&
+        (stud.career?.toLowerCase() || '').includes(studentFilters.value.career.toLowerCase()) &&
+        (stud.specialty?.toLowerCase() || '').includes(studentFilters.value.specialty.toLowerCase())
+    );
+  });
 });
 
 onMounted(() => {
-	fetchDualProjects();
+  fetchDualProjects();
 });
 
 defineExpose({ fetchData: fetchDualProjects });
@@ -667,17 +745,17 @@ defineExpose({ fetchData: fetchDualProjects });
 
 <style scoped>
 .custom-scrollbar::-webkit-scrollbar {
-	height: 8px;
+  height: 8px;
 }
 .custom-scrollbar::-webkit-scrollbar-track {
-	background: #f1f1f1;
-	border-radius: 4px;
+  background: #f1f1f1;
+  border-radius: 4px;
 }
 .custom-scrollbar::-webkit-scrollbar-thumb {
-	background: #82181a;
-	border-radius: 4px;
+  background: #82181a;
+  border-radius: 4px;
 }
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-	background: #460809;
+  background: #460809;
 }
 </style>

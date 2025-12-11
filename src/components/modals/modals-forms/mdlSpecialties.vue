@@ -108,6 +108,7 @@ const props = defineProps<{
 		mode: 'create' | 'edit'
 		pk: number | null
 		table: string
+		careerId?: string // Agregar careerId como prop opcional
 	}
 }>()
 
@@ -129,7 +130,6 @@ const loadInstitutions = async () => {
 		return []
 	}
 }
-
 
 const loadCareers = async () => {
 	try {
@@ -154,11 +154,53 @@ const loadSelectData = async () => {
 	}
 }
 
+// MODIFICACIÓN: Watch para props.data que ahora maneja careerId
+watch(() => props.data, (newData) => {
+	console.log('🔍 Props.data cambiado:', newData);
+
+	// Si viene un careerId, preseleccionarlo
+	if (newData?.careerId) {
+		console.log('🎯 Preseleccionando carrera:', newData.careerId);
+		form.id_career = newData.careerId;
+
+		// Buscar la carrera para obtener su institución
+		const selectedCareer = careers.value.find(c =>
+			String(c.id) === String(newData.careerId)
+		);
+
+		if (selectedCareer && selectedCareer.id_institution) {
+			form.id_institution = String(selectedCareer.id_institution);
+			console.log('🏫 Institución preseleccionada:', form.id_institution);
+		}
+	}
+}, { deep: true, immediate: true });
+
 watch(() => props.show, async (newVal) => {
 	if (newVal) {
-		await loadSelectData()
+		console.log('📂 Abriendo modal de especialidades');
+		await loadSelectData();
+
+		// Si hay un careerId en los props, configurar el formulario
+		if (props.data?.careerId) {
+			console.log('📌 Configurando carrera desde careerId:', props.data.careerId);
+
+			// Esperar a que se carguen las carreras
+			await nextTick();
+
+			form.id_career = props.data.careerId;
+
+			// Buscar la carrera para obtener su institución
+			const selectedCareer = careers.value.find(c =>
+				String(c.id) === String(props.data.careerId)
+			);
+
+			if (selectedCareer && selectedCareer.id_institution) {
+				form.id_institution = String(selectedCareer.id_institution);
+				console.log('🏫 Institución encontrada:', form.id_institution);
+			}
+		}
 	}
-})
+}, { immediate: true });
 
 watch(() => form.id_institution, (newInstitutionId, oldInstitutionId) => {
 	if (newInstitutionId !== oldInstitutionId) {
@@ -173,14 +215,17 @@ watch(() => form.id_institution, (newInstitutionId, oldInstitutionId) => {
 	}
 });
 
+// MODIFICACIÓN: watchEffect para manejar modo edit/create
 watchEffect(() => {
 	if (props.data.mode === 'edit' && props.data.pk !== null) {
+		console.log('✏️ Modo edición - ID:', props.data.pk);
 		alvRoute.value = `${axios.defaults.baseURL}specialties/${props.data.pk}`
 		alvMethod.value = 'PUT'
 		isLoading.value = true
 
 		showSpecialty(props.data.pk).then(res => {
 			const specialty = res.data
+			console.log('📋 Datos de especialidad cargados:', specialty);
 			Object.keys(form).forEach(key => {
 				if (specialty[key] !== undefined) {
 					form[key] = specialty[key]
@@ -193,12 +238,18 @@ watchEffect(() => {
 		})
 
 	} else if (props.data.mode === 'create') {
+		console.log('🆕 Modo creación');
 		alvRoute.value = `${axios.defaults.baseURL}specialties`
 		alvMethod.value = 'POST'
 
-		Object.keys(form).forEach(key => {
-			form[key] = ''
-		})
+		// SOLO resetear si no hay careerId en los props
+		if (!props.data?.careerId) {
+			Object.keys(form).forEach(key => {
+				form[key] = ''
+			})
+		} else {
+			console.log('🎯 Manteniendo carreraId preseleccionado:', props.data.careerId);
+		}
 	}
 })
 
@@ -274,8 +325,8 @@ onMounted(() => {
 										:disabled="isLoading || !hasCareersForInstitution">
 										<option value="">
 											{{ form.id_institution && !hasCareersForInstitution
-												? 'No hay carreras disponibles'
-												: 'Seleccione carrera'
+											? 'No hay carreras disponibles'
+											: 'Seleccione carrera'
 											}}
 										</option>
 										<option
@@ -356,7 +407,7 @@ onMounted(() => {
 			</div>
 		</div>
 	</transition>
-	
+
 	<mdlInstitution
 		:show="showModal && modalData?.table === 'institucion'"
 		:data="modalData"

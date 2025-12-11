@@ -38,6 +38,7 @@ const errors = ref({});
 
 const pendingCareerSelection = ref(false);
 const pendingSpecialtySelection = ref(false);
+const isCreatingSpecialty = ref(false);
 
 const fieldHelpTexts = {
 	control_number: 'Número de control o matrícula único del estudiante en la institución educativa.',
@@ -52,6 +53,13 @@ const fieldHelpTexts = {
 const vTooltip = VTooltip
 
 const handleSavedCareer = async (savedData) => {
+	console.log('🚀 handleSavedCareer INICIO:', {
+		savedData,
+		formCareer: form.value.id_career,
+		formSpecialty: form.value.id_specialty,
+		pendingCareerSelection: pendingCareerSelection.value
+	});
+
 	try {
 		closeCareerModal();
 
@@ -59,6 +67,8 @@ const handleSavedCareer = async (savedData) => {
 
 		if (savedData && savedData.career) {
 			const newCareer = savedData.career;
+			console.log('📌 Nueva carrera creada:', newCareer);
+
 			if (props.institution &&
 				(newCareer.id_institution === props.institution.id ||
 					newCareer.institution_id === props.institution.id)) {
@@ -68,8 +78,11 @@ const handleSavedCareer = async (savedData) => {
 				const careerInList = filteredCareers.value.find(c =>
 					String(c.id) === String(newCareer.id)
 				);
+				console.log('🔍 Carrera encontrada en filteredCareers:', careerInList);
 
 				if (careerInList) {
+					console.log('✅ Seleccionando carrera creada:', newCareer.id);
+					// Seleccionar automáticamente la carrera creada
 					form.value.id_career = String(newCareer.id);
 					await nextTick();
 
@@ -77,21 +90,25 @@ const handleSavedCareer = async (savedData) => {
 						careerSelectRef.value.value = String(newCareer.id);
 						careerSelectRef.value.dispatchEvent(new Event('input'));
 						careerSelectRef.value.dispatchEvent(new Event('change'));
+						console.log('🎯 Select actualizado con nueva carrera');
 					}
 
+					// Limpiar especialidad cuando se cambia de carrera
 					form.value.id_specialty = "";
+					console.log('🧹 Especialidad limpiada al crear carrera');
 
 					await nextTick();
-
+					console.log('🏁 handleSavedCareer FIN - carrera seleccionada');
 					return;
 				}
 			}
 		}
 
-
 		pendingCareerSelection.value = true;
+		console.log('⏳ Activando pendingCareerSelection');
 
 		setTimeout(async () => {
+			console.log('⏰ Timeout ejecutado para pendingCareerSelection:', pendingCareerSelection.value);
 			if (pendingCareerSelection.value && props.careers && props.careers.length > 0) {
 
 				const latestCareer = [...props.careers]
@@ -102,76 +119,153 @@ const handleSavedCareer = async (savedData) => {
 						String(career.id) !== String(form.value.id_career)
 					);
 
+				console.log('🔍 Última carrera encontrada:', latestCareer);
+
 				if (latestCareer) {
 					form.value.id_career = String(latestCareer.id);
+					console.log('📌 Carrera seleccionada por timeout:', latestCareer.id);
 
 					await nextTick();
 					if (careerSelectRef.value) {
 						careerSelectRef.value.value = String(latestCareer.id);
 					}
 
+					// Limpiar especialidad cuando se selecciona nueva carrera
+					form.value.id_specialty = "";
+					console.log('🧹 Especialidad limpiada por timeout');
+
 					pendingCareerSelection.value = false;
+					console.log('✅ pendingCareerSelection desactivado');
 				} else {
 					pendingCareerSelection.value = false;
+					console.log('❌ No se encontró carrera, pendingCareerSelection desactivado');
 				}
 			}
 		}, 1500);
 
 	} catch (error) {
+		console.error('❌ Error en handleSavedCareer:', error);
 		closeCareerModal();
 		pendingCareerSelection.value = false;
 	}
 };
 
 const handleSavedSpecialty = async (savedData) => {
+	console.log('🚀 handleSavedSpecialty INICIO:', {
+		savedData,
+		formCareer: form.value.id_career,
+		formSpecialty: form.value.id_specialty,
+		isCreatingSpecialty: isCreatingSpecialty.value,
+		pendingSpecialtySelection: pendingSpecialtySelection.value
+	});
+
 	try {
+		// Marcar que estamos creando una especialidad
+		isCreatingSpecialty.value = true;
+		console.log('🏷️ isCreatingSpecialty establecido en true');
+
+		// GUARDAR LA CARRERA ACTUAL ANTES DE CUALQUIER CAMBIO
+		const currentCareerId = form.value.id_career;
+		console.log('💾 Guardando carrera actual:', currentCareerId);
 
 		emit('update:specialties', savedData);
-
 		closeSpecialtyModal();
 
 		if (savedData && savedData.specialty) {
 			const newSpecialty = savedData.specialty;
+			console.log('📌 Nueva especialidad creada:', newSpecialty);
 
-			if (form.value.id_career &&
-				(String(newSpecialty.id_career) === String(form.value.id_career) ||
-					String(newSpecialty.career_id) === String(form.value.id_career))) {
+			// Verificar que la especialidad pertenezca a la carrera seleccionada
+			if (currentCareerId &&
+				(String(newSpecialty.id_career) === String(currentCareerId) ||
+					String(newSpecialty.career_id) === String(currentCareerId))) {
 
-				await nextTick();
+				console.log('✅ Especialidad pertenece a la carrera seleccionada');
+
+				// Asegurarnos de que la carrera se mantenga seleccionada
+				if (form.value.id_career !== currentCareerId) {
+					form.value.id_career = currentCareerId;
+					console.log('🔁 Restaurando carrera seleccionada:', currentCareerId);
+				}
+
+				// Seleccionar automáticamente la especialidad creada
 				form.value.id_specialty = String(newSpecialty.id);
+				console.log('🎯 Especialidad seleccionada:', newSpecialty.id);
 
+				// Esperar un poco antes de marcar como completado
+				setTimeout(() => {
+					isCreatingSpecialty.value = false;
+					console.log('🏷️ isCreatingSpecialty establecido en false (después de 300ms)');
+				}, 300);
+
+				console.log('🏁 handleSavedSpecialty FIN - especialidad seleccionada');
 				return;
+			} else {
+				console.log('⚠️ La especialidad no pertenece a la carrera seleccionada');
+				console.log('   Especialidad career:', newSpecialty.id_career || newSpecialty.career_id);
+				console.log('   Current career:', currentCareerId);
 			}
 		}
 
+		// Si no se seleccionó automáticamente, restaurar la carrera
+		if (form.value.id_career !== currentCareerId && currentCareerId) {
+			form.value.id_career = currentCareerId;
+			console.log('🔁 Restaurando carrera después de creación:', currentCareerId);
+		}
+
 		pendingSpecialtySelection.value = true;
+		console.log('⏳ Activando pendingSpecialtySelection');
 
 		setTimeout(async () => {
-			if (pendingSpecialtySelection.value && props.specialties && props.specialties.length > 0 && form.value.id_career) {
+			console.log('⏰ Timeout ejecutado para pendingSpecialtySelection:', pendingSpecialtySelection.value);
+			if (pendingSpecialtySelection.value && props.specialties && props.specialties.length > 0 && currentCareerId) {
 				const latestSpecialty = [...props.specialties]
 					.sort((a, b) => b.id - a.id)
 					.find(specialty =>
-						String(specialty.id_career) === String(form.value.id_career) ||
-						String(specialty.career_id) === String(form.value.id_career)
+						String(specialty.id_career) === String(currentCareerId) ||
+						String(specialty.career_id) === String(currentCareerId)
 					);
+
+				console.log('🔍 Última especialidad encontrada:', latestSpecialty);
 
 				if (latestSpecialty) {
 					form.value.id_specialty = String(latestSpecialty.id);
+					console.log('📌 Especialidad seleccionada por timeout:', latestSpecialty.id);
 					pendingSpecialtySelection.value = false;
+					console.log('✅ pendingSpecialtySelection desactivado');
 				} else {
 					pendingSpecialtySelection.value = false;
+					console.log('❌ No se encontró especialidad, pendingSpecialtySelection desactivado');
 				}
 			}
+
+			// Asegurar que la carrera se mantenga
+			if (currentCareerId && form.value.id_career !== currentCareerId) {
+				form.value.id_career = currentCareerId;
+				console.log('🔁 Asegurando carrera al final:', currentCareerId);
+			}
+
+			isCreatingSpecialty.value = false;
+			console.log('🏷️ isCreatingSpecialty establecido en false (fin timeout)');
 		}, 1500);
 
 	} catch (error) {
+		console.error('❌ Error en handleSavedSpecialty:', error);
 		closeSpecialtyModal();
 		pendingSpecialtySelection.value = false;
+		isCreatingSpecialty.value = false;
 	}
 };
 
 watch(() => props.careers, (newCareers, oldCareers) => {
+	console.log('👀 Watch careers ejecutado:', {
+		newLength: newCareers?.length,
+		oldLength: oldCareers?.length,
+		pendingCareerSelection: pendingCareerSelection.value
+	});
+
 	if (pendingCareerSelection.value && newCareers && newCareers.length > 0) {
+		console.log('🔍 Buscando nueva carrera...');
 		if (oldCareers) {
 			const newCareer = newCareers.find(career =>
 				!oldCareers.some(old => old.id === career.id) &&
@@ -180,6 +274,7 @@ watch(() => props.careers, (newCareers, oldCareers) => {
 			);
 
 			if (newCareer) {
+				console.log('✅ Nueva carrera encontrada en watch:', newCareer.id);
 				form.value.id_career = String(newCareer.id);
 
 				nextTick(() => {
@@ -188,14 +283,34 @@ watch(() => props.careers, (newCareers, oldCareers) => {
 					}
 				});
 
+				// Limpiar especialidad cuando se detecta nueva carrera
+				form.value.id_specialty = "";
+				console.log('🧹 Especialidad limpiada por watch careers');
+
 				pendingCareerSelection.value = false;
+				console.log('✅ pendingCareerSelection desactivado por watch');
 			}
 		}
 	}
 }, { deep: true });
 
 watch(() => props.specialties, (newSpecialties, oldSpecialties) => {
+	console.log('👀 Watch specialties ejecutado:', {
+		newLength: newSpecialties?.length,
+		oldLength: oldSpecialties?.length,
+		isCreatingSpecialty: isCreatingSpecialty.value,
+		pendingSpecialtySelection: pendingSpecialtySelection.value,
+		formCareer: form.value.id_career
+	});
+
+	// Si estamos creando una especialidad, no procesar cambios
+	if (isCreatingSpecialty.value) {
+		console.log('⏸️ Watch specialties pausado - isCreatingSpecialty es true');
+		return;
+	}
+
 	if (pendingSpecialtySelection.value && newSpecialties && newSpecialties.length > 0 && form.value.id_career) {
+		console.log('🔍 Buscando nueva especialidad...');
 		const newSpecialty = newSpecialties.find(specialty =>
 			!oldSpecialties?.find(old => old.id === specialty.id) &&
 			(String(specialty.id_career) === String(form.value.id_career) ||
@@ -203,8 +318,10 @@ watch(() => props.specialties, (newSpecialties, oldSpecialties) => {
 		);
 
 		if (newSpecialty) {
+			console.log('✅ Nueva especialidad encontrada en watch:', newSpecialty.id);
 			form.value.id_specialty = String(newSpecialty.id);
 			pendingSpecialtySelection.value = false;
+			console.log('✅ pendingSpecialtySelection desactivado por watch');
 		}
 	}
 }, { deep: true });
@@ -371,21 +488,50 @@ const clearForm = () => {
 	errors.value = {};
 };
 
-watch(() => form.value.id_career, (newCareerId) => {
-	if (newCareerId) {
-		if (form.value.id_specialty) {
+watch(() => form.value.id_career, (newCareerId, oldCareerId) => {
+	console.log('👀 Watch form.id_career ejecutado:', {
+		newCareerId,
+		oldCareerId,
+		isCreatingSpecialty: isCreatingSpecialty.value,
+		formSpecialty: form.value.id_specialty
+	});
+
+	// Si estamos creando una especialidad, no hacer nada
+	if (isCreatingSpecialty.value) {
+		console.log('⏸️ Watch form.id_career pausado - isCreatingSpecialty es true');
+		return;
+	}
+
+	// Solo limpiar la especialidad si se cambió manualmente la carrera
+	if (newCareerId && oldCareerId && newCareerId !== oldCareerId) {
+		console.log('🔄 Carrera cambiada manualmente');
+		// Verificar si la especialidad actual pertenece a la nueva carrera
+		if (form.value.id_specialty && form.value.id_specialty !== "null" && form.value.id_specialty !== "") {
 			const currentSpecialty = props.specialties.find(s =>
 				String(s.id) === String(form.value.id_specialty)
 			);
 
+			console.log('🔍 Especialidad actual:', currentSpecialty);
+
+			// Si la especialidad no pertenece a la nueva carrera, limpiarla
 			if (currentSpecialty &&
 				String(currentSpecialty.id_career) !== String(newCareerId) &&
 				String(currentSpecialty.career_id) !== String(newCareerId)) {
 				form.value.id_specialty = "";
+				console.log('🧹 Especialidad limpiada - no pertenece a la nueva carrera');
+			} else {
+				console.log('✅ Especialidad pertenece a la nueva carrera, manteniendo');
 			}
+		} else {
+			form.value.id_specialty = "";
+			console.log('🧹 Especialidad limpiada - estaba vacía o era "null"');
 		}
-	} else {
+	} else if (!newCareerId) {
+		// Si se limpia la carrera, también limpiar la especialidad
 		form.value.id_specialty = "";
+		console.log('🧹 Especialidad limpiada - carrera fue limpiada');
+	} else {
+		console.log('➡️ No se cambió la carrera o fue el mismo valor');
 	}
 });
 
@@ -569,7 +715,11 @@ defineExpose({
 							class="flex-shrink-0"
 							tooltip="Crear nueva especialidad"
 							:disabled="!institution || !form.id_career"
-							@open="({ mode, pk, table }) => openSpecialtyModal(mode, pk, table)" />
+							@open="({ mode, pk, table }) => {
+								// Pasar el ID de la carrera al modal
+								specialtyModalData.careerId = form.id_career;
+								openSpecialtyModal(mode, pk, table);
+							}" />
 					</div>
 					<p v-if="errors.id_specialty" class="text-red-500 text-sm mt-1">{{ errors.id_specialty }}</p>
 
