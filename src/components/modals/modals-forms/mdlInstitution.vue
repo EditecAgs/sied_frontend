@@ -80,7 +80,7 @@ const fieldHelpTexts: Record<string, string> = {
 	city: "Ciudad donde se localiza la institución.",
 	id_state: "Selecciona el estado de la república donde se encuentra la institución.",
 	id_municipality: "Selecciona el municipio correspondiente al estado elegido.",
-	image: "Imagen o logotipo representativo de la institución."
+	image: "Imagen o logotipo representativo de la institución; debe ser en formato jpg o png."
 }
 
 const LoadDependence = async () => {

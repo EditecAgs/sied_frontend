@@ -196,9 +196,9 @@ const fieldHelpTexts = {
 	qualification: "Evaluación obtenida en el proyecto de acuerdo con la escala.",
 	is_concluded: "Marca si el proyecto ya finalizó.",
 	is_hired: "Indica si el estudiante fue contratado después de concluir el proyecto.",
-	micro_credentials: "Microcredenciales  obtenidas al finalizar el proyecto.",
-	certifications: "Certificaciones obtenidas al finalizar el proyecto.",
-	diplomas: "Diplomados obtenidas al finalizar el proyecto.",
+	micro_credentials: "Microcredenciales  obtenidas al finalizar el proyecto; puedes agregar cuantas necesites.",
+	certifications: "Certificaciones obtenidas al finalizar el proyecto; puedes agregar cuantas necesites.",
+	diplomas: "Diplomados obtenidas al finalizar el proyecto; puedes agregar cuantos necesites.",
 	description: "Proporcione una breve descripción de la modalidad seleccionada, indicando sus características o propósito.",
 };
 
