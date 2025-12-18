@@ -545,7 +545,7 @@ const imprimirYGuardar = async () => {
 				id_organization: Number(formData.unidadDual.id_organization),
 				id_dual_area: Number(formData.unidadDual.id_dual_area),
 				period_start: formatDate(formData.unidadDual.period_start),
-				period_end: formatDate(formData.unidadDual.period_end), // Puede ser null/empty
+				period_end: formatDate(formData.unidadDual.period_end),
 				period_observation: formData.unidadDual.period_observation,
 				status_document: Number(formData.unidadDual.status_document),
 				economic_support: Number(formData.unidadDual.economic_support),
@@ -648,11 +648,9 @@ const filteredSpecialtiesForInstitution = computed(() => {
 	if (!formData.academico.id_institution) return [];
 
 	return specialties.value.filter(specialty => {
-		// Primero filtrar por carrera que pertenezca a la institución
 		const career = careers.value.find(c => c.id === specialty.id_career || c.id === specialty.career_id);
 		if (!career) return false;
 
-		// Verificar que la carrera pertenezca a la institución
 		return career.id_institution === formData.academico.id_institution ||
 			career.institution_id === formData.academico.id_institution;
 	});
