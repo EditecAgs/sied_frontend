@@ -41,11 +41,18 @@ watchEffect(() => {
 	}
 });
 
-const afterDone = () => {
-	emit('saved');
+const afterDone = (response) => {
+	console.log('Área creada/guardada - RESPONSE:', response);
+
+	const savedData = {
+		id: response.data?.id || null,
+		name: form.name
+	};
+
+	console.log('Datos a emitir:', savedData);
+	emit('saved', savedData);
 	emit('close');
 };
-
 const afterError = (res: any) => {
 	console.error('Error al guardar:', res);
 };

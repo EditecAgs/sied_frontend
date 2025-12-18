@@ -1,19 +1,26 @@
 <script setup lang="ts">
-import { defineProps, defineEmits, reactive, watchEffect, ref, onMounted } from 'vue'
+import { defineProps, defineEmits, reactive, watchEffect, ref, onMounted, nextTick } from 'vue'
 import axios from 'axios'
 import { getInstitutions } from '../../../services/institutions/institutions.js'
 import { showCareer } from "../../../services/institutions/careers.js"
+import Select from 'primevue/select'
+import btnCreate from '../../buttons/btnCreate.vue'
+import mdlInstitution from '../modals-forms/mdlInstitution.vue'
+import { useModal } from '../../../composables/UseModal'
+
+const { showModal, modalData, openModal, closeModal } = useModal()
 
 const emit = defineEmits(['close', 'saved'])
 const isLoading = ref(false)
 const alvRoute = ref()
 alvRoute.value = axios.defaults.baseURL + 'careers'
-
 const alvMethod = ref('POST')
 
 const afterDone = (response) => {
-	console.log(response.data + ' guardado exitosamente')
-	emit('saved')
+	emit('saved',  {
+		career: response.data,
+		mode: props.data.mode
+	});
 	emit('close')
 }
 
@@ -38,17 +45,40 @@ const form = reactive({
 
 const institutions = ref([])
 
-const loadDependencies = async() => {
+const loadInstitutions = async () => {
 	try {
 		const response = await getInstitutions()
 		institutions.value = response.data
-	} catch (err) {
-		console.error('Error al cargar instituciones:', err)
+		return response.data
+	} catch (error) {
+		console.error('Error al cargar instituciones:', error)
+		return []
 	}
 }
 
+const handleSavedInstitution = async (newInstitution: any) => {
+	try {
+		await loadInstitutions()
+		
+		await nextTick()
+
+		if (newInstitution) {
+			form.id_institution = newInstitution.id
+		}
+
+		closeModal()
+	} catch (error) {
+		console.error('Error al recargar instituciones:', error)
+		closeModal()
+	}
+}
+
+const openCreateInstitution = () => {
+	openModal('create', null, 'institucion')
+}
+
 onMounted(() => {
-	loadDependencies()
+	loadInstitutions()
 })
 
 watchEffect(() => {
@@ -133,21 +163,29 @@ watchEffect(() => {
 
 						<div class="form-error">
 							<label class="block text-sm font-medium text-gray-700 mb-1">Institución*</label>
-							<template v-if="isLoading">
-								<div class="h-8 bg-gray-300 rounded animate-pulse w-full" />
-							</template>
-							<template v-else>
-								<Select
-									v-model="form.id_institution"
-									name="id_institution"
-									:options="institutions"
-									optionLabel="name"
-									optionValue="id"
-									:virtualScrollerOptions="{ itemSize: 38, showLoader: isLoading}"
-									placeholder="Selecciona una institución"
-									class="w-full px-3 py-2 !border-2 !border-gray-900 !rounded-md focus:outline-none focus:ring focus:ring-brand-800"
-									required />
-							</template>
+							<div class="flex gap-2 items-start">
+								<template v-if="isLoading">
+									<div class="h-8 bg-gray-300 rounded animate-pulse w-full" />
+								</template>
+								<template v-else>
+									<Select
+										v-model="form.id_institution"
+										name="id_institution"
+										:options="institutions"
+										optionLabel="name"
+										optionValue="id"
+										:virtualScrollerOptions="{ itemSize: 38, showLoader: isLoading}"
+										placeholder="Selecciona una institución"
+										class="w-full px-3 py-2 !border-2 !border-gray-900 !rounded-md focus:outline-none focus:ring focus:ring-brand-800"
+										required />
+								</template>
+								
+								<btn-create
+									:table="'Institución'"
+									class="h-10 px-3 flex-shrink-0 mt-0.5"
+									tooltip="Crear nueva institución"
+									@open="openCreateInstitution" />
+							</div>
 						</div>
 					</div>
 
@@ -168,6 +206,12 @@ watchEffect(() => {
 						</button>
 					</div>
 				</alv-form>
+
+				<mdlInstitution
+					:show="showModal"
+					:data="modalData"
+					@close="closeModal"
+					@saved="handleSavedInstitution" />
 			</div>
 		</div>
 	</transition>

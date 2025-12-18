@@ -4,7 +4,6 @@
 			<div class="flex justify-between items-center">
 				<h2 class="text-xl font-bold text-white">Gestión de Proyectos Duales</h2>
 				<div class="flex items-center gap-2">
-					<!-- Botón para mostrar/ocultar selector de columnas -->
 					<button
 						class="flex items-center gap-2 px-4 py-2 bg-white/10 hover:bg-white/20 text-white rounded-lg backdrop-blur-sm transition-all border border-white/20"
 						@click="showColumnSelector = !showColumnSelector">
@@ -35,7 +34,7 @@
 				</div>
 			</div>
 		</div>
-		
+
 		<div v-if="showColumnSelector" class="px-6 py-4 bg-gradient-to-r from-brand-700/90 to-brand-800/90 border-b border-brand-600/50">
 			<div class="mb-3">
 				<h3 class="text-sm font-semibold text-white/90 mb-2 flex items-center gap-2">
@@ -96,7 +95,6 @@
 				<table class="w-full">
 					<thead>
 						<tr class="bg-gradient-to-r from-brand-800 to-brand-900 text-white">
-							<!-- Columnas dinámicas -->
 							<th
 								v-for="column in visibleHeaderColumns"
 								:key="column.key"
@@ -109,7 +107,6 @@
 						</tr>
 
 						<tr class="bg-gradient-to-r from-brand-700/80 to-brand-800/80 text-white">
-							<!-- Filtros dinámicos -->
 							<th
 								v-for="column in visibleHeaderColumns"
 								:key="column.key"
@@ -138,23 +135,22 @@
 							</td>
 						</tr>
 
-						<tr v-for="(project, index) in dualProjects"
+						<tr
+							v-for="(project, index) in dualProjects"
 							:key="project.id ?? index"
 							class="border-b border-gray-100 hover:bg-brand-50/30 transition-colors even:bg-gray-50">
-							<!-- Columna: Estatus -->
 							<td v-if="isColumnVisible('status')" class="px-5 py-3 text-sm border-r border-gray-100 whitespace-nowrap">
 								<span
 									:class="[
 										'font-semibold px-2 py-1 rounded-full text-xs',
-										project.has_report
+										project.has_report == 1
 											? 'bg-green-100 text-green-800 border border-green-200'
 											: 'bg-yellow-100 text-yellow-800 border border-yellow-200'
 									]">
-									{{ project.has_report ? 'Completado' : 'Incompleto' }}
+									{{ project.has_report == 1 ? 'Completado' : 'Incompleto' }}
 								</span>
 							</td>
 
-							<!-- Columna: Estudiantes -->
 							<td v-if="isColumnVisible('students')" class="px-5 py-3 text-sm border-r border-gray-100 whitespace-nowrap">
 								<template v-if="project.student_name && project.student_name.trim() !== ''">
 									<button
@@ -169,19 +165,16 @@
 								</template>
 							</td>
 
-							<!-- Datos Institución -->
 							<td v-if="isColumnVisible('institution_name')" class="px-5 py-3 text-sm border-r border-gray-100 whitespace-nowrap">{{ project.institution_name }}</td>
 							<td v-if="isColumnVisible('institution_state')" class="px-5 py-3 text-sm border-r border-gray-100 whitespace-nowrap">{{ project.institution_state }}</td>
 							<td v-if="isColumnVisible('institution_city')" class="px-5 py-3 text-sm border-r border-gray-100 whitespace-nowrap">{{ project.institution_city }}</td>
 
-							<!-- Datos Organización -->
 							<td v-if="isColumnVisible('organization_name')" class="px-5 py-3 text-sm border-r border-gray-100 whitespace-nowrap">{{ project.organization_name }}</td>
 							<td v-if="isColumnVisible('organization_state')" class="px-5 py-3 text-sm border-r border-gray-100 whitespace-nowrap">{{ project.organization_state }}</td>
 							<td v-if="isColumnVisible('organization_city')" class="px-5 py-3 text-sm border-r border-gray-100 whitespace-nowrap">{{ project.organization_city }}</td>
 							<td v-if="isColumnVisible('organization_sector')" class="px-5 py-3 text-sm border-r border-gray-100 whitespace-nowrap">{{ project.organization_sector }}</td>
 							<td v-if="isColumnVisible('organization_type')" class="px-5 py-3 text-sm border-r border-gray-100 whitespace-nowrap">{{ project.organization_type }}</td>
 
-							<!-- Datos Proyecto -->
 							<td v-if="isColumnVisible('education_type')" class="px-5 py-3 text-sm border-r border-gray-100 whitespace-nowrap">{{ project.education_type }}</td>
 							<td v-if="isColumnVisible('project_name')" class="px-5 py-3 text-sm border-r border-gray-100 whitespace-nowrap">{{ project.project_name }}</td>
 							<td v-if="isColumnVisible('agreement')" class="px-5 py-3 text-sm border-r border-gray-100 whitespace-nowrap">
@@ -195,14 +188,14 @@
 								</span>
 							</td>
 							<td v-if="isColumnVisible('grade')" class="px-5 py-3 text-sm border-r border-gray-100 whitespace-nowrap">
-								<span :class="getGradeClass(project.grade)">
+								<span class="text-gray-800 font-medium">
 									{{ project.grade }}
 								</span>
 							</td>
 							<td v-if="isColumnVisible('certifications')" class="px-5 py-3 text-sm border-r border-gray-100 whitespace-nowrap">
 								<template v-if="project.certifications && project.certifications.length > 0">
 									<button
-										class="px-3 py-1 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded text-xs hover:from-blue-500 hover:to-blue-600 transition-all shadow-sm"
+										class="px-3 py-1 bg-gradient-to-r from-brand-800 to-brand-900 text-white rounded text-xs hover:from-brand-700 hover:to-brand-800 transition-all shadow-sm"
 										@click="openCertificationsModal(project)">
 										Ver ({{ project.certifications.length }})
 									</button>
@@ -211,12 +204,35 @@
 									<span class="text-gray-500 text-xs">Sin certificaciones</span>
 								</template>
 							</td>
+							<td v-if="isColumnVisible('microcredentials')" class="px-5 py-3 text-sm border-r border-gray-100 whitespace-nowrap">
+								<template v-if="project.microcredentials && project.microcredentials.length > 0">
+									<button
+										class="px-3 py-1 bg-gradient-to-r from-brand-800 to-brand-900 text-white rounded text-xs hover:from-brand-700 hover:to-brand-800 transition-all shadow-sm"
+										@click="openMicrocredentialsModal(project)">
+										Ver ({{ project.microcredentials.length }})
+									</button>
+								</template>
+								<template v-else>
+									<span class="text-gray-500 text-xs">Sin microcredenciales</span>
+								</template>
+							</td>
+							<td v-if="isColumnVisible('certificates')" class="px-5 py-3 text-sm border-r border-gray-100 whitespace-nowrap">
+								<template v-if="project.certificates && project.certificates.length > 0">
+									<button
+										class="px-3 py-1 bg-gradient-to-r from-brand-800 to-brand-900 text-white rounded text-xs hover:from-brand-700 hover:to-brand-800 transition-all shadow-sm"
+										@click="openCertificatesModal(project)">
+										Ver ({{ project.certificates.length }})
+									</button>
+								</template>
+								<template v-else>
+									<span class="text-gray-500 text-xs">Sin diplomados</span>
+								</template>
+							</td>
 							<td v-if="isColumnVisible('area')" class="px-5 py-3 text-sm border-r border-gray-100 whitespace-nowrap">{{ project.area }}</td>
 
-							<!-- Columna: Opciones -->
 							<td v-if="isColumnVisible('options')" class="px-5 py-3 text-sm whitespace-nowrap">
 								<div class="flex space-x-2">
-									<template v-if="project.has_report">
+									<template v-if="project.has_report == 1">
 										<btnEdit
 											:table="'dual_projects'" :pk="project.id"
 											@open="() => $emit('open', { mode: 'edit', pk: project.id, table: 'modelo dual' })" />
@@ -252,69 +268,70 @@
 			</div>
 		</div>
 
-<div class="px-6 py-3 bg-gradient-to-r from-gray-50 to-gray-100 border-t border-gray-200 flex justify-between items-center">
-	<div class="flex items-center space-x-4">
-		<span class="text-xs text-gray-600 font-medium">
-			Mostrando {{ fromItem }} a {{ toItem }} de {{ totalItems }} registros
-		</span>
-		
-		<div class="flex items-center space-x-2">
-			<label class="text-xs text-gray-600 font-medium">Filas por página:</label>
-			<select 
-				v-model="rowsPerPage" 
-				class="text-xs border border-gray-300 rounded px-2 py-1 focus:outline-none focus:ring-1 focus:ring-brand-800">
-				<option value="5">5</option>
-				<option value="10">10</option>
-				<option value="20">20</option>
-				<option value="30">30</option>
-			</select>
+		<div class="px-6 py-3 bg-gradient-to-r from-gray-50 to-gray-100 border-t border-gray-200 flex justify-between items-center">
+			<div class="flex items-center space-x-4">
+				<span class="text-xs text-gray-600 font-medium">
+					Mostrando {{ fromItem }} a {{ toItem }} de {{ totalItems }} registros
+				</span>
+
+				<div class="flex items-center space-x-2">
+					<label class="text-xs text-gray-600 font-medium">Filas por página:</label>
+					<select
+						v-model="rowsPerPage"
+						class="text-xs border border-gray-300 rounded px-2 py-1 focus:outline-none focus:ring-1 focus:ring-brand-800">
+						<option value="5">5</option>
+						<option value="10">10</option>
+						<option value="20">20</option>
+						<option value="30">30</option>
+					</select>
+				</div>
+			</div>
+
+			<div class="flex items-center space-x-2">
+				<button
+					:disabled="currentPage === 1"
+					:class="[
+						'px-3 py-1 text-xs rounded border',
+						currentPage === 1
+							? 'bg-gray-100 text-gray-400 border-gray-300 cursor-not-allowed'
+							: 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
+					]"
+					@click="prevPage">
+					‹ Anterior
+				</button>
+
+				<div class="flex items-center space-x-1">
+					<span class="text-xs text-gray-600 px-2">Página</span>
+					<input
+						v-model.number="currentPage"
+						type="number"
+						:min="1"
+						:max="totalPages"
+						class="w-12 text-xs border border-gray-300 rounded px-2 py-1 text-center focus:outline-none focus:ring-1 focus:ring-brand-800"
+						@change="goToPage(currentPage)" />
+					<span class="text-xs text-gray-600 px-2">de {{ totalPages }}</span>
+				</div>
+
+				<button
+					:disabled="currentPage === totalPages"
+					:class="[
+						'px-3 py-1 text-xs rounded border',
+						currentPage === totalPages
+							? 'bg-gray-100 text-gray-400 border-gray-300 cursor-not-allowed'
+							: 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
+					]"
+					@click="nextPage">
+					Siguiente ›
+				</button>
+			</div>
+
+			<span class="text-xs text-gray-500 bg-white px-2 py-1 rounded border border-gray-200">
+				{{ visibleHeaderColumns.length }} columnas visibles
+			</span>
 		</div>
-	</div>
-	
-	<div class="flex items-center space-x-2">
-		<button 
-			@click="prevPage" 
-			:disabled="currentPage === 1"
-			:class="[
-				'px-3 py-1 text-xs rounded border',
-				currentPage === 1 
-					? 'bg-gray-100 text-gray-400 border-gray-300 cursor-not-allowed' 
-					: 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
-			]">
-			‹ Anterior
-		</button>
-		
-		<div class="flex items-center space-x-1">
-			<span class="text-xs text-gray-600 px-2">Página</span>
-			<input 
-				type="number" 
-				v-model.number="currentPage" 
-				@change="goToPage(currentPage)"
-				:min="1" 
-				:max="totalPages"
-				class="w-12 text-xs border border-gray-300 rounded px-2 py-1 text-center focus:outline-none focus:ring-1 focus:ring-brand-800" />
-			<span class="text-xs text-gray-600 px-2">de {{ totalPages }}</span>
-		</div>
-		
-		<button 
-			@click="nextPage" 
-			:disabled="currentPage === totalPages"
-			:class="[
-				'px-3 py-1 text-xs rounded border',
-				currentPage === totalPages 
-					? 'bg-gray-100 text-gray-400 border-gray-300 cursor-not-allowed' 
-					: 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
-			]">
-			Siguiente ›
-		</button>
-	</div>
-	
-	<span class="text-xs text-gray-500 bg-white px-2 py-1 rounded border border-gray-200">
-		{{ visibleHeaderColumns.length }} columnas visibles
-	</span>
-</div>
 	</div>
 
+	<!-- Modal para estudiantes -->
 	<div v-if="showStudentModal" class="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
 		<div class="bg-white rounded-xl p-6 w-3/4 max-w-4xl shadow-xl overflow-x-auto max-h-[80vh]">
 			<h3 class="text-lg font-bold mb-3">Datos de los Estudiantes</h3>
@@ -371,21 +388,70 @@
 		</div>
 	</div>
 
-	<!-- Modal de Certificaciones -->
+	<!-- Modal para certificaciones -->
 	<div v-if="showCertificationsModal" class="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
 		<div class="bg-white rounded-xl p-6 w-1/2 max-w-2xl shadow-xl">
-			<h3 class="text-lg font-bold mb-3">Certificaciones y Microcredenciales</h3>
+			<h3 class="text-lg font-bold mb-3">Certificaciones</h3>
 			<div class="space-y-2 max-h-96 overflow-y-auto">
 				<div
 					v-for="(cert, index) in selectedCertifications"
 					:key="index"
 					class="p-3 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
 					<h4 class="font-semibold text-brand-800">{{ cert.name }}</h4>
-					<p class="text-sm text-gray-600">{{ cert.type }}</p>
-					<p class="text-xs text-gray-500">Emitido: {{ cert.issue_date }}</p>
+					<p class="text-sm text-gray-600">{{ cert.type || 'Certificación' }}</p>
+					<p v-if="cert.organization" class="text-xs text-gray-500">Organización: {{ cert.organization }}</p>
+					<p v-if="cert.description" class="text-xs text-gray-500">Descripción: {{ cert.description }}</p>
+					<p v-if="cert.hours" class="text-xs text-gray-500">Horas: {{ cert.hours }}</p>
+					<p v-if="cert.credential_type" class="text-xs text-gray-500">Tipo: {{ cert.credential_type }}</p>
 				</div>
 			</div>
 			<button class="mt-4 px-4 py-2 bg-gradient-to-r from-brand-800 to-brand-900 text-white rounded-lg hover:from-brand-700 hover:to-brand-800 transition-all shadow-sm" @click="showCertificationsModal = false">
+				Cerrar
+			</button>
+		</div>
+	</div>
+
+	<!-- Modal para microcredenciales -->
+	<div v-if="showMicrocredentialsModal" class="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
+		<div class="bg-white rounded-xl p-6 w-1/2 max-w-2xl shadow-xl">
+			<h3 class="text-lg font-bold mb-3">Microcredenciales</h3>
+			<div class="space-y-2 max-h-96 overflow-y-auto">
+				<div
+					v-for="(micro, index) in selectedMicrocredentials"
+					:key="index"
+					class="p-3 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
+					<h4 class="font-semibold text-brand-800">{{ micro.name }}</h4>
+					<p class="text-sm text-gray-600">{{ micro.type || 'Microcredencial' }}</p>
+					<p v-if="micro.organization" class="text-xs text-gray-500">Organización: {{ micro.organization }}</p>
+					<p v-if="micro.description" class="text-xs text-gray-500">Descripción: {{ micro.description }}</p>
+					<p v-if="micro.hours" class="text-xs text-gray-500">Horas: {{ micro.hours }}</p>
+					<p v-if="micro.credential_type" class="text-xs text-gray-500">Tipo: {{ micro.credential_type }}</p>
+				</div>
+			</div>
+			<button class="mt-4 px-4 py-2 bg-gradient-to-r from-brand-800 to-brand-900 text-white rounded-lg hover:from-brand-700 hover:to-brand-800 transition-all shadow-sm" @click="showMicrocredentialsModal = false">
+				Cerrar
+			</button>
+		</div>
+	</div>
+
+	<!-- Modal para diplomas -->
+	<div v-if="showCertificatesModal" class="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
+		<div class="bg-white rounded-xl p-6 w-1/2 max-w-2xl shadow-xl">
+			<h3 class="text-lg font-bold mb-3">Diplomas</h3>
+			<div class="space-y-2 max-h-96 overflow-y-auto">
+				<div
+					v-for="(cert, index) in selectedCertificates"
+					:key="index"
+					class="p-3 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
+					<h4 class="font-semibold text-brand-800">{{ cert.name }}</h4>
+					<p class="text-sm text-gray-600">{{ cert.type || 'Diploma' }}</p>
+					<p v-if="cert.organization" class="text-xs text-gray-500">Organización: {{ cert.organization }}</p>
+					<p v-if="cert.description" class="text-xs text-gray-500">Descripción: {{ cert.description }}</p>
+					<p v-if="cert.hours" class="text-xs text-gray-500">Horas: {{ cert.hours }}</p>
+					<p v-if="cert.credential_type" class="text-xs text-gray-500">Tipo: {{ cert.credential_type }}</p>
+				</div>
+			</div>
+			<button class="mt-4 px-4 py-2 bg-gradient-to-r from-brand-800 to-brand-900 text-white rounded-lg hover:from-brand-700 hover:to-brand-800 transition-all shadow-sm" @click="showCertificatesModal = false">
 				Cerrar
 			</button>
 		</div>
@@ -398,68 +464,71 @@ import btnEdit from '../../../components/buttons/btnEdit.vue';
 import btnDelete from '../../../components/buttons/btnDelete.vue';
 import { getAllDualProjects } from '../../../services/dual_projects/dual_projects';
 
-
 const showColumnSelector = ref(false);
 const visibleColumns = ref([
-	'status', 'students', 'institution_name', 'organization_name',
-	'project_name', 'agreement', 'project_status', 'options'
+  'status', 'students', 'institution_name', 'organization_name',
+  'project_name', 'agreement', 'project_status', 'certifications',
+  'microcredentials', 'certificates', 'options'
 ]);
 
 const availableColumns = [
-	{ key: 'status', label: 'Estatus', filterable: true },
-	{ key: 'students', label: 'Estudiantes', filterable: true },
-	{ key: 'institution_name', label: 'Institución', filterable: true },
-	{ key: 'institution_state', label: 'Estado Institución', filterable: true },
-	{ key: 'institution_city', label: 'Ciudad Institución', filterable: true },
-	{ key: 'organization_name', label: 'Organización', filterable: true },
-	{ key: 'organization_state', label: 'Estado Organización', filterable: true },
-	{ key: 'organization_city', label: 'Ciudad Organización', filterable: true },
-	{ key: 'organization_sector', label: 'Sector Organización', filterable: true },
-	{ key: 'organization_type', label: 'Tipo Organización', filterable: true },
-	{ key: 'education_type', label: 'Tipo Educación Dual', filterable: true },
-	{ key: 'project_name', label: 'Nombre Proyecto', filterable: true },
-	{ key: 'agreement', label: 'Convenio', filterable: true },
-	{ key: 'project_status', label: 'Estatus Proyecto', filterable: true },
-	{ key: 'grade', label: 'Calificación', filterable: true },
-	{ key: 'certifications', label: 'Certificaciones', filterable: true },
-	{ key: 'area', label: 'Clasificación General', filterable: true },
-	{ key: 'options', label: 'Opciones', filterable: false }
+  { key: 'status', label: 'Estatus', filterable: true },
+  { key: 'students', label: 'Estudiantes', filterable: true },
+  { key: 'institution_name', label: 'Institución', filterable: true },
+  { key: 'institution_state', label: 'Estado Institución', filterable: true },
+  { key: 'institution_city', label: 'Ciudad Institución', filterable: true },
+  { key: 'organization_name', label: 'Organización', filterable: true },
+  { key: 'organization_state', label: 'Estado Organización', filterable: true },
+  { key: 'organization_city', label: 'Ciudad Organización', filterable: true },
+  { key: 'organization_sector', label: 'Sector Organización', filterable: true },
+  { key: 'organization_type', label: 'Tipo Organización', filterable: true },
+  { key: 'education_type', label: 'Tipo Educación Dual', filterable: true },
+  { key: 'project_name', label: 'Nombre Proyecto', filterable: true },
+  { key: 'agreement', label: 'Convenio', filterable: true },
+  { key: 'project_status', label: 'Estatus Proyecto', filterable: true },
+  { key: 'grade', label: 'Calificación', filterable: true },
+  { key: 'certifications', label: 'Certificaciones', filterable: true },
+  { key: 'microcredentials', label: 'Microcredenciales', filterable: true },
+  { key: 'certificates', label: 'Diplomados', filterable: true },
+  { key: 'area', label: 'Clasificación General', filterable: true },
+  { key: 'options', label: 'Opciones', filterable: false }
 ];
 
-
 const toggleColumn = (columnKey) => {
-	const index = visibleColumns.value.indexOf(columnKey);
-	if (index > -1) {
-		visibleColumns.value.splice(index, 1);
-	} else {
-		visibleColumns.value.push(columnKey);
-	}
+  const index = visibleColumns.value.indexOf(columnKey);
+  if (index > -1) {
+    visibleColumns.value.splice(index, 1);
+  } else {
+    visibleColumns.value.push(columnKey);
+  }
 };
 
 const showAllColumns = () => {
-	visibleColumns.value = availableColumns.map(col => col.key);
+  visibleColumns.value = availableColumns.map(col => col.key);
 };
 
 const hideAllColumns = () => {
-	visibleColumns.value = ['status', 'students', 'options'];
+  visibleColumns.value = ['status', 'students', 'options'];
 };
 
 const isColumnVisible = (columnKey) => {
-	return visibleColumns.value.includes(columnKey);
+  return visibleColumns.value.includes(columnKey);
 };
 
-
 const visibleHeaderColumns = computed(() => {
-	return availableColumns.filter(col => visibleColumns.value.includes(col.key));
+  return availableColumns.filter(col => visibleColumns.value.includes(col.key));
 });
 
 const dualProjects = ref([]);
 const isLoading = ref(false);
 const showStudentModal = ref(false);
 const showCertificationsModal = ref(false);
+const showMicrocredentialsModal = ref(false);
+const showCertificatesModal = ref(false);
 const selectedStudents = ref([]);
 const selectedCertifications = ref([]);
-
+const selectedMicrocredentials = ref([]);
+const selectedCertificates = ref([]);
 
 const rowsPerPage = ref(10);
 const currentPage = ref(1);
@@ -468,251 +537,207 @@ const totalItems = ref(0);
 const fromItem = ref(0);
 const toItem = ref(0);
 
-
 const filters = ref({
-	status: '',
-	students: '',
-	institution_name: '',
-	institution_state: '',
-	institution_city: '',
-	organization_name: '',
-	organization_state: '',
-	organization_city: '',
-	organization_sector: '',
-	organization_type: '',
-	education_type: '',
-	project_name: '',
-	agreement: '',
-	project_status: '',
-	grade: '',
-	certifications: '',
-	area: ''
+  status: '',
+  students: '',
+  institution_name: '',
+  institution_state: '',
+  institution_city: '',
+  organization_name: '',
+  organization_state: '',
+  organization_city: '',
+  organization_sector: '',
+  organization_type: '',
+  education_type: '',
+  project_name: '',
+  agreement: '',
+  project_status: '',
+  grade: '',
+  certifications: '',
+  microcredentials: '',
+  certificates: '',
+  area: ''
 });
 
 watch(filters, () => {
-	currentPage.value = 1;
-	fetchDualProjects();
+  currentPage.value = 1;
+  fetchDualProjects();
 }, { deep: true });
 
-
 watch(currentPage, () => {
-	fetchDualProjects();
+  fetchDualProjects();
 });
 
 watch(rowsPerPage, () => {
-	currentPage.value = 1;
-	fetchDualProjects();
+  currentPage.value = 1;
+  fetchDualProjects();
 });
 
 const clearFilters = () => {
-	filters.value = {
-		status: '',
-		students: '',
-		institution_name: '',
-		institution_state: '',
-		institution_city: '',
-		organization_name: '',
-		organization_state: '',
-		organization_city: '',
-		organization_sector: '',
-		organization_type: '',
-		education_type: '',
-		project_name: '',
-		agreement: '',
-		project_status: '',
-		grade: '',
-		certifications: '',
-		area: ''
-	};
+  filters.value = {
+    status: '',
+    students: '',
+    institution_name: '',
+    institution_state: '',
+    institution_city: '',
+    organization_name: '',
+    organization_state: '',
+    organization_city: '',
+    organization_sector: '',
+    organization_type: '',
+    education_type: '',
+    project_name: '',
+    agreement: '',
+    project_status: '',
+    grade: '',
+    certifications: '',
+    microcredentials: '',
+    certificates: '',
+    area: ''
+  };
 };
 
 const fetchDualProjects = async () => {
-	isLoading.value = true;
+  isLoading.value = true;
 
-	try {
-		const params = {
-			page: currentPage.value,
-			per_page: rowsPerPage.value,
-			filters: {}
-		};
+  try {
+    const params = {
+      page: currentPage.value,
+      per_page: rowsPerPage.value,
+      filters: {}
+    };
 
-		Object.keys(filters.value).forEach(key => {
-			if (filters.value[key] && filters.value[key].trim() !== '') {
-				params.filters[key] = filters.value[key];
-			}
-		});
+    Object.keys(filters.value).forEach(key => {
+      if (filters.value[key] && filters.value[key].trim() !== '') {
+        params.filters[key] = filters.value[key];
+      }
+    });
 
-		const response = await getAllDualProjects(params);
-		const data = response.data?.data || [];
-		const meta = response.data?.meta || {};
+    const response = await getAllDualProjects(params);
 
-		dualProjects.value = data.map(project => {
-			const certifications = project.certifications || [];
-			
-			return {
-				id: project.id,
-				has_report: project.has_report,
-				project_name: project.project_name || 'Por definir',
-				institution_id: project.institution_id,
-				institution_name: project.institution_name || 'Por definir',
-				institution_state: project.institution_state || 'Por definir',
-				institution_city: project.institution_city || 'Por definir',
-				area: project.area || 'Por definir',
-				organization_name: project.organization_name || 'Por definir',
-				organization_state: project.organization_state || 'Por definir',
-				organization_city: project.organization_city || 'Por definir',
-				organization_sector: project.organization_sector || 'Por definir',
-				organization_type: project.organization_type || 'Por definir',
-				education_type: project.education_type || 'Por definir',
-				agreement: project.agreement || 'Por definir',
-				project_status: project.project_status || 'Por definir',
-				grade: project.grade || 'N/A',
-				certifications: certifications,
-				status_document: project.status_document || 'Por definir',
-				student_name: project.student_name || '',
-				raw_students: project.raw_students || []
-			};
-		});
+    const data = response.data?.data || [];
+    const meta = response.data?.meta || {};
 
-		totalItems.value = meta.total || 0;
-		totalPages.value = meta.last_page || 1;
-		fromItem.value = meta.from || 0;
-		toItem.value = meta.to || 0;
+    if (data.length === 0) {
+      console.warn('No se recibieron datos del servidor');
+      dualProjects.value = [];
+      totalItems.value = 0;
+      totalPages.value = 1;
+      fromItem.value = 0;
+      toItem.value = 0;
+      return;
+    }
 
-		console.log('📊 Paginación correcta desde backend:', {
-			total: totalItems.value,
-			from: fromItem.value,
-			to: toItem.value,
-			per_page: meta.per_page || rowsPerPage.value,
-			current_page: meta.current_page || currentPage.value,
-			last_page: totalPages.value
-		});
+    dualProjects.value = data;
 
-	} catch (error) {
-		console.error('📌 Error al cargar proyectos:', {
-			nombre: error.name,
-			mensaje: error.message,
-			stack: error.stack,
-			response: error.response?.data
-		});
+    totalItems.value = meta.total || 0;
+    totalPages.value = meta.last_page || 1;
+    fromItem.value = meta.from || 0;
+    toItem.value = meta.to || 0;
 
-		if (error.response) {
-			console.error('📡 Respuesta del servidor:', {
-				status: error.response.status,
-				statusText: error.response.statusText,
-				data: error.response.data
-			});
-		}
-		
-		dualProjects.value = [];
-		totalItems.value = 0;
-		totalPages.value = 1;
-		fromItem.value = 0;
-		toItem.value = 0;
-	} finally {
-		isLoading.value = false;
-	}
+  } catch (error) {
+    console.error('Error al cargar proyectos:', error);
+
+    dualProjects.value = [];
+    totalItems.value = 0;
+    totalPages.value = 1;
+    fromItem.value = 0;
+    toItem.value = 0;
+  } finally {
+    isLoading.value = false;
+  }
 };
 
 const nextPage = () => {
-	if (currentPage.value < totalPages.value) {
-		currentPage.value++;
-	}
+  if (currentPage.value < totalPages.value) {
+    currentPage.value++;
+  }
 };
 
 const prevPage = () => {
-	if (currentPage.value > 1) {
-		currentPage.value--;
-	}
+  if (currentPage.value > 1) {
+    currentPage.value--;
+  }
 };
 
 const goToPage = (page) => {
-	if (page >= 1 && page <= totalPages.value) {
-		currentPage.value = page;
-	} else {
-		console.warn(`⚠️ Página ${page} fuera de rango. Total de páginas: ${totalPages.value}`);
-	}
+  if (page >= 1 && page <= totalPages.value) {
+    currentPage.value = page;
+  } else {
+    console.warn(`Página ${page} fuera de rango. Total de páginas: ${totalPages.value}`);
+  }
 };
 
 const getAgreementClass = (agreement) => {
-	const agreementLower = agreement?.toLowerCase() || '';
-	if (agreementLower.includes('activo') || agreementLower.includes('vigente')) {
-		return 'text-green-600 font-semibold';
-	} else if (agreementLower.includes('vencido') || agreementLower.includes('expirado')) {
-		return 'text-red-600 font-semibold';
-	} else if (agreementLower.includes('pendiente') || agreementLower.includes('proceso')) {
-		return 'text-yellow-600 font-semibold';
-	}
-	return 'text-gray-600';
+  const agreementLower = agreement?.toLowerCase() || '';
+  if (agreementLower.includes('activo') || agreementLower.includes('vigente')) {
+    return 'text-green-600 font-semibold';
+  } else if (agreementLower.includes('vencido') || agreementLower.includes('expirado')) {
+    return 'text-red-600 font-semibold';
+  } else if (agreementLower.includes('pendiente') || agreementLower.includes('proceso')) {
+    return 'text-yellow-600 font-semibold';
+  }
+  return 'text-gray-600';
 };
 
 const getStatusClass = (status) => {
-	const statusLower = status?.toLowerCase() || '';
-	if (statusLower.includes('completado') || statusLower.includes('finalizado') || statusLower.includes('concluido')) {
-		return 'text-green-600 font-semibold';
-	} else if (statusLower.includes('en progreso') || statusLower.includes('activo')) {
-		return 'text-blue-600 font-semibold';
-	} else if (statusLower.includes('pendiente') || statusLower.includes('iniciar')) {
-		return 'text-yellow-600 font-semibold';
-	} else if (statusLower.includes('cancelado') || statusLower.includes('suspendido')) {
-		return 'text-red-600 font-semibold';
-	}
-	return 'text-gray-600';
+  const statusLower = status?.toLowerCase() || '';
+  if (statusLower.includes('completado') || statusLower.includes('finalizado') || statusLower.includes('concluido')) {
+    return 'text-green-600 font-semibold';
+  } else if (statusLower.includes('en progreso') || statusLower.includes('activo')) {
+    return 'text-blue-600 font-semibold';
+  } else if (statusLower.includes('pendiente') || statusLower.includes('iniciar')) {
+    return 'text-yellow-600 font-semibold';
+  } else if (statusLower.includes('cancelado') || statusLower.includes('suspendido')) {
+    return 'text-red-600 font-semibold';
+  }
+  return 'text-gray-600';
 };
 
-const getGradeClass = (grade) => {
-	if (!grade || grade === 'N/A') return 'text-gray-600';
-
-	const numericGrade = parseFloat(grade);
-	if (numericGrade >= 90) return 'text-green-600 font-semibold';
-	if (numericGrade >= 80) return 'text-blue-600 font-semibold';
-	if (numericGrade >= 70) return 'text-yellow-600 font-semibold';
-	return 'text-red-600 font-semibold';
-};
 
 const openStudentModal = (project) => {
-	if (project.raw_students && project.raw_students.length > 0) {
-		selectedStudents.value = project.raw_students;
-		showStudentModal.value = true;
-	} 
-	else if (project.student_name && project.student_name.trim() !== '') {
-		selectedStudents.value = project.student_name
-			.split(',')
-			.map(str => {
-				const parts = str.split('–').map(s => s.trim());
-				return {
-					name: parts[0] || '',
-					career: parts[1] || 'Sin carrera',
-					specialty: parts[2] || 'Sin especialidad'
-				};
-			});
-		showStudentModal.value = true;
-	}
+  if (project.raw_students && project.raw_students.length > 0) {
+    selectedStudents.value = project.raw_students;
+    showStudentModal.value = true;
+  } else {
+    selectedStudents.value = [];
+    showStudentModal.value = true;
+  }
 };
 
 const openCertificationsModal = (project) => {
-	selectedCertifications.value = project.certifications || [];
-	showCertificationsModal.value = true;
+  selectedCertifications.value = project.certifications || [];
+  showCertificationsModal.value = true;
+};
+
+const openMicrocredentialsModal = (project) => {
+  selectedMicrocredentials.value = project.microcredentials || [];
+  showMicrocredentialsModal.value = true;
+};
+
+const openCertificatesModal = (project) => {
+  selectedCertificates.value = project.certificates || [];
+  showCertificatesModal.value = true;
 };
 
 const studentFilters = ref({
-	name: '',
-	career: '',
-	specialty: ''
+  name: '',
+  career: '',
+  specialty: ''
 });
 
 const filteredStudents = computed(() => {
-	return selectedStudents.value.filter(stud => {
-		return (
-			stud.name.toLowerCase().includes(studentFilters.value.name.toLowerCase()) &&
-			stud.career.toLowerCase().includes(studentFilters.value.career.toLowerCase()) &&
-			stud.specialty.toLowerCase().includes(studentFilters.value.specialty.toLowerCase())
-		);
-	});
+  return selectedStudents.value.filter(stud => {
+    return (
+        (stud.name?.toLowerCase() || '').includes(studentFilters.value.name.toLowerCase()) &&
+        (stud.career?.toLowerCase() || '').includes(studentFilters.value.career.toLowerCase()) &&
+        (stud.specialty?.toLowerCase() || '').includes(studentFilters.value.specialty.toLowerCase())
+    );
+  });
 });
 
 onMounted(() => {
-	fetchDualProjects();
+  fetchDualProjects();
 });
 
 defineExpose({ fetchData: fetchDualProjects });
@@ -720,17 +745,17 @@ defineExpose({ fetchData: fetchDualProjects });
 
 <style scoped>
 .custom-scrollbar::-webkit-scrollbar {
-	height: 8px;
+  height: 8px;
 }
 .custom-scrollbar::-webkit-scrollbar-track {
-	background: #f1f1f1;
-	border-radius: 4px;
+  background: #f1f1f1;
+  border-radius: 4px;
 }
 .custom-scrollbar::-webkit-scrollbar-thumb {
-	background: #82181a;
-	border-radius: 4px;
+  background: #82181a;
+  border-radius: 4px;
 }
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-	background: #460809;
+  background: #460809;
 }
 </style>

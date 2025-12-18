@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed, defineProps, defineEmits, watch, onMounted } from 'vue';
+import { ref, computed, defineProps, defineEmits, watch, onMounted, nextTick } from 'vue';
 import Datepicker from '@vuepic/vue-datepicker';
 import '@vuepic/vue-datepicker/dist/main.css';
 import 'floating-vue/dist/style.css';
@@ -44,7 +44,6 @@ const errors = ref({});
 const showValidationErrors = ref(false);
 const hasAttemptedSubmit = ref(false);
 
-const allDualArea = ref(props.areas || [])
 const searchArea = ref('');
 const showAreaDropdown = ref(false);
 const areaDropdownRef = ref(null);
@@ -80,20 +79,29 @@ const searchCertification = ref('');
 const showCertificationDropdown = ref(false);
 const certificationDropdownRef = ref(null);
 
-// Nombres de asesores siempre editables
+const allDiplomas = ref(props.diplomas || []);
+const selectedDiplomas = ref([]);
+const searchDiploma = ref('');
+const showDiplomaDropdown = ref(false);
+const diplomaDropdownRef = ref(null);
+
 const internalAdvisorName = ref(props.modelValue.internal_advisor_name || '');
 const externalAdvisorName = ref(props.modelValue.external_advisor_name || '');
+const economic_benefit = ref(props.modelValue.economic_benefit || 0);
+const time_benefit = ref(props.modelValue.time_benefit || 0);
+const economic_benefit_note = ref(props.modelValue.economic_benefit_note || '');
+const time_benefit_note = ref(props.modelValue.time_benefit_note || '');
 
-// Calificaciones solo cuando el proyecto esté concluido
 const internalAdvisorQualification = ref(props.modelValue.internal_advisor_qualification || null);
 const externalAdvisorQualification = ref(props.modelValue.external_advisor_qualification || null);
 
-// Computed para controlar la visibilidad de microcredenciales, certificados y diplomas
+const isAmountDisabled = ref(false);
+const amountField = ref(null);
+
 const showCredentialsSection = computed(() => {
 	return props.modelValue.is_concluded === 1;
 });
 
-// Computed para controlar si las calificaciones están habilitadas
 const areQualificationsEnabled = computed(() => {
 	return props.modelValue.is_concluded === 1;
 });
@@ -114,382 +122,8 @@ const averageQualification = computed(() => {
 	return '';
 });
 
-const allDiplomas = ref(props.diplomas || []);
-const selectedDiplomas = ref([]);
-const searchDiploma = ref('');
-const showDiplomaDropdown = ref(false);
-const diplomaDropdownRef = ref(null);
-
-const isAmountDisabled = ref(false);
-const amountField = ref(null);
-
-const fieldHelpTexts = {
-	name_report: "Escribe el nombre específico del proyecto o actividad dual que se está registrando (ejemplo: 'Laboratorio web de seguridad y privacidad').",
-	id_dual_area: "Clasificación general del proyecto dual. Sirve para agrupar los proyectos según su naturaleza académica, profesional o técnica.",
-	dual_type_id: "Selecciona el tipo de modalidad que tendrá la actividad dual: Desarrollo de proyecto, Rotación de puestos, Práctica en área, Residencias Profesionales, Servicio Social, etc.",
-	id_organization: "Selecciona la empresa, institución u organismo donde se desarrollará el proyecto dual. Cada organización incluye datos como tipo, sector, tamaño y ubicación.",
-	period_start: "Día en que comenzará formalmente la actividad dual.",
-	period_end: "Día en que se dará por concluido la actividad. Solo es obligatorio si el proyecto ya ha concluido.",
-	status_document: "Situación actual del convenio relacionado al proyecto (firmado o en trámite).",
-	economic_support: "Forma en la que la organización brinda apoyo (ejemplo: beca, transporte, alimentación, honorarios).",
-	amount: "Cantidad monetaria o equivalente proporcionada como apoyo.",
-	max_qualification: "La escala más alta de calificación (ejemplo: 10 o 100).",
-	qualification: "Evaluación obtenida en el proyecto de acuerdo con la escala.",
-	is_concluded: "Marca si el proyecto ya finalizó.",
-	is_hired: "Indica si el estudiante fue contratado después de concluir el proyecto.",
-	micro_credentials: "Microcredenciales  obtenidas al finalizar el proyecto.",
-	certifications: "Certificaciones obtenidas al finalizar el proyecto.",
-	diplomas: "Diplomados obtenidas al finalizar el proyecto.",
-	description: "Proporcione una breve descripción de la modalidad seleccionada, indicando sus características o propósito.",
-};
-
-const getValidationClass = (fieldName) => {
-	if (!showValidationErrors.value) return '';
-
-	if (errors.value[fieldName]) {
-		return 'input-error';
-	}
-
-	const requiredFields = [
-		'name_report', 'id_organization', 'id_dual_area', 'period_start',
-		'status_document', 'economic_support', 'amount', 'is_concluded',
-		'is_hired', 'dual_type_id'
-	];
-
-	if (fieldName === 'period_end' && props.modelValue.is_concluded === 1 && props.modelValue.period_end) {
-		return 'input-success';
-	}
-
-	if (requiredFields.includes(fieldName) && props.modelValue[fieldName]) {
-		return 'input-success';
-	}
-
-	return '';
-};
-
-const getValidationSummary = () => {
-	const errorCount = Object.keys(errors.value).length;
-	if (errorCount === 0) return null;
-
-	const errorFields = Object.keys(errors.value);
-	const fieldNames = {
-		'name_report': 'Nombre del Proyecto',
-		'id_organization': 'Organización',
-		'id_dual_area': 'Clasificación General del Proyecto',
-		'period_start': 'Fecha de Inicio',
-		'period_end': 'Fecha de Fin',
-		'status_document': 'Estado del Convenio',
-		'economic_support': 'Tipo de Apoyo Económico',
-		'amount': 'Monto',
-		'is_concluded': 'Proyecto Concluido',
-		'is_hired': 'Contratado',
-		'dual_type_id': 'Tipo de Modelo Dual',
-		'internal_advisor_qualification': 'Calificación Asesor Interno',
-		'external_advisor_qualification': 'Calificación Asesor Externo'
-	};
-
-	return {
-		count: errorCount,
-		fields: errorFields.map(field => ({
-			name: fieldNames[field] || field,
-			message: errors.value[field]
-		}))
-	};
-};
-
-const resetValidation = () => {
-	showValidationErrors.value = false;
-	hasAttemptedSubmit.value = false;
-	errors.value = {};
-};
-
-watch(() => props.modelValue.max_qualification, (newScale, oldScale) => {
-	if (newScale !== oldScale) {
-		internalAdvisorQualification.value = null;
-		externalAdvisorQualification.value = null;
-		update('internal_advisor_qualification', null);
-		update('external_advisor_qualification', null);
-		update('qualification', null);
-	}
-});
-
-const validateQualification = (value, fieldName) => {
-	if (value === null || value === '' || value === undefined) return true;
-
-	const maxScale = props.modelValue.max_qualification;
-	if (!maxScale) {
-		errors.value[fieldName] = 'Primero seleccione la escala de calificación';
-		return false;
-	}
-
-	const numValue = Number(value);
-	if (numValue < 0 || numValue > maxScale) {
-		errors.value[fieldName] = `La calificación debe estar entre 0 y ${maxScale}`;
-		return false;
-	}
-
-	delete errors.value[fieldName];
-	return true;
-};
-
-watch(internalAdvisorQualification, (newValue) => {
-	if (newValue !== null && newValue !== '') {
-		validateQualification(newValue, 'internal_advisor_qualification');
-	} else {
-		delete errors.value.internal_advisor_qualification;
-	}
-});
-
-watch(externalAdvisorQualification, (newValue) => {
-	if (newValue !== null && newValue !== '') {
-		validateQualification(newValue, 'external_advisor_qualification');
-	} else {
-		delete errors.value.external_advisor_qualification;
-	}
-});
-
-watch(internalAdvisorName, (newName) => {
-	update('internal_advisor_name', newName);
-});
-
-watch(externalAdvisorName, (newName) => {
-	update('external_advisor_name', newName);
-});
-
-watch(internalAdvisorQualification, (newQual) => {
-	if (areQualificationsEnabled.value && validateQualification(newQual, 'internal_advisor_qualification')) {
-		update('internal_advisor_qualification', newQual);
-		updateQualificationAverage();
-	} else if (!areQualificationsEnabled.value && newQual !== null && newQual !== '') {
-		internalAdvisorQualification.value = null;
-		update('internal_advisor_qualification', null);
-	}
-});
-
-watch(externalAdvisorQualification, (newQual) => {
-	if (areQualificationsEnabled.value && validateQualification(newQual, 'external_advisor_qualification')) {
-		update('external_advisor_qualification', newQual);
-		updateQualificationAverage();
-	} else if (!areQualificationsEnabled.value && newQual !== null && newQual !== '') {
-		// Resetear si se intenta llenar cuando no está concluido
-		externalAdvisorQualification.value = null;
-		update('external_advisor_qualification', null);
-	}
-});
-
-const updateQualificationAverage = () => {
-	const intQ = Number(internalAdvisorQualification.value) || 0;
-	const extQ = Number(externalAdvisorQualification.value) || 0;
-
-	if (internalAdvisorQualification.value != null &&
-		externalAdvisorQualification.value != null &&
-		internalAdvisorQualification.value !== '' &&
-		externalAdvisorQualification.value !== '') {
-		const avg = ((intQ + extQ) / 2).toFixed(2);
-		update('qualification', Number(avg));
-	} else {
-		update('qualification', null);
-	}
-};
-
-watch(() => props.modelValue.economic_support, (newSupportId, oldSupportId) => {
-	if (newSupportId === 1) {
-		isAmountDisabled.value = true;
-		update('amount', 0);
-
-		const sinApoyoOption = props.supportTypes?.find(s => s.id === 1);
-		if (sinApoyoOption) {
-			searchSupport.value = sinApoyoOption.name;
-		}
-	}
-	else if (oldSupportId === 1 && newSupportId !== 1) {
-		isAmountDisabled.value = false;
-	}
-});
-
-watch(() => props.supportTypes, (newTypes) => {
-	if (props.modelValue.economic_support === 1) {
-		isAmountDisabled.value = true;
-	}
-});
-
-const initializeMicroCredentials = () => {
-	selectedMicroCredentials.value = (props.modelValue.micro_credentials || [])
-		.map(id => allMicroCredentials.value.find(m => Number(m.id) === Number(id)))
-		.filter(Boolean);
-};
-
-const initializeCertifications = () => {
-	selectedCertifications.value = (props.modelValue.certifications || [])
-		.map(id => allCertifications.value.find(c => Number(c.id) === Number(id)))
-		.filter(Boolean);
-};
-
-const initializeDiplomas = () => {
-	selectedDiplomas.value = (props.modelValue.diplomas || [])
-		.map(id => allDiplomas.value.find(d => Number(d.id) === Number(id)))
-		.filter(Boolean);
-};
-
-const handleSavedOrganization = async () => {
-	try {
-		const res = await getOrganizations();
-		emit('update:organizations', res.data);
-
-		const newOrganization = res.data?.[res.data.length - 1];
-		if (newOrganization) {
-			update('id_organization', newOrganization.id);
-		}
-
-		closeModal();
-		setTimeout(() => {
-			showOrganizationDropdown.value = true;
-			searchOrganization.value = '';
-		}, 100);
-
-	} catch (error) {
-		console.error('Error al recargar organizaciones:', error);
-		closeModal();
-	}
-};
-
-const handleSavedArea = async () => {
-	try {
-		const res = await getDualAreas();
-		emit('update:dualAreas', res.data);
-		allDualArea.value = res.data;
-
-		const newArea = res.data?.[res.data.length - 1];
-		if (newArea) {
-			update('id_dual_area', newArea.id);
-		}
-
-		closeAreaModal();
-		setTimeout(() => {
-			showAreaDropdown.value = true;
-			searchArea.value = newArea?.name || '';
-		}, 100);
-
-	} catch (error) {
-		console.error('Error al recargar áreas duales:', error);
-		closeAreaModal();
-	}
-};
-
-const handleSavedMicroCredential = async () => {
-	try {
-		const res = await getMicroCredentials();
-		emit('update:microCredentials', res.data);
-		allMicroCredentials.value = res.data;
-		closeMicroModal();
-		setTimeout(() => {
-			showMicroDropdown.value = true;
-			searchMicro.value = '';
-		}, 100);
-
-	} catch (error) {
-		console.error('Error al recargar microcredenciales:', error);
-		closeMicroModal();
-	}
-};
-
-const handleSavedCertification = async () => {
-	try {
-		const res = await getCertifications();
-		emit('update:certifications', res.data);
-		allCertifications.value = res.data;
-		closeCertificationModal();
-		setTimeout(() => {
-			showCertificationDropdown.value = true;
-			searchCertification.value = '';
-		}, 100);
-
-	} catch (error) {
-		console.error('Error al recargar certificaciones:', error);
-		closeCertificationModal();
-	}
-};
-
-const handleSavedDiploma = async () => {
-	try {
-		const res = await getDiplomas();
-		emit('update:diplomas', res.data);
-		allDiplomas.value = res.data;
-		closeDiplomaModal();
-		setTimeout(() => {
-			showDiplomaDropdown.value = true;
-			searchDiploma.value = '';
-		}, 100);
-
-	} catch (error) {
-		console.error('Error al recargar diplomados:', error);
-		closeDiplomaModal();
-	}
-};
-
-const handleSavedDualType = async () => {
-	try {
-		const res = await getDualTypes();
-		emit('update:dualTypes', res.data);
-
-		const newDualType = res.data?.[res.data.length - 1];
-		if (newDualType) {
-			update('dual_type_id', newDualType.id);
-		}
-
-		closeDualTypeModal();
-		setTimeout(() => {
-			showDualTypeDropdown.value = true;
-			searchDualType.value = newDualType?.name || '';
-		}, 100);
-
-	} catch (error) {
-		console.error('Error al recargar tipos duales:', error);
-		closeDualTypeModal();
-	}
-};
-
-const initializeSearchValues = () => {
-	if (props.modelValue.id_dual_area) {
-		const area = allDualArea.value?.find(a => a.id === props.modelValue.id_dual_area);
-		searchArea.value = area?.name || '';
-	}
-	if (props.modelValue.id_organization) {
-		const org = props.organizations?.find(o => o.id === props.modelValue.id_organization);
-		searchOrganization.value = org?.name || '';
-	}
-	if (props.modelValue.status_document) {
-		const status = props.agreementStatuses?.find(s => s.id === props.modelValue.status_document);
-		searchStatus.value = status?.name || '';
-	}
-	if (props.modelValue.economic_support) {
-		const support = props.supportTypes?.find(s => s.id === props.modelValue.economic_support);
-		searchSupport.value = support?.name || '';
-
-		if (props.modelValue.economic_support === 1) {
-			isAmountDisabled.value = true;
-			if (props.modelValue.amount !== 0) {
-				update('amount', 0);
-			}
-		} else {
-			isAmountDisabled.value = false;
-		}
-	}
-	if (props.modelValue.dual_type_id) {
-		const dualType = props.dualTypes?.find(d => d.id === props.modelValue.dual_type_id);
-		searchDualType.value = dualType?.name || '';
-	}
-	if (props.modelValue.max_qualification) {
-		maxQualification.value = props.modelValue.max_qualification.toString();
-	}
-
-	initializeMicroCredentials();
-	initializeCertifications();
-	initializeDiplomas();
-};
-
 const filteredAreas = computed(() =>
-	!searchArea.value ? allDualArea.value || [] : (allDualArea.value || []).filter(a => a.name.toLowerCase().includes(searchArea.value.toLowerCase()))
+	!searchArea.value ? props.areas || [] : (props.areas || []).filter(a => a.name.toLowerCase().includes(searchArea.value.toLowerCase()))
 );
 
 const filteredOrganizations = computed(() =>
@@ -552,19 +186,277 @@ const filteredDiplomas = computed(() =>
 		)
 );
 
-const handleClickOutside = (event) => {
-	if (areaDropdownRef.value && !areaDropdownRef.value.contains(event.target)) showAreaDropdown.value = false;
-	if (organizationDropdownRef.value && !organizationDropdownRef.value.contains(event.target)) showOrganizationDropdown.value = false;
-	if (statusDropdownRef.value && !statusDropdownRef.value.contains(event.target)) showStatusDropdown.value = false;
-	if (supportDropdownRef.value && !supportDropdownRef.value.contains(event.target)) showSupportDropdown.value = false;
-	if (dualTypeDropdownRef.value && !dualTypeDropdownRef.value.contains(event.target)) showDualTypeDropdown.value = false;
-	if (microDropdownRef.value && !microDropdownRef.value.contains(event.target)) showMicroDropdown.value = false;
-	if (certificationDropdownRef.value && !certificationDropdownRef.value.contains(event.target)) showCertificationDropdown.value = false;
-	if (diplomaDropdownRef.value && !diplomaDropdownRef.value.contains(event.target)) showDiplomaDropdown.value = false;
+const fieldHelpTexts = {
+	name_report: "Escribe el nombre específico del proyecto o actividad dual que se está registrando (ejemplo: 'Laboratorio web de seguridad y privacidad').",
+	id_dual_area: "Clasificación general del proyecto dual. Sirve para agrupar los proyectos según su naturaleza académica, profesional o técnica.",
+	dual_type_id: "Selecciona el tipo de modalidad que tendrá la actividad dual: Desarrollo de proyecto, Rotación de puestos, Práctica en área, Residencias Profesionales, Servicio Social, etc.",
+	id_organization: "Selecciona la empresa, institución u organismo donde se desarrollará el proyecto dual. Cada organización incluye datos como tipo, sector, tamaño y ubicación.",
+	period_start: "Día en que comenzará formalmente la actividad dual.",
+	period_end: "Día en que se dará por concluido la actividad. Solo es obligatorio si el proyecto ya ha concluido.",
+	status_document: "Situación actual del convenio relacionado al proyecto (firmado o en trámite).",
+	economic_support: "Forma en la que la organización brinda apoyo (ejemplo: beca, transporte, alimentación, honorarios).",
+	amount: "Cantidad monetaria o equivalente proporcionada como apoyo.",
+	max_qualification: "La escala más alta de calificación (ejemplo: 10 o 100).",
+	qualification: "Evaluación obtenida en el proyecto de acuerdo con la escala.",
+	is_concluded: "Marca si el proyecto ya finalizó.",
+	is_hired: "Indica si el estudiante fue contratado después de concluir el proyecto.",
+	micro_credentials: "Microcredenciales  obtenidas al finalizar el proyecto; puedes agregar cuantas necesites.",
+	certifications: "Certificaciones obtenidas al finalizar el proyecto; puedes agregar cuantas necesites.",
+	diplomas: "Diplomados obtenidas al finalizar el proyecto; puedes agregar cuantos necesites.",
+	description: "Proporcione una breve descripción de la modalidad seleccionada, indicando sus características o propósito.",
+	economic_benefit: "Monto del beneficio económico adicional recibido (en la moneda local). Use 0 si no hubo beneficio económico.",
+	time_benefit: "Cantidad de tiempo beneficiado (en horas o días). Use 0 si no hubo beneficio de tiempo.",
+	economic_benefit_note: "Detalles del beneficio económico. Obligatorio cuando el monto es 0, opcional cuando hay monto positivo.",
+	time_benefit_note: "Detalles del beneficio de tiempo. Obligatorio cuando el tiempo es 0, opcional cuando hay tiempo positivo.",
+};
+
+const getValidationClass = (fieldName) => {
+  if (!showValidationErrors.value) return '';
+
+  if (errors.value[fieldName]) {
+    return 'input-error';
+  }
+
+  const requiredFields = [
+    'name_report', 'id_organization', 'id_dual_area', 'period_start',
+    'status_document', 'economic_support', 'amount', 'is_concluded',
+    'is_hired', 'dual_type_id'
+  ];
+	
+  if (props.modelValue.is_concluded === 1) {
+    if (fieldName === 'economic_benefit' && economic_benefit.value !== null && economic_benefit.value !== '') {
+      return 'input-success';
+    }
+    if (fieldName === 'time_benefit' && time_benefit.value !== null && time_benefit.value !== '') {
+      return 'input-success';
+    }
+    
+   
+    if (fieldName === 'economic_benefit_note' && economic_benefit.value === 0 && economic_benefit_note.value) {
+      return 'input-success';
+    }
+    if (fieldName === 'time_benefit_note' && time_benefit.value === 0 && time_benefit_note.value) {
+      return 'input-success';
+    }
+  }
+
+  if (fieldName === 'period_end' && props.modelValue.is_concluded === 1 && props.modelValue.period_end) {
+    return 'input-success';
+  }
+
+  if (requiredFields.includes(fieldName) && props.modelValue[fieldName]) {
+    return 'input-success';
+  }
+
+  return '';
+};
+
+const getValidationSummary = () => {
+	const errorCount = Object.keys(errors.value).length;
+	if (errorCount === 0) return null;
+
+	const errorFields = Object.keys(errors.value);
+	const fieldNames = {
+		'name_report': 'Nombre del Proyecto',
+		'id_organization': 'Organización',
+		'id_dual_area': 'Clasificación General del Proyecto',
+		'period_start': 'Fecha de Inicio',
+		'period_end': 'Fecha de Fin',
+		'status_document': 'Estado del Convenio',
+		'economic_support': 'Tipo de Apoyo Económico',
+		'amount': 'Monto',
+		'is_concluded': 'Proyecto Concluido',
+		'is_hired': 'Contratado',
+		'dual_type_id': 'Tipo de Modelo Dual',
+		'internal_advisor_qualification': 'Calificación Asesor Interno',
+		'external_advisor_qualification': 'Calificación Asesor Externo',
+		'economic_benefit_note': 'Detalles del Beneficio Económico',
+        'time_benefit_note': 'Detalles del Beneficio de Tiempo',
+		'economic_benefit': 'Beneficio Económico',
+		'time_benefit': 'Beneficio de Tiempo'
+	};
+
+	return {
+		count: errorCount,
+		fields: errorFields.map(field => ({
+			name: fieldNames[field] || field,
+			message: errors.value[field]
+		}))
+	};
+};
+
+const resetValidation = () => {
+	showValidationErrors.value = false;
+	hasAttemptedSubmit.value = false;
+	errors.value = {};
+};
+
+watch(() => props.modelValue.max_qualification, (newScale, oldScale) => {
+	if (newScale !== oldScale) {
+		internalAdvisorQualification.value = null;
+		externalAdvisorQualification.value = null;
+		update('internal_advisor_qualification', null);
+		update('external_advisor_qualification', null);
+		update('qualification', null);
+	}
+});
+
+watch(internalAdvisorQualification, (newValue) => {
+	if (newValue !== null && newValue !== '') {
+		validateQualification(newValue, 'internal_advisor_qualification');
+	} else {
+		delete errors.value.internal_advisor_qualification;
+	}
+});
+
+watch(externalAdvisorQualification, (newValue) => {
+	if (newValue !== null && newValue !== '') {
+		validateQualification(newValue, 'external_advisor_qualification');
+	} else {
+		delete errors.value.external_advisor_qualification;
+	}
+});
+
+watch(internalAdvisorName, (newName) => {
+	update('internal_advisor_name', newName);
+});
+
+watch(externalAdvisorName, (newName) => {
+	update('external_advisor_name', newName);
+});
+
+watch(economic_benefit, (newBenefit) => {
+	update('economic_benefit', newBenefit);
+});
+
+watch(time_benefit, (newBenefit) => {
+	update('time_benefit', newBenefit);
+});
+
+watch(internalAdvisorQualification, (newQual) => {
+	if (areQualificationsEnabled.value && validateQualification(newQual, 'internal_advisor_qualification')) {
+		update('internal_advisor_qualification', newQual);
+		updateQualificationAverage();
+	} else if (!areQualificationsEnabled.value && newQual !== null && newQual !== '') {
+		internalAdvisorQualification.value = null;
+		update('internal_advisor_qualification', null);
+	}
+});
+
+watch(externalAdvisorQualification, (newQual) => {
+	if (areQualificationsEnabled.value && validateQualification(newQual, 'external_advisor_qualification')) {
+		update('external_advisor_qualification', newQual);
+		updateQualificationAverage();
+	} else if (!areQualificationsEnabled.value && newQual !== null && newQual !== '') {
+		externalAdvisorQualification.value = null;
+		update('external_advisor_qualification', null);
+	}
+});
+
+watch(() => props.modelValue.economic_support, (newSupportId, oldSupportId) => {
+	if (newSupportId === 1) {
+		isAmountDisabled.value = true;
+		update('amount', 0);
+
+		const sinApoyoOption = props.supportTypes?.find(s => s.id === 1);
+		if (sinApoyoOption) {
+			searchSupport.value = sinApoyoOption.name;
+		}
+	}
+	else if (oldSupportId === 1 && newSupportId !== 1) {
+		isAmountDisabled.value = false;
+	}
+});
+
+watch(() => props.supportTypes, () => {
+	if (props.modelValue.economic_support === 1) {
+		isAmountDisabled.value = true;
+	}
+});
+
+watch(period_start, (val) => {
+	if (val) update('period_start', new Date(val).toISOString().slice(0, 10));
+});
+
+watch(period_end, (val) => {
+	if (val) {
+		update('period_end', new Date(val).toISOString().slice(0, 10));
+	} else {
+		update('period_end', null);
+	}
+});
+
+watch(searchDualType, (val) => {
+	if (!val) update('dual_type_id', '');
+});
+
+watch(() => props.modelValue.max_qualification, (newVal) => {
+	maxQualification.value = newVal != null ? newVal.toString() : '';
+});
+
+watch(maxQualification, (newVal) => {
+	update('max_qualification', newVal ? Number(newVal) : '');
+});
+
+watch(() => props.modelValue.is_concluded, (newVal) => {
+	if (newVal === 0 && props.modelValue.is_hired === 1) {
+		update('is_hired', 0);
+	}
+});
+
+const validateQualification = (value, fieldName) => {
+	if (value === null || value === '' || value === undefined) return true;
+
+	const maxScale = props.modelValue.max_qualification;
+	if (!maxScale) {
+		errors.value[fieldName] = 'Primero seleccione la escala de calificación';
+		return false;
+	}
+
+	const numValue = Number(value);
+	if (numValue < 0 || numValue > maxScale) {
+		errors.value[fieldName] = `La calificación debe estar entre 0 y ${maxScale}`;
+		return false;
+	}
+
+	delete errors.value[fieldName];
+	return true;
+};
+
+const updateQualificationAverage = () => {
+	const intQ = Number(internalAdvisorQualification.value) || 0;
+	const extQ = Number(externalAdvisorQualification.value) || 0;
+
+	if (internalAdvisorQualification.value != null &&
+		externalAdvisorQualification.value != null &&
+		internalAdvisorQualification.value !== '' &&
+		externalAdvisorQualification.value !== '') {
+		const avg = ((intQ + extQ) / 2).toFixed(2);
+		update('qualification', Number(avg));
+	} else {
+		update('qualification', null);
+	}
+};
+
+const initializeMicroCredentials = () => {
+	selectedMicroCredentials.value = (props.modelValue.micro_credentials || [])
+		.map(id => allMicroCredentials.value.find(m => Number(m.id) === Number(id)))
+		.filter(Boolean);
+};
+
+const initializeCertifications = () => {
+	selectedCertifications.value = (props.modelValue.certifications || [])
+		.map(id => allCertifications.value.find(c => Number(c.id) === Number(id)))
+		.filter(Boolean);
+};
+
+const initializeDiplomas = () => {
+	selectedDiplomas.value = (props.modelValue.diplomas || [])
+		.map(id => allDiplomas.value.find(d => Number(d.id) === Number(id)))
+		.filter(Boolean);
 };
 
 const update = (field, value) => {
-	// Si son campos de calificación y el proyecto no está concluido, no actualizar
 	if ((field === 'internal_advisor_qualification' || field === 'external_advisor_qualification') &&
 		!areQualificationsEnabled.value) {
 		return;
@@ -584,16 +476,19 @@ const update = (field, value) => {
 		searchArea.value = selected?.name || '';
 		showAreaDropdown.value = false;
 	}
+
 	if (field === 'id_organization') {
 		const selected = props.organizations?.find(o => o.id === value);
 		searchOrganization.value = selected?.name || '';
 		showOrganizationDropdown.value = false;
 	}
+
 	if (field === 'status_document') {
 		const selected = props.agreementStatuses?.find(s => s.id === value);
 		searchStatus.value = selected?.name || '';
 		showStatusDropdown.value = false;
 	}
+
 	if (field === 'economic_support') {
 		const selected = props.supportTypes?.find(s => s.id === value);
 		searchSupport.value = selected?.name || '';
@@ -606,11 +501,277 @@ const update = (field, value) => {
 			isAmountDisabled.value = false;
 		}
 	}
+
 	if (field === 'dual_type_id') {
 		const selected = props.dualTypes?.find(d => d.id === value);
 		searchDualType.value = selected?.name || '';
 		showDualTypeDropdown.value = false;
 	}
+};
+
+const handleSavedOrganization = async (newOrganization) => {
+	try {
+		const res = await getOrganizations();
+		emit('update:organizations', res.data);
+
+		if (newOrganization) {
+			const justCreatedOrg = res.data.find(
+				org => org.id === newOrganization.id || org.name === newOrganization.name
+			);
+
+			if (justCreatedOrg) {
+				await nextTick();
+
+				update('id_organization', justCreatedOrg.id);
+				searchOrganization.value = justCreatedOrg.name;
+
+				showOrganizationDropdown.value = true;
+
+				setTimeout(() => {
+					showOrganizationDropdown.value = false;
+				}, 1500);
+			}
+		}
+
+		closeModal();
+
+	} catch (error) {
+		console.error('Error al recargar organizaciones:', error);
+		closeModal();
+	}
+};
+const handleSavedArea = async (newArea) => {
+	try {
+		console.log('DEBUG - newArea recibido:', newArea);
+
+		const res = await getDualAreas();
+		emit('update:dualAreas', res.data);
+
+		let justCreatedArea = null;
+
+		if (newArea && newArea.id) {
+			justCreatedArea = res.data.find(area => Number(area.id) === Number(newArea.id));
+		}
+
+		if (!justCreatedArea && newArea && newArea.name) {
+			const matchingAreas = res.data
+				.filter(area => area.name === newArea.name)
+				.sort((a, b) => b.id - a.id);
+
+			if (matchingAreas.length > 0) {
+				justCreatedArea = matchingAreas[0];
+			}
+		}
+
+		console.log('DEBUG - Área encontrada:', justCreatedArea);
+
+		if (justCreatedArea) {
+			await nextTick();
+			update('id_dual_area', justCreatedArea.id);
+			searchArea.value = justCreatedArea.name;
+			showAreaDropdown.value = true;
+			setTimeout(() => { showAreaDropdown.value = false; }, 1500);
+		} else {
+			console.log('DEBUG - No se encontró el área recién creada');
+		}
+
+		closeAreaModal();
+	} catch (error) {
+		console.error('Error al recargar áreas duales:', error);
+		closeAreaModal();
+	}
+};
+
+const handleSavedMicroCredential = async (newMicroCredential) => {
+	try {
+		const res = await getMicroCredentials();
+		emit('update:microCredentials', res.data);
+		allMicroCredentials.value = res.data;
+
+		if (newMicroCredential) {
+			const justCreatedMicro = res.data.find(
+				micro => micro.id === newMicroCredential.id || micro.name === newMicroCredential.name
+			);
+
+			if (justCreatedMicro) {
+				await nextTick();
+
+				if (!selectedMicroCredentials.value.some(m => m.id === justCreatedMicro.id)) {
+					selectedMicroCredentials.value.push(justCreatedMicro);
+					emit('update:modelValue', {
+						...props.modelValue,
+						micro_credentials: selectedMicroCredentials.value.map(m => Number(m.id))
+					});
+				}
+
+				showMicroDropdown.value = true;
+
+				setTimeout(() => {
+					showMicroDropdown.value = false;
+				}, 1500);
+			}
+		}
+
+		closeMicroModal();
+
+	} catch (error) {
+		console.error('Error al recargar microcredenciales:', error);
+		closeMicroModal();
+	}
+};
+
+const handleSavedCertification = async (newCertification) => {
+	try {
+		const res = await getCertifications();
+		emit('update:certifications', res.data);
+		allCertifications.value = res.data;
+
+		if (newCertification) {
+			const justCreatedCert = res.data.find(
+				cert => cert.id === newCertification.id || cert.name === newCertification.name
+			);
+
+			if (justCreatedCert) {
+				await nextTick();
+
+				if (!selectedCertifications.value.some(c => c.id === justCreatedCert.id)) {
+					selectedCertifications.value.push(justCreatedCert);
+					emit('update:modelValue', {
+						...props.modelValue,
+						certifications: selectedCertifications.value.map(c => Number(c.id))
+					});
+				}
+
+				showCertificationDropdown.value = true;
+
+				setTimeout(() => {
+					showCertificationDropdown.value = false;
+				}, 1500);
+			}
+		}
+
+		closeCertificationModal();
+
+	} catch (error) {
+		console.error('Error al recargar certificaciones:', error);
+		closeCertificationModal();
+	}
+};
+
+const handleSavedDiploma = async (newDiploma) => {
+	try {
+		const res = await getDiplomas();
+		emit('update:diplomas', res.data);
+		allDiplomas.value = res.data;
+
+		if (newDiploma) {
+			const justCreatedDiploma = res.data.find(
+				diploma => diploma.id === newDiploma.id || diploma.name === newDiploma.name
+			);
+
+			if (justCreatedDiploma) {
+				await nextTick();
+
+				if (!selectedDiplomas.value.some(d => d.id === justCreatedDiploma.id)) {
+					selectedDiplomas.value.push(justCreatedDiploma);
+					emit('update:modelValue', {
+						...props.modelValue,
+						diplomas: selectedDiplomas.value.map(d => Number(d.id))
+					});
+				}
+
+				showDiplomaDropdown.value = true;
+
+				setTimeout(() => {
+					showDiplomaDropdown.value = false;
+				}, 1500);
+			}
+		}
+
+		closeDiplomaModal();
+
+	} catch (error) {
+		console.error('Error al recargar diplomados:', error);
+		closeDiplomaModal();
+	}
+};
+
+const handleSavedDualType = async (newDualType) => {
+	try {
+		const res = await getDualTypes();
+		emit('update:dualTypes', res.data);
+
+		if (newDualType) {
+			const justCreatedDualType = res.data.find(
+				type => type.id === newDualType.id || type.name === newDualType.name
+			);
+
+			if (justCreatedDualType) {
+				await nextTick();
+
+				update('dual_type_id', justCreatedDualType.id);
+				searchDualType.value = justCreatedDualType.name;
+
+				showDualTypeDropdown.value = true;
+
+				setTimeout(() => {
+					showDualTypeDropdown.value = false;
+				}, 1500);
+			}
+		}
+
+		closeDualTypeModal();
+
+	} catch (error) {
+		console.error('Error al recargar tipos duales:', error);
+		closeDualTypeModal();
+	}
+};
+
+const initializeSearchValues = () => {
+
+	if (props.modelValue.id_dual_area) {
+		const area = props.areas?.find(a => a.id === props.modelValue.id_dual_area);
+		searchArea.value = area?.name || '';
+	}
+
+
+	if (props.modelValue.id_organization) {
+		const org = props.organizations?.find(o => o.id === props.modelValue.id_organization);
+		searchOrganization.value = org?.name || '';
+	}
+
+	if (props.modelValue.status_document) {
+		const status = props.agreementStatuses?.find(s => s.id === props.modelValue.status_document);
+		searchStatus.value = status?.name || '';
+	}
+
+	if (props.modelValue.economic_support) {
+		const support = props.supportTypes?.find(s => s.id === props.modelValue.economic_support);
+		searchSupport.value = support?.name || '';
+
+		if (props.modelValue.economic_support === 1) {
+			isAmountDisabled.value = true;
+			if (props.modelValue.amount !== 0) {
+				update('amount', 0);
+			}
+		} else {
+			isAmountDisabled.value = false;
+		}
+	}
+
+	if (props.modelValue.dual_type_id) {
+		const dualType = props.dualTypes?.find(d => d.id === props.modelValue.dual_type_id);
+		searchDualType.value = dualType?.name || '';
+	}
+
+	if (props.modelValue.max_qualification) {
+		maxQualification.value = props.modelValue.max_qualification.toString();
+	}
+
+	initializeMicroCredentials();
+	initializeCertifications();
+	initializeDiplomas();
 };
 
 const addMicroCredential = (micro) => {
@@ -673,108 +834,119 @@ const removeDiploma = (diploma) => {
 	});
 };
 
-watch(period_start, (val) => {
-	if (val) update('period_start', new Date(val).toISOString().slice(0, 10));
-});
-
-watch(period_end, (val) => {
-	if (val) {
-		update('period_end', new Date(val).toISOString().slice(0, 10));
-	} else {
-		update('period_end', null);
-	}
-});
-
-watch(searchDualType, (val) => {
-	if (!val) update('dual_type_id', '');
-});
-
-watch(() => props.modelValue.max_qualification, (newVal) => {
-	maxQualification.value = newVal != null ? newVal.toString() : '';
-});
-
-watch(maxQualification, (newVal) => {
-	update('max_qualification', newVal ? Number(newVal) : '');
-});
-
-watch(() => props.modelValue.is_concluded, (newVal) => {
-	if (newVal === 0 && props.modelValue.is_hired === 1) {
-		update('is_hired', 0);
-	}
-});
-
-watch(() => props.areas, (newAreas) => {
-	allDualArea.value = newAreas || [];
-}, { immediate: true });
-
+const handleClickOutside = (event) => {
+	if (areaDropdownRef.value && !areaDropdownRef.value.contains(event.target)) showAreaDropdown.value = false;
+	if (organizationDropdownRef.value && !organizationDropdownRef.value.contains(event.target)) showOrganizationDropdown.value = false;
+	if (statusDropdownRef.value && !statusDropdownRef.value.contains(event.target)) showStatusDropdown.value = false;
+	if (supportDropdownRef.value && !supportDropdownRef.value.contains(event.target)) showSupportDropdown.value = false;
+	if (dualTypeDropdownRef.value && !dualTypeDropdownRef.value.contains(event.target)) showDualTypeDropdown.value = false;
+	if (microDropdownRef.value && !microDropdownRef.value.contains(event.target)) showMicroDropdown.value = false;
+	if (certificationDropdownRef.value && !certificationDropdownRef.value.contains(event.target)) showCertificationDropdown.value = false;
+	if (diplomaDropdownRef.value && !diplomaDropdownRef.value.contains(event.target)) showDiplomaDropdown.value = false;
+};
 
 const validate = () => {
-	console.log('=== INICIANDO VALIDACIÓN UNIDAD DUAL ===');
-	hasAttemptedSubmit.value = true;
-	showValidationErrors.value = true;
+  console.log('=== INICIANDO VALIDACIÓN UNIDAD DUAL ===');
+  hasAttemptedSubmit.value = true;
+  showValidationErrors.value = true;
 
-	const requiredFields = [
-		'name_report', 'id_organization', 'id_dual_area', 'period_start',
-		'status_document', 'economic_support', 'amount', 'is_concluded',
-		'is_hired', 'dual_type_id'
-	];
+  const requiredFields = [
+    'name_report', 'id_organization', 'id_dual_area', 'period_start',
+    'status_document', 'economic_support', 'amount', 'is_concluded',
+    'is_hired', 'dual_type_id'
+  ];
 
-	let isValid = true;
-	errors.value = {};
+  let isValid = true;
+  errors.value = {};
 
-	for (const field of requiredFields) {
-		const value = props.modelValue[field];
-		console.log(`Campo ${field}:`, value, typeof value);
+  for (const field of requiredFields) {
+    const value = props.modelValue[field];
+    console.log(`Campo ${field}:`, value, typeof value);
 
-		if (value === null || value === undefined || value === '') {
-			errors.value[field] = 'Este campo es obligatorio';
-			isValid = false;
-		}
-	}
+    if (value === null || value === undefined || value === '') {
+      errors.value[field] = 'Este campo es obligatorio';
+      isValid = false;
+    }
+  }
 
-	if (props.modelValue.is_concluded === 1) {
-		if (!props.modelValue.period_end) {
-			errors.value.period_end = 'La fecha de fin es obligatoria cuando el proyecto está concluido';
-			isValid = false;
-			console.log('❌ Fecha de fin requerida para proyecto concluido');
-		}
-	}
+  if (props.modelValue.is_concluded === 1) {
+    if (!props.modelValue.period_end) {
+      errors.value.period_end = 'La fecha de fin es obligatoria cuando el proyecto está concluido';
+      isValid = false;
+      console.log('Fecha de fin requerida para proyecto concluido');
+    }
+  }
 
-	if (props.modelValue.amount < 0) {
-		errors.value.amount = 'El monto debe ser mayor o igual a 0';
-		isValid = false;
-		console.log('❌ Monto negativo');
-	}
+  if (props.modelValue.amount < 0) {
+    errors.value.amount = 'El monto debe ser mayor o igual a 0';
+    isValid = false;
+    console.log('Monto negativo');
+  }
 
-	const start = props.modelValue.period_start ? new Date(props.modelValue.period_start) : null;
-	const end = props.modelValue.period_end ? new Date(props.modelValue.period_end) : null;
+  const start = props.modelValue.period_start ? new Date(props.modelValue.period_start) : null;
+  const end = props.modelValue.period_end ? new Date(props.modelValue.period_end) : null;
 
-	if (start && end && start > end) {
-		errors.value.period_end = 'La fecha de fin debe ser posterior a la fecha de inicio';
-		isValid = false;
-		console.log('❌ Fechas inválidas');
-	}
+  if (start && end && start > end) {
+    errors.value.period_end = 'La fecha de fin debe ser posterior a la fecha de inicio';
+    isValid = false;
+    console.log('Fechas inválidas');
+  }
 
-	if (internalAdvisorQualification.value !== null && internalAdvisorQualification.value !== '') {
-		if (!validateQualification(internalAdvisorQualification.value, 'internal_advisor_qualification')) {
-			isValid = false;
-			console.log('❌ Calificación interna inválida');
-		}
-	}
+  if (internalAdvisorQualification.value !== null && internalAdvisorQualification.value !== '') {
+    if (!validateQualification(internalAdvisorQualification.value, 'internal_advisor_qualification')) {
+      isValid = false;
+      console.log('Calificación interna inválida');
+    }
+  }
 
-	if (externalAdvisorQualification.value !== null && externalAdvisorQualification.value !== '') {
-		if (!validateQualification(externalAdvisorQualification.value, 'external_advisor_qualification')) {
-			isValid = false;
-			console.log('❌ Calificación externa inválida');
-		}
-	}
+  if (externalAdvisorQualification.value !== null && externalAdvisorQualification.value !== '') {
+    if (!validateQualification(externalAdvisorQualification.value, 'external_advisor_qualification')) {
+      isValid = false;
+      console.log('Calificación externa inválida');
+    }
+  }
+	
+  if (props.modelValue.is_concluded === 1) {
+    if (economic_benefit.value === null || economic_benefit.value === '') {
+      errors.value.economic_benefit = 'El beneficio económico es obligatorio';
+      isValid = false;
+      console.log('Beneficio económico requerido');
+    } else if (economic_benefit.value < 0) {
+      errors.value.economic_benefit = 'El beneficio económico no puede ser negativo';
+      isValid = false;
+      console.log('Beneficio económico negativo');
+    }
+    
+    if (time_benefit.value === null || time_benefit.value === '') {
+      errors.value.time_benefit = 'El beneficio de tiempo es obligatorio';
+      isValid = false;
+      console.log('Beneficio de tiempo requerido');
+    } else if (time_benefit.value < 0) {
+      errors.value.time_benefit = 'El beneficio de tiempo no puede ser negativo';
+      isValid = false;
+      console.log('Beneficio de tiempo negativo');
+    }
+	  
+    if (economic_benefit.value === 0 && !economic_benefit_note.value) {
+      errors.value.economic_benefit_note = 'Debe explicar por qué no hubo beneficio económico cuando el monto es 0';
+      isValid = false;
+      console.log('Nota de beneficio económico requerida para monto 0');
+    }
+    
+    if (time_benefit.value === 0 && !time_benefit_note.value) {
+      errors.value.time_benefit_note = 'Debe explicar por qué no hubo beneficio de tiempo cuando el tiempo es 0';
+      isValid = false;
+      console.log('Nota de beneficio de tiempo requerida para tiempo 0');
+    }
+  }
 
-	return isValid;
+  return isValid;
 };
 
 defineExpose({ validate, resetValidation, getValidationSummary });
 
 onMounted(() => {
+	console.log('modelValue:', JSON.parse(JSON.stringify(props.modelValue)));
 	document.addEventListener('click', handleClickOutside);
 	initializeSearchValues();
 	if (props.modelValue.economic_support === 1) {
@@ -928,7 +1100,7 @@ onMounted(() => {
 
 					<div ref="dualTypeDropdownRef" class="pt-3">
 						<label class="label flex items-center gap-1">
-							Tipo de Educación dual
+							Tipo de Educación Dual
 							<span class="text-red-500">*</span>
 							<button
 								v-tooltip="fieldHelpTexts.dual_type_id"
@@ -1408,10 +1580,144 @@ onMounted(() => {
 					</div>
 				</div>
 			</div>
-
-			<div v-if="showCredentialsSection" class="bg-gray-50 rounded-xl p-6 border border-gray-200 space-y-4">
+						
+			<div v-if="showCredentialsSection" class="bg-gray-50 rounded-xl p-6 border border-gray-200">
 				<h3 class="text-lg font-semibold text-brand-800 mb-4 flex items-center">
 					<span class="w-6 h-6 bg-brand-100 rounded-full flex items-center justify-center text-brand-800 text-sm mr-2">6</span>
+					Beneficios del Proyecto
+				</h3>
+
+				<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+					<div>
+						<label class="label flex items-center gap-1">
+							Beneficio Económico (Monto)
+							<span class="text-red-500">*</span>
+							<button
+								v-tooltip="'Ingrese el monto del beneficio económico adicional recibido. Use 0 si no hubo beneficio económico.'"
+								type="button"
+								class="help-icon text-gray-400 hover:text-brand-600 cursor-help transition-colors">
+								?
+							</button>
+						</label>
+      
+						<div class="space-y-3">
+							<input
+								v-model.number="economic_benefit"
+								type="number"
+								min="0"
+								step="0.01"
+								class="input w-full"
+								:class="getValidationClass('economic_benefit')"
+								:disabled="!areQualificationsEnabled"
+								placeholder="0.00"
+								@blur="update('economic_benefit', economic_benefit)" />
+							
+							<div>
+								<label class="label flex items-center gap-1">
+									Detalles del Beneficio Económico
+									<span v-if="economic_benefit === 0" class="text-red-500">*</span>
+									<button
+										v-tooltip="economic_benefit === 0 ? 
+											'Explique por qué no hubo beneficio económico (obligatorio cuando el monto es 0)' : 
+											'Describa el beneficio económico recibido (opcional cuando hay monto positivo)'"
+										type="button"
+										class="help-icon text-gray-400 hover:text-brand-600 cursor-help transition-colors">
+										?
+									</button>
+								</label>
+								<textarea
+									v-model="economic_benefit_note"
+									class="input min-h-[80px]"
+									:class="{ 'border-red-500': economic_benefit === 0 && !economic_benefit_note }"
+									:placeholder="economic_benefit === 0 ? 
+										'Explique por qué no hubo beneficio económico... (obligatorio)' : 
+										'Describa el beneficio económico recibido... (opcional)'"
+									:required="economic_benefit === 0"
+									@input="update('economic_benefit_note', $event.target.value)" />
+          
+								<p v-if="economic_benefit === 0 && !economic_benefit_note" class="text-red-500 text-sm mt-1">
+									Este campo es obligatorio cuando el beneficio económico es 0
+								</p>
+								<p v-else class="text-gray-500 text-sm mt-1">
+									{{ economic_benefit > 0 ? 'Campo opcional para detalles adicionales' : 'Campo obligatorio para explicar por qué no hubo beneficio' }}
+								</p>
+							</div>
+						</div>
+					</div>
+					
+					<div>
+						<label class="label flex items-center gap-1">
+							Beneficio de Tiempo (Horas/Días)
+							<span class="text-red-500">*</span>
+							<button
+								v-tooltip="'Ingrese la cantidad de tiempo beneficiado (en horas o días). Use 0 si no hubo beneficio de tiempo.'"
+								type="button"
+								class="help-icon text-gray-400 hover:text-brand-600 cursor-help transition-colors">
+								?
+							</button>
+						</label>
+      
+						<div class="space-y-3">
+							<input
+								v-model.number="time_benefit"
+								type="number"
+								min="0"
+								step="0.5"
+								class="input w-full"
+								:class="getValidationClass('time_benefit')"
+								:disabled="!areQualificationsEnabled"
+								placeholder="0"
+								@blur="update('time_benefit', time_benefit)" />
+							
+							<div>
+								<label class="label flex items-center gap-1">
+									Detalles del Beneficio de Tiempo
+									<span v-if="time_benefit === 0" class="text-red-500">*</span>
+									<button
+										v-tooltip="time_benefit === 0 ? 
+											'Explique por qué no hubo beneficio de tiempo (obligatorio cuando el tiempo es 0)' : 
+											'Describa el beneficio de tiempo recibido (opcional cuando hay tiempo positivo)'"
+										type="button"
+										class="help-icon text-gray-400 hover:text-brand-600 cursor-help transition-colors">
+										?
+									</button>
+								</label>
+								<textarea
+									v-model="time_benefit_note"
+									class="input min-h-[80px]"
+									:class="{ 'border-red-500': time_benefit === 0 && !time_benefit_note }"
+									:placeholder="time_benefit === 0 ? 
+										'Explique por qué no hubo beneficio de tiempo... (obligatorio)' : 
+										'Describa el beneficio de tiempo recibido... (opcional)'"
+									:required="time_benefit === 0"
+									@input="update('time_benefit_note', $event.target.value)" />
+          
+								<p v-if="time_benefit === 0 && !time_benefit_note" class="text-red-500 text-sm mt-1">
+									Este campo es obligatorio cuando el beneficio de tiempo es 0
+								</p>
+								<p v-else class="text-gray-500 text-sm mt-1">
+									{{ time_benefit > 0 ? 'Campo opcional para detalles adicionales' : 'Campo obligatorio para explicar por qué no hubo beneficio' }}
+								</p>
+							</div>
+						</div>
+					</div>
+				</div>
+				
+				<div v-if="!areQualificationsEnabled" class="mt-4 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+					<div class="flex items-center gap-2 text-yellow-800">
+						<svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+							<path
+								fill-rule="evenodd"
+								d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
+								clip-rule="evenodd" />
+						</svg>
+						<span class="font-medium">Los beneficios económicos y de tiempo estarán disponibles cuando el proyecto esté concluido</span>
+					</div>
+				</div>
+			</div>
+			<div v-if="showCredentialsSection" class="bg-gray-50 rounded-xl p-6 border border-gray-200 space-y-4">
+				<h3 class="text-lg font-semibold text-brand-800 mb-4 flex items-center">
+					<span class="w-6 h-6 bg-brand-100 rounded-full flex items-center justify-center text-brand-800 text-sm mr-2">7</span>
 					Microcredenciales
 				</h3>
 
@@ -1458,7 +1764,7 @@ onMounted(() => {
 
 			<div v-if="showCredentialsSection" class="bg-gray-50 rounded-xl p-6 border border-gray-200 space-y-4">
 				<h3 class="text-lg font-semibold text-brand-800 mb-4 flex items-center">
-					<span class="w-6 h-6 bg-brand-100 rounded-full flex items-center justify-center text-brand-800 text-sm mr-2">7</span>
+					<span class="w-6 h-6 bg-brand-100 rounded-full flex items-center justify-center text-brand-800 text-sm mr-2">8</span>
 					Certificaciones
 				</h3>
 
@@ -1505,7 +1811,7 @@ onMounted(() => {
 
 			<div v-if="showCredentialsSection" class="bg-gray-50 rounded-xl p-6 border border-gray-200 space-y-4">
 				<h3 class="text-lg font-semibold text-brand-800 mb-4 flex items-center">
-					<span class="w-6 h-6 bg-brand-100 rounded-full flex items-center justify-center text-brand-800 text-sm mr-2">8</span>
+					<span class="w-6 h-6 bg-brand-100 rounded-full flex items-center justify-center text-brand-800 text-sm mr-2">9</span>
 					Diplomados
 				</h3>
 
@@ -1550,6 +1856,7 @@ onMounted(() => {
 				</div>
 			</div>
 
+			<!-- Modals -->
 			<mdl-organization
 				:show="showModal" :data="modalData"
 				@close="closeModal" @saved="handleSavedOrganization" />

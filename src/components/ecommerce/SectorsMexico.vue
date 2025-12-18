@@ -1,125 +1,196 @@
 <template>
 	<div
-		class="overflow-hidden rounded-2xl border border-gray-200 p-6 shadow-sm dark:border-gray-700"
-		style="background: linear-gradient(to top, rgba(211, 211, 210, 0.8) 30%, rgba(159, 129, 60, 0.8) 100%);">
-		<div class="flex flex-col gap-4 mb-6 sm:flex-row sm:items-center sm:justify-between">
-			<h3 class="text-xl font-semibold text-brand-50">
-				Sectores de Proyectos del Plan Mexico
-			</h3>
+		class="rounded-2xl border border-gray-200 p-4 sm:p-6 shadow-sm"
+		style="background: linear-gradient(to top, rgba(211, 211, 210, 0.85) 30%, rgba(159, 129, 60, 0.85) 100%)">
+		<div class="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+			<h3 class="text-lg sm:text-xl font-semibold text-white">Sectores de Proyectos del Plan México</h3>
 
-			<nav class="inline-flex rounded-md shadow-sm" role="navigation" aria-label="Pagination">
-				<button
-					:disabled="currentPage === 1"
-					class="relative inline-flex items-center rounded-l-md border border-gray-300 bg-white/80 px-3 py-1 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50 dark:border-gray-700 dark:bg-gray-800/80 dark:text-gray-300 dark:hover:bg-gray-700"
-					@click="fetchPage(currentPage - 1)">
-					Anterior
-				</button>
-
-				<button
-					:disabled="currentPage === lastPage"
-					class="relative -ml-px inline-flex items-center rounded-r-md border border-gray-300 bg-white/80 px-3 py-1 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50 dark:border-gray-700 dark:bg-gray-800/80 dark:text-gray-300 dark:hover:bg-gray-700"
-					@click="fetchPage(currentPage + 1)">
-					Siguiente
-				</button>
-			</nav>
+			<div class="flex items-center gap-3">
+				<div class="inline-flex rounded-md shadow-sm">
+					<button
+						v-if="totalPages > 1"
+						:disabled="currentPage === 1"
+						class="rounded-l-md bg-white/80 px-3 py-1 text-sm font-medium text-gray-700 hover:bg-white disabled:opacity-50"
+						@click="goToPage(currentPage - 1)">
+						Anterior
+					</button>
+					<button
+						v-if="totalPages > 1"
+						:disabled="currentPage === totalPages"
+						class="rounded-r-md bg-white/80 px-3 py-1 text-sm font-medium text-gray-700 hover:bg-white disabled:opacity-50"
+						@click="goToPage(currentPage + 1)">
+						Siguiente
+					</button>
+				</div>
+			</div>
 		</div>
 
 		<div class="overflow-x-auto">
-			<table class="min-w-full table-auto divide-y divide-gray-200 dark:divide-gray-700">
-				<thead style="background-color: #9f813c; color: white;">
-					<tr>
-						<th
-							scope="col"
-							class="py-3 px-4 text-left text-xs font-semibold uppercase max-w-[350px]">
-							Sector
-						</th>
-						<th
-							scope="col"
-							class="py-3 px-4 text-right text-xs font-semibold uppercase w-40">
-							Número de Proyectos
-						</th>
-					</tr>
+			<table class="min-w-full border-collapse">
+				<thead class="bg-[#9f813c] text-white">
+				<tr>
+					<th class="px-4 py-3 text-left text-xs font-semibold uppercase">Sector</th>
+					<th
+						class="px-4 py-3 text-right text-xs font-semibold uppercase w-28 sm:w-40 cursor-pointer hover:bg-[#8a7334]"
+						@click="toggleSort">
+						<div class="flex items-center justify-end gap-1">
+							Proyectos
+							<span v-if="sortOrder === 'desc'" class="text-xs">▼</span>
+							<span v-else class="text-xs">▲</span>
+						</div>
+					</th>
+					<th class="px-4 py-3 text-right text-xs font-semibold uppercase w-28 sm:w-40">%</th>
+				</tr>
 				</thead>
-				<tbody class="divide-y divide-gray-100 dark:divide-gray-700">
-					<tr
-						v-for="(item, index) in projects_by_sector_mexico"
-						:key="index"
-						class="hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
-						<td
-							class="py-3 px-4 text-sm font-medium text-gray-900 dark:text-white flex items-center gap-2 break-words max-w-[350px]"
-							style="word-break: break-word;">
+
+				<tbody class="divide-y divide-white/30">
+				<tr
+					v-for="(item, index) in paginatedProjects"
+					:key="index"
+					class="hover:bg-white/20 transition">
+					<td class="px-4 py-3">
+						<div class="flex items-start gap-3 min-w-0">
 							<img
 								v-if="sectorLogos[item.sector_name]"
 								:src="sectorLogos[item.sector_name]"
-								alt="Logo sector"
-								class="w-6 h-6 object-contain" />
-							{{ item.sector_name }}
-						</td>
-						<td class="py-3 px-4 text-sm text-gray-700 dark:text-gray-300 text-right">
-							{{ item.project_count }}
-						</td>
-					</tr>
-					<tr v-if="projects_by_sector_mexico.length === 0">
-						<td colspan="2" class="py-4 px-4 text-center text-gray-500 dark:text-gray-400">
-							No hay datos disponibles
-						</td>
-					</tr>
+								class="w-6 h-6 flex-shrink-0 object-contain"
+								alt="Sector" />
+							<span class="text-sm sm:text-base text-gray-900 whitespace-normal break-words">
+									{{ item.sector_name }}
+								</span>
+						</div>
+					</td>
+
+					<td class="px-4 py-3 text-right text-sm text-gray-800">
+						{{ item.project_count }}
+					</td>
+
+					<td class="px-4 py-3 text-right text-sm text-gray-800">{{ formatPercentage(item.percentage) }}%</td>
+				</tr>
+
+				<tr v-if="!loading && paginatedProjects.length === 0">
+					<td
+						colspan="3"
+						class="py-6 text-center text-sm text-gray-700">
+						No hay datos disponibles
+					</td>
+				</tr>
+
+				<tr v-if="loading">
+					<td
+						colspan="3"
+						class="py-6 text-center text-sm text-gray-700">
+						Cargando datos...
+					</td>
+				</tr>
 				</tbody>
 			</table>
 		</div>
 
 		<p
-			class="mt-4 text-center text-sm text-gray-600 dark:text-gray-400"
-			aria-live="polite">
-			Página {{ currentPage }} de {{ lastPage }}
+			v-if="!loading && totalPages > 1"
+			class="mt-3 text-center text-sm text-gray-700">
+			Página {{ currentPage }} de {{ totalPages }}
 		</p>
 	</div>
 </template>
 
-
-
 <script setup>
-import { ref, onMounted } from 'vue'
-import { getProjectsBySectorMexico } from '../../services/statistics/dashboard'
-
-const projects_by_sector_mexico = ref([])
-const currentPage = ref(1)
-const lastPage = ref(1)
+import { ref, watch, onMounted, computed } from 'vue';
+import { getProjectsBySectorMexico } from '../../services/statistics/dashboard';
 
 const props = defineProps({
-  filtersAdd: {
-    type: Number,
-    default: null 
-  }
-})
+	filters: { type: Object, default: () => ({}) },
+});
+
+const allProjects = ref([]);
+const currentPage = ref(1);
+const itemsPerPage = 6;
+const loading = ref(false);
+const sortOrder = ref('desc');
 
 const sectorLogos = {
-	"Agroindustrial": "/images/sectorsMLogo/agroindustrial.svg",
-	"Textiles, Vestuario y Cuero": "/images/sectorsMLogo/textil.svg",
-	"Química": "/images/sectorsMLogo/pertroquimica.svg",
-	"Tecnologías de la Información y Comunicaciones": "/images/sectorsMLogo/tics.svg",
-	"Farmacéutico y Dispositivos Médicos": "/images/sectorsMLogo/farmaceutico.svg",
-	"Energía": "/images/sectorsMLogo/energia.svg",
-	"Calzado": "/images/sectorsMLogo/calzado.svg",
-	"Bienes de consumo y economía circular": "/images/sectorsMLogo/economia-circular.svg",
-	"Aeroespacial": "/images/sectorsMLogo/aeroespacial.svg",
-	"Semiconductores": "/images/sectorsMLogo/semiconductores.svg",
-	"Automotriz y Electromovilidad":"/images/sectorsMLogo/automotriz.svg"
-}
+	Agroindustrial: '/images/sectorsMLogo/agroindustrial.svg',
+	'Textiles, Vestuario y Cuero': '/images/sectorsMLogo/textil.svg',
+	Química: '/images/sectorsMLogo/pertroquimica.svg',
+	'Tecnologías de la Información y Comunicaciones': '/images/sectorsMLogo/tics.svg',
+	'Farmacéutico y Dispositivos Médicos': '/images/sectorsMLogo/farmaceutico.svg',
+	Energía: '/images/sectorsMLogo/energia.svg',
+	Calzado: '/images/sectorsMLogo/calzado.svg',
+	'Bienes de consumo y economía circular': '/images/sectorsMLogo/economia-circular.svg',
+	Aeroespacial: '/images/sectorsMLogo/aeroespacial.svg',
+	Semiconductores: '/images/sectorsMLogo/semiconductores.svg',
+	'Automotriz y Electromovilidad': '/images/sectorsMLogo/automotriz.svg',
+};
 
-const fetchPage = async (page = 1) => {
-	try {
-		const response = await getProjectsBySectorMexico(page, props.filtersAdd)
-		const result = response.data
-		projects_by_sector_mexico.value = result.data
-		currentPage.value = result.pagination.current_page
-		lastPage.value = result.pagination.last_page
-	} catch (error) {
-		console.error('Error al cargar sectores de México:', error)
+const formatPercentage = (percentage) => {
+	if (percentage === undefined || percentage === null) return '0.00';
+	return typeof percentage === 'number' ? percentage.toFixed(2) : parseFloat(percentage).toFixed(2);
+};
+
+// Filtrar solo sectores de Plan México (plan_mexico === 1)
+const mexicoSectors = computed(() => {
+	return allProjects.value.filter(project => project.plan_mexico === 1);
+});
+
+const sortedProjects = computed(() => {
+	return [...mexicoSectors.value].sort((a, b) => {
+		if (sortOrder.value === 'desc') {
+			return b.project_count - a.project_count;
+		} else {
+			return a.project_count - b.project_count;
+		}
+	});
+});
+
+const paginatedProjects = computed(() => {
+	const startIndex = (currentPage.value - 1) * itemsPerPage;
+	const endIndex = startIndex + itemsPerPage;
+	return sortedProjects.value.slice(startIndex, endIndex);
+});
+
+const totalPages = computed(() => {
+	return Math.ceil(sortedProjects.value.length / itemsPerPage);
+});
+
+const toggleSort = () => {
+	sortOrder.value = sortOrder.value === 'desc' ? 'asc' : 'desc';
+	currentPage.value = 1;
+};
+
+const goToPage = (page) => {
+	if (page >= 1 && page <= totalPages.value) {
+		currentPage.value = page;
 	}
-}
+};
 
-onMounted(() => {
-	fetchPage(1)
-})
+const fetchData = async () => {
+	loading.value = true;
+	try {
+		// IMPORTANTE: Solo pasar los filtros, no el parámetro page
+		const response = await getProjectsBySectorMexico(props.filters);
+
+		if (Array.isArray(response.data)) {
+			allProjects.value = response.data;
+		} else {
+			allProjects.value = [];
+		}
+
+		currentPage.value = 1;
+
+	} catch (error) {
+		console.error('Error fetching data:', error);
+		allProjects.value = [];
+	} finally {
+		loading.value = false;
+	}
+};
+
+onMounted(() => fetchData());
+
+watch(
+	() => props.filters,
+	fetchData,
+	{ deep: true }
+);
 </script>

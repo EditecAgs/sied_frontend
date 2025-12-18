@@ -11,8 +11,7 @@ alvRoute.value = axios.defaults.baseURL + 'clusters'
 const alvMethod = ref('POST')
 
 const afterDone = (response) => {
-	console.log(response.data + ' guardado exitosamente')
-	emit('saved')
+	emit('saved', response.data)
 	emit('close')
 }
 

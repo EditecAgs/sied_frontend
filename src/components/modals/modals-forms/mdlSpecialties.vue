@@ -1,9 +1,15 @@
 <script setup lang="ts">
-import { defineProps, defineEmits, reactive, watchEffect, ref, onMounted, computed, watch } from 'vue'
+import { defineProps, defineEmits, reactive, watchEffect, ref, onMounted, computed, watch, nextTick } from 'vue'
 import axios from 'axios'
 import { getCareers } from '../../../services/institutions/careers'
 import { getInstitutions } from '../../../services/institutions/institutions'
 import { showSpecialty } from '../../../services/institutions/specialties'
+import btnCreate from '../../buttons/btnCreate.vue'
+import mdlInstitution from '../modals-forms/mdlInstitution.vue'
+import mdlCareer from '../modals-forms/mdlCareers.vue'
+import { useModal } from '../../../composables/UseModal'
+
+const { showModal, modalData, openModal, closeModal } = useModal()
 
 const emit = defineEmits(['close', 'saved'])
 const isLoading = ref(false)
@@ -29,9 +35,65 @@ const hasCareersForInstitution = computed(() => {
 	return filteredCareers.value.length > 0;
 });
 
-const afterDone = (response: any) => {
-	console.log(response.data + ' guardado exitosamente')
-	emit('saved')
+// Manejar guardado de institución
+const handleSavedInstitution = async (newInstitution: any) => {
+	try {
+		// Recargar instituciones
+		await loadInstitutions()
+
+		// Dar tiempo a Vue para actualizar
+		await nextTick()
+
+		if (newInstitution) {
+			// Seleccionar automáticamente la nueva institución
+			form.id_institution = newInstitution.id.toString()
+		}
+
+		closeModal()
+	} catch (error) {
+		console.error('Error al recargar instituciones:', error)
+		closeModal()
+	}
+}
+
+// Manejar guardado de carrera
+const handleSavedCareer = async (newCareer: any) => {
+	try {
+		// Recargar carreras
+		await loadCareers()
+
+		// Dar tiempo a Vue para actualizar
+		await nextTick()
+
+		if (newCareer) {
+			// Seleccionar automáticamente la nueva carrera
+			form.id_career = newCareer.id.toString()
+
+			// Si no había institución seleccionada, seleccionar la de la carrera
+			if (!form.id_institution && newCareer.id_institution) {
+				form.id_institution = newCareer.id_institution.toString()
+			}
+		}
+
+		closeModal()
+	} catch (error) {
+		console.error('Error al recargar carreras:', error)
+		closeModal()
+	}
+}
+
+// Abrir modal para crear institución
+const openCreateInstitution = () => {
+	openModal('create', null, 'institucion')
+}
+
+// Abrir modal para crear carrera
+const openCreateCareer = () => {
+	openModal('create', null, 'carrera')
+}
+
+const afterDone = (response) => {
+	emit('saved', response.data)
 	emit('close')
 }
 
@@ -46,6 +108,7 @@ const props = defineProps<{
 		mode: 'create' | 'edit'
 		pk: number | null
 		table: string
+		careerId?: string // Agregar careerId como prop opcional
 	}
 }>()
 
@@ -56,14 +119,88 @@ const form = reactive({
 	id_career: ''
 })
 
+// Cargar instituciones
+const loadInstitutions = async () => {
+	try {
+		const response = await getInstitutions()
+		institutions.value = response.data
+		return response.data
+	} catch (error) {
+		console.error('Error al cargar instituciones:', error)
+		return []
+	}
+}
+
+const loadCareers = async () => {
+	try {
+		const response = await getCareers()
+		careers.value = response.data
+		return response.data
+	} catch (error) {
+		console.error('Error al cargar carreras:', error)
+		return []
+	}
+}
+
+// Cargar todos los datos
+const loadSelectData = async () => {
+	try {
+		await Promise.all([
+			loadCareers(),
+			loadInstitutions()
+		])
+	} catch (error) {
+		console.error('❌ Error cargando opciones:', error)
+	}
+}
+
+// MODIFICACIÓN: Watch para props.data que ahora maneja careerId
+watch(() => props.data, (newData) => {
+	console.log('🔍 Props.data cambiado:', newData);
+
+	// Si viene un careerId, preseleccionarlo
+	if (newData?.careerId) {
+		console.log('🎯 Preseleccionando carrera:', newData.careerId);
+		form.id_career = newData.careerId;
+
+		// Buscar la carrera para obtener su institución
+		const selectedCareer = careers.value.find(c =>
+			String(c.id) === String(newData.careerId)
+		);
+
+		if (selectedCareer && selectedCareer.id_institution) {
+			form.id_institution = String(selectedCareer.id_institution);
+			console.log('🏫 Institución preseleccionada:', form.id_institution);
+		}
+	}
+}, { deep: true, immediate: true });
 
 watch(() => props.show, async (newVal) => {
 	if (newVal) {
-		console.log('🔄 Modal de especialidades abierta, recargando carreras...')
-		await loadSelectData()
-		console.log('✅ Carreras recargadas:', careers.value.length)
+		console.log('📂 Abriendo modal de especialidades');
+		await loadSelectData();
+
+		// Si hay un careerId en los props, configurar el formulario
+		if (props.data?.careerId) {
+			console.log('📌 Configurando carrera desde careerId:', props.data.careerId);
+
+			// Esperar a que se carguen las carreras
+			await nextTick();
+
+			form.id_career = props.data.careerId;
+
+			// Buscar la carrera para obtener su institución
+			const selectedCareer = careers.value.find(c =>
+				String(c.id) === String(props.data.careerId)
+			);
+
+			if (selectedCareer && selectedCareer.id_institution) {
+				form.id_institution = String(selectedCareer.id_institution);
+				console.log('🏫 Institución encontrada:', form.id_institution);
+			}
+		}
 	}
-})
+}, { immediate: true });
 
 watch(() => form.id_institution, (newInstitutionId, oldInstitutionId) => {
 	if (newInstitutionId !== oldInstitutionId) {
@@ -78,27 +215,17 @@ watch(() => form.id_institution, (newInstitutionId, oldInstitutionId) => {
 	}
 });
 
-const loadSelectData = async () => {
-	try {
-		const [{ data: careersData }, { data: institutionsData }] = await Promise.all([
-			getCareers(),
-			getInstitutions()
-		])
-		careers.value = careersData
-		institutions.value = institutionsData
-	} catch (error) {
-		console.error('❌ Error cargando opciones:', error)
-	}
-}
-
+// MODIFICACIÓN: watchEffect para manejar modo edit/create
 watchEffect(() => {
 	if (props.data.mode === 'edit' && props.data.pk !== null) {
+		console.log('✏️ Modo edición - ID:', props.data.pk);
 		alvRoute.value = `${axios.defaults.baseURL}specialties/${props.data.pk}`
 		alvMethod.value = 'PUT'
 		isLoading.value = true
 
 		showSpecialty(props.data.pk).then(res => {
 			const specialty = res.data
+			console.log('📋 Datos de especialidad cargados:', specialty);
 			Object.keys(form).forEach(key => {
 				if (specialty[key] !== undefined) {
 					form[key] = specialty[key]
@@ -111,12 +238,18 @@ watchEffect(() => {
 		})
 
 	} else if (props.data.mode === 'create') {
+		console.log('🆕 Modo creación');
 		alvRoute.value = `${axios.defaults.baseURL}specialties`
 		alvMethod.value = 'POST'
 
-		Object.keys(form).forEach(key => {
-			form[key] = ''
-		})
+		// SOLO resetear si no hay careerId en los props
+		if (!props.data?.careerId) {
+			Object.keys(form).forEach(key => {
+				form[key] = ''
+			})
+		} else {
+			console.log('🎯 Manteniendo carreraId preseleccionado:', props.data.careerId);
+		}
 	}
 })
 
@@ -179,65 +312,79 @@ onMounted(() => {
 
 						<div class="form-error">
 							<label class="block text-sm font-medium text-gray-700 mb-1">Carrera*</label>
-							<template v-if="isLoading">
-								<div class="h-8 bg-gray-300 rounded animate-pulse w-full" />
-							</template>
-							<template v-else>
-								<select
-									v-model="form.id_career"
-									name="id_career"
-									required
-									class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring focus:ring-brand-800"
-									:disabled="isLoading || !hasCareersForInstitution">
-									<option value="">
-										{{ form.id_institution && !hasCareersForInstitution
+							<div class="flex gap-2">
+								<template v-if="isLoading">
+									<div class="h-8 bg-gray-300 rounded animate-pulse w-full" />
+								</template>
+								<template v-else>
+									<select
+										v-model="form.id_career"
+										name="id_career"
+										required
+										class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring focus:ring-brand-800 flex-1"
+										:disabled="isLoading || !hasCareersForInstitution">
+										<option value="">
+											{{ form.id_institution && !hasCareersForInstitution
 											? 'No hay carreras disponibles'
 											: 'Seleccione carrera'
-										}}
-									</option>
-									<option
-										v-for="career in filteredCareers"
-										:key="career.id"
-										:value="career.id">
-										{{ career.name }}
-									</option>
-								</select>
-								<div
-									v-if="form.id_institution && !hasCareersForInstitution"
-									class="text-sm text-red-600 mt-1">
-									⚠️ La institución seleccionada no tiene carreras disponibles
-								</div>
-								<div
-									v-else-if="form.id_institution && form.id_career && filteredCareers.length > 0"
-									class="text-sm text-green-600 mt-1">
-									✓ {{ filteredCareers.length }} carrera(s) disponible(s)
-								</div>
-							</template>
+											}}
+										</option>
+										<option
+											v-for="career in filteredCareers"
+											:key="career.id"
+											:value="career.id">
+											{{ career.name }}
+										</option>
+									</select>
+									<btn-create
+										:table="'Carrera'"
+										class="h-10 px-3 flex-shrink-0 mt-0.5"
+										tooltip="Crear nueva carrera"
+										@open="openCreateCareer" />
+								</template>
+							</div>
+							<div
+								v-if="form.id_institution && !hasCareersForInstitution"
+								class="text-sm text-red-600 mt-1">
+								⚠️ La institución seleccionada no tiene carreras disponibles
+							</div>
+							<div
+								v-else-if="form.id_institution && form.id_career && filteredCareers.length > 0"
+								class="text-sm text-green-600 mt-1">
+								✓ {{ filteredCareers.length }} carrera(s) disponible(s)
+							</div>
 						</div>
 
 						<div class="form-error md:col-span-2">
 							<label class="block text-sm font-medium text-gray-700 mb-1">Institución*</label>
-							<template v-if="isLoading">
-								<div class="h-8 bg-gray-300 rounded animate-pulse w-full" />
-							</template>
-							<template v-else>
-								<select
-									v-model="form.id_institution"
-									name="id_institution"
-									required
-									class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring focus:ring-brand-800"
-									:disabled="isLoading">
-									<option value="">Seleccione institución</option>
-									<option v-for="inst in institutions" :key="inst.id" :value="inst.id">
-										{{ inst.name }}
-									</option>
-								</select>
-								<div
-									v-if="form.id_institution"
-									class="text-sm text-gray-600 mt-1">
-									Al seleccionar una institución, solo verás sus carreras disponibles
-								</div>
-							</template>
+							<div class="flex gap-2">
+								<template v-if="isLoading">
+									<div class="h-8 bg-gray-300 rounded animate-pulse w-full" />
+								</template>
+								<template v-else>
+									<select
+										v-model="form.id_institution"
+										name="id_institution"
+										required
+										class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring focus:ring-brand-800 flex-1"
+										:disabled="isLoading">
+										<option value="">Seleccione institución</option>
+										<option v-for="inst in institutions" :key="inst.id" :value="inst.id">
+											{{ inst.name }}
+										</option>
+									</select>
+									<btn-create
+										:table="'Institución'"
+										class="h-10 px-3 flex-shrink-0 mt-0.5"
+										tooltip="Crear nueva institución"
+										@open="openCreateInstitution" />
+								</template>
+							</div>
+							<div
+								v-if="form.id_institution"
+								class="text-sm text-gray-600 mt-1">
+								Al seleccionar una institución, solo verás sus carreras disponibles
+							</div>
 						</div>
 					</div>
 
@@ -253,14 +400,25 @@ onMounted(() => {
 							form="SpecialtyForm"
 							class="flex items-center gap-2 px-6 py-2 rounded-lg bg-gradient-to-r from-brand-700 to-brand-900 text-white font-semibold hover:brightness-110 transition shadow-md"
 							:disabled="isLoading || (form.id_institution && !hasCareersForInstitution)">
-							<span v-if="data.mode !== 'create'">💾</span>
-							<span>Guardar</span>
+							Guardar
 						</button>
 					</div>
 				</alv-form>
 			</div>
 		</div>
 	</transition>
+
+	<mdlInstitution
+		:show="showModal && modalData?.table === 'institucion'"
+		:data="modalData"
+		@close="closeModal"
+		@saved="handleSavedInstitution" />
+
+	<mdlCareer
+		:show="showModal && modalData?.table === 'carrera'"
+		:data="modalData"
+		@close="closeModal"
+		@saved="handleSavedCareer" />
 </template>
 
 <style scoped>
