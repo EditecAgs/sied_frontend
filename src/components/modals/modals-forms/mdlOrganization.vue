@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { defineProps, defineEmits, reactive, ref, onMounted, watch, watchEffect, computed, onBeforeUnmount } from 'vue'
+import { defineProps, defineEmits, reactive, ref, onMounted, watch, watchEffect, computed, onBeforeUnmount, nextTick } from 'vue'
 import axios from 'axios'
 import { VTooltip } from 'floating-vue'
 import 'floating-vue/dist/style.css'
@@ -19,8 +19,7 @@ const isLoading = ref(false)
 const alvRoute = ref()
 const alvMethod = ref('POST')
 
-const { showModal: showSectorModal, modalData: sectorModalData, openModal: openSectorModal, closeModal: closeSectorModal } = useModal();
-const { showModal: showClusterModal, modalData: clusterModalData, openModal: openClusterModal, closeModal: closeClusterModal } = useModal();
+const { showModal, modalData, openModal, closeModal } = useModal();
 
 const tableRef = ref(null);
 
@@ -124,41 +123,68 @@ const closeSectorDropdown = () => {
 	searchQuery.value = '';
 };
 
-const handleSavedSector = async () => {
+const openCreateSector = () => {
+	openModal('create', null, 'sectores');
+};
+
+const openCreateClusterNacional = () => {
+	openModal('create', null, 'camaras');
+};
+
+const openCreateClusterLocal = () => {
+	openModal('create', null, 'camaras');
+};
+
+const handleSavedSector = async (newSector: any) => {
 	try {
 		const sectorsRes = await getSectors();
 		sectors.value = sectorsRes.data;
+		
+		await nextTick();
 
-		const newSector = sectorsRes.data[sectorsRes.data.length - 1];
 		if (newSector) {
-			form.id_sector = newSector.id;
-		}
+			const justCreatedSector = sectors.value.find(
+				s => s.id === newSector.id || s.name === newSector.name
+			);
 
-		closeSectorModal();
-	} catch (error) {
-		console.error('Error al recargar sectores:', error);
-		closeSectorModal();
-	}
-};
-
-const handleSavedCluster = async () => {
-	try {
-		const clustersRes = await getClusters();
-		clusters.value = clustersRes.data;
-
-		const newCluster = clustersRes.data[clustersRes.data.length - 1];
-		if (newCluster) {
-			if (newCluster.type === 'Nacional') {
-				form.id_cluster = newCluster.id;
-			} else if (newCluster.type === 'Local') {
-				form.id_cluster_local = newCluster.id;
+			if (justCreatedSector) {
+				form.id_sector = justCreatedSector.id;
+				sectorDropdownOpen.value = false;
 			}
 		}
 
-		closeClusterModal();
+		closeModal();
+	} catch (error) {
+		console.error('Error al recargar sectores:', error);
+		closeModal();
+	}
+};
+
+const handleSavedCluster = async (newCluster: any) => {
+	try {
+		const clustersRes = await getClusters();
+		clusters.value = clustersRes.data;
+		
+		await nextTick();
+
+		if (newCluster) {
+			const justCreatedCluster = clusters.value.find(
+				c => c.id === newCluster.id || c.name === newCluster.name
+			);
+
+			if (justCreatedCluster) {
+				if (justCreatedCluster.type === 'Nacional') {
+					form.id_cluster = justCreatedCluster.id;
+				} else if (justCreatedCluster.type === 'Local') {
+					form.id_cluster_local = justCreatedCluster.id;
+				}
+			}
+		}
+
+		closeModal();
 	} catch (error) {
 		console.error('Error al recargar clusters:', error);
-		closeClusterModal();
+		closeModal();
 	}
 };
 
@@ -236,8 +262,8 @@ watchEffect(() => {
 
 onMounted(loadDependents)
 
-const afterDone = () => {
-	emit('saved')
+const afterDone = (response) => {
+	emit('saved', response.data)
 	emit('close')
 }
 
@@ -325,9 +351,9 @@ const afterError = (res: any) => {
 							<div class="flex gap-2 relative">
 								<div class="w-full relative">
 									<div
-										@click="toggleSectorDropdown"
 										class="w-full px-3 py-2 border rounded-md bg-white cursor-pointer flex items-center justify-between"
-										:class="{ 'border-brand-600': sectorDropdownOpen }">
+										:class="{ 'border-brand-600': sectorDropdownOpen }"
+										@click="toggleSectorDropdown">
 										<span v-if="selectedSectorName" class="text-gray-700">
 											{{ selectedSectorName }}
 										</span>
@@ -355,14 +381,13 @@ const afterError = (res: any) => {
 											<div
 												v-for="sector in filteredSectors"
 												:key="sector.id"
-												@click="selectSector(sector)"
 												class="px-3 py-2 cursor-pointer hover:bg-gray-100 transition-colors"
 												:class="{
 													'bg-brand-50 text-brand-700': form.id_sector === sector.id,
 													'font-semibold text-brand-700': sector.isHighlighted,
 													'text-gray-700': !sector.isHighlighted
-												}">
-												<!-- Mostrar el nombre formateado con (SM) para sectores destacados -->
+												}"
+												@click="selectSector(sector)">
 												<span v-if="sector.isHighlighted" class="font-bold text-brand-700">
 													{{ sector.displayName }}
 												</span>
@@ -383,7 +408,7 @@ const afterError = (res: any) => {
 									:table="'Sector'"
 									class="flex-shrink-0"
 									tooltip="Crear nuevo sector"
-									@open="({ mode, pk, table }) => openSectorModal(mode, pk, table)" />
+									@open="openCreateSector" />
 							</div>
 						</div>
 
@@ -409,8 +434,8 @@ const afterError = (res: any) => {
 								<btn-create
 									:table="'Cámara'"
 									class="flex-shrink-0"
-									tooltip="Crear nueva cámara"
-									@open="({ mode, pk, table }) => openClusterModal(mode, pk, table)" />
+									tooltip="Crear nueva cámara nacional"
+									@open="openCreateClusterNacional" />
 							</div>
 						</div>
 
@@ -436,8 +461,8 @@ const afterError = (res: any) => {
 								<btn-create
 									:table="'Cámara'"
 									class="flex-shrink-0"
-									tooltip="Crear nueva cámara"
-									@open="({ mode, pk, table }) => openClusterModal(mode, pk, table)" />
+									tooltip="Crear nueva cámara local"
+									@open="openCreateClusterLocal" />
 							</div>
 						</div>
 
@@ -568,17 +593,19 @@ const afterError = (res: any) => {
 						{{ data.mode === 'create' ? 'Crear' : 'Guardar' }}
 					</button>
 				</div>
-
+				
 				<mdl-sectors
-					:show="showSectorModal"
-					:data="sectorModalData"
-					@close="closeSectorModal"
+					v-if="showModal && modalData?.table === 'sectores'"
+					:show="showModal"
+					:data="modalData"
+					@close="closeModal"
 					@saved="handleSavedSector" />
 
 				<mdl-clusters
-					:show="showClusterModal"
-					:data="clusterModalData"
-					@close="closeClusterModal"
+					v-if="showModal && modalData?.table === 'camaras'"
+					:show="showModal"
+					:data="modalData"
+					@close="closeModal"
 					@saved="handleSavedCluster" />
 			</div>
 		</div>

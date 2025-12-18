@@ -1,113 +1,132 @@
 import axios from 'axios';
 
-export function getCompletedDualProjects(filtersAdd = null) {
-  let url = 'dual-projects/completed/count';
-  if (filtersAdd !== null) {
-    url += `?filtersAdd=${filtersAdd}`;
-  }
-  return axios.get(url);
+const buildQueryString = (params) => {
+	const queryParams = new URLSearchParams();
+
+	if (params.id_state && params.id_state !== '' && params.id_state !== 'null') {
+		queryParams.append('id_state', params.id_state);
+	}
+
+	if (params.id_institution && params.id_institution !== '' && params.id_institution !== 'null') {
+		queryParams.append('id_institution', params.id_institution);
+	}
+
+	const queryString = queryParams.toString();
+	return queryString ? `?${queryString}` : '';
+};
+
+export function getCompletedDualProjects(params = {}) {
+	const { id_state, id_institution } = params;
+	const queryString = buildQueryString({ id_state, id_institution });
+	return axios.get(`dual-projects/completed/count${queryString}`);
 }
 
-export function getTotalStudents(filtersAdd = null) {
-  let url = 'students/registered/count';
-  if (filtersAdd !== null) {
-    url += `?filtersAdd=${filtersAdd}`;
-  }
-  return axios.get(url);
+export function getTotalStudents(params = {}) {
+	const { id_state, id_institution } = params;
+	const queryString = buildQueryString({ id_state, id_institution });
+	return axios.get(`students/registered/count${queryString}`);
 }
 
-export function getRegisteredOrganizationsCount(filtersAdd = null) {
-  let url = 'organizations/registered/count';
-  if (filtersAdd !== null) {
-    url += `?filtersAdd=${filtersAdd}`;
-  }
-  return axios.get(url);
+export function getRegisteredOrganizationsCount(params = {}) {
+	const { id_state, id_institution } = params;
+	const queryString = buildQueryString({ id_state, id_institution });
+	return axios.get(`organizations/registered/count${queryString}`);
 }
 
-export function getProjectsBySector(page = 1, filtersAdd = null) {
-  let url = `projects/sectors?page=${page}`;
-  if (filtersAdd !== null) {
-    url += `&filtersAdd=${filtersAdd}`;
-  }
-  return axios.get(url);
+export function getProjectsBySector(params = {}) {
+	const { id_state, id_institution } = params;
+
+	const queryParams = new URLSearchParams();
+	if (id_state != null && id_state !== 'null') queryParams.append('id_state', id_state);
+	if (id_institution != null && id_institution !== 'null') queryParams.append('id_institution', id_institution);
+
+	const queryString = queryParams.toString();
+	const url = `projects/sectors${queryString ? `?${queryString}` : ''}`;
+
+	return axios.get(url);
 }
 
-export function getProjectsByIntitution(filtersAdd = null) {
-  let url = 'dual-projects/percetange/institutions';
-  if (filtersAdd !== null) {
-    url += `?filtersAdd=${filtersAdd}`;
-  }
-  return axios.get(url);
+export function getProjectsByIntitution(params = {}) {
+	const { id_state, id_institution } = params;
+	const queryString = buildQueryString({ id_state, id_institution });
+	return axios.get(`dual-projects/percetange/institutions${queryString}`);
 }
 
-export function getProjectsCountByMonth(filtersAdd = null) {
-  let url = 'projects/by-month';
-  if (filtersAdd !== null) {
-    url += `?filtersAdd=${filtersAdd}`;
-  }
-  return axios.get(url);
+export function getProjectsCountByMonth(params = {}) {
+	const { id_state, id_institution } = params;
+	const queryString = buildQueryString({ id_state, id_institution });
+	return axios.get(`projects/by-month${queryString}`);
 }
 
-export function getProjectsByArea(page = 1, filtersAdd = null) {
-  let url = `projects/dual-area?page=${page}`;
-  if (filtersAdd !== null) {
-    url += `&filtersAdd=${filtersAdd}`;
-  }
-  return axios.get(url);
+export function getProjectsByArea(params = {}) {
+	const { id_state, id_institution } = params;
+
+	const queryParams = new URLSearchParams();
+	if (id_state != null && id_state !== 'null') queryParams.append('id_state', id_state);
+	if (id_institution != null && id_institution !== 'null') queryParams.append('id_institution', id_institution);
+
+	const queryString = queryParams.toString();
+	const url = `projects/dual-area${queryString ? `?${queryString}` : ''}`;
+
+	return axios.get(url);
 }
 
-export function getProjectsBySectorMexico(page = 1, filtersAdd = null) {
-  let url = `projects/sectors/mexico?page=${page}`;
-  if (filtersAdd !== null) {
-    url += `&filtersAdd=${filtersAdd}`;
-  }
-  return axios.get(url);
+export function getProjectsBySectorMexico(params = {}) {
+	const { id_state, id_institution } = params;
+
+	const queryParams = new URLSearchParams();
+	if (id_state != null && id_state !== 'null') queryParams.append('id_state', id_state);
+	if (id_institution != null && id_institution !== 'null') queryParams.append('id_institution', id_institution);
+
+	const queryString = queryParams.toString();
+	const url = `projects/sectors/mexico${queryString ? `?${queryString}` : ''}`;
+
+	return axios.get(url);
 }
 
-export function getOrganizationsByScope(filtersAdd = null) {
-  let url = 'organizations/scope/count';
-  if (filtersAdd !== null) {
-    url += `?filtersAdd=${filtersAdd}`;
-  }
-  return axios.get(url);
+export function getOrganizationsByScope(params = {}) {
+	const { id_state, id_institution } = params;
+	const queryString = buildQueryString({ id_state, id_institution });
+	return axios.get(`organizations/scope/count${queryString}`);
 }
 
-export function getProjectsByEconomicSupport(filtersAdd = null) {
-  let url = 'projects/economic-support';
-  if (filtersAdd !== null) {
-    url += `?filtersAdd=${filtersAdd}`;
-  }
-  return axios.get(url);
+export function getProjectsByEconomicSupport(params = {}) {
+	const { id_state, id_institution } = params;
+	const queryString = buildQueryString({ id_state, id_institution });
+	return axios.get(`projects/economic-support${queryString}`);
 }
 
-export function getAverageAmountByEconomicSupport(filtersAdd = null) {
-  let url = 'projects/economic-support/average';
-  if (filtersAdd !== null) {
-    url += `?filtersAdd=${filtersAdd}`;
-  }
-  return axios.get(url);
+export function getAverageAmountByEconomicSupport(params = {}) {
+	const { id_state, id_institution } = params;
+
+	const queryParams = new URLSearchParams();
+
+	if (id_state != null && id_state !== '' && id_state !== 'null') {
+		queryParams.append('id_state', id_state);
+	}
+	if (id_institution != null && id_institution !== '' && id_institution !== 'null') {
+		queryParams.append('id_institution', id_institution);
+	}
+	const queryString = queryParams.toString();
+	const url = `projects/economic-support/average${queryString ? `?${queryString}` : ''}`;
+
+	return axios.get(url);
 }
 
-export function getProjectsByDualType(filtersAdd = null) {
-  let url = 'projects/dual-type';
-  if (filtersAdd !== null) {
-    url += `?filtersAdd=${filtersAdd}`;
-  }
-  return axios.get(url);
+export function getProjectsByDualType(params = {}) {
+	const { id_state, id_institution } = params;
+	const queryString = buildQueryString({ id_state, id_institution });
+	return axios.get(`projects/dual-type${queryString}`);
 }
 
-export function getOrganizationsByCluster(filtersAdd = null) {
-  let url = 'organizations/cluster/count';
-  if (filtersAdd !== null) {
-    url += `?filtersAdd=${filtersAdd}`;
-  }
-  return axios.get(url);
+export function getOrganizationsByCluster(params = {}) {
+	const { id_state, id_institution } = params;
+	const queryString = buildQueryString({ id_state, id_institution });
+	return axios.get(`organizations/cluster/count${queryString}`);
 }
 
-export function getProjectsByCluster(filtersAdd = null) {
-  let url = 'projects/cluster/count';
-  if (filtersAdd !== null) {
-    url += `?filtersAdd=${filtersAdd}`;
-  }
-  return axios.get(url);
+export function getProjectsByCluster(params = {}) {
+	const { id_state, id_institution } = params;
+	const queryString = buildQueryString({ id_state, id_institution });
+	return axios.get(`projects/cluster/count${queryString}`);
 }

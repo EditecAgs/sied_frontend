@@ -11,8 +11,7 @@ alvRoute.value = axios.defaults.baseURL + 'sectors'
 const alvMethod = ref('POST')
 
 const afterDone = (response) => {
-	console.log(response.data + ' guardado exitosamente')
-	emit('saved')
+	emit('saved', response.data)
 	emit('close')
 }
 
@@ -33,7 +32,7 @@ const props = defineProps<{
 const form = reactive({
 	id: '',
 	name: '',
-	plan_mexico: 0 // Valor por defecto 0 para el campo booleano
+	plan_mexico: 0
 })
 
 watchEffect(() => {
@@ -59,10 +58,9 @@ watchEffect(() => {
 		alvRoute.value = `${axios.defaults.baseURL}sectors`
 		alvMethod.value = 'POST'
 
-		// Reset del formulario manteniendo plan_mexico en 0
 		Object.keys(form).forEach(key => {
 			if (key === 'plan_mexico') {
-				form[key] = 0 // Mantener 0 como valor por defecto
+				form[key] = 0
 			} else {
 				form[key] = ''
 			}
@@ -123,7 +121,6 @@ watchEffect(() => {
 							</template>
 						</div>
 
-						<!-- Campo oculto para plan_mexico -->
 						<input
 							v-model="form.plan_mexico"
 							type="hidden"

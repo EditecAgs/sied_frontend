@@ -1,10 +1,13 @@
 <script setup lang="ts">
-import { defineProps, defineEmits, reactive, watchEffect, ref, onMounted } from 'vue'
+import { defineProps, defineEmits, reactive, watchEffect, ref, onMounted, nextTick, computed } from 'vue'
 import axios from 'axios'
 import { getInstitutions } from '../../../services/institutions/institutions.js'
 import { showUsers, createUsers, updateUsers } from "../../../services/users/users.js"
-import Select from 'primevue/select'
+import btnCreate from '../../buttons/btnCreate.vue'
+import mdlInstitution from '../modals-forms/mdlInstitution.vue'
+import { useModal } from '../../../composables/UseModal'
 
+const { showModal, modalData, openModal, closeModal } = useModal()
 
 interface UserForm {
 	name: string
@@ -46,6 +49,9 @@ const isLoading = ref(false)
 const showPassword = ref(false)
 const formErrors = ref<UserFormErrors>({})
 const institutions = ref<Institution[]>([])
+const showInstitutionDropdown = ref(false)
+const institutionSearch = ref('')
+const institutionDropdownRef = ref<HTMLElement | null>(null)
 
 const alvRoute = ref('')
 const alvMethod = ref<'POST' | 'PUT'>('POST')
@@ -59,14 +65,76 @@ const form = reactive<UserForm>({
 	password_confirmation: ''
 })
 
-const loadInstitutions = () => {
-	getInstitutions().then(({ data }) => {
-		institutions.value = data
-	})
+const filteredInstitutions = computed(() => {
+	if (!institutionSearch.value) return institutions.value
+	return institutions.value.filter(inst =>
+		inst.name.toLowerCase().includes(institutionSearch.value.toLowerCase())
+	)
+})
+
+const loadInstitutions = async () => {
+	try {
+		const response = await getInstitutions()
+		institutions.value = response.data
+		return response.data
+	} catch (error) {
+		console.error('Error al cargar instituciones:', error)
+		return []
+	}
+}
+const selectInstitution = (institution: Institution) => {
+	form.id_institution = institution.id.toString()
+	institutionSearch.value = institution.name
+	showInstitutionDropdown.value = false
+}
+
+const handleSavedInstitution = async (newInstitution: any) => {
+	try {
+		await loadInstitutions()
+
+		await nextTick()
+
+		if (newInstitution) {
+			const justCreatedInstitution = institutions.value.find(
+				inst => inst.id.toString() === newInstitution.id?.toString() ||
+					inst.name === newInstitution.name
+			)
+
+			if (justCreatedInstitution) {
+				selectInstitution(justCreatedInstitution)
+
+				showInstitutionDropdown.value = false
+			} else {
+				console.warn('No se encontró la institución recién creada:', newInstitution)
+			}
+		}
+
+		closeModal()
+	} catch (error) {
+		console.error('Error al recargar instituciones:', error)
+		closeModal()
+	}
+}
+
+
+const openCreateInstitution = () => {
+	openModal('create', null, 'institucion')
+}
+
+const handleClickOutside = (event: MouseEvent) => {
+	if (institutionDropdownRef.value && !institutionDropdownRef.value.contains(event.target as Node)) {
+		showInstitutionDropdown.value = false
+	}
 }
 
 onMounted(() => {
 	loadInstitutions()
+	document.addEventListener('click', handleClickOutside)
+})
+
+import { onBeforeUnmount } from 'vue'
+onBeforeUnmount(() => {
+	document.removeEventListener('click', handleClickOutside)
 })
 
 watchEffect(() => {
@@ -86,6 +154,16 @@ watchEffect(() => {
 					form.id_institution = user.id_institution || ''
 					form.password = ''
 					form.password_confirmation = ''
+
+					// Establecer el texto de búsqueda basado en la institución seleccionada
+					if (user.id_institution && institutions.value.length > 0) {
+						const selectedInstitution = institutions.value.find(inst =>
+							inst.id.toString() === user.id_institution.toString()
+						)
+						if (selectedInstitution) {
+							institutionSearch.value = selectedInstitution.name
+						}
+					}
 				})
 				.catch(error => {
 					console.error('Error al cargar perfil:', error)
@@ -106,6 +184,15 @@ watchEffect(() => {
 					form.id_institution = user.id_institution || ''
 					form.password = ''
 					form.password_confirmation = ''
+
+					if (user.id_institution && institutions.value.length > 0) {
+						const selectedInstitution = institutions.value.find(inst =>
+							inst.id.toString() === user.id_institution.toString()
+						)
+						if (selectedInstitution) {
+							institutionSearch.value = selectedInstitution.name
+						}
+					}
 				})
 				.catch(error => {
 					console.error('Error al cargar usuario:', error)
@@ -124,6 +211,7 @@ watchEffect(() => {
 		form.id_institution = ''
 		form.password = ''
 		form.password_confirmation = ''
+		institutionSearch.value = ''
 		formErrors.value = {}
 	}
 })
@@ -334,20 +422,65 @@ const togglePasswordVisibility = () => {
 
 						<div class="form-error">
 							<label class="block text-sm font-medium text-gray-700 mb-1">Institución*</label>
-							<Select
-								v-model="form.id_institution"
-								name="id_institution"
-								:options="institutions"
-								optionLabel="name"
-								optionValue="id"
-								:virtualScrollerOptions="{ itemSize: 38, showLoader: isLoading}"
-								placeholder="Selecciona una institución"
-								:class="[
-									'w-full px-3 py-2 !border-2 !rounded-md focus:outline-none focus:ring focus:ring-brand-800',
-									formErrors.id_institution ? '!border-red-500' : '!border-gray-900'
-								]" />
-							<div v-if="formErrors.id_institution" class="text-red-500 text-sm mt-1">
-								{{ formErrors.id_institution }}
+							<div class="flex gap-2 items-start">
+								<div ref="institutionDropdownRef" class="flex-1 relative">
+									<div class="relative">
+										<input
+											v-model="institutionSearch"
+											type="text"
+											placeholder="Buscar institución..."
+											:class="[
+												'w-full px-3 py-2 border rounded-md focus:outline-none focus:ring focus:ring-brand-800',
+												formErrors.id_institution ? 'border-red-500' : 'border-gray-300'
+											]"
+											@focus="showInstitutionDropdown = true"
+											@input="showInstitutionDropdown = true" />
+
+										<div
+											v-if="showInstitutionDropdown && filteredInstitutions.length > 0"
+											class="absolute z-50 w-full mt-1 bg-white border border-gray-200 rounded-md shadow-lg max-h-60 overflow-y-auto">
+											<div class="py-1">
+												<div
+													v-for="inst in filteredInstitutions"
+													:key="inst.id"
+													class="px-3 py-2 cursor-pointer hover:bg-gray-100 transition-colors"
+													:class="{
+														'bg-brand-50 text-brand-700': form.id_institution === inst.id.toString()
+													}"
+													@click="selectInstitution(inst)">
+													{{ inst.name }}
+												</div>
+											</div>
+										</div>
+
+										<div
+											v-if="showInstitutionDropdown && institutionSearch && filteredInstitutions.length === 0"
+											class="absolute z-50 w-full mt-1 bg-white border border-gray-200 rounded-md shadow-lg p-3">
+											<p class="text-gray-600 text-sm mb-2">No se encontraron instituciones.</p>
+											<button
+												type="button"
+												class="text-brand-600 hover:text-brand-800 underline text-sm font-medium"
+												@click="openCreateInstitution">
+												¿Crear nueva institución?
+											</button>
+										</div>
+									</div>
+
+									<input
+										type="hidden"
+										name="id_institution"
+										:value="form.id_institution" />
+
+									<div v-if="formErrors.id_institution" class="text-red-500 text-sm mt-1">
+										{{ formErrors.id_institution }}
+									</div>
+								</div>
+
+								<btn-create
+									:table="'Institución'"
+									class="h-10 px-3 flex-shrink-0 mt-0.5"
+									tooltip="Crear nueva institución"
+									@open="openCreateInstitution" />
 							</div>
 						</div>
 
@@ -437,6 +570,12 @@ const togglePasswordVisibility = () => {
 						</button>
 					</div>
 				</form>
+
+				<mdlInstitution
+					:show="showModal"
+					:data="modalData"
+					@close="closeModal"
+					@saved="handleSavedInstitution" />
 			</div>
 		</div>
 	</transition>

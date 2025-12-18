@@ -5,26 +5,6 @@
 			<h3 class="text-xl font-semibold text-gray-600 dark:text-white">
 				Proyectos Duales por Mes
 			</h3>
-
-			<div class="relative h-fit">
-				<DropdownMenu :menu-items="menuItems">
-					<template #icon>
-						<svg
-							width="24"
-							height="24"
-							viewBox="0 0 24 24"
-							fill="none"
-							xmlns="http://www.w3.org/2000/svg"
-							class="text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white cursor-pointer transition-colors duration-200">
-							<path
-								fill-rule="evenodd"
-								clip-rule="evenodd"
-								d="M10.2441 6C10.2441 5.0335 11.0276 4.25 11.9941 4.25H12.0041C12.9706 4.25 13.7541 5.0335 13.7541 6C13.7541 6.9665 12.9706 7.75 12.0041 7.75H11.9941C11.0276 7.75 10.2441 6.9665 10.2441 6ZM10.2441 18C10.2441 17.0335 11.0276 16.25 11.9941 16.25H12.0041C12.9706 16.25 13.7541 17.0335 13.7541 18C13.7541 18.9665 12.9706 19.75 12.0041 19.75H11.9941C11.0276 19.75 10.2441 18.9665 10.2441 18ZM11.9941 10.25C11.0276 10.25 10.2441 11.0335 10.2441 12C10.2441 12.9665 11.0276 13.75 11.9941 13.75H12.0041C12.9706 13.75 13.7541 12.9665 13.7541 12C13.7541 11.0335 12.9706 10.25 12.0041 10.25H11.9941Z"
-								fill="currentColor" />
-						</svg>
-					</template>
-				</DropdownMenu>
-			</div>
 		</div>
 
 		<div class="max-w-full overflow-x-auto custom-scrollbar">
@@ -40,34 +20,30 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
-import DropdownMenu from '../common/DropdownMenu.vue'
+import { ref, watch, onMounted } from 'vue'
 import VueApexCharts from 'vue3-apexcharts'
 import { getProjectsCountByMonth } from '../../services/statistics/dashboard'
 
-
 const props = defineProps({
-  filtersAdd: {
-    type: Number,
-    default: null 
-  }
+	filters: {
+		type: Object,
+		default: () => ({})
+	}
 })
 
-const menuItems = [
-  { label: 'View More', onClick: () => console.log('View More clicked') },
-  { label: 'Delete', onClick: () => console.log('Delete clicked') },
-]
+const emit = defineEmits(['loaded'])
+
 
 const series = ref([
-  {
-    name: 'Proyectos creados',
-    data: Array(12).fill(0),
-  },
+	{
+		name: 'Proyectos creados',
+		data: Array(12).fill(0),
+	},
 ])
 
 const monthLabels = [
-  'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
-  'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre',
+	'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
+	'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre',
 ]
 
 const chartOptions = ref({
@@ -135,24 +111,53 @@ const chartOptions = ref({
 	},
 })
 
+const loadData = async () => {
+	try {
+		const response = await getProjectsCountByMonth(props.filters)
 
-onMounted(async () => {
-  try {
-    const response = await getProjectsCountByMonth(props.filtersAdd)
-    const data = response.data.data
+		const monthlyData = response.data
+		const dataByMonth = Array(12).fill(0)
 
-    const monthlyData = Array(12).fill(0)
+		if (monthlyData && monthlyData.length > 0) {
+			monthlyData.forEach(item => {
+				const index = item.month_number - 1
+				if (index >= 0 && index < 12) {
+					dataByMonth[index] = item.project_count
+				}
+			})
+		}
 
-    data.forEach(item => {
-      const index = item.month_number - 1
-      if (index >= 0 && index < 12) {
-        monthlyData[index] = item.project_count
-      }
-    })
+		series.value = [{
+			name: 'Proyectos creados',
+			data: dataByMonth,
+		}]
 
-    series.value[0].data = monthlyData
-  } catch (error) {
-    console.error('Error al cargar proyectos por mes:', error)
-  }
+		const currentYear = new Date().getFullYear()
+		const yearToShow = monthlyData.length > 0 ? monthlyData[0].year : currentYear
+
+		const allSameYear = monthlyData.every(item => item.year === yearToShow)
+
+		if (allSameYear && yearToShow) {
+			chartOptions.value.xaxis.categories = monthLabels.map(month =>
+				`${month} ${yearToShow}`
+			)
+		}
+
+		emit('loaded')
+	} catch (error) {
+		console.error('Error al cargar proyectos por mes:', error)
+		series.value = [{
+			name: 'Proyectos creados',
+			data: Array(12).fill(0),
+		}]
+	}
+}
+onMounted(() => {
+	loadData()
 })
+
+
+watch(() => props.filters, () => {
+	loadData()
+}, { deep: true })
 </script>

@@ -200,7 +200,11 @@ const formData = reactive({
 		internal_advisor_name: '',
 		internal_advisor_qualification: null,
 		external_advisor_name: '',
-		external_advisor_qualification: null
+		external_advisor_qualification: null,
+		economic_benefit: null,
+		time_benefit: null,
+		economic_benefit_note: '',
+		time_benefit_note: ''
 	}
 });
 
@@ -256,7 +260,11 @@ const resetForm = () => {
 		internal_advisor_name: '',
 		internal_advisor_qualification: null,
 		external_advisor_name: '',
-		external_advisor_qualification: null
+		external_advisor_qualification: null,
+		economic_benefit: null,
+		time_benefit: null,
+		economic_benefit_note: '',
+		time_benefit_note: ''
 	};
 	reportaModeloDual.value = null;
 	currentStep.value = 0;
@@ -324,7 +332,11 @@ watch(
 					internal_advisor_name: project.dual_project_reports?.internal_advisor_name ?? '',
 					internal_advisor_qualification: project.dual_project_reports?.internal_advisor_qualification ?? null,
 					external_advisor_name: project.dual_project_reports?.external_advisor_name ?? '',
-					external_advisor_qualification: project.dual_project_reports?.external_advisor_qualification ?? null
+					external_advisor_qualification: project.dual_project_reports?.external_advisor_qualification ?? null,
+					economic_benefit: project.dual_project_reports?.economic_benefit ?? null,
+					time_benefit: project.dual_project_reports?.time_benefit ?? null,
+					economic_benefit_note: project.dual_project_reports?.economic_benefit_note ?? '',	
+					time_benefit_note: project.dual_project_reports?.time_benefit_note ?? ''
 				};
 
 				reportaModeloDual.value = newData.mode === 'complete' ? true : !!project.dual_project_reports;
@@ -533,7 +545,7 @@ const imprimirYGuardar = async () => {
 				id_organization: Number(formData.unidadDual.id_organization),
 				id_dual_area: Number(formData.unidadDual.id_dual_area),
 				period_start: formatDate(formData.unidadDual.period_start),
-				period_end: formatDate(formData.unidadDual.period_end), // Puede ser null/empty
+				period_end: formatDate(formData.unidadDual.period_end),
 				period_observation: formData.unidadDual.period_observation,
 				status_document: Number(formData.unidadDual.status_document),
 				economic_support: Number(formData.unidadDual.economic_support),
@@ -551,7 +563,11 @@ const imprimirYGuardar = async () => {
 				internal_advisor_name: formData.unidadDual.internal_advisor_name || '',
 				internal_advisor_qualification: Number(formData.unidadDual.internal_advisor_qualification) || null,
 				external_advisor_name: formData.unidadDual.external_advisor_name || '',
-				external_advisor_qualification: Number(formData.unidadDual.external_advisor_qualification) || null
+				external_advisor_qualification: Number(formData.unidadDual.external_advisor_qualification) || null,
+				economic_benefit: Number(formData.unidadDual.economic_benefit) || null,
+				time_benefit: Number(formData.unidadDual.time_benefit) || null,
+				economic_benefit_note: formData.unidadDual.economic_benefit_note || '',
+				time_benefit_note: formData.unidadDual.time_benefit_note || ''
 			};
 		}
 
@@ -617,6 +633,28 @@ const imprimirYGuardar = async () => {
 		isSubmitting.value = false;
 	}
 };
+
+const filteredCareersForInstitution = computed(() => {
+	if (!formData.academico.id_institution) return [];
+
+	return careers.value.filter(career =>
+		career.id_institution === formData.academico.id_institution ||
+		career.institution_id === formData.academico.id_institution ||
+		career.institution?.id === formData.academico.id_institution
+	);
+});
+
+const filteredSpecialtiesForInstitution = computed(() => {
+	if (!formData.academico.id_institution) return [];
+
+	return specialties.value.filter(specialty => {
+		const career = careers.value.find(c => c.id === specialty.id_career || c.id === specialty.career_id);
+		if (!career) return false;
+
+		return career.id_institution === formData.academico.id_institution ||
+			career.institution_id === formData.academico.id_institution;
+	});
+});
 
 const handleInstitutionSaved = () => {
 	closeModal();
@@ -699,8 +737,8 @@ const closeModalAndReset = () => {
 							:key="'personal-step-' + personalStepKey"
 							ref="stepPersonalRef"
 							v-model="formData.personal"
-							:careers="careers"
-							:specialties="specialties"
+							:careers="filteredCareersForInstitution"
+							:specialties="filteredSpecialtiesForInstitution"
 							:institution="{
 								id: formData.academico.id_institution,
 								name: institutions.find(i => i.id === formData.academico.id_institution)?.name || ''

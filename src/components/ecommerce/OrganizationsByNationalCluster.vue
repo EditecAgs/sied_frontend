@@ -37,12 +37,11 @@ const palette = [
 	'#65A30D', '#EA580C', '#BE123C', '#0F766E', '#4338CA'
 ]
 
-// Computed para filtrar y ordenar los datos
 const filteredNationalClusters = computed(() => {
 	return nationalClusters.value
-		.filter(item => item.organization_count > 0) // Excluir las que no tienen organizaciones
-		.sort((a, b) => b.organization_count - a.organization_count) // Ordenar descendente por cantidad de organizaciones
-		.slice(0, 5) // Tomar solo las primeras 5
+		.filter(item => item.organization_count > 0)
+		.sort((a, b) => b.organization_count - a.organization_count)
+		.slice(0, 5)
 })
 
 const chartData = computed(() => ({

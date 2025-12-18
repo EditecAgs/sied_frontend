@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed, watch, defineProps, defineEmits } from 'vue';
+import { ref, computed, watch, defineProps, defineEmits, nextTick } from 'vue';
 import btnCreate from '../../components/buttons/btnCreate.vue';
 import mdlInstitution from '../modals/modals-forms/mdlInstitution.vue';
 import { useModal } from '../../composables/UseModal';
@@ -28,7 +28,6 @@ const filteredInstitutions = computed(() => {
 	);
 });
 
-
 const isInstitutionValid = computed(() => {
 	if (!props.modelValue?.id_institution || !searchTerm.value) return false;
 
@@ -55,7 +54,6 @@ const handleSearchInput = (event: Event) => {
 	const value = (event.target as HTMLInputElement).value;
 	searchTerm.value = value;
 	hasUserInteracted.value = true;
-
 
 	if (!value.trim() && props.modelValue?.id_institution) {
 		updateField('id_institution', '');
@@ -90,7 +88,6 @@ const validate = () => {
 	return valid;
 };
 
-
 const handleInputBlur = () => {
 	if (hasUserInteracted.value) {
 		if (searchTerm.value && !props.modelValue?.id_institution) {
@@ -107,25 +104,41 @@ const handleInputBlur = () => {
 
 defineExpose({ validate });
 
-const handleSaved = async () => {
+const handleSaved = async (newInstitution?: any) => {
 	try {
-		console.log('Recargando instituciones después de crear...');
 		const res = await getInstitutions();
-		console.log('Nuevas instituciones cargadas:', res.data.length);
 
 		emit('update:institutions', res.data);
 
-		closeModal();
+		if (newInstitution) {
+			const justCreatedInstitution = res.data.find(
+				(inst: any) => inst.id === newInstitution.id || inst.name === newInstitution.name
+			);
 
-		setTimeout(() => {
-			showDropdown.value = true;
-			searchTerm.value = '';
-		}, 100);
+			if (justCreatedInstitution) {
+				await nextTick();
+
+				updateField('id_institution', justCreatedInstitution.id);
+				searchTerm.value = justCreatedInstitution.name;
+
+				showDropdown.value = true;
+
+				setTimeout(() => {
+					showDropdown.value = false;
+				}, 1500);
+			}
+		}
+
+		closeModal();
 
 	} catch (error) {
 		console.error('Error al recargar instituciones:', error);
 		closeModal();
 	}
+};
+
+const openCreateModal = () => {
+	openModal('create', null, 'institution');
 };
 
 const handleDropdownBlur = () => {
@@ -144,7 +157,6 @@ const handleDropdownBlurInternal = () => {
 	isDropdownFocused.value = false;
 	showDropdown.value = false;
 };
-
 
 watch(
 	() => props.modelValue?.id_institution,
@@ -181,20 +193,11 @@ watch(searchTerm, (newValue) => {
 	}
 });
 
-
 watch(isInstitutionValid, (newVal) => {
 	if (newVal && errors.value.id_institution) {
 		errors.value.id_institution = '';
 	}
 });
-
-watch(
-	() => props.institutions,
-	(newInstitutions) => {
-		console.log('Institutions prop updated:', newInstitutions?.length);
-	},
-	{ deep: true }
-);
 
 </script>
 
@@ -248,7 +251,7 @@ watch(
 								<button
 									type="button"
 									class="text-brand-600 hover:text-brand-800 underline"
-									@click="openModal('create', null, 'institution')">
+									@click="openCreateModal">
 									¿Crear nueva institución?
 								</button>
 							</div>
@@ -258,7 +261,7 @@ watch(
 							:table="'institution'"
 							class="h-12 px-4 flex-shrink-0"
 							tooltip="Crear nueva institución"
-							@open="({ mode, pk, table }) => openModal(mode, pk, table)" />
+							@open="openCreateModal" />
 					</div>
 
 					<div v-if="errors.id_institution" class="text-red-500 text-sm mt-2 flex items-center">
