@@ -87,6 +87,10 @@ const diplomaDropdownRef = ref(null);
 
 const internalAdvisorName = ref(props.modelValue.internal_advisor_name || '');
 const externalAdvisorName = ref(props.modelValue.external_advisor_name || '');
+const economic_benefit = ref(props.modelValue.economic_benefit || 0);
+const time_benefit = ref(props.modelValue.time_benefit || 0);
+const economic_benefit_note = ref(props.modelValue.economic_benefit_note || '');
+const time_benefit_note = ref(props.modelValue.time_benefit_note || '');
 
 const internalAdvisorQualification = ref(props.modelValue.internal_advisor_qualification || null);
 const externalAdvisorQualification = ref(props.modelValue.external_advisor_qualification || null);
@@ -200,30 +204,52 @@ const fieldHelpTexts = {
 	certifications: "Certificaciones obtenidas al finalizar el proyecto; puedes agregar cuantas necesites.",
 	diplomas: "Diplomados obtenidas al finalizar el proyecto; puedes agregar cuantos necesites.",
 	description: "Proporcione una breve descripción de la modalidad seleccionada, indicando sus características o propósito.",
+	economic_benefit: "Monto del beneficio económico adicional recibido (en la moneda local). Use 0 si no hubo beneficio económico.",
+	time_benefit: "Cantidad de tiempo beneficiado (en horas o días). Use 0 si no hubo beneficio de tiempo.",
+	economic_benefit_note: "Detalles del beneficio económico. Obligatorio cuando el monto es 0, opcional cuando hay monto positivo.",
+	time_benefit_note: "Detalles del beneficio de tiempo. Obligatorio cuando el tiempo es 0, opcional cuando hay tiempo positivo.",
 };
 
 const getValidationClass = (fieldName) => {
-	if (!showValidationErrors.value) return '';
+  if (!showValidationErrors.value) return '';
 
-	if (errors.value[fieldName]) {
-		return 'input-error';
-	}
+  if (errors.value[fieldName]) {
+    return 'input-error';
+  }
 
-	const requiredFields = [
-		'name_report', 'id_organization', 'id_dual_area', 'period_start',
-		'status_document', 'economic_support', 'amount', 'is_concluded',
-		'is_hired', 'dual_type_id'
-	];
+  const requiredFields = [
+    'name_report', 'id_organization', 'id_dual_area', 'period_start',
+    'status_document', 'economic_support', 'amount', 'is_concluded',
+    'is_hired', 'dual_type_id'
+  ];
 
-	if (fieldName === 'period_end' && props.modelValue.is_concluded === 1 && props.modelValue.period_end) {
-		return 'input-success';
-	}
+  // Agregar validación para beneficios cuando el proyecto está concluido
+  if (props.modelValue.is_concluded === 1) {
+    if (fieldName === 'economic_benefit' && economic_benefit.value !== null && economic_benefit.value !== '') {
+      return 'input-success';
+    }
+    if (fieldName === 'time_benefit' && time_benefit.value !== null && time_benefit.value !== '') {
+      return 'input-success';
+    }
+    
+    // Validar notas cuando los beneficios son 0
+    if (fieldName === 'economic_benefit_note' && economic_benefit.value === 0 && economic_benefit_note.value) {
+      return 'input-success';
+    }
+    if (fieldName === 'time_benefit_note' && time_benefit.value === 0 && time_benefit_note.value) {
+      return 'input-success';
+    }
+  }
 
-	if (requiredFields.includes(fieldName) && props.modelValue[fieldName]) {
-		return 'input-success';
-	}
+  if (fieldName === 'period_end' && props.modelValue.is_concluded === 1 && props.modelValue.period_end) {
+    return 'input-success';
+  }
 
-	return '';
+  if (requiredFields.includes(fieldName) && props.modelValue[fieldName]) {
+    return 'input-success';
+  }
+
+  return '';
 };
 
 const getValidationSummary = () => {
@@ -244,7 +270,11 @@ const getValidationSummary = () => {
 		'is_hired': 'Contratado',
 		'dual_type_id': 'Tipo de Modelo Dual',
 		'internal_advisor_qualification': 'Calificación Asesor Interno',
-		'external_advisor_qualification': 'Calificación Asesor Externo'
+		'external_advisor_qualification': 'Calificación Asesor Externo',
+		'economic_benefit_note': 'Detalles del Beneficio Económico',
+        'time_benefit_note': 'Detalles del Beneficio de Tiempo',
+		'economic_benefit': 'Beneficio Económico',
+		'time_benefit': 'Beneficio de Tiempo'
 	};
 
 	return {
@@ -295,6 +325,14 @@ watch(internalAdvisorName, (newName) => {
 
 watch(externalAdvisorName, (newName) => {
 	update('external_advisor_name', newName);
+});
+
+watch(economic_benefit, (newBenefit) => {
+	update('economic_benefit', newBenefit);
+});
+
+watch(time_benefit, (newBenefit) => {
+	update('time_benefit', newBenefit);
 });
 
 watch(internalAdvisorQualification, (newQual) => {
@@ -811,72 +849,110 @@ const handleClickOutside = (event) => {
 };
 
 const validate = () => {
-	console.log('=== INICIANDO VALIDACIÓN UNIDAD DUAL ===');
-	hasAttemptedSubmit.value = true;
-	showValidationErrors.value = true;
+  console.log('=== INICIANDO VALIDACIÓN UNIDAD DUAL ===');
+  hasAttemptedSubmit.value = true;
+  showValidationErrors.value = true;
 
-	const requiredFields = [
-		'name_report', 'id_organization', 'id_dual_area', 'period_start',
-		'status_document', 'economic_support', 'amount', 'is_concluded',
-		'is_hired', 'dual_type_id'
-	];
+  const requiredFields = [
+    'name_report', 'id_organization', 'id_dual_area', 'period_start',
+    'status_document', 'economic_support', 'amount', 'is_concluded',
+    'is_hired', 'dual_type_id'
+  ];
 
-	let isValid = true;
-	errors.value = {};
+  let isValid = true;
+  errors.value = {};
 
-	for (const field of requiredFields) {
-		const value = props.modelValue[field];
-		console.log(`Campo ${field}:`, value, typeof value);
+  for (const field of requiredFields) {
+    const value = props.modelValue[field];
+    console.log(`Campo ${field}:`, value, typeof value);
 
-		if (value === null || value === undefined || value === '') {
-			errors.value[field] = 'Este campo es obligatorio';
-			isValid = false;
-		}
-	}
+    if (value === null || value === undefined || value === '') {
+      errors.value[field] = 'Este campo es obligatorio';
+      isValid = false;
+    }
+  }
 
-	if (props.modelValue.is_concluded === 1) {
-		if (!props.modelValue.period_end) {
-			errors.value.period_end = 'La fecha de fin es obligatoria cuando el proyecto está concluido';
-			isValid = false;
-			console.log('Fecha de fin requerida para proyecto concluido');
-		}
-	}
+  if (props.modelValue.is_concluded === 1) {
+    if (!props.modelValue.period_end) {
+      errors.value.period_end = 'La fecha de fin es obligatoria cuando el proyecto está concluido';
+      isValid = false;
+      console.log('Fecha de fin requerida para proyecto concluido');
+    }
+  }
 
-	if (props.modelValue.amount < 0) {
-		errors.value.amount = 'El monto debe ser mayor o igual a 0';
-		isValid = false;
-		console.log('Monto negativo');
-	}
+  if (props.modelValue.amount < 0) {
+    errors.value.amount = 'El monto debe ser mayor o igual a 0';
+    isValid = false;
+    console.log('Monto negativo');
+  }
 
-	const start = props.modelValue.period_start ? new Date(props.modelValue.period_start) : null;
-	const end = props.modelValue.period_end ? new Date(props.modelValue.period_end) : null;
+  const start = props.modelValue.period_start ? new Date(props.modelValue.period_start) : null;
+  const end = props.modelValue.period_end ? new Date(props.modelValue.period_end) : null;
 
-	if (start && end && start > end) {
-		errors.value.period_end = 'La fecha de fin debe ser posterior a la fecha de inicio';
-		isValid = false;
-		console.log('Fechas inválidas');
-	}
+  if (start && end && start > end) {
+    errors.value.period_end = 'La fecha de fin debe ser posterior a la fecha de inicio';
+    isValid = false;
+    console.log('Fechas inválidas');
+  }
 
-	if (internalAdvisorQualification.value !== null && internalAdvisorQualification.value !== '') {
-		if (!validateQualification(internalAdvisorQualification.value, 'internal_advisor_qualification')) {
-			isValid = false;
-			console.log('Calificación interna inválida');
-		}
-	}
+  if (internalAdvisorQualification.value !== null && internalAdvisorQualification.value !== '') {
+    if (!validateQualification(internalAdvisorQualification.value, 'internal_advisor_qualification')) {
+      isValid = false;
+      console.log('Calificación interna inválida');
+    }
+  }
 
-	if (externalAdvisorQualification.value !== null && externalAdvisorQualification.value !== '') {
-		if (!validateQualification(externalAdvisorQualification.value, 'external_advisor_qualification')) {
-			isValid = false;
-			console.log('Calificación externa inválida');
-		}
-	}
+  if (externalAdvisorQualification.value !== null && externalAdvisorQualification.value !== '') {
+    if (!validateQualification(externalAdvisorQualification.value, 'external_advisor_qualification')) {
+      isValid = false;
+      console.log('Calificación externa inválida');
+    }
+  }
 
-	return isValid;
+  // Validación para los nuevos campos de beneficios (SOLO cuando el proyecto está concluido)
+  if (props.modelValue.is_concluded === 1) {
+    // Validar que los beneficios sean números
+    if (economic_benefit.value === null || economic_benefit.value === '') {
+      errors.value.economic_benefit = 'El beneficio económico es obligatorio';
+      isValid = false;
+      console.log('Beneficio económico requerido');
+    } else if (economic_benefit.value < 0) {
+      errors.value.economic_benefit = 'El beneficio económico no puede ser negativo';
+      isValid = false;
+      console.log('Beneficio económico negativo');
+    }
+    
+    if (time_benefit.value === null || time_benefit.value === '') {
+      errors.value.time_benefit = 'El beneficio de tiempo es obligatorio';
+      isValid = false;
+      console.log('Beneficio de tiempo requerido');
+    } else if (time_benefit.value < 0) {
+      errors.value.time_benefit = 'El beneficio de tiempo no puede ser negativo';
+      isValid = false;
+      console.log('Beneficio de tiempo negativo');
+    }
+
+    // Validar las notas (obligatorias solo cuando los beneficios son 0)
+    if (economic_benefit.value === 0 && !economic_benefit_note.value) {
+      errors.value.economic_benefit_note = 'Debe explicar por qué no hubo beneficio económico cuando el monto es 0';
+      isValid = false;
+      console.log('Nota de beneficio económico requerida para monto 0');
+    }
+    
+    if (time_benefit.value === 0 && !time_benefit_note.value) {
+      errors.value.time_benefit_note = 'Debe explicar por qué no hubo beneficio de tiempo cuando el tiempo es 0';
+      isValid = false;
+      console.log('Nota de beneficio de tiempo requerida para tiempo 0');
+    }
+  }
+
+  return isValid;
 };
 
 defineExpose({ validate, resetValidation, getValidationSummary });
 
 onMounted(() => {
+	console.log('modelValue:', JSON.parse(JSON.stringify(props.modelValue)));
 	document.addEventListener('click', handleClickOutside);
 	initializeSearchValues();
 	if (props.modelValue.economic_support === 1) {
@@ -1510,10 +1586,153 @@ onMounted(() => {
 					</div>
 				</div>
 			</div>
+							<!-- vamos a agregar los cambpos de economic_benefit y time_benefit los
+				  cuales se avilitaran si esta concuido el proyecto si no que
+				  salga el mismo mensaje de Los beneficios economicos y los tiempos estaran disponibles cuando el proyecto este concluido
+				  y cuando estos esten disponibles se habiliten los campos economic_benefit_note,time_benefit_note seran obligatorios si
+				  economic_benefit  time_benefit estan en cero si no opcionales -->
+<div v-if="showCredentialsSection" class="bg-gray-50 rounded-xl p-6 border border-gray-200">
+  <h3 class="text-lg font-semibold text-brand-800 mb-4 flex items-center">
+    <span class="w-6 h-6 bg-brand-100 rounded-full flex items-center justify-center text-brand-800 text-sm mr-2">6</span>
+    Beneficios del Proyecto
+  </h3>
 
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+    <!-- Beneficio Económico -->
+    <div>
+      <label class="label flex items-center gap-1">
+        Beneficio Económico (Monto)
+        <span class="text-red-500">*</span>
+        <button
+          v-tooltip="'Ingrese el monto del beneficio económico adicional recibido. Use 0 si no hubo beneficio económico.'"
+          type="button"
+          class="help-icon text-gray-400 hover:text-brand-600 cursor-help transition-colors">
+          ?
+        </button>
+      </label>
+      
+      <div class="space-y-3">
+        <input
+          v-model.number="economic_benefit"
+          type="number"
+          min="0"
+          step="0.01"
+          class="input w-full"
+          :class="getValidationClass('economic_benefit')"
+          :disabled="!areQualificationsEnabled"
+          placeholder="0.00"
+          @blur="update('economic_benefit', economic_benefit)" />
+        
+        <!-- Detalles del Beneficio Económico - SIEMPRE VISIBLE -->
+        <div>
+          <label class="label flex items-center gap-1">
+            Detalles del Beneficio Económico
+            <span v-if="economic_benefit === 0" class="text-red-500">*</span>
+            <button
+              v-tooltip="economic_benefit === 0 ? 
+                'Explique por qué no hubo beneficio económico (obligatorio cuando el monto es 0)' : 
+                'Describa el beneficio económico recibido (opcional cuando hay monto positivo)'"
+              type="button"
+              class="help-icon text-gray-400 hover:text-brand-600 cursor-help transition-colors">
+              ?
+            </button>
+          </label>
+          <textarea
+            v-model="economic_benefit_note"
+            class="input min-h-[80px]"
+            :class="{ 'border-red-500': economic_benefit === 0 && !economic_benefit_note }"
+            :placeholder="economic_benefit === 0 ? 
+              'Explique por qué no hubo beneficio económico... (obligatorio)' : 
+              'Describa el beneficio económico recibido... (opcional)'"
+            :required="economic_benefit === 0"
+            @input="update('economic_benefit_note', $event.target.value)" />
+          
+          <p v-if="economic_benefit === 0 && !economic_benefit_note" class="text-red-500 text-sm mt-1">
+            Este campo es obligatorio cuando el beneficio económico es 0
+          </p>
+          <p v-else class="text-gray-500 text-sm mt-1">
+            {{ economic_benefit > 0 ? 'Campo opcional para detalles adicionales' : 'Campo obligatorio para explicar por qué no hubo beneficio' }}
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Beneficio de Tiempo -->
+    <div>
+      <label class="label flex items-center gap-1">
+        Beneficio de Tiempo (Horas/Días)
+        <span class="text-red-500">*</span>
+        <button
+          v-tooltip="'Ingrese la cantidad de tiempo beneficiado (en horas o días). Use 0 si no hubo beneficio de tiempo.'"
+          type="button"
+          class="help-icon text-gray-400 hover:text-brand-600 cursor-help transition-colors">
+          ?
+        </button>
+      </label>
+      
+      <div class="space-y-3">
+        <input
+          v-model.number="time_benefit"
+          type="number"
+          min="0"
+          step="0.5"
+          class="input w-full"
+          :class="getValidationClass('time_benefit')"
+          :disabled="!areQualificationsEnabled"
+          placeholder="0"
+          @blur="update('time_benefit', time_benefit)" />
+        
+        <!-- Detalles del Beneficio de Tiempo - SIEMPRE VISIBLE -->
+        <div>
+          <label class="label flex items-center gap-1">
+            Detalles del Beneficio de Tiempo
+            <span v-if="time_benefit === 0" class="text-red-500">*</span>
+            <button
+              v-tooltip="time_benefit === 0 ? 
+                'Explique por qué no hubo beneficio de tiempo (obligatorio cuando el tiempo es 0)' : 
+                'Describa el beneficio de tiempo recibido (opcional cuando hay tiempo positivo)'"
+              type="button"
+              class="help-icon text-gray-400 hover:text-brand-600 cursor-help transition-colors">
+              ?
+            </button>
+          </label>
+          <textarea
+            v-model="time_benefit_note"
+            class="input min-h-[80px]"
+            :class="{ 'border-red-500': time_benefit === 0 && !time_benefit_note }"
+            :placeholder="time_benefit === 0 ? 
+              'Explique por qué no hubo beneficio de tiempo... (obligatorio)' : 
+              'Describa el beneficio de tiempo recibido... (opcional)'"
+            :required="time_benefit === 0"
+            @input="update('time_benefit_note', $event.target.value)" />
+          
+          <p v-if="time_benefit === 0 && !time_benefit_note" class="text-red-500 text-sm mt-1">
+            Este campo es obligatorio cuando el beneficio de tiempo es 0
+          </p>
+          <p v-else class="text-gray-500 text-sm mt-1">
+            {{ time_benefit > 0 ? 'Campo opcional para detalles adicionales' : 'Campo obligatorio para explicar por qué no hubo beneficio' }}
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Mensaje cuando el proyecto no está concluido -->
+  <div v-if="!areQualificationsEnabled" class="mt-4 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+    <div class="flex items-center gap-2 text-yellow-800">
+      <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+        <path
+          fill-rule="evenodd"
+          d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
+          clip-rule="evenodd" />
+      </svg>
+      <span class="font-medium">Los beneficios económicos y de tiempo estarán disponibles cuando el proyecto esté concluido</span>
+    </div>
+  </div>
+</div>
 			<div v-if="showCredentialsSection" class="bg-gray-50 rounded-xl p-6 border border-gray-200 space-y-4">
 				<h3 class="text-lg font-semibold text-brand-800 mb-4 flex items-center">
-					<span class="w-6 h-6 bg-brand-100 rounded-full flex items-center justify-center text-brand-800 text-sm mr-2">6</span>
+					<span class="w-6 h-6 bg-brand-100 rounded-full flex items-center justify-center text-brand-800 text-sm mr-2">7</span>
 					Microcredenciales
 				</h3>
 
@@ -1560,7 +1779,7 @@ onMounted(() => {
 
 			<div v-if="showCredentialsSection" class="bg-gray-50 rounded-xl p-6 border border-gray-200 space-y-4">
 				<h3 class="text-lg font-semibold text-brand-800 mb-4 flex items-center">
-					<span class="w-6 h-6 bg-brand-100 rounded-full flex items-center justify-center text-brand-800 text-sm mr-2">7</span>
+					<span class="w-6 h-6 bg-brand-100 rounded-full flex items-center justify-center text-brand-800 text-sm mr-2">8</span>
 					Certificaciones
 				</h3>
 
@@ -1607,7 +1826,7 @@ onMounted(() => {
 
 			<div v-if="showCredentialsSection" class="bg-gray-50 rounded-xl p-6 border border-gray-200 space-y-4">
 				<h3 class="text-lg font-semibold text-brand-800 mb-4 flex items-center">
-					<span class="w-6 h-6 bg-brand-100 rounded-full flex items-center justify-center text-brand-800 text-sm mr-2">8</span>
+					<span class="w-6 h-6 bg-brand-100 rounded-full flex items-center justify-center text-brand-800 text-sm mr-2">9</span>
 					Diplomados
 				</h3>
 

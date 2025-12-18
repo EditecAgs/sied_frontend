@@ -200,7 +200,11 @@ const formData = reactive({
 		internal_advisor_name: '',
 		internal_advisor_qualification: null,
 		external_advisor_name: '',
-		external_advisor_qualification: null
+		external_advisor_qualification: null,
+		economic_benefit: null,
+		time_benefit: null,
+		economic_benefit_note: '',
+		time_benefit_note: ''
 	}
 });
 
@@ -256,7 +260,11 @@ const resetForm = () => {
 		internal_advisor_name: '',
 		internal_advisor_qualification: null,
 		external_advisor_name: '',
-		external_advisor_qualification: null
+		external_advisor_qualification: null,
+		economic_benefit: null,
+		time_benefit: null,
+		economic_benefit_note: '',
+		time_benefit_note: ''
 	};
 	reportaModeloDual.value = null;
 	currentStep.value = 0;
@@ -324,7 +332,11 @@ watch(
 					internal_advisor_name: project.dual_project_reports?.internal_advisor_name ?? '',
 					internal_advisor_qualification: project.dual_project_reports?.internal_advisor_qualification ?? null,
 					external_advisor_name: project.dual_project_reports?.external_advisor_name ?? '',
-					external_advisor_qualification: project.dual_project_reports?.external_advisor_qualification ?? null
+					external_advisor_qualification: project.dual_project_reports?.external_advisor_qualification ?? null,
+					economic_benefit: project.dual_project_reports?.economic_benefit ?? null,
+					time_benefit: project.dual_project_reports?.time_benefit ?? null,
+					economic_benefit_note: project.dual_project_reports?.economic_benefit_note ?? '',	
+					time_benefit_note: project.dual_project_reports?.time_benefit_note ?? ''
 				};
 
 				reportaModeloDual.value = newData.mode === 'complete' ? true : !!project.dual_project_reports;
@@ -551,7 +563,11 @@ const imprimirYGuardar = async () => {
 				internal_advisor_name: formData.unidadDual.internal_advisor_name || '',
 				internal_advisor_qualification: Number(formData.unidadDual.internal_advisor_qualification) || null,
 				external_advisor_name: formData.unidadDual.external_advisor_name || '',
-				external_advisor_qualification: Number(formData.unidadDual.external_advisor_qualification) || null
+				external_advisor_qualification: Number(formData.unidadDual.external_advisor_qualification) || null,
+				economic_benefit: Number(formData.unidadDual.economic_benefit) || null,
+				time_benefit: Number(formData.unidadDual.time_benefit) || null,
+				economic_benefit_note: formData.unidadDual.economic_benefit_note || '',
+				time_benefit_note: formData.unidadDual.time_benefit_note || ''
 			};
 		}
 
