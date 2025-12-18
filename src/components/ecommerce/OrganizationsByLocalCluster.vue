@@ -1,91 +1,161 @@
 <template>
-	<div class="overflow-hidden rounded-2xl border border-gray-200 bg-[rgb(211,211,210)]/50 p-6 shadow-sm dark:border-gray-700">
-		<div class="flex justify-between pb-4 mb-4 border-b border-light">
+	<div class="overflow-hidden rounded-2xl border border-gray-200 bg-[rgb(211,211,210)]/50 p-4 shadow-sm dark:border-gray-700 sm:p-6">
+		<div class="flex justify-between pb-3 mb-3 border-b border-light sm:pb-4 sm:mb-4">
 			<div class="flex items-center">
-				<div class="w-12 h-12 bg-neutral-primary-medium border border-default-medium flex items-center justify-center rounded-full me-3">
-					<svg class="w-7 h-7 text-body" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
+				<div class="w-10 h-10 sm:w-12 sm:h-12 bg-neutral-primary-medium border border-default-medium flex items-center justify-center rounded-full me-3">
+					<svg class="w-6 h-6 sm:w-7 sm:h-7 text-body" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
 						<path stroke="currentColor" stroke-linecap="round" stroke-width="2" d="M4.5 17H4a1 1 0 0 1-1-1 3 3 0 0 1 3-3h1m0-3.05A2.5 2.5 0 1 1 9 5.5M19.5 17h.5a1 1 0 0 0 1-1 3 3 0 0 0-3-3h-1m0-3.05a2.5 2.5 0 1 0-2-4.45m.5 13.5h-7a1 1 0 0 1-1-1 3 3 0 0 1 3-3h3a3 3 0 0 1 3 3 1 1 0 0 1-1 1Zm-1-9.5a2.5 2.5 0 1 1-5 0 2.5 2.5 0 0 1 5 0Z" />
 					</svg>
 				</div>
 				<div>
-					<h5 class="text-2xl font-semibold text-heading">{{ totalOrganizations }}</h5>
-					<p class="text-sm text-body">Organizaciones totales</p>
+					<h5 class="text-xl font-semibold text-heading sm:text-2xl">{{ totalOrganizations }}</h5>
+					<p class="text-xs text-body sm:text-sm">Organizaciones totales</p>
 				</div>
 			</div>
 		</div>
 
-		<div class="grid grid-cols-2">
-			<dl class="flex items-center">
-				<dt class="text-body text-sm font-normal me-1 ">Organizaciones Locales:</dt>
-				<dd class="text-heading text-sm font-semibold mr-8">{{ totalLocalOrganizations }}</dd>
-			</dl>
-			<dl class="flex items-center justify-end">
-				<dt class="text-body text-sm font-normal me-1">Organizaciones Nacionales:</dt>
-				<dd class="text-heading text-sm font-semibold">{{ totalNationalOrganizations }}</dd>
-			</dl>
+		<div class="relative">
+			<div v-if="loading" class="absolute inset-0 flex items-center justify-center bg-white/80 dark:bg-gray-900/80 z-10 rounded-lg">
+				<div class="text-center">
+					<div class="animate-spin rounded-full h-8 w-8 sm:h-10 sm:w-10 border-b-2 border-[#9C2131] mx-auto" />
+					<p class="mt-2 text-gray-600 dark:text-gray-400 text-sm">Cargando datos...</p>
+				</div>
+			</div>
+
+			<div v-else-if="loadError" class="absolute inset-0 flex flex-col items-center justify-center bg-white/80 dark:bg-gray-900/80 z-10 rounded-lg p-4">
+				<svg class="h-10 w-10 sm:h-12 sm:w-12 text-red-500 mx-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+					<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+				</svg>
+				<p class="mt-2 text-gray-600 dark:text-gray-400 text-center text-sm">Error al cargar los datos</p>
+				<button
+					class="mt-2 px-3 py-1.5 text-xs sm:text-sm bg-[#9C2131] text-white rounded hover:bg-[#7a1a27] transition-colors"
+					@click="fetchData">
+					Reintentar
+				</button>
+			</div>
+
+			<div v-else-if="!hasData" class="absolute inset-0 flex items-center justify-center bg-white/80 dark:bg-gray-900/80 z-10 rounded-lg">
+				<p class="text-gray-600 dark:text-gray-400 text-sm sm:text-base">No hay datos disponibles</p>
+			</div>
+
+			<div v-else class="space-y-4 sm:space-y-6">
+				<div class="grid grid-cols-1 gap-2 sm:grid-cols-2">
+					<dl class="flex items-center">
+						<dt class="text-body text-xs font-normal me-1 sm:text-sm">Locales:</dt>
+						<dd class="text-heading text-xs font-semibold mr-4 sm:mr-8 sm:text-sm">{{ totalLocalOrganizations }}</dd>
+					</dl>
+					<dl class="flex items-center sm:justify-end">
+						<dt class="text-body text-xs font-normal me-1 sm:text-sm">Nacionales:</dt>
+						<dd class="text-heading text-xs font-semibold sm:text-sm">{{ totalNationalOrganizations }}</dd>
+					</dl>
+				</div>
+
+				<div class="relative">
+					<div class="w-full overflow-x-auto horizontal-scroll">
+						<div id="column-chart" :key="chartKey" class="apexcharts-custom min-w-max" />
+					</div>
+				</div>
+
+				<div class="text-xs text-center text-gray-500 sm:text-sm">
+					{{ allUniqueClusters.length }} cámaras • {{ localClustersCount }} locales • {{ nationalClustersCount }} nacionales
+				</div>
+			</div>
 		</div>
 
-		<div id="column-chart" class="apexcharts-custom" />
-
-		<div class="grid grid-cols-1 items-center border-light border-t justify-between" />
+		<div class="grid grid-cols-1 items-center border-light border-t justify-between mt-4 sm:mt-6" />
 	</div>
 </template>
 
 <script setup>
-import { ref, onMounted, computed, watch } from 'vue'
+import { ref, onMounted, computed, watch, nextTick } from 'vue'
 import { getOrganizationsByCluster, getRegisteredOrganizationsCount } from '../../services/statistics/dashboard'
+
+const props = defineProps({
+	filters: {
+		type: Object,
+		default: () => ({})
+	}
+})
+
+const emit = defineEmits(['loaded', 'loading', 'error'])
 
 const localClusters = ref([])
 const nationalClusters = ref([])
 const totalOrganizationsCount = ref(0)
-const props = defineProps({
-  filtersAdd: {
-    type: Number,
-    default: null 
-  }
-})
+const loading = ref(false)
+const loadError = ref(null)
+const chartKey = ref(0)
+let chartInstance = null
 
 const totalOrganizations = computed(() => {
-	return totalOrganizationsCount.value
+	return totalOrganizationsCount.value || 0
 })
 
 const totalLocalOrganizations = computed(() => {
-	return localClusters.value.reduce((sum, item) => sum + item.organization_count, 0)
+	return localClusters.value.reduce((sum, item) => sum + (item.organization_count || 0), 0)
 })
 
 const totalNationalOrganizations = computed(() => {
-	return nationalClusters.value.reduce((sum, item) => sum + item.organization_count, 0)
+	return nationalClusters.value.reduce((sum, item) => sum + (item.organization_count || 0), 0)
 })
 
+const localClustersCount = computed(() => {
+	return localClusters.value.length
+})
+
+const nationalClustersCount = computed(() => {
+	return nationalClusters.value.length
+})
 
 const allUniqueClusters = computed(() => {
 	const clusterMap = new Map()
 
-	const allNames = [
-		...localClusters.value.map(item => item.cluster_name),
-		...nationalClusters.value.map(item => item.cluster_name)
-	]
-
-	const uniqueNames = [...new Set(allNames)]
-
-	return uniqueNames.map(name => {
-		const localCluster = localClusters.value.find(item => item.cluster_name === name)
-		const nationalCluster = nationalClusters.value.find(item => item.cluster_name === name)
-
-		return {
-			name: name,
-			localCount: localCluster ? localCluster.organization_count : 0,
-			nationalCount: nationalCluster ? nationalCluster.organization_count : 0,
-			totalCount: (localCluster ? localCluster.organization_count : 0) +
-				(nationalCluster ? nationalCluster.organization_count : 0)
+	const allClusters = [...localClusters.value, ...nationalClusters.value]
+	allClusters.forEach(cluster => {
+		if (cluster.cluster_name) {
+			if (!clusterMap.has(cluster.cluster_name)) {
+				clusterMap.set(cluster.cluster_name, {
+					name: cluster.cluster_name,
+					localCount: 0,
+					nationalCount: 0
+				})
+			}
 		}
-	}).sort((a, b) => b.totalCount - a.totalCount)
+	})
+
+	localClusters.value.forEach(cluster => {
+		if (cluster.cluster_name && clusterMap.has(cluster.cluster_name)) {
+			const clusterData = clusterMap.get(cluster.cluster_name)
+			clusterData.localCount = (cluster.organization_count || 0)
+		}
+	})
+
+	nationalClusters.value.forEach(cluster => {
+		if (cluster.cluster_name && clusterMap.has(cluster.cluster_name)) {
+			const clusterData = clusterMap.get(cluster.cluster_name)
+			clusterData.nationalCount = (cluster.organization_count || 0)
+		}
+	})
+
+	const result = Array.from(clusterMap.values()).map(item => ({
+		...item,
+		totalCount: item.localCount + item.nationalCount
+	}))
+
+	return result.sort((a, b) => {
+		if (b.totalCount !== a.totalCount) {
+			return b.totalCount - a.totalCount
+		}
+		return a.name.localeCompare(b.name)
+	})
+})
+
+const hasData = computed(() => {
+	return allUniqueClusters.value.length > 0
 })
 
 const chartData = computed(() => {
 	const categories = allUniqueClusters.value.map(item => item.name)
-
-
 	const localData = allUniqueClusters.value.map(item => item.localCount)
 	const nationalData = allUniqueClusters.value.map(item => item.nationalCount)
 
@@ -93,25 +163,35 @@ const chartData = computed(() => {
 		categories,
 		localData,
 		nationalData,
-		fullNames: allUniqueClusters.value.map(item => item.name)
+		fullNames: allUniqueClusters.value.map(item => item.name),
+		totals: allUniqueClusters.value.map(item => item.totalCount)
 	}
 })
 
+const chartHeight = computed(() => {
+	const baseHeight = 400
+	const itemHeight = 45
+	return Math.max(baseHeight, allUniqueClusters.value.length * itemHeight)
+})
+
 const renderChart = () => {
-	if (!document.getElementById("column-chart") || typeof ApexCharts === 'undefined') {
+	const container = document.getElementById("column-chart")
+	if (!container || typeof ApexCharts === 'undefined') {
 		return
+	}
+
+	if (chartInstance) {
+		chartInstance.destroy()
 	}
 
 	const brandColor = "#9C2131"
 	const brandSecondaryColor = "#C9A236"
 
-	const chartHeight = Math.max(320, allUniqueClusters.value.length * 60)
-
 	const options = {
 		colors: [brandColor, brandSecondaryColor],
 		series: [
 			{
-				name: "Organizaciones Locales",
+				name: "Locales",
 				color: brandColor,
 				data: chartData.value.categories.map((category, index) => ({
 					x: category,
@@ -119,7 +199,7 @@ const renderChart = () => {
 				}))
 			},
 			{
-				name: "Organizaciones Nacionales",
+				name: "Nacionales",
 				color: brandSecondaryColor,
 				data: chartData.value.categories.map((category, index) => ({
 					x: category,
@@ -129,19 +209,51 @@ const renderChart = () => {
 		],
 		chart: {
 			type: "bar",
-			height: `${chartHeight}px`,
+			height: `${chartHeight.value}px`,
+			width: '100%',
 			fontFamily: "Inter, sans-serif",
 			toolbar: {
-				show: false,
+				show: true,
+				tools: {
+					download: true,
+					selection: false,
+					zoom: false,
+					zoomin: false,
+					zoomout: false,
+					pan: false,
+					reset: true
+				}
 			},
+			animations: { enabled: true, speed: 800 }
 		},
 		plotOptions: {
 			bar: {
 				horizontal: true,
-				columnWidth: "70%",
+				columnWidth: '70%',
 				borderRadiusApplication: "end",
 				borderRadius: 4,
+				dataLabels: { position: 'top' }
 			},
+		},
+		dataLabels: {
+			enabled: true,
+			formatter: function(val) {
+				return val > 0 ? val : ''
+			},
+			style: {
+				fontSize: '11px',
+				fontFamily: 'Inter, sans-serif',
+				colors: ['#fff']
+			},
+			background: { enabled: false },
+			dropShadow: {
+				enabled: true,
+				top: 1,
+				left: 1,
+				blur: 2,
+				color: '#000',
+				opacity: 0.35
+			}
 		},
 		tooltip: {
 			shared: true,
@@ -149,53 +261,73 @@ const renderChart = () => {
 			style: {
 				fontSize: '12px',
 				fontFamily: 'Inter, sans-serif'
-			}
-		},
-		states: {
-			hover: {
-				filter: {
-					type: "darken",
-					value: 1,
-				},
 			},
+			y: {
+				formatter: function(value, { seriesIndex, dataPointIndex, w }) {
+					const fullName = chartData.value.fullNames[dataPointIndex]
+					return `<div>
+						<strong>${fullName}</strong><br/>
+						${value} organizaciones
+					</div>`
+				}
+			}
 		},
 		stroke: {
 			show: true,
-			width: 0,
+			width: 1,
 			colors: ["transparent"],
 		},
 		grid: {
-			show: false,
-			strokeDashArray: 4,
+			show: true,
+			borderColor: '#e5e7eb',
+			strokeDashArray: 3,
 			padding: {
 				left: 2,
 				right: 2,
-				top: -14
+				top: -12
 			},
-		},
-		dataLabels: {
-			enabled: false,
+			xaxis: { lines: { show: true } },
+			yaxis: { lines: { show: false } }
 		},
 		legend: {
-			show: false,
+			show: true,
+			position: 'top',
+			horizontalAlign: 'right',
+			fontSize: '12px',
+			fontFamily: 'Inter, sans-serif',
+			markers: {
+				width: 10,
+				height: 10,
+				radius: 4
+			}
 		},
 		xaxis: {
-			floating: false,
 			labels: {
 				show: true,
 				style: {
 					fontFamily: "Inter, sans-serif",
 					fontSize: '11px',
-					fontWeight: '400',
-					cssClass: 'text-gray-600 dark:text-gray-400'
+					fontWeight: '400'
 				}
 			},
 			axisBorder: {
-				show: false,
+				show: true,
+				color: '#9f813c',
+				height: 1
 			},
 			axisTicks: {
-				show: false,
+				show: true,
+				color: '#9f813c'
 			},
+			title: {
+				text: 'Número de Organizaciones',
+				style: {
+					color: '#374151',
+					fontSize: '12px',
+					fontWeight: 600,
+					fontFamily: 'Inter, sans-serif'
+				}
+			}
 		},
 		yaxis: {
 			labels: {
@@ -203,67 +335,80 @@ const renderChart = () => {
 				style: {
 					fontFamily: "Inter, sans-serif",
 					fontSize: '11px',
-					fontWeight: '400',
-					cssClass: 'text-gray-600 dark:text-gray-400'
-				}
+					fontWeight: '400'
+				},
+				maxWidth: 300,
+				trim: false
 			},
 		},
-		fill: {
-			opacity: 1,
-		},
+		fill: { opacity: 1 }
 	}
 
-	const existingChart = document.querySelector('#column-chart .apexcharts-canvas')
-	if (existingChart) {
-		existingChart.remove()
-	}
-
-	const chart = new ApexCharts(document.getElementById("column-chart"), options)
-	chart.render()
+	chartInstance = new ApexCharts(container, options)
+	chartInstance.render()
 }
 
 const fetchData = async () => {
 	try {
+		loading.value = true
+		loadError.value = null
+		emit('loading', true)
 
-		const response = await getOrganizationsByCluster(props.filtersAdd)
-		const result = response.data
+		const [response, orgResponse] = await Promise.all([
+			getOrganizationsByCluster(props.filters),
+			getRegisteredOrganizationsCount(props.filters)
+		])
 
-		localClusters.value = result.data.locales || []
-		nationalClusters.value = result.data.nacionales || []
+		const data = response.data
 
+		nationalClusters.value = Array.isArray(data.nacionales) ? data.nacionales : []
+		localClusters.value = Array.isArray(data.locales) ? data.locales : []
 
-		const orgResponse = await getRegisteredOrganizationsCount(props.filtersAdd)
-		totalOrganizationsCount.value = orgResponse.data.count
+		totalOrganizationsCount.value = orgResponse.data || 0
 
-		console.log('Datos cargados:', {
-			totalOrganizations: totalOrganizations.value,
-			totalLocalOrganizations: totalLocalOrganizations.value,
-			totalNationalOrganizations: totalNationalOrganizations.value,
-			uniqueClusters: allUniqueClusters.value
-		})
+		await nextTick()
+		chartKey.value++
 
-		setTimeout(renderChart, 100)
+		if (hasData.value && typeof ApexCharts !== 'undefined') {
+			setTimeout(renderChart, 100)
+		}
 
-	} catch (error) {
-		console.error('Error al cargar datos de cámaras:', error)
+		emit('loaded')
+	} catch (err) {
+		console.error('Error al cargar datos de cámaras:', err)
+		loadError.value = err.message || 'Error desconocido'
+		localClusters.value = []
+		nationalClusters.value = []
+		totalOrganizationsCount.value = 0
+		emit('error', err)
+	} finally {
+		loading.value = false
+		emit('loading', false)
 	}
 }
 
+watch(() => props.filters, () => {
+	fetchData()
+}, { deep: true })
 
-watch([localClusters, nationalClusters], () => {
-	if (allUniqueClusters.value.length > 0) {
+watch([allUniqueClusters], async () => {
+	if (hasData.value && typeof ApexCharts !== 'undefined') {
+		await nextTick()
+		chartKey.value++
 		setTimeout(renderChart, 100)
 	}
-})
+}, { deep: true })
 
-onMounted(() => {
-	fetchData()
+onMounted(async () => {
+	await fetchData()
 
 	if (typeof ApexCharts === 'undefined') {
 		const script = document.createElement('script')
 		script.src = 'https://cdn.jsdelivr.net/npm/apexcharts'
 		script.onload = () => {
-			setTimeout(renderChart, 100)
+			if (hasData.value) {
+				setTimeout(renderChart, 100)
+			}
 		}
 		document.head.appendChild(script)
 	}
@@ -271,8 +416,43 @@ onMounted(() => {
 </script>
 
 <style scoped>
+.horizontal-scroll {
+	overflow-x: auto;
+	overflow-y: hidden;
+	-webkit-overflow-scrolling: touch;
+	scrollbar-width: thin;
+	scrollbar-color: #c5c5c5 #f1f1f1;
+}
+
+.horizontal-scroll::-webkit-scrollbar {
+	height: 8px;
+}
+
+.horizontal-scroll::-webkit-scrollbar-track {
+	background: #f1f1f1;
+	border-radius: 8px;
+}
+
+.horizontal-scroll::-webkit-scrollbar-thumb {
+	background: #c5c5c5;
+	border-radius: 8px;
+}
+
+.horizontal-scroll::-webkit-scrollbar-thumb:hover {
+	background: #a8a8a8;
+}
+
 #column-chart {
-	min-height: 320px;
+	min-width: 600px;
+	width: 100%;
+}
+
+.apexcharts-custom {
+	width: 100% !important;
+}
+
+:deep(.apexcharts-canvas) {
+	width: 100% !important;
 }
 
 :deep(.apexcharts-tooltip) {
@@ -287,5 +467,15 @@ onMounted(() => {
 
 :deep(.dark .apexcharts-tooltip-text) {
 	color: rgba(255, 255, 255, 0.9) !important;
+}
+
+@media (max-width: 640px) {
+	#column-chart {
+		min-width: 500px;
+	}
+
+	:deep(.apexcharts-tooltip) {
+		font-size: 11px !important;
+	}
 }
 </style>

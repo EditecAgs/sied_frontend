@@ -228,25 +228,9 @@ const menuGroups = computed(() => {
 			title: 'Menú',
 			items: [
 				{
+					icon: GridIcon,
 					name: 'Dashboard',
-					icon: BarChartIcon,
-					subItems: [
-						{
-							icon: GridIcon,
-							name: 'Dashboard General',
-							path: '/dashboard',
-						},
-						{
-							icon: GridIcon,
-							name: 'Estadísticas por Estado',
-							path: '',
-						},
-						{
-							icon: GridIcon,
-							name: 'Estadísticas por Institucion',
-							path: '/dashboard-institutions',
-						}
-					]
+					path: '/dashboard',
 				},
 				{
 					icon: UserCircleIcon,
