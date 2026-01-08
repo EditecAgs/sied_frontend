@@ -1097,8 +1097,11 @@ onMounted(() => {
 						</div>
 						<p v-if="errors.id_dual_area" class="error-msg">{{ errors.id_dual_area }}</p>
 					</div>
-
-					<div ref="dualTypeDropdownRef" class="pt-3">
+				</div>
+				
+				<!-- Fila única para Tipo de Educación Dual y Descripción -->
+				<div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
+					<div ref="dualTypeDropdownRef">
 						<label class="label flex items-center gap-1">
 							Tipo de Educación Dual
 							<span class="text-red-500">*</span>
@@ -1147,7 +1150,6 @@ onMounted(() => {
 									</ul>
 								</li>
 
-
 								<li
 									class="px-4 py-2 hover:bg-brand-50 cursor-pointer transition-colors border-t border-gray-200 font-medium text-brand-600"
 									@click="openDualTypeModal('create', null, 'Tipo de actividad dual')">
@@ -1155,26 +1157,25 @@ onMounted(() => {
 								</li>
 							</ul>
 						</div>
-
-						<div v-if="modelValue.dual_type_id" class="col-span-2">
-							<label class="label flex items-center gap-1">
-								Descripción de tipo de educación dual
-								<button
-									v-tooltip="fieldHelpTexts.description"
-									type="button"
-									class="help-icon text-gray-400 hover:text-brand-600 cursor-help transition-colors">
-									?
-								</button>
-							</label>
-							<textarea
-								class="input min-h-[100px]"
-								placeholder="Agregue una descripción del modelo dual seleccionado..."
-								:value="modelValue.description || ''"
-								@input="update('description', $event.target.value)" />
-							<p v-if="errors.description" class="error-msg">{{ errors.description }}</p>
-						</div>
-
 						<p v-if="errors.dual_type_id" class="error-msg">{{ errors.dual_type_id }}</p>
+					</div>
+
+					<div v-if="modelValue.dual_type_id">
+						<label class="label flex items-center gap-1">
+							Descripción de tipo de educación dual
+							<button
+								v-tooltip="fieldHelpTexts.description"
+								type="button"
+								class="help-icon text-gray-400 hover:text-brand-600 cursor-help transition-colors">
+								?
+							</button>
+						</label>
+						<textarea
+							class="input min-h-[100px]"
+							placeholder="Agregue una descripción del modelo dual seleccionado..."
+							:value="modelValue.description || ''"
+							@input="update('description', $event.target.value)" />
+						<p v-if="errors.description" class="error-msg">{{ errors.description }}</p>
 					</div>
 				</div>
 			</div>
@@ -1285,36 +1286,37 @@ onMounted(() => {
 					Convenio y Apoyo
 				</h3>
 
-				<div ref="statusDropdownRef">
-					<label class="label flex items-center gap-1">
-						Estado del Convenio Dual
-						<span class="text-red-500">*</span>
-						<button
-							v-tooltip="fieldHelpTexts.status_document"
-							type="button"
-							class="help-icon text-gray-400 hover:text-brand-600 cursor-help transition-colors">
-							?
-						</button>
-					</label>
-					<div class="relative">
-						<input
-							v-model="searchStatus" class="input" :class="getValidationClass('status_document')"
-							placeholder="Buscar estado..."
-							@focus="showStatusDropdown = true" @input="showStatusDropdown = true" />
-						<ul v-if="showStatusDropdown && filteredStatuses.length" class="dropdown">
-							<li
-								v-for="estado in filteredStatuses" :key="estado.id"
-								class="dropdown-item"
-								@click="update('status_document', estado.id)">
-								{{ estado.name }}
-							</li>
-						</ul>
+				<!-- Fila única para Estado del Convenio Dual, Tipo de Apoyo Económico y Monto -->
+				<div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+					<div ref="statusDropdownRef">
+						<label class="label flex items-center gap-1">
+							Estado del Convenio Dual
+							<span class="text-red-500">*</span>
+							<button
+								v-tooltip="fieldHelpTexts.status_document"
+								type="button"
+								class="help-icon text-gray-400 hover:text-brand-600 cursor-help transition-colors">
+								?
+							</button>
+						</label>
+						<div class="relative">
+							<input
+								v-model="searchStatus" class="input" :class="getValidationClass('status_document')"
+								placeholder="Buscar estado..."
+								@focus="showStatusDropdown = true" @input="showStatusDropdown = true" />
+							<ul v-if="showStatusDropdown && filteredStatuses.length" class="dropdown">
+								<li
+									v-for="estado in filteredStatuses" :key="estado.id"
+									class="dropdown-item"
+									@click="update('status_document', estado.id)">
+									{{ estado.name }}
+								</li>
+							</ul>
+						</div>
+						<p v-if="errors.status_document" class="error-msg">{{ errors.status_document }}</p>
 					</div>
-					<p v-if="errors.status_document" class="error-msg">{{ errors.status_document }}</p>
-				</div>
 
-				<div ref="supportDropdownRef" class="flex gap-4 items-end">
-					<div class="flex-1">
+					<div ref="supportDropdownRef">
 						<label class="label flex items-center gap-1">
 							Tipo de Apoyo Económico
 							<span class="text-red-500">*</span>
@@ -1346,7 +1348,7 @@ onMounted(() => {
 						<p v-if="errors.economic_support" class="error-msg">{{ errors.economic_support }}</p>
 					</div>
 
-					<div class="w-40 flex-shrink-0">
+					<div>
 						<label class="label flex items-center gap-1">
 							Monto
 							<span class="text-red-500">*</span>
@@ -1715,144 +1717,137 @@ onMounted(() => {
 					</div>
 				</div>
 			</div>
-			<div v-if="showCredentialsSection" class="bg-gray-50 rounded-xl p-6 border border-gray-200 space-y-4">
+			
+			<!-- Fila única para Microcredenciales, Certificaciones y Diplomados -->
+			<div v-if="showCredentialsSection" class="bg-gray-50 rounded-xl p-6 border border-gray-200">
 				<h3 class="text-lg font-semibold text-brand-800 mb-4 flex items-center">
 					<span class="w-6 h-6 bg-brand-100 rounded-full flex items-center justify-center text-brand-800 text-sm mr-2">7</span>
-					Microcredenciales
+					Microcredenciales, Certificaciones y Diplomados
 				</h3>
 
-				<div ref="microDropdownRef" class="relative">
-					<label class="label flex items-center gap-1">
-						Microcredenciales
-						<button
-							v-tooltip="fieldHelpTexts.micro_credentials"
-							type="button"
-							class="help-icon text-gray-400 hover:text-brand-600 cursor-help transition-colors">
-							?
-						</button>
-					</label>
-					<div class="flex items-center gap-2">
-						<input
-							v-model="searchMicro"
-							class="input flex-1"
-							placeholder="Buscar microcredencial"
-							@focus="showMicroDropdown = true"
-							@input="showMicroDropdown = true" />
+				<div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+					<!-- Microcredenciales -->
+					<div ref="microDropdownRef" class="relative">
+						<label class="label flex items-center gap-1">
+							Microcredenciales
+							<button
+								v-tooltip="fieldHelpTexts.micro_credentials"
+								type="button"
+								class="help-icon text-gray-400 hover:text-brand-600 cursor-help transition-colors">
+								?
+							</button>
+						</label>
+						<div class="flex items-center gap-2">
+							<input
+								v-model="searchMicro"
+								class="input flex-1"
+								placeholder="Buscar microcredencial"
+								@focus="showMicroDropdown = true"
+								@input="showMicroDropdown = true" />
 
-						<btn-create
-							:table="'Certificado'"
-							@open="({ mode, pk, table}) => openMicroModal(mode, pk, table)" />
+							<btn-create
+								:table="'Certificado'"
+								@open="({ mode, pk, table}) => openMicroModal(mode, pk, table)" />
+						</div>
+
+						<ul v-if="showMicroDropdown && filteredMicro.length" class="absolute top-full left-0 w-full mt-1 dropdown z-10">
+							<li
+								v-for="micro in filteredMicro" :key="micro.id"
+								class="dropdown-item"
+								@click="addMicroCredential(micro)">
+								{{ micro.name }}-{{ micro.organization }}
+							</li>
+						</ul>
+						
+						<div class="flex flex-wrap gap-2 mt-2">
+							<span v-for="micro in selectedMicroCredentials" :key="micro.id" class="bg-brand-100 text-brand-800 px-3 py-1 rounded-full flex items-center gap-2">
+								{{ micro.name }}
+								<button type="button" class="text-red-500 hover:text-red-700 font-bold" @click="removeMicroCredential(micro)">×</button>
+							</span>
+						</div>
 					</div>
 
-					<ul v-if="showMicroDropdown && filteredMicro.length" class="absolute top-full left-0 w-full mt-1 dropdown z-10">
-						<li
-							v-for="micro in filteredMicro" :key="micro.id"
-							class="dropdown-item"
-							@click="addMicroCredential(micro)">
-							{{ micro.name }}-{{ micro.organization }}
-						</li>
-					</ul>
-				</div>
+					<!-- Certificaciones -->
+					<div ref="certificationDropdownRef" class="relative">
+						<label class="label flex items-center gap-1">
+							Certificaciones
+							<button
+								v-tooltip="fieldHelpTexts.certifications"
+								type="button"
+								class="help-icon text-gray-400 hover:text-brand-600 cursor-help transition-colors">
+								?
+							</button>
+						</label>
+						<div class="flex items-center gap-2">
+							<input
+								v-model="searchCertification"
+								class="input flex-1"
+								placeholder="Buscar certificado..."
+								@focus="showCertificationDropdown = true"
+								@input="showCertificationDropdown = true" />
 
-				<div class="flex flex-wrap gap-2 mt-2">
-					<span v-for="micro in selectedMicroCredentials" :key="micro.id" class="bg-brand-100 text-brand-800 px-3 py-1 rounded-full flex items-center gap-2">
-						{{ micro.name }}
-						<button type="button" class="text-red-500 hover:text-red-700 font-bold" @click="removeMicroCredential(micro)">×</button>
-					</span>
-				</div>
-			</div>
+							<btn-create
+								:table="'Certificado'"
+								@open="({ mode, pk, table}) => openCertificationModal(mode, pk, table)" />
+						</div>
 
-			<div v-if="showCredentialsSection" class="bg-gray-50 rounded-xl p-6 border border-gray-200 space-y-4">
-				<h3 class="text-lg font-semibold text-brand-800 mb-4 flex items-center">
-					<span class="w-6 h-6 bg-brand-100 rounded-full flex items-center justify-center text-brand-800 text-sm mr-2">8</span>
-					Certificaciones
-				</h3>
-
-				<div ref="certificationDropdownRef" class="relative">
-					<label class="label flex items-center gap-1">
-						Certificaciones
-						<button
-							v-tooltip="fieldHelpTexts.certifications"
-							type="button"
-							class="help-icon text-gray-400 hover:text-brand-600 cursor-help transition-colors">
-							?
-						</button>
-					</label>
-					<div class="flex items-center gap-2">
-						<input
-							v-model="searchCertification"
-							class="input flex-1"
-							placeholder="Buscar certificado..."
-							@focus="showCertificationDropdown = true"
-							@input="showCertificationDropdown = true" />
-
-						<btn-create
-							:table="'Certificado'"
-							@open="({ mode, pk, table}) => openCertificationModal(mode, pk, table)" />
+						<ul v-if="showCertificationDropdown && filteredCertifications.length" class="absolute top-full left-0 w-full mt-1 dropdown z-10">
+							<li
+								v-for="certification in filteredCertifications" :key="certification.id"
+								class="dropdown-item"
+								@click="addCertification(certification)">
+								{{ certification.name }}-{{ certification.organization }}
+							</li>
+						</ul>
+						
+						<div class="flex flex-wrap gap-2 mt-2">
+							<span v-for="certification in selectedCertifications" :key="certification.id" class="bg-brand-100 text-brand-800 px-3 py-1 rounded-full flex items-center gap-2">
+								{{ certification.name }}
+								<button type="button" class="text-red-500 hover:text-red-700 font-bold" @click="removeCertification(certification)">×</button>
+							</span>
+						</div>
 					</div>
 
-					<ul v-if="showCertificationDropdown && filteredCertifications.length" class="absolute top-full left-0 w-full mt-1 dropdown z-10">
-						<li
-							v-for="certification in filteredCertifications" :key="certification.id"
-							class="dropdown-item"
-							@click="addCertification(certification)">
-							{{ certification.name }}-{{ certification.organization }}
-						</li>
-					</ul>
-				</div>
+					<!-- Diplomados -->
+					<div ref="diplomaDropdownRef" class="relative">
+						<label class="label flex items-center gap-1">
+							Diplomados
+							<button
+								v-tooltip="fieldHelpTexts.diplomas"
+								type="button"
+								class="help-icon text-gray-400 hover:text-brand-600 cursor-help transition-colors">
+								?
+							</button>
+						</label>
+						<div class="flex items-center gap-2">
+							<input
+								v-model="searchDiploma"
+								class="input flex-1"
+								placeholder="Buscar diploma..."
+								@focus="showDiplomaDropdown = true"
+								@input="showDiplomaDropdown = true" />
 
-				<div class="flex flex-wrap gap-2 mt-2">
-					<span v-for="certification in selectedCertifications" :key="certification.id" class="bg-brand-100 text-brand-800 px-3 py-1 rounded-full flex items-center gap-2">
-						{{ certification.name }}
-						<button type="button" class="text-red-500 hover:text-red-700 font-bold" @click="removeCertification(certification)">×</button>
-					</span>
-				</div>
-			</div>
+							<btn-create
+								:table="'Diploma'"
+								@open="({ mode, pk, table}) => openDiplomaModal(mode, pk, table)" />
+						</div>
 
-			<div v-if="showCredentialsSection" class="bg-gray-50 rounded-xl p-6 border border-gray-200 space-y-4">
-				<h3 class="text-lg font-semibold text-brand-800 mb-4 flex items-center">
-					<span class="w-6 h-6 bg-brand-100 rounded-full flex items-center justify-center text-brand-800 text-sm mr-2">9</span>
-					Diplomados
-				</h3>
-
-				<div ref="diplomaDropdownRef" class="relative">
-					<label class="label flex items-center gap-1">
-						Diplomados
-						<button
-							v-tooltip="fieldHelpTexts.diplomas"
-							type="button"
-							class="help-icon text-gray-400 hover:text-brand-600 cursor-help transition-colors">
-							?
-						</button>
-					</label>
-					<div class="flex items-center gap-2">
-						<input
-							v-model="searchDiploma"
-							class="input flex-1"
-							placeholder="Buscar diploma..."
-							@focus="showDiplomaDropdown = true"
-							@input="showDiplomaDropdown = true" />
-
-						<btn-create
-							:table="'Diploma'"
-							@open="({ mode, pk, table}) => openDiplomaModal(mode, pk, table)" />
+						<ul v-if="showDiplomaDropdown && filteredDiplomas.length" class="absolute top-full left-0 w-full mt-1 dropdown z-10">
+							<li
+								v-for="diploma in filteredDiplomas" :key="diploma.id"
+								class="dropdown-item"
+								@click="addDiploma(diploma)">
+								{{ diploma.name }}-{{ diploma.organization }}
+							</li>
+						</ul>
+						
+						<div class="flex flex-wrap gap-2 mt-2">
+							<span v-for="diploma in selectedDiplomas" :key="diploma.id" class="bg-brand-100 text-brand-800 px-3 py-1 rounded-full flex items-center gap-2">
+								{{ diploma.name }}
+								<button type="button" class="text-red-500 hover:text-red-700 font-bold" @click="removeDiploma(diploma)">×</button>
+							</span>
+						</div>
 					</div>
-
-					<ul v-if="showDiplomaDropdown && filteredDiplomas.length" class="absolute top-full left-0 w-full mt-1 dropdown z-10">
-						<li
-							v-for="diploma in filteredDiplomas" :key="diploma.id"
-							class="dropdown-item"
-							@click="addDiploma(diploma)">
-							{{ diploma.name }}-{{ diploma.organization }}
-						</li>
-					</ul>
-				</div>
-
-				<div class="flex flex-wrap gap-2 mt-2">
-					<span v-for="diploma in selectedDiplomas" :key="diploma.id" class="bg-brand-100 text-brand-800 px-3 py-1 rounded-full flex items-center gap-2">
-						{{ diploma.name }}
-						<button type="button" class="text-red-500 hover:text-red-700 font-bold" @click="removeDiploma(diploma)">×</button>
-					</span>
 				</div>
 			</div>
 
@@ -1933,4 +1928,26 @@ onMounted(() => {
 		transform: scale(1);
 	}
 }
+/* Añade estas clases CSS */
+.dropdown {
+  @apply absolute z-50 bg-white border border-gray-300 rounded-lg mt-1 w-full max-h-60 overflow-y-auto shadow-lg;
+  position: absolute !important;
+  z-index: 9999 !important;
+}
+
+/* Clase específica para los dropdowns de credenciales */
+.dropdown-fixed {
+  position: fixed !important;
+  z-index: 10000 !important;
+  width: auto !important;
+  max-width: 400px;
+  max-height: 300px !important;
+}
+
+/* Contenedor relativo para los dropdowns */
+.dropdown-container {
+  position: relative;
+  z-index: 100;
+}
+
 </style>

@@ -40,7 +40,7 @@ import ResetPassword from "../views/Auth/ResetPassword.vue";
 import CertificationView from "../views/Tables/CertificationView.vue";
 import DiplomaView from "../views/Tables/DiplomaView.vue";
 import DashboardInstitutions from "../views/DashboardInstitutions.vue"
-
+import ModeloDualFormPage from "../components/forms/ModeloDualFormPage.vue";
 
 
 import UnAuthRoutes from "../const/UnauthRoutes.js";
@@ -86,6 +86,31 @@ const routes = [
 	{ path: '/certifications-table', name: 'CertificationsTable', component: CertificationView },
 	{ path: '/diplomas-table', name: 'DiplomasTable', component: DiplomaView },
     {path: '/dashboard-institutions', name: 'DashboardInstitutions', component: DashboardInstitutions},
+        // router.js
+    {
+    path: '/modelo-dual/editar/:pk',
+    name: 'modelo-dual-editar',
+    component: ModeloDualFormPage,
+    props: route => ({
+        mode: 'edit', // Fijo para esta ruta
+        pk: route.params.pk
+    })
+    },
+    {
+    path: '/modelo-dual/completar/:pk',
+    name: 'modelo-dual-completar',
+    component: ModeloDualFormPage,
+    props: route => ({
+        mode: 'complete', // Fijo para esta ruta
+        pk: route.params.pk
+    })
+    },
+    {
+    path: '/modelo-dual/crear',
+    name: 'modelo-dual-crear',
+    component: ModeloDualFormPage,
+    props: { mode: 'create' }
+    },
     {
         path: '/logs',
         name: 'Logs',

@@ -232,18 +232,30 @@
 
 							<td v-if="isColumnVisible('options')" class="px-5 py-3 text-sm whitespace-nowrap">
 								<div class="flex space-x-2">
-									<template v-if="project.has_report == 1">
-										<btnEdit
-											:table="'dual_projects'" :pk="project.id"
-											@open="() => $emit('open', { mode: 'edit', pk: project.id, table: 'modelo dual' })" />
-									</template>
-									<template v-else>
-										<button
-											class="text-xs font-medium text-brand-800 hover:text-brand-900 underline underline-offset-2 transition-colors"
-											@click="$emit('open', { mode: 'complete', pk: project.id, table: 'modelo dual' })">
-											Completar
-										</button>
-									</template>
+<template v-if="project.has_report == 1">
+  <!-- Botón para editar -->
+  <button
+    @click="$emit('open', { mode: 'edit', pk: project.id, table: 'modelo dual' })"
+    class="inline-flex items-center px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700 text-xs font-medium transition-colors"
+  >
+    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+    </svg>
+    Editar
+  </button>
+</template>
+<template v-else>
+  <!-- Botón para completar -->
+  <button
+    @click="$emit('open', { mode: 'complete', pk: project.id, table: 'modelo dual' })"
+    class="inline-flex items-center px-3 py-1 bg-green-600 text-white rounded hover:bg-green-700 text-xs font-medium transition-colors"
+  >
+    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+    </svg>
+    Completar
+  </button>
+</template>
 									<btnDelete
 										:table="'dual_projects'"
 										:pk="project.id ?? index"
@@ -460,7 +472,6 @@
 
 <script setup>
 import { ref, computed, onMounted, watch } from 'vue';
-import btnEdit from '../../../components/buttons/btnEdit.vue';
 import btnDelete from '../../../components/buttons/btnDelete.vue';
 import { getAllDualProjects } from '../../../services/dual_projects/dual_projects';
 

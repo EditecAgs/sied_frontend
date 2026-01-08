@@ -208,6 +208,7 @@ watch(isInstitutionValid, (newVal) => {
 			<p class="text-gray-600 text-sm">Complete los datos académicos del proyecto dual</p>
 		</div>
 
+	<div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
 		<div class="bg-gray-50 rounded-xl p-6 border border-gray-200">
 			<h3 class="text-lg font-semibold text-brand-800 mb-4 flex items-center">
 				<span class="w-6 h-6 bg-brand-100 rounded-full flex items-center justify-center text-brand-800 text-sm mr-2">1</span>
@@ -370,6 +371,7 @@ watch(isInstitutionValid, (newVal) => {
 				</div>
 			</div>
 		</div>
+		</div>
 
 		<div class="bg-brand-100 rounded-xl p-6 border border-brand-200">
 			<h3 class="text-lg font-semibold text-brand-800 mb-4 flex items-center">
@@ -383,7 +385,7 @@ watch(isInstitutionValid, (newVal) => {
 					</svg>
 					<div>
 						<p class="font-medium text-brand-800">Registro de Estudiantes</p>
-						<p class="text-brand-800 text-sm">En el paso 3 podrás agregar los estudiantes participantes. Debes agregar al menos 1 estudiante.</p>
+						<p class="text-brand-800 text-sm">En el paso 2 podrás agregar los estudiantes participantes. Debes agregar al menos 1 estudiante.</p>
 					</div>
 				</div>
 				<div class="flex items-start">

@@ -13,6 +13,7 @@
     "@fullcalendar/interaction": "^6.1.18",
     "@fullcalendar/timegrid": "^6.1.18",
     "@fullcalendar/vue3": "^6.1.18",
+    "@heroicons/vue": "^2.2.0",
     "@myshell/alvue": "^1.3.9",
     "@primeuix/themes": "^1.2.1",
     "@tailwindcss/vite": "^4.1.11",
