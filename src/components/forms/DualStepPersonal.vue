@@ -573,36 +573,41 @@ defineExpose({
 							type="button"
 							class="help-icon text-gray-400 hover:text-brand-600 cursor-help">?</button>
 					</label>
-					<div class="flex gap-2">
-						<select
+					<div >
+							<select
 							v-model="form.id_specialty"
-							class="input flex-1"
-							:class="{ 'border-red-500': errors.id_specialty }"
-							:disabled="!institution || !form.id_career">
-							<option value="">Selecciona especialidad</option>
-							<option value="null">Sin especialidad</option>
+							:disabled="!form.id_career"
+							class="input w-full"
+							>
+							<option value="">Selecciona una especialidad</option>
 							<option
 								v-for="s in filteredSpecialties"
 								:key="s.id"
-								:value="String(s.id)">
+								:value="s.id"
+							>
 								{{ s.name }}
 							</option>
-						</select>
+							</select>
+
+							<p v-if="!form.id_career" class="text-yellow-600 text-sm mt-1 ">
+							⚠️ Primero selecciona una carrera
+							</p>
+					<p v-if="errors.id_specialty" class="text-red-500 text-sm mt-1">{{ errors.id_specialty }}</p>
+
+					<p v-if="form.id_career && filteredSpecialties.length === 0" class="text-[#800020]  text-sm mt-1 ">
+						Esta carrera no tiene especialidades registradas. Puedes seleccionar "Sin especialidad" o crear una nueva.
+					</p>
 						<btn-create
 							:table="'Especialidad'"
-							class="flex-shrink-0"
+							class="flex-shrink-0 mt-2"
 							tooltip="Crear nueva especialidad"
 							:disabled="!institution || !form.id_career"
 							@open="({ mode, pk, table }) => {
 								specialtyModalData.careerId = form.id_career;
 								openSpecialtyModal(mode, pk, table);
 							}" />
-					</div>
-					<p v-if="errors.id_specialty" class="text-red-500 text-sm mt-1">{{ errors.id_specialty }}</p>
 
-					<p v-if="form.id_career && filteredSpecialties.length === 0" class="text-[#800020]  text-sm mt-1">
-						Esta carrera no tiene especialidades registradas. Puedes seleccionar "Sin especialidad" o crear una nueva.
-					</p>
+					</div>
 				</div>
 
 				<div class="md:col-span-2">

@@ -6,6 +6,7 @@ import { useModal } from '../../composables/UseModal';
 import { getInstitutions } from '../../services/institutions/institutions.js';
 
 const { showModal, modalData, openModal, closeModal } = useModal();
+const loading = ref(true)
 
 const props = defineProps({
 	modelValue: Object,
@@ -13,6 +14,14 @@ const props = defineProps({
 	institutions: Array,
 	mode: String
 });
+
+watch(
+  () => props.institutions,
+  (val) => {
+    if (val && val.length) loading.value = false
+  },
+  { immediate: true }
+)
 const emit = defineEmits(['update:modelValue', 'update:reportaModeloDual', 'submitSinUnidadDual', 'update:institutions']);
 
 const errors = ref<{ id_institution?: string }>({});
@@ -221,14 +230,35 @@ watch(isInstitutionValid, (newVal) => {
 					<div class="flex gap-3 items-start">
 						<div class="flex-1 relative">
 							<div class="relative">
-								<input
+								<input 
 									v-model="searchTerm"
-									placeholder="Buscar institución por nombre..."
-									class="input pl-10 pr-4 w-full"
+									:disabled="loading"
+									class="input pl-10 pr-10 w-full"
 									@focus="showDropdown = true; isDropdownFocused = true"
 									@blur="handleInputBlur"
-									@input="handleSearchInput" />
+									@input="handleSearchInput"
+									:placeholder="loading ? 'Cargando instituciones...' : 'Buscar institución por nombre...'"
+
+								/>
+
+								<!-- Spinner cuando está cargando -->
+								<span
+									v-if="loading"
+									class="absolute right-3 top-1/2 -translate-y-1/2 animate-spin"
+								>
+									⏳
+								</span>
+
+								<!-- Flechita cuando ya cargó -->
+								<span 
+									v-else
+									class="absolute text-brand-400 right-3 top-1/2 -translate-y-1/2 cursor-pointer"
+									@click="showDropdown = !showDropdown"
+								>
+									▼
+								</span>
 							</div>
+
 							<transition name="fade">
 								<ul
 									v-if="showDropdown && filteredInstitutions.length"
