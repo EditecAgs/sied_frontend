@@ -2,7 +2,7 @@
 	<AdminLayout>
 		<PageBreadcrumb :pageTitle="currentPageTitle" />
 		<div class="space-y-5 sm:space-y-6">
-			<ComponentCard title="Registro de Modelo Dual">
+			<ComponentCard title="Registro de Modelo Dual" >
 				<div class="flex justify-start mb-4">
 				<router-link
 					to="/modelo-dual/crear"

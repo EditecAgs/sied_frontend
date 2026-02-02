@@ -1,5 +1,5 @@
 <template>
-	<div class="bg-white rounded-xl shadow-lg overflow-hidden">
+	<div class="bg-white rounded-xl shadow-lg overflow-hidden ">
 		<div class="px-6 py-4 bg-gradient-to-r from-brand-800 to-brand-900">
 			<div class="flex justify-between items-center">
 				<h2 class="text-xl font-bold text-white">Gestión de Proyectos Duales</h2>
@@ -232,20 +232,19 @@
 
 							<td v-if="isColumnVisible('options')" class="px-5 py-3 text-sm whitespace-nowrap">
 								<div class="flex space-x-2">
-<template v-if="project.has_report == 1">
-  <!-- Botón para editar -->
-  <button
-    @click="$emit('open', { mode: 'edit', pk: project.id, table: 'modelo dual' })"
-    class="inline-flex items-center px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700 text-xs font-medium transition-colors"
-  >
-    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-    </svg>
-    Editar
-  </button>
-</template>
+			<template v-if="project.has_report == 1">
+			
+			<button
+				@click="$emit('open', { mode: 'edit', pk: project.id, table: 'modelo dual' })"
+				class="inline-flex items-center px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700 text-xs font-medium transition-colors"
+			>
+				<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+				<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+				</svg>
+				Editar
+			</button>
+			</template>
 <template v-else>
-  <!-- Botón para completar -->
   <button
     @click="$emit('open', { mode: 'complete', pk: project.id, table: 'modelo dual' })"
     class="inline-flex items-center px-3 py-1 bg-green-600 text-white rounded hover:bg-green-700 text-xs font-medium transition-colors"

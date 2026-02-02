@@ -41,6 +41,7 @@ import CertificationView from "../views/Tables/CertificationView.vue";
 import DiplomaView from "../views/Tables/DiplomaView.vue";
 import DashboardInstitutions from "../views/DashboardInstitutions.vue"
 import ModeloDualFormPage from "../components/forms/ModeloDualFormPage.vue";
+import BenefitTypeView from "../views/Tables/BenefitTypeView.vue";
 
 
 import UnAuthRoutes from "../const/UnauthRoutes.js";
@@ -86,6 +87,7 @@ const routes = [
 	{ path: '/certifications-table', name: 'CertificationsTable', component: CertificationView },
 	{ path: '/diplomas-table', name: 'DiplomasTable', component: DiplomaView },
     {path: '/dashboard-institutions', name: 'DashboardInstitutions', component: DashboardInstitutions},
+    {path: '/benefit-type-table', name: 'BenefitTypeTable', component: BenefitTypeView},
         // router.js
     {
     path: '/modelo-dual/editar/:pk',

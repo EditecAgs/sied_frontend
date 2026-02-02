@@ -36,5 +36,6 @@ export default [
     'Tutorials',
     'modelo-dual-crear',
     'modelo-dual-editar',
-    'modelo-dual-completar'
+    'modelo-dual-completar',
+     'BenefitTypeTable'
 ];
