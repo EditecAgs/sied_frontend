@@ -130,3 +130,9 @@ export function getProjectsByCluster(params = {}) {
 	const queryString = buildQueryString({ id_state, id_institution });
 	return axios.get(`projects/cluster/count${queryString}`);
 }
+
+export function getStatsByBenefitType(params = {}) {
+	const { id_state, id_institution } = params;
+	const queryString = buildQueryString({ id_state, id_institution });
+	return axios.get(`project/benefit-type${queryString}`);
+}

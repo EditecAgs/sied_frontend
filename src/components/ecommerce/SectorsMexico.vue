@@ -28,61 +28,61 @@
 		<div class="overflow-x-auto">
 			<table class="min-w-full border-collapse">
 				<thead class="bg-[#9f813c] text-white">
-				<tr>
-					<th class="px-4 py-3 text-left text-xs font-semibold uppercase">Sector</th>
-					<th
-						class="px-4 py-3 text-right text-xs font-semibold uppercase w-28 sm:w-40 cursor-pointer hover:bg-[#8a7334]"
-						@click="toggleSort">
-						<div class="flex items-center justify-end gap-1">
-							Proyectos
-							<span v-if="sortOrder === 'desc'" class="text-xs">▼</span>
-							<span v-else class="text-xs">▲</span>
-						</div>
-					</th>
-					<th class="px-4 py-3 text-right text-xs font-semibold uppercase w-28 sm:w-40">%</th>
-				</tr>
+					<tr>
+						<th class="px-4 py-3 text-left text-xs font-semibold uppercase">Sector</th>
+						<th
+							class="px-4 py-3 text-right text-xs font-semibold uppercase w-28 sm:w-40 cursor-pointer hover:bg-[#8a7334]"
+							@click="toggleSort">
+							<div class="flex items-center justify-end gap-1">
+								Proyectos
+								<span v-if="sortOrder === 'desc'" class="text-xs">▼</span>
+								<span v-else class="text-xs">▲</span>
+							</div>
+						</th>
+						<th class="px-4 py-3 text-right text-xs font-semibold uppercase w-28 sm:w-40">%</th>
+					</tr>
 				</thead>
 
 				<tbody class="divide-y divide-white/30">
-				<tr
-					v-for="(item, index) in paginatedProjects"
-					:key="index"
-					class="hover:bg-white/20 transition">
-					<td class="px-4 py-3">
-						<div class="flex items-start gap-3 min-w-0">
-							<img
-								v-if="sectorLogos[item.sector_name]"
-								:src="sectorLogos[item.sector_name]"
-								class="w-6 h-6 flex-shrink-0 object-contain"
-								alt="Sector" />
-							<span class="text-sm sm:text-base text-gray-900 whitespace-normal break-words">
+					<tr
+						v-for="(item, index) in paginatedProjects"
+						:key="index"
+						class="hover:bg-white/20 transition">
+						<td class="px-4 py-3">
+							<div class="flex items-start gap-3 min-w-0">
+								<img
+									v-if="sectorLogos[item.sector_name]"
+									:src="sectorLogos[item.sector_name]"
+									class="w-6 h-6 flex-shrink-0 object-contain"
+									alt="Sector" />
+								<span class="text-sm sm:text-base text-gray-900 whitespace-normal break-words">
 									{{ item.sector_name }}
 								</span>
-						</div>
-					</td>
+							</div>
+						</td>
 
-					<td class="px-4 py-3 text-right text-sm text-gray-800">
-						{{ item.project_count }}
-					</td>
+						<td class="px-4 py-3 text-right text-sm text-gray-800">
+							{{ item.project_count }}
+						</td>
 
-					<td class="px-4 py-3 text-right text-sm text-gray-800">{{ formatPercentage(item.percentage) }}%</td>
-				</tr>
+						<td class="px-4 py-3 text-right text-sm text-gray-800">{{ formatPercentage(item.percentage) }}%</td>
+					</tr>
 
-				<tr v-if="!loading && paginatedProjects.length === 0">
-					<td
-						colspan="3"
-						class="py-6 text-center text-sm text-gray-700">
-						No hay datos disponibles
-					</td>
-				</tr>
+					<tr v-if="!loading && paginatedProjects.length === 0">
+						<td
+							colspan="3"
+							class="py-6 text-center text-sm text-gray-700">
+							No hay datos disponibles
+						</td>
+					</tr>
 
-				<tr v-if="loading">
-					<td
-						colspan="3"
-						class="py-6 text-center text-sm text-gray-700">
-						Cargando datos...
-					</td>
-				</tr>
+					<tr v-if="loading">
+						<td
+							colspan="3"
+							class="py-6 text-center text-sm text-gray-700">
+							Cargando datos...
+						</td>
+					</tr>
 				</tbody>
 			</table>
 		</div>

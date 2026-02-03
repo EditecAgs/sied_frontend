@@ -88,13 +88,12 @@ const routes = [
 	{ path: '/diplomas-table', name: 'DiplomasTable', component: DiplomaView },
     {path: '/dashboard-institutions', name: 'DashboardInstitutions', component: DashboardInstitutions},
     {path: '/benefit-type-table', name: 'BenefitTypeTable', component: BenefitTypeView},
-        // router.js
     {
     path: '/modelo-dual/editar/:pk',
     name: 'modelo-dual-editar',
     component: ModeloDualFormPage,
     props: route => ({
-        mode: 'edit', // Fijo para esta ruta
+        mode: 'edit',
         pk: route.params.pk
     })
     },
@@ -103,7 +102,7 @@ const routes = [
     name: 'modelo-dual-completar',
     component: ModeloDualFormPage,
     props: route => ({
-        mode: 'complete', // Fijo para esta ruta
+        mode: 'complete',
         pk: route.params.pk
     })
     },

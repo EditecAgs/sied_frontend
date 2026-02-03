@@ -117,6 +117,10 @@
 							<ProjectsByClusterNacional :key="componentKey + 'nacional'" :filters="currentFilters" @loaded="onChildLoaded" />
 						</div>
 					</div>
+
+					<div class="col-span-12">
+						<BenefitType :key="componentKey + 'benefittype'" :filters="currentFilters" @loaded="onChildLoaded" />
+					</div>
 				</div>
 			</div>
 		</admin-layout>
@@ -140,6 +144,7 @@ import ProjectsByDualType from '../components/ecommerce/ProjectsByDualType.vue'
 import OrganizationsByLocalCluster from '../components/ecommerce/OrganizationsByLocalCluster.vue'
 import ProjectsByClusterLocal from '../components/ecommerce/ProjectsByClusterLocal.vue'
 import ProjectsByClusterNacional from '../components/ecommerce/ProjectsByClusterNacional.vue'
+import BenefitType from '../components/ecommerce/BenefitType.vue';
 import { getInstitutions, showInstitutions } from '../services/institutions/institutions'
 import { getStates } from '../services/location/states.js'
 
@@ -161,6 +166,7 @@ export default {
 		OrganizationsByLocalCluster,
 		ProjectsByClusterLocal,
 		ProjectsByClusterNacional,
+		BenefitType,
 		LoadingScreen
 	},
 	data() {
