@@ -128,7 +128,6 @@ const formatPercentage = (percentage) => {
 	return typeof percentage === 'number' ? percentage.toFixed(2) : parseFloat(percentage).toFixed(2);
 };
 
-// Filtrar solo sectores de Plan México (plan_mexico === 1)
 const mexicoSectors = computed(() => {
 	return allProjects.value.filter(project => project.plan_mexico === 1);
 });
@@ -167,7 +166,6 @@ const goToPage = (page) => {
 const fetchData = async () => {
 	loading.value = true;
 	try {
-		// IMPORTANTE: Solo pasar los filtros, no el parámetro page
 		const response = await getProjectsBySectorMexico(props.filters);
 
 		if (Array.isArray(response.data)) {

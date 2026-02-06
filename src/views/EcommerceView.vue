@@ -57,6 +57,11 @@
 							@click="clearFilters">
 							Borrar filtros
 						</button>
+						<button
+							class="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700"
+							@click="downloadPdf">
+							Descargar PDF
+						</button>
 					</div>
 				</div>
 			</div>
@@ -145,6 +150,7 @@ import OrganizationsByLocalCluster from '../components/ecommerce/OrganizationsBy
 import ProjectsByClusterLocal from '../components/ecommerce/ProjectsByClusterLocal.vue'
 import ProjectsByClusterNacional from '../components/ecommerce/ProjectsByClusterNacional.vue'
 import BenefitType from '../components/ecommerce/BenefitType.vue';
+import { downloadDashboardPdf } from '../services/statistics/dashboard';
 import { getInstitutions, showInstitutions } from '../services/institutions/institutions'
 import { getStates } from '../services/location/states.js'
 
@@ -307,6 +313,23 @@ export default {
 			}
 
 			this.componentKey++
+		},
+
+		async downloadPdf() {
+			const response = await downloadDashboardPdf({
+				id_state: this.currentFilters.id_state,
+				id_institution: this.currentFilters.id_institution
+			});
+
+			const blob = new Blob([response.data], { type: 'application/pdf' });
+			const url = window.URL.createObjectURL(blob);
+
+			const link = document.createElement('a');
+			link.href = url;
+			link.download = 'dashboard.pdf';
+			link.click();
+
+			window.URL.revokeObjectURL(url);
 		}
 	}
 }

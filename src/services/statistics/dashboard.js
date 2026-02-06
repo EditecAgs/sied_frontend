@@ -136,3 +136,11 @@ export function getStatsByBenefitType(params = {}) {
 	const queryString = buildQueryString({ id_state, id_institution });
 	return axios.get(`project/benefit-type${queryString}`);
 }
+
+export function downloadDashboardPdf(params = {}) {
+	return axios.get('dashboard/export-pdf', {
+		params,
+		responseType: 'blob'
+	});
+}
+
