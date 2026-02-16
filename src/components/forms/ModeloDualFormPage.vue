@@ -1,302 +1,294 @@
 <!-- /pages/ModeloDualFormPage.vue - VERSIÓN OPTIMIZADA MEJORADA -->
 <template>
-  <AdminLayout>
-    <!-- Loading overlay principal con progreso -->
-    <div v-if="globalLoading" class="fixed inset-0 bg-gray-500 bg-opacity-75 flex items-center justify-center z-50">
-      <div class="bg-white rounded-lg p-8 shadow-xl max-w-md w-full">
-        <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-brand-800 mx-auto mb-4"></div>
-        <p class="text-center text-gray-700 font-medium mb-2">
-          {{ globalLoadingMessage }}
-        </p>
-        <div v-if="loadingProgress < 100" class="w-full bg-gray-200 rounded-full h-2">
-          <div 
-            class="bg-brand-600 h-2 rounded-full transition-all duration-300"
-            :style="{ width: `${loadingProgress}%` }"
-          ></div>
-        </div>
-        <p v-if="loadingProgress < 100" class="text-center text-sm text-gray-600 mt-2">
-          {{ loadingProgress }}% completado
-        </p>
-      </div>
-    </div>
+	<AdminLayout>
+		<div v-if="globalLoading" class="fixed inset-0 bg-gray-500 bg-opacity-75 flex items-center justify-center z-50">
+			<div class="bg-white rounded-lg p-8 shadow-xl max-w-md w-full">
+				<div class="animate-spin rounded-full h-12 w-12 border-b-2 border-brand-800 mx-auto mb-4" />
+				<p class="text-center text-gray-700 font-medium mb-2">
+					{{ globalLoadingMessage }}
+				</p>
+				<div v-if="loadingProgress < 100" class="w-full bg-gray-200 rounded-full h-2">
+					<div 
+						class="bg-brand-600 h-2 rounded-full transition-all duration-300"
+						:style="{ width: `${loadingProgress}%` }" />
+				</div>
+				<p v-if="loadingProgress < 100" class="text-center text-sm text-gray-600 mt-2">
+					{{ loadingProgress }}% completado
+				</p>
+			</div>
+		</div>
     
-    <PageBreadcrumb :pageTitle="pageTitle" />
+		<PageBreadcrumb :pageTitle="pageTitle" />
     
-    <div class="space-y-5 sm:space-y-6" :class="{ 'opacity-50 pointer-events-none': globalLoading }">
-      <ComponentCard :title="formTitle">
-        <!-- Encabezado con botón para volver -->
-        <div class="flex justify-between items-center mb-6">
-          <div>
-            <button
-              @click="goBackToList"
-              class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors"
-            >
-              <ArrowLeftIcon class="h-5 w-5 mr-2" />
-              Volver a la lista
-            </button>
-          </div>
-          <div v-if="mode !== 'create'" class="text-sm font-medium px-3 py-1 rounded-full"
-               :class="mode === 'edit' ? 'bg-blue-100 text-blue-800' : 'bg-green-100 text-green-800'">
-            {{ mode === 'edit' ? 'Modo Edición' : 'Modo Completar' }}
-          </div>
-        </div>
+		<div class="space-y-5 sm:space-y-6" :class="{ 'opacity-50 pointer-events-none': globalLoading }">
+			<ComponentCard :title="formTitle">
+				<div class="flex justify-between items-center mb-6">
+					<div>
+						<button
+							class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors"
+							@click="goBackToList">
+							<ArrowLeftIcon class="h-5 w-5 mr-2" />
+							Volver a la lista
+						</button>
+					</div>
+					<div
+						v-if="mode !== 'create'" class="text-sm font-medium px-3 py-1 rounded-full"
+						:class="mode === 'edit' ? 'bg-blue-100 text-blue-800' : 'bg-green-100 text-green-800'">
+						{{ mode === 'edit' ? 'Modo Edición' : 'Modo Completar' }}
+					</div>
+				</div>
 
-        <!-- Contenedor del formulario vertical -->
-        <div class="bg-white rounded-lg shadow p-6 space-y-8" id="form-container">
-          <!-- Sección 1: Información de Institución -->
-          <div class="border rounded-lg overflow-hidden transition-all duration-300" 
-               :class="section1Expanded ? 'border-blue-200 shadow-sm' : 'border-gray-200'"
-               id="section-1">
-            <!-- Encabezado de sección 1 -->
-            <button
-              @click="toggleSection(1)"
-              class="w-full p-4 bg-gradient-to-r from-brand-400 to-brand-600 hover:from-brand-500 hover:to-brand-700 flex items-center justify-between transition-all duration-200"
-              :disabled="globalLoading"
-            >
-              <div class="flex items-center">
-                <div class="flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center mr-3 bg-white bg-opacity-20">
-                  <span class="font-semibold text-white">1</span>
-                </div>
-                <div class="text-left">
-                  <h3 class="text-lg font-semibold text-white">
-                    Información de Institución
-                  </h3>
-                  <p class="text-sm text-white text-opacity-90 mt-1">
-                    Selecciona la institución educativa
-                  </p>
-                </div>
-              </div>
-              <div class="flex items-center">
-                <div v-if="isSection1Incomplete" 
-                     class="mr-3 flex items-center bg-yellow-100 text-yellow-800 px-2 py-1 rounded-full">
-                  <ExclamationTriangleIcon class="h-3 w-3 mr-1" />
-                  <span class="text-xs font-medium">Pendiente</span>
-                </div>
-                <div v-else-if="!isSection1Incomplete" 
-                     class="mr-3 flex items-center bg-green-100 text-green-800 px-2 py-1 rounded-full">
-                  <CheckCircleIcon class="h-3 w-3 mr-1" />
-                  <span class="text-xs font-medium">Completo</span>
-                </div>
-                <ChevronDownIcon 
-                  class="h-6 w-6 text-white transition-transform duration-300"
-                  :class="{ 'transform rotate-180': section1Expanded }"
-                />
-              </div>
-            </button>
+				<div id="form-container" class="bg-white rounded-lg shadow p-6 space-y-8">
+					<!-- Sección 1: Información de Institución -->
+					<div
+						id="section-1" 
+						class="border rounded-lg overflow-hidden transition-all duration-300"
+						:class="section1Expanded ? 'border-blue-200 shadow-sm' : 'border-gray-200'">
+						<!-- Encabezado de sección 1 -->
+						<button
+							class="w-full p-4 bg-gradient-to-r from-brand-400 to-brand-600 hover:from-brand-500 hover:to-brand-700 flex items-center justify-between transition-all duration-200"
+							:disabled="globalLoading"
+							@click="toggleSection(1)">
+							<div class="flex items-center">
+								<div class="flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center mr-3 bg-white bg-opacity-20">
+									<span class="font-semibold text-white">1</span>
+								</div>
+								<div class="text-left">
+									<h3 class="text-lg font-semibold text-white">
+										Información de Institución
+									</h3>
+									<p class="text-sm text-white text-opacity-90 mt-1">
+										Selecciona la institución educativa
+									</p>
+								</div>
+							</div>
+							<div class="flex items-center">
+								<div
+									v-if="isSection1Incomplete" 
+									class="mr-3 flex items-center bg-yellow-100 text-yellow-800 px-2 py-1 rounded-full">
+									<ExclamationTriangleIcon class="h-3 w-3 mr-1" />
+									<span class="text-xs font-medium">Pendiente</span>
+								</div>
+								<div
+									v-else-if="!isSection1Incomplete" 
+									class="mr-3 flex items-center bg-green-100 text-green-800 px-2 py-1 rounded-full">
+									<CheckCircleIcon class="h-3 w-3 mr-1" />
+									<span class="text-xs font-medium">Completo</span>
+								</div>
+								<ChevronDownIcon 
+									class="h-6 w-6 text-white transition-transform duration-300"
+									:class="{ 'transform rotate-180': section1Expanded }" />
+							</div>
+						</button>
 
-            <!-- Contenido de sección 1 -->
-            <transition
-              enter-active-class="transition-all duration-300 ease-out"
-              enter-from-class="opacity-0 max-h-0"
-              enter-to-class="opacity-100 max-h-[2000px]"
-              leave-active-class="transition-all duration-300 ease-in"
-              leave-from-class="opacity-100 max-h-[2000px]"
-              leave-to-class="opacity-0 max-h-0"
-            >
-              <div v-show="section1Expanded" class="p-6 border-t">
-                <DualStepAcademico
-                  ref="stepAcademicoRef"
-                  v-model="formData.academico"
-                  v-model:reportaModeloDual="reportaModeloDual"
-                  :institutions="institutions"
-                  :mode="mode"
-                  @update:institutions="handleInstitutionsUpdate"
-                />
-              </div>
-            </transition>
-          </div>
+						<!-- Contenido de sección 1 -->
+						<transition
+							enter-active-class="transition-all duration-300 ease-out"
+							enter-from-class="opacity-0 max-h-0"
+							enter-to-class="opacity-100 max-h-[2000px]"
+							leave-active-class="transition-all duration-300 ease-in"
+							leave-from-class="opacity-100 max-h-[2000px]"
+							leave-to-class="opacity-0 max-h-0">
+							<div v-show="section1Expanded" class="p-6 border-t">
+								<DualStepAcademico
+									ref="stepAcademicoRef"
+									v-model="formData.academico"
+									v-model:reportaModeloDual="reportaModeloDual"
+									:institutions="institutions"
+									:mode="mode"
+									@update:institutions="handleInstitutionsUpdate" />
+							</div>
+						</transition>
+					</div>
 
-          <!-- Sección 2: Datos Personales - Mostrar solo si reportaModeloDual es true -->
-          <div v-if="reportaModeloDual" 
-               class="border rounded-lg overflow-hidden transition-all duration-300"
-               :class="section2Expanded ? 'border-blue-200 shadow-sm' : 'border-gray-200'"
-               id="section-2">
-            <!-- Encabezado de sección 2 -->
-            <button
-              @click="toggleSection(2)"
-              class="w-full p-4 bg-gradient-to-r from-brand-400 to-brand-600 hover:from-brand-500 hover:to-brand-700 flex items-center justify-between transition-all duration-200"
-              :disabled="isSection1Incomplete || globalLoading"
-              :class="{ 'opacity-50 cursor-not-allowed': isSection1Incomplete || globalLoading }"
-            >
-              <div class="flex items-center">
-                <div class="flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center mr-3 bg-white bg-opacity-20">
-                  <span class="font-semibold text-white">2</span>
-                </div>
-                <div class="text-left">
-                  <h3 class="text-lg font-semibold text-white">
-                    Datos Personales de Estudiantes
-                  </h3>
-                  <p class="text-sm text-white text-opacity-90 mt-1">
-                    Información de los estudiantes participantes
-                  </p>
-                </div>
-              </div>
-              <div class="flex items-center">
-                <div v-if="isSection2Incomplete" 
-                     class="mr-3 flex items-center bg-yellow-100 text-yellow-800 px-2 py-1 rounded-full">
-                  <ExclamationTriangleIcon class="h-3 w-3 mr-1" />
-                  <span class="text-xs font-medium">Pendiente</span>
-                </div>
-                <div v-else-if="!isSection2Incomplete" 
-                     class="mr-3 flex items-center bg-green-100 text-green-800 px-2 py-1 rounded-full">
-                  <CheckCircleIcon class="h-3 w-3 mr-1" />
-                  <span class="text-xs font-medium">Completo</span>
-                </div>
-                <ChevronDownIcon 
-                  class="h-6 w-6 text-white transition-transform duration-300"
-                  :class="{ 'transform rotate-180': section2Expanded }"
-                />
-              </div>
-            </button>
+					<!-- Sección 2: Datos Personales -->
+					<div
+						v-if="reportaModeloDual" 
+						id="section-2"
+						class="border rounded-lg overflow-hidden transition-all duration-300"
+						:class="section2Expanded ? 'border-blue-200 shadow-sm' : 'border-gray-200'">
+						<!-- Encabezado de sección 2 -->
+						<button
+							class="w-full p-4 bg-gradient-to-r from-brand-400 to-brand-600 hover:from-brand-500 hover:to-brand-700 flex items-center justify-between transition-all duration-200"
+							:disabled="isSection1Incomplete || globalLoading"
+							:class="{ 'opacity-50 cursor-not-allowed': isSection1Incomplete || globalLoading }"
+							@click="toggleSection(2)">
+							<div class="flex items-center">
+								<div class="flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center mr-3 bg-white bg-opacity-20">
+									<span class="font-semibold text-white">2</span>
+								</div>
+								<div class="text-left">
+									<h3 class="text-lg font-semibold text-white">
+										Datos Personales de Estudiantes
+									</h3>
+									<p class="text-sm text-white text-opacity-90 mt-1">
+										Información de los estudiantes participantes
+									</p>
+								</div>
+							</div>
+							<div class="flex items-center">
+								<div
+									v-if="isSection2Incomplete" 
+									class="mr-3 flex items-center bg-yellow-100 text-yellow-800 px-2 py-1 rounded-full">
+									<ExclamationTriangleIcon class="h-3 w-3 mr-1" />
+									<span class="text-xs font-medium">Pendiente</span>
+								</div>
+								<div
+									v-else-if="!isSection2Incomplete" 
+									class="mr-3 flex items-center bg-green-100 text-green-800 px-2 py-1 rounded-full">
+									<CheckCircleIcon class="h-3 w-3 mr-1" />
+									<span class="text-xs font-medium">Completo</span>
+								</div>
+								<ChevronDownIcon 
+									class="h-6 w-6 text-white transition-transform duration-300"
+									:class="{ 'transform rotate-180': section2Expanded }" />
+							</div>
+						</button>
 
-            <!-- Contenido de sección 2 -->
-            <transition
-              enter-active-class="transition-all duration-300 ease-out"
-              enter-from-class="opacity-0 max-h-0"
-              enter-to-class="opacity-100 max-h-[2000px]"
-              leave-active-class="transition-all duration-300 ease-in"
-              leave-from-class="opacity-100 max-h-[2000px]"
-              leave-to-class="opacity-0 max-h-0"
-            >
-              <div v-show="section2Expanded" class="p-6 border-t">
-                <DualStepPersonal
-                  :key="'personal-step-' + personalStepKey"
-                  ref="stepPersonalRef"
-                  v-model="formData.personal"
-                  :careers="filteredCareersForInstitution"
-                  :specialties="filteredSpecialtiesForInstitution"
-                  :institution="{
-                    id: formData.academico.id_institution,
-                    name: institutions.find(i => i.id === formData.academico.id_institution)?.name || ''
-                  }"
-                  @update:careers="handleCareersUpdate"
-                  @update:specialties="handleSpecialtiesUpdate"
-                />
-              </div>
-            </transition>
-          </div>
+						<!-- Contenido de sección 2 -->
+						<transition
+							enter-active-class="transition-all duration-300 ease-out"
+							enter-from-class="opacity-0 max-h-0"
+							enter-to-class="opacity-100 max-h-[2000px]"
+							leave-active-class="transition-all duration-300 ease-in"
+							leave-from-class="opacity-100 max-h-[2000px]"
+							leave-to-class="opacity-0 max-h-0">
+							<div v-show="section2Expanded" class="p-6 border-t">
+								<DualStepPersonal
+									:key="'personal-step-' + personalStepKey"
+									ref="stepPersonalRef"
+									v-model="formData.personal"
+									:careers="filteredCareersForInstitution"
+									:specialties="filteredSpecialtiesForInstitution"
+									:institution="{
+										id: formData.academico.id_institution,
+										name: institutions.find(i => i.id === formData.academico.id_institution)?.name || '',
+										id_academic_period: institutions.find(i => i.id === formData.academico.id_institution)?.id_academic_period || null
+									}"
+									:academic-periods="academicPeriods"
+									@update:careers="handleCareersUpdate"
+									@update:specialties="handleSpecialtiesUpdate" />
+							</div>
+						</transition>
+					</div>
 
-          <!-- Sección 3: Unidad Dual - Mostrar solo si reportaModeloDual es true -->
-          <div v-if="reportaModeloDual" 
-               class="border rounded-lg overflow-hidden transition-all duration-300"
-               :class="section3Expanded ? 'border-blue-200 shadow-sm' : 'border-gray-200'"
-               id="section-3">
-            <!-- Encabezado de sección 3 -->
-            <button
-              @click="toggleSection(3)"
-              class="w-full p-4 bg-gradient-to-r from-brand-400 to-brand-600 hover:from-brand-500 hover:to-brand-700 flex items-center justify-between transition-all duration-200"
-              :disabled="isSection2Incomplete || globalLoading"
-              :class="{ 'opacity-50 cursor-not-allowed': isSection2Incomplete || globalLoading }"
-            >
-              <div class="flex items-center">
-                <div class="flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center mr-3 bg-white bg-opacity-20">
-                  <span class="font-semibold text-white">3</span>
-                </div>
-                <div class="text-left">
-                  <h3 class="text-lg font-semibold text-white">
-                    Información de Unidad Dual
-                  </h3>
-                  <p class="text-sm text-white text-opacity-90 mt-1">
-                    Detalles del proyecto y organización
-                  </p>
-                </div>
-              </div>
-              <div class="flex items-center">
-                <div v-if="isSection3Incomplete" 
-                     class="mr-3 flex items-center bg-yellow-100 text-yellow-800 px-2 py-1 rounded-full">
-                  <ExclamationTriangleIcon class="h-3 w-3 mr-1" />
-                  <span class="text-xs font-medium">Pendiente</span>
-                </div>
-                <div v-else-if="!isSection3Incomplete" 
-                     class="mr-3 flex items-center bg-green-100 text-green-800 px-2 py-1 rounded-full">
-                  <CheckCircleIcon class="h-3 w-3 mr-1" />
-                  <span class="text-xs font-medium">Completo</span>
-                </div>
-                <ChevronDownIcon 
-                  class="h-6 w-6 text-white transition-transform duration-300"
-                  :class="{ 'transform rotate-180': section3Expanded }"
-                />
-              </div>
-            </button>
+					<!-- Sección 3: Unidad Dual -->
+					<div
+						v-if="reportaModeloDual" 
+						id="section-3"
+						class="border rounded-lg overflow-hidden transition-all duration-300"
+						:class="section3Expanded ? 'border-blue-200 shadow-sm' : 'border-gray-200'">
+						<!-- Encabezado de sección 3 -->
+						<button
+							class="w-full p-4 bg-gradient-to-r from-brand-400 to-brand-600 hover:from-brand-500 hover:to-brand-700 flex items-center justify-between transition-all duration-200"
+							:disabled="isSection2Incomplete || globalLoading"
+							:class="{ 'opacity-50 cursor-not-allowed': isSection2Incomplete || globalLoading }"
+							@click="toggleSection(3)">
+							<div class="flex items-center">
+								<div class="flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center mr-3 bg-white bg-opacity-20">
+									<span class="font-semibold text-white">3</span>
+								</div>
+								<div class="text-left">
+									<h3 class="text-lg font-semibold text-white">
+										Información de Unidad Dual
+									</h3>
+									<p class="text-sm text-white text-opacity-90 mt-1">
+										Detalles del proyecto y organización
+									</p>
+								</div>
+							</div>
+							<div class="flex items-center">
+								<div
+									v-if="isSection3Incomplete" 
+									class="mr-3 flex items-center bg-yellow-100 text-yellow-800 px-2 py-1 rounded-full">
+									<ExclamationTriangleIcon class="h-3 w-3 mr-1" />
+									<span class="text-xs font-medium">Pendiente</span>
+								</div>
+								<div
+									v-else-if="!isSection3Incomplete" 
+									class="mr-3 flex items-center bg-green-100 text-green-800 px-2 py-1 rounded-full">
+									<CheckCircleIcon class="h-3 w-3 mr-1" />
+									<span class="text-xs font-medium">Completo</span>
+								</div>
+								<ChevronDownIcon 
+									class="h-6 w-6 text-white transition-transform duration-300"
+									:class="{ 'transform rotate-180': section3Expanded }" />
+							</div>
+						</button>
 
-            <!-- Contenido de sección 3 -->
-            <transition
-              enter-active-class="transition-all duration-300 ease-out"
-              enter-from-class="opacity-0 max-h-0"
-              enter-to-class="opacity-100 max-h-[2000px]"
-              leave-active-class="transition-all duration-300 ease-in"
-              leave-from-class="opacity-100 max-h-[2000px]"
-              leave-to-class="opacity-0 max-h-0"
-            >
-              <div v-show="section3Expanded" class="p-6 border-t">
-                <DualStepUnidad
-                  ref="stepUnidadDualRef"
-                  :key="'unidad-step-' + personalStepKey"
-                  v-model="formData.unidadDual"
-                  :areas="areas"
-                  :clusters="clusters"
-                  :agreementStatuses="agreementStatuses"
-                  :supportTypes="supportTypes"
-                  :organizations="organizations"
-                  :dualTypes="dualTypes"
-                  :microCredentials="microCredentials"
-                  :certifications="certifications"
-                  :diplomas="diplomas"
-                  :benefitTypes="benefitTypes"
-                  @update:organizations="handleOrganizationsUpdate"
-                  @update:microCredentials="handleMicroCredentialsUpdate"
-                  @update:certifications="handleCertificationsUpdate"
-                  @update:diplomas="handleDiplomasUpdate"
-                  @update:dualTypes="handleDualTypesUpdate"
-                  @update:benefitTypes="handleBenefitTypesUpdate"
-                />
-              </div>
-            </transition>
-          </div>
+						<!-- Contenido de sección 3 -->
+						<transition
+							enter-active-class="transition-all duration-300 ease-out"
+							enter-from-class="opacity-0 max-h-0"
+							enter-to-class="opacity-100 max-h-[2000px]"
+							leave-active-class="transition-all duration-300 ease-in"
+							leave-from-class="opacity-100 max-h-[2000px]"
+							leave-to-class="opacity-0 max-h-0">
+							<div v-show="section3Expanded" class="p-6 border-t">
+								<DualStepUnidad
+									ref="stepUnidadDualRef"
+									:key="'unidad-step-' + personalStepKey"
+									v-model="formData.unidadDual"
+									:areas="areas"
+									:clusters="clusters"
+									:agreementStatuses="agreementStatuses"
+									:supportTypes="supportTypes"
+									:organizations="organizations"
+									:dualTypes="dualTypes"
+									:microCredentials="microCredentials"
+									:certifications="certifications"
+									:diplomas="diplomas"
+									:benefitTypes="benefitTypes"
+									@update:organizations="handleOrganizationsUpdate"
+									@update:microCredentials="handleMicroCredentialsUpdate"
+									@update:certifications="handleCertificationsUpdate"
+									@update:diplomas="handleDiplomasUpdate"
+									@update:dualTypes="handleDualTypesUpdate"
+									@update:benefitTypes="handleBenefitTypesUpdate" />
+							</div>
+						</transition>
+					</div>
 
-          <!-- Botones de acción -->
-          <div class="flex justify-between items-center pt-6 mt-8 border-t">
-            <div class="text-sm text-gray-600">
-              <span v-if="pendingSectionsCount > 0" class="text-yellow-600 font-medium">
-                {{ pendingSectionsCount }} sección{{ pendingSectionsCount !== 1 ? 'es' : '' }} pendiente{{ pendingSectionsCount !== 1 ? 's' : '' }}
-              </span>
-              <span v-else class="text-green-600 font-medium">
-                ✓ Todos los campos están completos
-              </span>
-            </div>
-            <button
-              :disabled="isSubmitting || !canSubmit || globalLoading"
-              @click="submitForm"
-              class="inline-flex items-center px-6 py-3 border border-transparent rounded-md shadow-sm text-base font-medium text-white bg-brand-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 transform hover:scale-[1.02]"
-            >
-              <CheckIcon class="h-5 w-5 mr-2" />
-              {{ isSubmitting ? 'Guardando...' : buttonText }}
-            </button>
-          </div>
-        </div>
-      </ComponentCard>
-    </div>
+					<div class="flex justify-between items-center pt-6 mt-8 border-t">
+						<div class="text-sm text-gray-600">
+							<span v-if="pendingSectionsCount > 0" class="text-yellow-600 font-medium">
+								{{ pendingSectionsCount }} sección{{ pendingSectionsCount !== 1 ? 'es' : '' }} pendiente{{ pendingSectionsCount !== 1 ? 's' : '' }}
+							</span>
+							<span v-else class="text-green-600 font-medium">
+								✓ Todos los campos están completos
+							</span>
+						</div>
+						<button
+							:disabled="isSubmitting || !canSubmit || globalLoading"
+							class="inline-flex items-center px-6 py-3 border border-transparent rounded-md shadow-sm text-base font-medium text-white bg-brand-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 transform hover:scale-[1.02]"
+							@click="submitForm">
+							<CheckIcon class="h-5 w-5 mr-2" />
+							{{ isSubmitting ? 'Guardando...' : buttonText }}
+						</button>
+					</div>
+				</div>
+			</ComponentCard>
+		</div>
 
-    <!-- Indicador flotante de secciones pendientes -->
-    <transition
-      enter-active-class="transition-all duration-300 ease-out"
-      enter-from-class="opacity-0 translate-y-4"
-      enter-to-class="opacity-100 translate-y-0"
-      leave-active-class="transition-all duration-300 ease-in"
-      leave-from-class="opacity-100 translate-y-0"
-      leave-to-class="opacity-0 translate-y-4"
-    >
-      <div v-if="showFloatingIndicator && pendingSectionsCount > 0"
-           class="fixed bottom-4 right-4 z-50">
-        <div class="bg-gradient-to-r from-yellow-500 to-yellow-600 text-white rounded-lg shadow-lg p-4 flex items-center animate-pulse">
-          <ExclamationTriangleIcon class="h-5 w-5 mr-2" />
-          <span class="text-sm font-medium">
-            {{ pendingSectionsCount }} sección{{ pendingSectionsCount !== 1 ? 'es' : '' }} pendiente{{ pendingSectionsCount !== 1 ? 's' : '' }}
-          </span>
-        </div>
-      </div>
-    </transition>
-  </AdminLayout>
+		<transition
+			enter-active-class="transition-all duration-300 ease-out"
+			enter-from-class="opacity-0 translate-y-4"
+			enter-to-class="opacity-100 translate-y-0"
+			leave-active-class="transition-all duration-300 ease-in"
+			leave-from-class="opacity-100 translate-y-0"
+			leave-to-class="opacity-0 translate-y-4">
+			<div
+				v-if="showFloatingIndicator && pendingSectionsCount > 0"
+				class="fixed bottom-4 right-4 z-50">
+				<div class="bg-gradient-to-r from-yellow-500 to-yellow-600 text-white rounded-lg shadow-lg p-4 flex items-center animate-pulse">
+					<ExclamationTriangleIcon class="h-5 w-5 mr-2" />
+					<span class="text-sm font-medium">
+						{{ pendingSectionsCount }} sección{{ pendingSectionsCount !== 1 ? 'es' : '' }} pendiente{{ pendingSectionsCount !== 1 ? 's' : '' }}
+					</span>
+				</div>
+			</div>
+		</transition>
+	</AdminLayout>
 </template>
 
 <script setup lang="ts">
@@ -327,6 +319,7 @@ import { getDualTypes } from '../../services/dual_projects/dual-types';
 import { getMicroCredentials } from '../../services/dual_projects/micro-credentials';
 import { getCertifications } from '../../services/dual_projects/certifications.js';
 import { getDiplomas } from '../../services/dual_projects/diplomas.js';
+import { getAcademicPeriods } from '../../services/institutions/academic-periods';
 import { getBenefitType } from '../../services/dual_projects/BenefitType';
 import { 
   ArrowLeftIcon, 
@@ -343,7 +336,7 @@ const router = useRouter();
 const mode = ref('create');
 const projectId = ref<number | null>(null);
 
-// ==================== ESTADOS DE CARGA OPTIMIZADOS ====================
+// ==================== ESTADOS DE CARGA ====================
 const globalLoading = ref(false);
 const globalLoadingMessage = ref('Iniciando formulario...');
 const loadingProgress = ref(0);
@@ -373,7 +366,8 @@ const formData = ref({
     semester: '',
     id_career: '',
     id_specialty: '',
-    dual_project_students: []
+	academic_period: [],
+    dual_project_students: [],
   },
   academico: {
     id_institution: '',
@@ -410,6 +404,7 @@ const formData = ref({
 const institutions = shallowRef([]);
 const careers = shallowRef([]);
 const specialties = shallowRef([]);
+const academicPeriods = shallowRef([]);
 const clusters = shallowRef([]);
 const areas = shallowRef([]);
 const agreementStatuses = shallowRef([]);
@@ -525,7 +520,6 @@ const loadEssentialDependencies = async () => {
   updateLoadingProgress(10);
   
   try {
-    // Cargar solo lo esencial primero - con timeout para evitar bloqueos
     const [institutionsRes, organizationsRes] = await Promise.all([
       getInstitutions(),
       getOrganizations()
@@ -546,7 +540,6 @@ const loadSecondaryDependencies = async () => {
   globalLoadingMessage.value = 'Cargando datos adicionales...';
   
   try {
-    // Cargar en lotes con delays estratégicos
     const batch1 = await Promise.all([
       getCareers(),
       getSpecialties(),
@@ -558,7 +551,6 @@ const loadSecondaryDependencies = async () => {
     clusters.value = batch1[2].data;
     updateLoadingProgress(15);
     
-    // Pequeño delay para mejor UX
     await new Promise(resolve => setTimeout(resolve, 100));
     
     const batch2 = await Promise.all([
@@ -583,7 +575,6 @@ const loadSecondaryDependencies = async () => {
     microCredentials.value = batch3[1].data;
     updateLoadingProgress(10);
     
-    // Cargar datos menos críticos en segundo plano
     setTimeout(async () => {
       try {
         const [certRes, diplomaRes, benefitRes] = await Promise.all([
@@ -598,16 +589,28 @@ const loadSecondaryDependencies = async () => {
         updateLoadingProgress(20);
       } catch (error) {
         console.warn('Error cargando datos opcionales:', error);
-        // No fallamos si los datos opcionales no cargan
       }
     }, 500);
     
     return true;
   } catch (error) {
     console.error('Error cargando dependencias secundarias:', error);
-    // Continuamos aunque falle parcialmente
     return true;
   }
+};
+
+const loadAcademicPeriods = async () => {
+	globalLoadingMessage.value = 'Cargando períodos académicos...';
+
+	try {
+		const response = await getAcademicPeriods();
+		academicPeriods.value = response.data;
+		updateLoadingProgress(10);
+		return true;
+	} catch (error) {
+		console.error('Error cargando períodos académicos:', error);
+		return false;
+	}
 };
 
 const loadExistingData = async () => {
@@ -619,7 +622,6 @@ const loadExistingData = async () => {
     const res = await showDualProject(projectId.value);
     const project = res.data;
 
-    // 1. Datos personales
     formData.value.personal = {
       id_student: '',
       control_number: '',
@@ -629,7 +631,8 @@ const loadExistingData = async () => {
       semester: '',
       id_career: '',
       id_specialty: '',
-      dual_project_students: project.dual_project_students || []
+      academic_period: project.academic_period || [],
+		dual_project_students: project.dual_project_students || []
     };
 
     if (project.dual_project_students && project.dual_project_students.length > 0) {
@@ -643,12 +646,10 @@ const loadExistingData = async () => {
       formData.value.personal.id_specialty = firstStudent.id_specialty || '';
     }
 
-    // 2. Datos académicos
     formData.value.academico = {
       id_institution: project.id_institution ?? '',
     };
 
-    // 3. Datos unidad dual - asegurar que benefitTypes tenga formato correcto
     const benefitTypesData = project.dual_project_reports?.benefit_types || [];
     const formattedBenefitTypes = Array.isArray(benefitTypesData) 
       ? benefitTypesData.map(b => ({
@@ -684,10 +685,8 @@ const loadExistingData = async () => {
       external_advisor_qualification: project.dual_project_reports?.external_advisor_qualification ?? null,
     };
 
-    // 4. Determinar si reporta modelo dual
     reportaModeloDual.value = mode.value === 'complete' ? true : !!project.dual_project_reports;
     
-    // 5. Forzar actualización de componentes
     personalStepKey.value++;
     updateLoadingProgress(10);
     
@@ -813,8 +812,7 @@ const submitForm = async () => {
         id_institution: Number(formData.value.academico.id_institution)
       }));
 
-      // Formatear benefitTypes correctamente
-      const formattedBenefitTypes = Array.isArray(formData.value.unidadDual.benefitTypes) 
+      const formattedBenefitTypes = Array.isArray(formData.value.unidadDual.benefitTypes)
         ? formData.value.unidadDual.benefitTypes
             .filter(b => b && b.id)
             .map(b => ({
@@ -961,7 +959,6 @@ const handleScroll = () => {
   }
 };
 
-// ==================== WATCHERS OPTIMIZADOS ====================
 watch(reportaModeloDual, (newValue) => {
   if (newValue && !globalLoading.value) {
     setTimeout(() => {
@@ -995,64 +992,57 @@ watch(pendingSectionsCount, (newCount) => {
   showFloatingIndicator.value = newCount > 0;
 });
 
-// ==================== LIFECYCLE HOOKS OPTIMIZADOS ====================
 onMounted(async () => {
-  // 1. Establecer modo y ID inmediatamente
-  mode.value = getModeFromRoute();
-  projectId.value = getPkFromRoute();
-  
-  // 2. Activar loading GLOBAL inmediatamente
-  globalLoading.value = true;
-  globalLoadingMessage.value = 'Preparando formulario...';
-  loadingProgress.value = 0;
-  
-  try {
-    // 3. Cargar dependencias esenciales primero
-    const essentialLoaded = await loadEssentialDependencies();
-    if (!essentialLoaded) {
-      throw new Error('No se pudieron cargar los datos esenciales');
-    }
-    
-    // 4. Si es modo edición/completar, cargar datos del proyecto
-    if ((mode.value === 'edit' || mode.value === 'complete') && projectId.value) {
-      await loadExistingData();
-    }
-    
-    // 5. Cargar dependencias secundarias en segundo plano
-    setTimeout(async () => {
-      try {
-        await loadSecondaryDependencies();
-        
-        // 6. Completar carga
-        setTimeout(() => {
-          globalLoadingMessage.value = '¡Listo!';
-          loadingProgress.value = 100;
-          
-          // 7. Pequeño delay para mostrar el 100%
-          setTimeout(() => {
-            globalLoading.value = false;
-          }, 300);
-        }, 500);
-        
-      } catch (error) {
-        console.warn('Error en carga secundaria:', error);
-        // Continuamos aunque falle parcialmente
-        globalLoading.value = false;
-      }
-    }, 300);
-    
-  } catch (error) {
-    console.error('Error inicializando formulario:', error);
-    await Swal.fire({
-      icon: 'error',
-      title: 'Error de carga',
-      text: 'No se pudieron cargar los datos necesarios',
-      confirmButtonColor: '#3085d6',
-    });
-    goBackToList();
-  }
-  
-  window.addEventListener('scroll', handleScroll, { passive: true });
+	mode.value = getModeFromRoute();
+	projectId.value = getPkFromRoute();
+
+	globalLoading.value = true;
+	globalLoadingMessage.value = 'Preparando formulario...';
+	loadingProgress.value = 0;
+
+	try {
+		const essentialLoaded = await loadEssentialDependencies();
+		if (!essentialLoaded) {
+			throw new Error('No se pudieron cargar los datos esenciales');
+		}
+
+		await loadAcademicPeriods();
+
+		if ((mode.value === 'edit' || mode.value === 'complete') && projectId.value) {
+			await loadExistingData();
+		}
+
+		setTimeout(async () => {
+			try {
+				await loadSecondaryDependencies();
+
+				setTimeout(() => {
+					globalLoadingMessage.value = '¡Listo!';
+					loadingProgress.value = 100;
+
+					setTimeout(() => {
+						globalLoading.value = false;
+					}, 300);
+				}, 500);
+
+			} catch (error) {
+				console.warn('Error en carga secundaria:', error);
+				globalLoading.value = false;
+			}
+		}, 300);
+
+	} catch (error) {
+		console.error('Error inicializando formulario:', error);
+		await Swal.fire({
+			icon: 'error',
+			title: 'Error de carga',
+			text: 'No se pudieron cargar los datos necesarios',
+			confirmButtonColor: '#3085d6',
+		});
+		goBackToList();
+	}
+
+	window.addEventListener('scroll', handleScroll, { passive: true });
 });
 
 onUnmounted(() => {
@@ -1065,7 +1055,6 @@ onUnmounted(() => {
   @apply px-5 py-2 rounded-lg font-medium transition-all duration-200;
 }
 
-/* Animaciones mejoradas */
 .animate-pulse {
   animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 }
@@ -1081,17 +1070,14 @@ onUnmounted(() => {
   }
 }
 
-/* Optimizaciones de rendimiento */
 .transition-all {
   will-change: transform, opacity, max-height;
 }
 
-/* Mejoras visuales */
 .border-gradient {
   border-image: linear-gradient(to right, #3b82f6, #8b5cf6) 1;
 }
 
-/* Scroll suave */
 #form-container {
   scroll-behavior: smooth;
 }

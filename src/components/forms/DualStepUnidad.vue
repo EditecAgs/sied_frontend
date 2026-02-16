@@ -43,7 +43,6 @@ const props = defineProps({
 	benefitTypes: Array,
 });
 
-// ==================== INICIALIZACIÓN DE MODALES ====================
 const { showModal, modalData, openModal, closeModal } = useModal();
 const { showModal: showAreaModal, modalData: areaModalData, openModal: openAreaModal, closeModal: closeAreaModal } = useModal();
 const { showModal: showMicroModal, modalData: microModalData, openModal: openMicroModal, closeModal: closeMicroModal } = useModal();
@@ -62,7 +61,6 @@ const {
 } = useModal();
 const { showModal: showDualTypeModal, modalData: dualTypeModalData, openModal: openDualTypeModal, closeModal: closeDualTypeModal } = useModal();
 
-// ==================== REFS BÁSICAS ====================
 const maxQualification = ref(props.modelValue.max_qualification || '');
 const errors = ref({});
 const showValidationErrors = ref(false);
@@ -70,7 +68,6 @@ const hasAttemptedSubmit = ref(false);
 const isAmountDisabled = ref(false);
 const amountField = ref(null);
 
-// ==================== REFS PARA DROPDOWNS ====================
 const searchArea = ref('');
 const showAreaDropdown = ref(false);
 const areaDropdownRef = ref(null);
@@ -107,17 +104,14 @@ const searchBenefitType = ref('');
 const showBenefitTypeDropdown = ref(false);
 const benefitTypeDropdownRef = ref(null);
 
-// ==================== DATOS DE FECHA ====================
 const period_start = ref(props.modelValue.period_start ? new Date(props.modelValue.period_start) : null);
 const period_end = ref(props.modelValue.period_end ? new Date(props.modelValue.period_end) : null);
 
-// ==================== DATOS DE ASESORES ====================
 const internalAdvisorName = ref(props.modelValue.internal_advisor_name || '');
 const externalAdvisorName = ref(props.modelValue.external_advisor_name || '');
 const internalAdvisorQualification = ref(props.modelValue.internal_advisor_qualification || null);
 const externalAdvisorQualification = ref(props.modelValue.external_advisor_qualification || null);
 
-// ==================== DATOS DE CREDENCIALES ====================
 const allMicroCredentials = ref(props.microCredentials || []);
 const selectedMicroCredentials = ref([]);
 
@@ -131,7 +125,6 @@ const allBenefitTypes = ref(props.benefitTypes || []);
 const selectedBenefitTypes = ref([]);
 const benefitQuantities = ref({});
 
-// ==================== COMPUTED PROPERTIES OPTIMIZADAS ====================
 const showCredentialsSection = computed(() => props.modelValue.is_concluded === 1);
 const areQualificationsEnabled = computed(() => props.modelValue.is_concluded === 1);
 const isHiredDisabled = computed(() => props.modelValue.is_concluded !== 1);
@@ -160,7 +153,6 @@ const bothQualificationsPresent = computed(() => {
 	);
 });
 
-// ==================== COMPUTED PROPERTIES PARA FILTRADO (OPTIMIZADAS) ====================
 const filteredAreas = computed(() => {
 	if (!searchArea.value) return props.areas || [];
 	const searchTerm = searchArea.value.toLowerCase();
@@ -231,7 +223,6 @@ const filteredBenefitTypes = computed(() => {
 	return (allBenefitTypes.value || []).filter((b) => b.name.toLowerCase().includes(searchTerm) && !selectedIds.has(b.id));
 });
 
-// ==================== MÉTODOS DE VALIDACIÓN ====================
 const fieldHelpTexts = {
 	name_report: 'Escribe el nombre específico del proyecto o actividad dual que se está registrando.',
 	id_dual_area: 'Clasificación general del proyecto dual.',
@@ -339,7 +330,6 @@ const validateQualification = (value, fieldName) => {
 	return true;
 };
 
-// ==================== MÉTODOS DE ACTUALIZACIÓN OPTIMIZADOS ====================
 const update = (field, value) => {
 	if ((field === 'internal_advisor_qualification' || field === 'external_advisor_qualification') && !areQualificationsEnabled.value) {
 		return;
@@ -355,7 +345,6 @@ const update = (field, value) => {
 
 	if (errors.value[field]) delete errors.value[field];
 
-	// Actualizar valores de búsqueda cuando se selecciona un elemento
 	switch (field) {
 		case 'id_dual_area':
 			const area = props.areas?.find((a) => a.id === value);
@@ -418,7 +407,6 @@ const updateQualificationAverage = () => {
 	}
 };
 
-// ==================== MÉTODOS DE INICIALIZACIÓN CORREGIDOS ====================
 const initializeMicroCredentials = () => {
 	selectedMicroCredentials.value = [];
 
@@ -426,10 +414,8 @@ const initializeMicroCredentials = () => {
 		return;
 	}
 
-	// Convertir todos los IDs a números para comparación
 	const microIds = props.modelValue.micro_credentials.map((id) => Number(id));
 
-	// Filtrar las microcredenciales que coinciden con los IDs
 	selectedMicroCredentials.value = allMicroCredentials.value.filter((m) => {
 		return microIds.includes(Number(m.id));
 	});
@@ -501,7 +487,6 @@ const initializeBenefitTypes = () => {
 };
 
 const initializeSearchValues = () => {
-	// Inicializar valores de búsqueda
 	if (props.modelValue.id_dual_area && props.areas && props.areas.length > 0) {
 		const area = props.areas.find((a) => a.id === props.modelValue.id_dual_area);
 		searchArea.value = area?.name || '';
@@ -545,13 +530,11 @@ const initializeSearchValues = () => {
 		maxQualification.value = props.modelValue.max_qualification.toString();
 	}
 
-	// Inicializar nombres de asesores
 	internalAdvisorName.value = props.modelValue.internal_advisor_name || '';
 	externalAdvisorName.value = props.modelValue.external_advisor_name || '';
 	internalAdvisorQualification.value = props.modelValue.internal_advisor_qualification || null;
 	externalAdvisorQualification.value = props.modelValue.external_advisor_qualification || null;
 
-	// Inicializar credenciales
 	nextTick(() => {
 		initializeMicroCredentials();
 		initializeCertifications();
@@ -621,7 +604,6 @@ const removeDiploma = (diploma) => {
 	});
 };
 
-// ==================== MÉTODOS PARA BENEFIT TYPES ====================
 const addBenefitType = (benefitType) => {
 	if (!selectedBenefitTypes.value.some((b) => b.id === benefitType.id)) {
 		selectedBenefitTypes.value.push(benefitType);
@@ -658,7 +640,6 @@ const updateBenefitTypesInModel = () => {
 	});
 };
 
-// ==================== HANDLERS PARA GUARDADO ====================
 const handleSavedOrganization = async (newOrganization) => {
 	try {
 		const res = await getOrganizations();
@@ -864,7 +845,6 @@ const handleSavedDualType = async (newDualType) => {
 	}
 };
 
-// ==================== MÉTODOS DE VALIDACIÓN FINAL ====================
 const validate = () => {
 	hasAttemptedSubmit.value = true;
 	showValidationErrors.value = true;
@@ -884,7 +864,6 @@ const validate = () => {
 	let isValid = true;
 	errors.value = {};
 
-	// Validar campos requeridos
 	for (const field of requiredFields) {
 		const value = props.modelValue[field];
 		if (value === null || value === undefined || value === '') {
@@ -893,7 +872,6 @@ const validate = () => {
 		}
 	}
 
-	// Validar monto solo si hay apoyo económico y no es "Sin apoyo"
 	if (props.modelValue.economic_support && props.modelValue.economic_support !== 1) {
 		if (props.modelValue.amount === null || props.modelValue.amount === undefined || props.modelValue.amount === '') {
 			errors.value.amount = 'El monto es obligatorio cuando hay apoyo económico';
@@ -936,9 +914,6 @@ const validate = () => {
 
 defineExpose({ validate, resetValidation, getValidationSummary });
 
-// ==================== WATCHERS CORREGIDOS ====================
-
-// Watcher para los nombres de asesores
 watch(internalAdvisorName, (newValue) => {
 	update('internal_advisor_name', newValue);
 });
@@ -947,15 +922,19 @@ watch(externalAdvisorName, (newValue) => {
 	update('external_advisor_name', newValue);
 });
 
-watch(searchSupport, (newSearchValue) => {
-	if (newSearchValue === '') {
-		update('economic_support', null);
-		isAmountDisabled.value = true;
-		emit('update:modelValue', {
-			...props.modelValue,
-			amount: 0
-		});
-		showSupportDropdown.value = false;
+watch(searchSupport, (newSearchValue, oldSearchValue) => {
+	if (newSearchValue === '' && oldSearchValue && oldSearchValue.length > 0) {
+		setTimeout(() => {
+			if (searchSupport.value === '' && !supportDropdownRef.value?.contains(document.activeElement)) {
+				update('economic_support', null);
+				isAmountDisabled.value = true;
+				emit('update:modelValue', {
+					...props.modelValue,
+					amount: 0
+				});
+				showSupportDropdown.value = false;
+			}
+		}, 200);
 	}
 });
 
@@ -995,7 +974,6 @@ watch(externalAdvisorQualification, (newQual) => {
 watch(
 	() => props.modelValue.economic_support,
 	(newSupportId, oldSupportId) => {
-		// Si el nuevo valor es vacío, nulo, indefinido o 1, deshabilitar monto
 		if (newSupportId === 1 || newSupportId === null || newSupportId === undefined || newSupportId === '') {
 			isAmountDisabled.value = true;
 			emit('update:modelValue', {
@@ -1003,7 +981,6 @@ watch(
 				amount: 0
 			});
 			
-			// Actualizar el texto de búsqueda
 			if (newSupportId === 1 && props.supportTypes && props.supportTypes.length > 0) {
 				const sinApoyoOption = props.supportTypes.find((s) => s.id === 1);
 				if (sinApoyoOption) {
@@ -1013,7 +990,6 @@ watch(
 				searchSupport.value = '';
 			}
 		} else {
-			// Solo habilitar si hay un valor válido que no sea 1
 			isAmountDisabled.value = false;
 		}
 	}
@@ -1042,11 +1018,7 @@ watch(maxQualification, (newVal) => {
 	update('max_qualification', newVal ? Number(newVal) : '');
 });
 
-// ==================== WATCHERS PARA SINCRONIZACIÓN CUANDO SE EDITA ====================
-
-// Función auxiliar para actualizar los valores de búsqueda cuando los props están disponibles
 const updateSearchValuesFromProps = () => {
-	// Solo actualizar si los props están disponibles
 	if (props.areas && props.areas.length > 0 && props.modelValue.id_dual_area) {
 		const area = props.areas.find((a) => a.id === props.modelValue.id_dual_area);
 		if (area && searchArea.value !== area.name) {
@@ -1089,7 +1061,6 @@ const updateSearchValuesFromProps = () => {
 	}
 };
 
-// Watcher para cuando cambian los props principales
 watch(
 	() => [
 		props.areas,
@@ -1104,7 +1075,6 @@ watch(
 		props.modelValue.dual_type_id,
 	],
 	() => {
-		// Usar nextTick para asegurar que los props estén disponibles
 		nextTick(() => {
 			updateSearchValuesFromProps();
 		});
@@ -1112,13 +1082,10 @@ watch(
 	{ deep: true }
 );
 
-// Watcher específico para cambios en el modeloValue (cuando se carga desde el padre)
 watch(
 	() => props.modelValue,
 	(newValue) => {
-		// Solo procesar si hay valores
 		if (newValue && Object.keys(newValue).length > 0) {
-			// Usar un timeout para asegurar que todos los watchers se hayan ejecutado
 			setTimeout(() => {
 				updateSearchValuesFromProps();
 			}, 100);
@@ -1127,13 +1094,11 @@ watch(
 	{ deep: true, immediate: true }
 );
 
-// Watchers para cuando se actualicen los datos desde el padre
 watch(
 	() => props.microCredentials,
 	(newMicroCreds) => {
 		if (JSON.stringify(allMicroCredentials.value) !== JSON.stringify(newMicroCreds || [])) {
 			allMicroCredentials.value = newMicroCreds || [];
-			// Reinicializar cuando cambien los datos
 			setTimeout(() => {
 				initializeMicroCredentials();
 			}, 100);
@@ -1168,7 +1133,6 @@ watch(
 	{ immediate: true }
 );
 
-// Watcher optimizado para benefitTypes
 watch(
 	() => props.benefitTypes,
 	(newBenefitTypes) => {
@@ -1185,7 +1149,6 @@ watch(
 	{ immediate: true }
 );
 
-// Watchers para cambios en los valores del modelo (edit mode)
 watch(
 	() => props.modelValue.micro_credentials,
 	(newValue) => {
@@ -1232,13 +1195,11 @@ const handleClickOutside = (event) => {
 
 	let shouldCloseAll = true;
 
-	// Verificar si el clic fue en alguno de los dropdowns o sus inputs
 	dropdowns.forEach(({ ref, show }) => {
 		if (ref.value && ref.value.contains(event.target)) {
 			shouldCloseAll = false;
 		}
 
-		// También verificar los inputs por su placeholder
 		const inputSelectors = [
 			'input[placeholder*="Buscar"]',
 			'input[placeholder*="tipo"]',
@@ -1262,7 +1223,6 @@ const handleClickOutside = (event) => {
 		});
 	});
 
-	// Si no se hizo clic en ningún dropdown o input relacionado, cerrar todos
 	if (shouldCloseAll) {
 		dropdowns.forEach(({ show }) => {
 			show.value = false;
@@ -1270,17 +1230,14 @@ const handleClickOutside = (event) => {
 	}
 };
 
-// ==================== LIFECYCLE HOOKS CORREGIDOS ====================
 onMounted(() => {
 	document.addEventListener('click', handleClickOutside);
 
-	// Inicialización diferida para mejor rendimiento
 	setTimeout(() => {
 		initializeSearchValues();
-	}, 300); // Aumentar el tiempo para asegurar que los props estén cargados
+	}, 300);
 
-	// Verificar el estado inicial de economic_support
-	if (props.modelValue.economic_support === 1 || 
+	if (props.modelValue.economic_support === 1 ||
 		!props.modelValue.economic_support || 
 		props.modelValue.economic_support === '' || 
 		props.modelValue.economic_support === null) {
@@ -1299,6 +1256,24 @@ onMounted(() => {
 onUnmounted(() => {
 	document.removeEventListener('click', handleClickOutside);
 });
+
+function formatNumber(value) {
+  if (!value) return '0'
+  return Number(value).toLocaleString('es-MX')
+}
+
+function handleQuantityInput(id, event) {
+  let rawValue = event.target.value.replace(/[^0-9]/g, '')
+
+  const numericValue = rawValue ? Number(rawValue) : 0
+
+  benefitQuantities.value[id] = numericValue
+
+  updateBenefitTypesInModel()
+
+  event.target.value = formatNumber(numericValue)
+}
+
 </script>
 
 <template>
@@ -2285,12 +2260,12 @@ onUnmounted(() => {
 				class="bg-gray-50 rounded-xl p-6 border border-gray-200 relative">
 				<h3 class="text-lg font-semibold text-brand-800 mb-4 flex items-center">
 					<span class="w-6 h-6 bg-brand-100 rounded-full flex items-center justify-center text-brand-800 text-sm mr-2">8</span>
-					Tipos de Beneficio
+					Tipos de Beneficio Anual
 				</h3>
 
 				<div class="relative">
 					<label class="label flex items-center gap-1">
-						Tipos de Beneficio
+						Tipos de Beneficio Anual
 						<button
 							v-tooltip="fieldHelpTexts.benefitTypes"
 							type="button"
@@ -2303,7 +2278,7 @@ onUnmounted(() => {
 						<input
 							v-model="searchBenefitType"
 							class="input flex-1"
-							placeholder="Buscar tipo de beneficio..."
+							placeholder="Buscar tipo de beneficio anual..."
 							@focus="showBenefitTypeDropdown = true"
 							@input="showBenefitTypeDropdown = true"
 							@blur="
@@ -2342,14 +2317,13 @@ onUnmounted(() => {
 							</div>
 							<div class="flex items-center gap-3">
 								<div>
-									<label class="text-sm text-gray-600 mr-2">Cantidad:</label>
+									<label class="text-sm text-gray-600 mr-2">Cantidad Anual:</label>
 									<input
-										type="number"
-										min="0"
-										class="w-20 px-3 py-2 border border-gray-300 rounded-lg text-center focus:ring-2 focus:ring-brand-600 focus:border-transparent"
-										:value="benefitQuantities[benefit.id] || 0"
-										@input="updateBenefitTypeQuantity(benefit.id, $event.target.value)"
-										@blur="updateBenefitTypeQuantity(benefit.id, $event.target.value)" />
+										type="text"
+										inputmode="numeric"
+										class="w-24 px-3 py-2 border border-gray-300 rounded-lg text-center focus:ring-2 focus:ring-brand-600 focus:border-transparent"
+										:value="formatNumber(benefitQuantities[benefit.id])"
+										@input="handleQuantityInput(benefit.id, $event)" />
 								</div>
 								<button
 									type="button"

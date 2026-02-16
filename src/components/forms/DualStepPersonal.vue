@@ -11,7 +11,8 @@ const props = defineProps({
 	modelValue: Object,
 	careers: Array,
 	specialties: Array,
-	institution: Object
+	institution: Object,
+	academicPeriods: Array
 });
 
 const emit = defineEmits(['update:modelValue', 'validate', 'update:careers', 'update:specialties']);
@@ -31,6 +32,7 @@ const form = ref({
 	semester: "",
 	id_career: "",
 	id_specialty: "",
+	id_academic_period: "",
 });
 
 const errors = ref({});
@@ -84,8 +86,7 @@ const forceSelectCareer = async (careerId) => {
 		careerSelectRef.value.dispatchEvent(changeEvent);
 		
 	}
-	
-	// Limpiar especialidad cuando cambia la carrera
+
 	form.value.id_specialty = "";
 	
 	return verifyCareerSelection(careerId);
@@ -171,7 +172,7 @@ const handleSavedCareer = async (savedData) => {
 		}, 500);
 
 	} catch (error) {
-		console.error('❌ Error en handleSavedCareer:', error);
+		console.error('Error en handleSavedCareer:', error);
 		closeCareerModal();
 		pendingCareerSelection.value = false;
 	}
@@ -327,6 +328,22 @@ const filteredSpecialties = computed(() => {
 	return filtered;
 });
 
+const institutionAcademicPeriod = computed(() => {
+
+	if (!props.institution?.id_academic_period) {
+		return null;
+	}
+
+	if (props.academicPeriods && props.academicPeriods.length > 0) {
+		const found = props.academicPeriods.find(
+			period => period.id === props.institution.id_academic_period
+		);
+		return found;
+	}
+
+	return null;
+});
+
 const studentCount = computed(() => students.value.length);
 const canSubmit = computed(() => studentCount.value >= 1);
 
@@ -407,9 +424,11 @@ const addStudent = () => {
 			id_institution: props.institution?.id || '',
 			id_career: parseInt(form.value.id_career),
 			id_specialty: form.value.id_specialty ? parseInt(form.value.id_specialty) : null,
+			id_academic_period: props.institution?.id_academic_period || null,
 			institution: props.institution || {},
 			career: props.careers.find(c => c.id === parseInt(form.value.id_career)) || {},
-			specialty: props.specialties.find(s => s.id === parseInt(form.value.id_specialty)) || {}
+			specialty: props.specialties.find(s => s.id === parseInt(form.value.id_specialty)) || {},
+			academic_period: institutionAcademicPeriod.value || {}
 		}
 	};
 
@@ -506,7 +525,11 @@ const initializeStudents = () => {
 				specialty:
 					s.student.id_specialty === null
 						? { id: null, name: 'Sin especialidad' }
-						: s.student.specialty
+						: s.student.specialty,
+				academic_period:
+					s.student.id_academic_period && props.academicPeriods
+						? props.academicPeriods.find(p => p.id === s.student.id_academic_period)
+						: { id: null, name: 'No definido' }
 			}
 		}));
 	} else {
@@ -552,8 +575,8 @@ defineExpose({
 			<div v-if="pendingCareerSelection" class="bg-brand-100 p-3 rounded-lg border border-blue-200">
 				<div class="flex items-center gap-2 ">
 					<svg class="w-5 h-5 text-brand-500 animate-spin" fill="none" viewBox="0 0 24 24">
-						<circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-						<path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+						<circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" />
+						<path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
 					</svg>
 					<p class="text-brand-700">⏳ Procesando nueva carrera. Se seleccionará automáticamente cuando esté disponible...</p>
 				</div>
@@ -630,6 +653,25 @@ defineExpose({
 						:disabled="!institution" />
 					<p v-if="errors.semester" class="text-red-500 text-sm mt-1">{{ errors.semester }}</p>
 				</div>
+				<div v-if="institution" class="md:col-span-2 bg-brand-50 p-4 rounded-lg border border-brand-200">
+					<div class="flex items-center justify-between">
+						<div class="flex items-center gap-2">
+							<svg class="w-5 h-5 text-brand-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+							</svg>
+							<span class="text-sm font-medium text-brand-800">Período Académico de la Institución:</span>
+						</div>
+						<div class="flex items-center gap-2">
+							<span class="px-3 py-1 bg-white rounded-full text-sm font-semibold text-brand-800 border border-brand-300">
+								{{ institutionAcademicPeriod?.name || 'No definido' }}
+							</span>
+						</div>
+					</div>
+					<p class="text-xs text-gray-600 mt-2">
+						Este es el período académico configurado para la institución seleccionada.
+						Los estudiantes registrados heredarán este período automáticamente.
+					</p>
+				</div>
 
 				<div>
 					<label class="flex items-center gap-1 text-sm font-medium text-gray-700 mb-1">
@@ -648,8 +690,7 @@ defineExpose({
 								'border-red-500': errors.id_career,
 								'border-green-500': form.id_career && filteredCareers.some(c => String(c.id) === String(form.id_career))
 							}"
-							:disabled="!institution || filteredCareers.length === 0"
-							@change="console.log('Select cambiado manualmente a:', form.id_career)">
+							:disabled="!institution || filteredCareers.length === 0">
 							<option value="">Selecciona carrera</option>
 							<option
 								v-for="c in filteredCareers"
@@ -792,6 +833,7 @@ defineExpose({
 							<th class="px-4 py-2 text-left">Semestre</th>
 							<th class="px-4 py-2 text-left">Carrera</th>
 							<th class="px-4 py-2 text-left">Especialidad</th>
+							<th class="px-4 py-2 text-left">Período Académico</th>
 							<th class="px-4 py-2 text-left">Género</th>
 							<th class="px-4 py-2 text-left">Acciones</th>
 						</tr>
@@ -804,6 +846,11 @@ defineExpose({
 							<td class="px-4 py-2 text-center">{{ s.student.semester }}</td>
 							<td class="px-4 py-2">{{ s.student.career?.name || 'N/A' }}</td>
 							<td class="px-4 py-2">{{ s.student.specialty?.name || 'Sin especialidad' }}</td>
+							<td class="px-4 py-2">
+								<span class="px-2 py-1 bg-brand-100 text-brand-800 rounded-full text-xs">
+									{{ s.student.academic_period?.name || 'No definido' }}
+								</span>
+							</td>
 							<td class="px-4 py-2">{{ s.student.gender }}</td>
 							<td class="px-4 py-2">
 								<button
