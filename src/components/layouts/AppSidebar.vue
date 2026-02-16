@@ -268,7 +268,8 @@ const menuGroups = computed(() => {
 							{ name: 'Sectores', path: '/sectors-table', pro: false },
 							{ name: 'Subsistemas', path: '/subsystem-table', pro: false },
 							{ name: 'Tipo de Modelo Dual', path: '/dual_type-table', pro: false },
-							{ name: 'Tipo de Organización ', path: '/type-table', pro: false }
+							{ name: 'Tipo de Organización ', path: '/type-table', pro: false },
+							{ name: 'Tipo de Beneficio', path: '/benefit-type-table', pro: false }
 					].filter(Boolean),
 				},
 			],

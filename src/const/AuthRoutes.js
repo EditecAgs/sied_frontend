@@ -33,5 +33,9 @@ export default [
 	'Dual_TypeTable',
     'Logs',
     'AccessLogs',
-    'Tutorials'
+    'Tutorials',
+    'modelo-dual-crear',
+    'modelo-dual-editar',
+    'modelo-dual-completar',
+     'BenefitTypeTable'
 ];

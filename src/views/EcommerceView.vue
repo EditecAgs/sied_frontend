@@ -57,6 +57,11 @@
 							@click="clearFilters">
 							Borrar filtros
 						</button>
+						<button
+							class="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700"
+							@click="downloadPdf">
+							Descargar PDF
+						</button>
 					</div>
 				</div>
 			</div>
@@ -117,6 +122,10 @@
 							<ProjectsByClusterNacional :key="componentKey + 'nacional'" :filters="currentFilters" @loaded="onChildLoaded" />
 						</div>
 					</div>
+
+					<div class="col-span-12">
+						<BenefitType :key="componentKey + 'benefittype'" :filters="currentFilters" @loaded="onChildLoaded" />
+					</div>
 				</div>
 			</div>
 		</admin-layout>
@@ -140,6 +149,8 @@ import ProjectsByDualType from '../components/ecommerce/ProjectsByDualType.vue'
 import OrganizationsByLocalCluster from '../components/ecommerce/OrganizationsByLocalCluster.vue'
 import ProjectsByClusterLocal from '../components/ecommerce/ProjectsByClusterLocal.vue'
 import ProjectsByClusterNacional from '../components/ecommerce/ProjectsByClusterNacional.vue'
+import BenefitType from '../components/ecommerce/BenefitType.vue';
+import { downloadDashboardPdf } from '../services/statistics/dashboard';
 import { getInstitutions, showInstitutions } from '../services/institutions/institutions'
 import { getStates } from '../services/location/states.js'
 
@@ -161,6 +172,7 @@ export default {
 		OrganizationsByLocalCluster,
 		ProjectsByClusterLocal,
 		ProjectsByClusterNacional,
+		BenefitType,
 		LoadingScreen
 	},
 	data() {
@@ -301,6 +313,23 @@ export default {
 			}
 
 			this.componentKey++
+		},
+
+		async downloadPdf() {
+			const response = await downloadDashboardPdf({
+				id_state: this.currentFilters.id_state,
+				id_institution: this.currentFilters.id_institution
+			});
+
+			const blob = new Blob([response.data], { type: 'application/pdf' });
+			const url = window.URL.createObjectURL(blob);
+
+			const link = document.createElement('a');
+			link.href = url;
+			link.download = 'dashboard.pdf';
+			link.click();
+
+			window.URL.revokeObjectURL(url);
 		}
 	}
 }

@@ -9,8 +9,8 @@ export function useModal() {
 		table: ''
     })
 
-    const openModal = (mode: 'create' | 'edit', pk: number | null = null, table: string) => {
-        modalData.value = { mode, pk , table}
+    const openModal = (mode: 'create' | 'edit', pk: number | null = null, table: string, extraData: any = null) => {
+        modalData.value = { mode, pk , table, ...extraData }
         showModal.value = true
     }
 
