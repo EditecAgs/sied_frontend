@@ -84,7 +84,6 @@ const forceSelectCareer = async (careerId) => {
 		const changeEvent = new Event('change', { bubbles: true });
 		careerSelectRef.value.dispatchEvent(inputEvent);
 		careerSelectRef.value.dispatchEvent(changeEvent);
-		
 	}
 
 	form.value.id_specialty = "";
@@ -93,7 +92,6 @@ const forceSelectCareer = async (careerId) => {
 };
 
 const handleSavedCareer = async (savedData) => {
-	
 	try {
 		closeCareerModal();
 		emit('update:careers', savedData);
@@ -106,19 +104,16 @@ const handleSavedCareer = async (savedData) => {
 			const belongsToInstitution = props.institution &&
 				(String(newCareer.id_institution) === String(props.institution.id) ||
 				 String(newCareer.institution_id) === String(props.institution.id));
-			
 
 			if (belongsToInstitution) {
 				await new Promise(resolve => setTimeout(resolve, 100));
 				
 				const verification = await forceSelectCareer(newCareer.id);
 				
-				
 				if (verification.selected && verification.existsInList) {
 					pendingCareerSelection.value = false;
 					return;
 				}
-				
 			}
 		}
 
@@ -141,7 +136,7 @@ const handleSavedCareer = async (savedData) => {
 			
 			if (props.careers && props.careers.length > 0) {
 				const latestCareer = [...props.careers]
-					.sort((a, b) => b.id - a.id)
+					.sort((a, b) => String(b.id).localeCompare(String(a.id)))
 					.find(career => {
 						const matchesInstitution = 
 							String(career.id_institution) === String(props.institution?.id) ||
@@ -154,7 +149,6 @@ const handleSavedCareer = async (savedData) => {
 					});
 
 				if (latestCareer) {
-					
 					const verification = await forceSelectCareer(latestCareer.id);
 					
 					if (verification.selected && verification.existsInList) {
@@ -215,7 +209,7 @@ const handleSavedSpecialty = async (savedData) => {
 		setTimeout(async () => {
 			if (pendingSpecialtySelection.value && props.specialties && props.specialties.length > 0 && currentCareerId) {
 				const latestSpecialty = [...props.specialties]
-					.sort((a, b) => b.id - a.id)
+					.sort((a, b) => String(b.id).localeCompare(String(a.id)))
 					.find(specialty =>
 						String(specialty.id_career) === String(currentCareerId) ||
 						String(specialty.career_id) === String(currentCareerId)
@@ -244,12 +238,23 @@ const handleSavedSpecialty = async (savedData) => {
 };
 
 watch(() => props.careers, (newCareers, oldCareers) => {
+	// Actualizar estudiantes cuando cambian las carreras
+	if (newCareers?.length && students.value.length > 0) {
+		students.value = students.value.map(s => {
+			const careerId = s.student?.id_career;
+			if (careerId) {
+				const career = newCareers.find(c => String(c.id) === String(careerId));
+				if (career) {
+					s.student.career = career;
+				}
+			}
+			return s;
+		});
+	}
 
-	
 	if (pendingCareerSelection.value && newCareers && newCareers.length > 0) {
-
 		const newCareerForInstitution = newCareers.find(career => {
-			const isNew = !oldCareers?.some(old => old.id === career.id);
+			const isNew = !oldCareers?.some(old => String(old.id) === String(career.id));
 			const matchesInstitution = 
 				String(career.id_institution) === String(props.institution?.id) ||
 				String(career.institution_id) === String(props.institution?.id);
@@ -258,9 +263,7 @@ watch(() => props.careers, (newCareers, oldCareers) => {
 		});
 
 		if (newCareerForInstitution) {
-			
 			forceSelectCareer(newCareerForInstitution.id).then(verification => {
-				
 				if (verification.selected && verification.existsInList) {
 					pendingCareerSelection.value = false;
 					debugInfo.value.careerListUpdated = true;
@@ -271,13 +274,27 @@ watch(() => props.careers, (newCareers, oldCareers) => {
 }, { deep: true });
 
 watch(() => props.specialties, (newSpecialties, oldSpecialties) => {
+	// Actualizar estudiantes cuando cambian las especialidades
+	if (newSpecialties?.length && students.value.length > 0) {
+		students.value = students.value.map(s => {
+			const specialtyId = s.student?.id_specialty;
+			if (specialtyId) {
+				const specialty = newSpecialties.find(sp => String(sp.id) === String(specialtyId));
+				if (specialty) {
+					s.student.specialty = specialty;
+				}
+			}
+			return s;
+		});
+	}
+
 	if (isCreatingSpecialty.value) {
 		return;
 	}
 
 	if (pendingSpecialtySelection.value && newSpecialties && newSpecialties.length > 0 && form.value.id_career) {
 		const newSpecialty = newSpecialties.find(specialty =>
-			!oldSpecialties?.find(old => old.id === specialty.id) &&
+			!oldSpecialties?.find(old => String(old.id) === String(specialty.id)) &&
 			(String(specialty.id_career) === String(form.value.id_career) ||
 				String(specialty.career_id) === String(form.value.id_career))
 		);
@@ -296,13 +313,12 @@ const filteredCareers = computed(() => {
 
 	const institutionId = String(props.institution.id);
 	
-	const filtered = props.careers.filter(career => {
+	const filtered = props.careers?.filter(career => {
 		return String(career.id_institution) === institutionId ||
 			String(career.institution_id) === institutionId ||
 			String(career.institution?.id) === institutionId;
-	});
+	}) || [];
 
-	
 	return filtered;
 });
 
@@ -311,7 +327,7 @@ const filteredSpecialties = computed(() => {
 		return [];
 	}
 
-	const selectedCareer = props.careers.find(c =>
+	const selectedCareer = props.careers?.find(c =>
 		String(c.id) === String(form.value.id_career)
 	);
 
@@ -319,11 +335,11 @@ const filteredSpecialties = computed(() => {
 		return [];
 	}
 
-	const filtered = props.specialties.filter(specialty => {
+	const filtered = props.specialties?.filter(specialty => {
 		return String(specialty.id_career) === String(form.value.id_career) ||
 			String(specialty.career_id) === String(form.value.id_career) ||
 			String(specialty.career?.id) === String(form.value.id_career);
-	});
+	}) || [];
 
 	return filtered;
 });
@@ -407,6 +423,15 @@ const addStudent = () => {
 		form.value.id_specialty = null;
 	}
 
+	// Buscar la carrera seleccionada usando string comparison
+	const selectedCareer = filteredCareers.value.find(c => 
+		String(c.id) === String(form.value.id_career)
+	);
+
+	// Buscar la especialidad seleccionada (si existe)
+	const selectedSpecialty = form.value.id_specialty ? 
+		props.specialties?.find(s => String(s.id) === String(form.value.id_specialty)) : null;
+
 	const newStudent = {
 		id: null,
 		created_at: new Date().toISOString(),
@@ -422,12 +447,11 @@ const addStudent = () => {
 			gender: form.value.gender,
 			semester: parseInt(form.value.semester),
 			id_institution: props.institution?.id || '',
-			id_career: parseInt(form.value.id_career),
-			id_specialty: form.value.id_specialty ? parseInt(form.value.id_specialty) : null,
-			id_academic_period: props.institution?.id_academic_period || null,
+				id_career: form.value.id_career ? String(form.value.id_career) : '',
+			id_specialty: form.value.id_specialty ? String(form.value.id_specialty) : null,
 			institution: props.institution || {},
-			career: props.careers.find(c => c.id === parseInt(form.value.id_career)) || {},
-			specialty: props.specialties.find(s => s.id === parseInt(form.value.id_specialty)) || {},
+			career: selectedCareer || { name: 'N/A', id: form.value.id_career },
+			specialty: selectedSpecialty || { name: 'Sin especialidad', id: form.value.id_specialty }
 			academic_period: institutionAcademicPeriod.value || {}
 		}
 	};
@@ -442,6 +466,7 @@ const addStudent = () => {
 	localModel.value = updatedValue;
 	emit('update:modelValue', updatedValue);
 
+	// Limpiar formulario
 	form.value = {
 		control_number: "",
 		name_student: "",
@@ -491,7 +516,7 @@ watch(() => form.value.id_career, (newCareerId, oldCareerId) => {
 
 	if (newCareerId && oldCareerId && newCareerId !== oldCareerId) {
 		if (form.value.id_specialty && form.value.id_specialty !== "null" && form.value.id_specialty !== "") {
-			const currentSpecialty = props.specialties.find(s =>
+			const currentSpecialty = props.specialties?.find(s =>
 				String(s.id) === String(form.value.id_specialty)
 			);
 
@@ -516,32 +541,88 @@ watch(() => props.institution, (newInstitution) => {
 	}
 });
 
+// CORREGIDO: Función initializeStudents mejorada
 const initializeStudents = () => {
 	if (props.modelValue?.dual_project_students && Array.isArray(props.modelValue.dual_project_students)) {
-		students.value = props.modelValue.dual_project_students.map(s => ({
-			...s,
-			student: {
-				...s.student,
-				specialty:
-					s.student.id_specialty === null
-						? { id: null, name: 'Sin especialidad' }
-						: s.student.specialty,
-				academic_period:
-					s.student.id_academic_period && props.academicPeriods
-						? props.academicPeriods.find(p => p.id === s.student.id_academic_period)
-						: { id: null, name: 'No definido' }
-			}
-		}));
+		students.value = props.modelValue.dual_project_students.map(s => {
+			// Obtener los IDs
+			const careerId = s.student?.id_career;
+			const specialtyId = s.student?.id_specialty;
+			
+			// Buscar la carrera en la lista completa de carreras
+			const career = careerId ? props.careers?.find(c => String(c.id) === String(careerId)) : null;
+			
+			// Buscar la especialidad en la lista completa de especialidades
+			const specialty = specialtyId ? props.specialties?.find(sp => String(sp.id) === String(specialtyId)) : null;
+			
+			// Log para depuración (opcional)
+			console.log('Inicializando estudiante:', {
+				careerId,
+				careerFound: career?.name || 'NO ENCONTRADA',
+				specialtyId,
+				specialtyFound: specialty?.name || 'Sin especialidad'
+			});
+			
+			return {
+				...s,
+				student: {
+					...s.student,
+					id_career: careerId ? String(careerId) : '',
+					id_specialty: specialtyId ? String(specialtyId) : null,
+					career: career || { name: 'N/A', id: careerId || 'no-id' },
+					specialty: specialty || { name: 'Sin especialidad', id: specialtyId || null }
+				}
+			};
+		});
 	} else {
 		students.value = [];
 	}
 };
 
+// CORREGIDO: Watch para cuando cambian las carreras - actualizar la tabla
+watch(() => props.careers, (newCareers) => {
+	if (newCareers?.length && students.value.length > 0) {
+		// Actualizar la información de carrera de cada estudiante
+		students.value = students.value.map(s => {
+			const careerId = s.student?.id_career;
+			if (careerId) {
+				const career = newCareers.find(c => String(c.id) === String(careerId));
+				if (career) {
+					s.student.career = career;
+				}
+			}
+			return s;
+		});
+	}
+}, { deep: true });
+
+// CORREGIDO: Watch para cuando cambian las especialidades
+watch(() => props.specialties, (newSpecialties) => {
+	if (newSpecialties?.length && students.value.length > 0) {
+		// Actualizar la información de especialidad de cada estudiante
+		students.value = students.value.map(s => {
+			const specialtyId = s.student?.id_specialty;
+			if (specialtyId) {
+				const specialty = newSpecialties.find(sp => String(sp.id) === String(specialtyId));
+				if (specialty) {
+					s.student.specialty = specialty;
+				}
+			}
+			return s;
+		});
+	}
+}, { deep: true });
+
 onMounted(() => {
+	console.log('=== DualStepPersonal montado ===');
+	console.log('modelValue:', props.modelValue);
+	console.log('careers recibidas:', props.careers?.length);
+	console.log('specialties recibidas:', props.specialties?.length);
+	console.log('institution:', props.institution);
+	
 	initializeStudents();
 	localModel.value = {...props.modelValue};
 	validate();
-
 });
 
 defineExpose({
@@ -735,7 +816,7 @@ defineExpose({
 							<option
 								v-for="s in filteredSpecialties"
 								:key="s.id"
-								:value="s.id">
+								:value="String(s.id)">
 								{{ s.name }}
 							</option>
 						</select>

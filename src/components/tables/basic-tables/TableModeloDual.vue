@@ -216,12 +216,13 @@
 									<span class="text-gray-500 text-xs">Sin microcredenciales</span>
 								</template>
 							</td>
+							<!-- CORREGIDO: Cambiado de project.certificates a project.diplomas -->
 							<td v-if="isColumnVisible('certificates')" class="px-5 py-3 text-sm border-r border-gray-100 whitespace-nowrap">
-								<template v-if="project.certificates && project.certificates.length > 0">
+								<template v-if="project.diplomas && project.diplomas.length > 0">
 									<button
 										class="px-3 py-1 bg-gradient-to-r from-brand-800 to-brand-900 text-white rounded text-xs hover:from-brand-700 hover:to-brand-800 transition-all shadow-sm"
 										@click="openCertificatesModal(project)">
-										Ver ({{ project.certificates.length }})
+										Ver ({{ project.diplomas.length }})
 									</button>
 								</template>
 								<template v-else>
@@ -445,21 +446,21 @@
 		</div>
 	</div>
 
-	<!-- Modal para diplomas -->
+	<!-- Modal para diplomas - CORREGIDO: Ahora muestra diplomas correctamente -->
 	<div v-if="showCertificatesModal" class="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
 		<div class="bg-white rounded-xl p-6 w-1/2 max-w-2xl shadow-xl">
 			<h3 class="text-lg font-bold mb-3">Diplomas</h3>
 			<div class="space-y-2 max-h-96 overflow-y-auto">
 				<div
-					v-for="(cert, index) in selectedCertificates"
+					v-for="(diploma, index) in selectedCertificates"
 					:key="index"
 					class="p-3 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
-					<h4 class="font-semibold text-brand-800">{{ cert.name }}</h4>
-					<p class="text-sm text-gray-600">{{ cert.type || 'Diploma' }}</p>
-					<p v-if="cert.organization" class="text-xs text-gray-500">Organización: {{ cert.organization }}</p>
-					<p v-if="cert.description" class="text-xs text-gray-500">Descripción: {{ cert.description }}</p>
-					<p v-if="cert.hours" class="text-xs text-gray-500">Horas: {{ cert.hours }}</p>
-					<p v-if="cert.credential_type" class="text-xs text-gray-500">Tipo: {{ cert.credential_type }}</p>
+					<h4 class="font-semibold text-brand-800">{{ diploma.name }}</h4>
+					<p class="text-sm text-gray-600">{{ diploma.type || 'Diploma' }}</p>
+					<p v-if="diploma.organization" class="text-xs text-gray-500">Organización: {{ diploma.organization }}</p>
+					<p v-if="diploma.description" class="text-xs text-gray-500">Descripción: {{ diploma.description }}</p>
+					<p v-if="diploma.hours" class="text-xs text-gray-500">Horas: {{ diploma.hours }}</p>
+					<p v-if="diploma.credential_type" class="text-xs text-gray-500">Tipo: {{ diploma.credential_type }}</p>
 				</div>
 			</div>
 			<button class="mt-4 px-4 py-2 bg-gradient-to-r from-brand-800 to-brand-900 text-white rounded-lg hover:from-brand-700 hover:to-brand-800 transition-all shadow-sm" @click="showCertificatesModal = false">
@@ -627,7 +628,7 @@ const fetchDualProjects = async () => {
 
     const data = response.data?.data || [];
     const meta = response.data?.meta || {};
-
+	console.log('Respuesta del servidor:', response.data);
     if (data.length === 0) {
       console.warn('No se recibieron datos del servidor');
       dualProjects.value = [];
@@ -725,8 +726,9 @@ const openMicrocredentialsModal = (project) => {
   showMicrocredentialsModal.value = true;
 };
 
+// CORREGIDO: Usar project.diplomas en lugar de project.certificates
 const openCertificatesModal = (project) => {
-  selectedCertificates.value = project.certificates || [];
+  selectedCertificates.value = project.diplomas || [];
   showCertificatesModal.value = true;
 };
 

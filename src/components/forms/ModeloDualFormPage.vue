@@ -425,10 +425,24 @@ const getModeFromRoute = (): string => {
   return 'create';
 };
 
-const getPkFromRoute = (): number | null => {
+const getPkFromRoute = (): string | null => {
   const path = route.path;
-  const match = path.match(/\/(\d+)$/);
-  return match && match[1] ? parseInt(match[1]) : null;
+  
+  const numberMatch = path.match(/\/(\d+)$/);
+  if (numberMatch && numberMatch[1]) {
+    return numberMatch[1];
+  }
+
+  const uuidMatch = path.match(/\/([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})$/i);
+  if (uuidMatch && uuidMatch[1]) {
+    return uuidMatch[1];
+  }
+
+  const anyMatch = path.match(/\/(?:editar|completar)\/([^\/]+)$/);
+  if (anyMatch && anyMatch[1]) {
+    return anyMatch[1];
+  }
+  return null;
 };
 
 // ==================== COMPUTED PROPERTIES ====================
@@ -490,11 +504,12 @@ const canSubmit = computed(() => {
 const filteredCareersForInstitution = computed(() => {
   if (!formData.value.academico.id_institution || careers.value.length === 0) return [];
   
-  const institutionId = formData.value.academico.id_institution;
+  const institutionId = formData.value.academico.id_institution; // Esto es UUID
   return careers.value.filter(career => {
-    return career.id_institution === institutionId ||
-           career.institution_id === institutionId ||
-           career.institution?.id === institutionId;
+    // Comparar UUIDs como strings
+    return String(career.id_institution) === String(institutionId) ||
+           String(career.institution_id) === String(institutionId) ||
+           String(career.institution?.id) === String(institutionId);
   });
 });
 
@@ -502,11 +517,11 @@ const filteredSpecialtiesForInstitution = computed(() => {
   if (!formData.value.academico.id_institution || specialties.value.length === 0) return [];
   
   const filteredCareers = filteredCareersForInstitution.value;
-  const careerIds = new Set(filteredCareers.map(c => c.id));
+  const careerIds = new Set(filteredCareers.map(c => String(c.id))); // Convertir a string para comparar
   
   return specialties.value.filter(specialty => 
-    careerIds.has(specialty.id_career) || 
-    careerIds.has(specialty.career_id)
+    careerIds.has(String(specialty.id_career)) || 
+    careerIds.has(String(specialty.career_id))
   );
 });
 
@@ -642,41 +657,41 @@ const loadExistingData = async () => {
       formData.value.personal.lastname = firstStudent.lastname || '';
       formData.value.personal.gender = firstStudent.gender || '';
       formData.value.personal.semester = firstStudent.semester || '';
-      formData.value.personal.id_career = firstStudent.id_career || '';
-      formData.value.personal.id_specialty = firstStudent.id_specialty || '';
+      formData.value.personal.id_career = firstStudent.id_career || ''; // UUID
+      formData.value.personal.id_specialty = firstStudent.id_specialty || ''; // UUID
     }
 
     formData.value.academico = {
-      id_institution: project.id_institution ?? '',
+      id_institution: project.id_institution ? String(project.id_institution) : '', // Convertir a string
     };
 
     const benefitTypesData = project.dual_project_reports?.benefit_types || [];
     const formattedBenefitTypes = Array.isArray(benefitTypesData) 
       ? benefitTypesData.map(b => ({
-          id: b.id || b.pivot?.id,
-          quantity: b.pivot?.quantity || 1
-        }))
+          id: b.id ? String(b.id) : (b.pivot?.id ? String(b.pivot.id) : ''), // CORREGIDO: Convertir a string
+          quantity: Number(b.pivot?.quantity || 1)
+        })).filter(b => b.id) // Filtrar los que tienen ID válido
       : [];
 
     formData.value.unidadDual = {
       name_report: project.dual_project_reports?.name ?? '',
-      id_organization: project.organization_dual_projects?.organization?.id ?? '',
-      id_dual_area: project.dual_project_reports?.dual_area?.id ?? '',
+      id_organization: project.organization_dual_projects?.organization?.id ? String(project.organization_dual_projects.organization.id) : '', // CORREGIDO: Convertir a string
+      id_dual_area: project.dual_project_reports?.dual_area?.id ? String(project.dual_project_reports.dual_area.id) : '', // CORREGIDO: Convertir a string
       period_start: project.dual_project_reports?.period_start ?? '',
       period_end: project.dual_project_reports?.period_end ?? '',
       period_observation: project.dual_project_reports?.period_observation ?? '',
-      status_document: project.dual_project_reports?.status_document?.id ?? '',
-      economic_support: project.dual_project_reports?.economic_support?.id ?? '',
+      status_document: project.dual_project_reports?.status_document?.id ? String(project.dual_project_reports.status_document.id) : '', // CORREGIDO: Convertir a string
+      economic_support: project.dual_project_reports?.economic_support?.id ? String(project.dual_project_reports.economic_support.id) : '', // CORREGIDO: Convertir a string
       amount: String(project.dual_project_reports?.amount ?? ''),
       qualification: project.dual_project_reports?.qualification ?? '',
       is_concluded: project.dual_project_reports?.is_concluded ?? 0,
       is_hired: project.dual_project_reports?.is_hired ?? 0,
       hired_observation: project.dual_project_reports?.hired_observation ?? '',
-      dual_type_id: project.dual_project_reports?.dual_type?.id ?? '',
+      dual_type_id: project.dual_project_reports?.dual_type?.id ? String(project.dual_project_reports.dual_type.id) : '', // CORREGIDO: Convertir a string
       max_qualification: project.dual_project_reports?.max_qualification ?? '',
-      micro_credentials: project.dual_project_reports?.micro_credentials?.map(m => m.id) || [],
-      certifications: project.dual_project_reports?.certifications?.map(c => c.id) || [],
-      diplomas: project.dual_project_reports?.diplomas?.map(d => d.id) || [],
+      micro_credentials: (project.dual_project_reports?.micro_credentials || []).map(m => String(m.id)), // CORREGIDO: Convertir a strings
+      certifications: (project.dual_project_reports?.certifications || []).map(c => String(c.id)), // CORREGIDO: Convertir a strings
+      diplomas: (project.dual_project_reports?.diplomas || []).map(d => String(d.id)), // CORREGIDO: Convertir a strings
       benefitTypes: formattedBenefitTypes,
       description: project.dual_project_reports?.description ?? '',
       internal_advisor_name: project.dual_project_reports?.internal_advisor_name ?? '',
@@ -796,7 +811,7 @@ const submitForm = async () => {
     if (reportaModeloDual.value === false) {
       payload = {
         has_report: 0,
-        id_institution: Number(formData.value.academico.id_institution)
+        id_institution: String(formData.value.academico.id_institution) // CORREGIDO: Convertir a string (UUID)
       };
     } else {
       const studentCount = formData.value.personal.dual_project_students?.length || 0;
@@ -807,51 +822,57 @@ const submitForm = async () => {
         lastname: student.student?.lastname || student.lastname,
         gender: student.student?.gender || student.gender,
         semester: student.student?.semester || student.semester,
-        id_career: student.student?.id_career || student.id_career,
-        id_specialty: student.student?.id_specialty || student.id_specialty || null,
-        id_institution: Number(formData.value.academico.id_institution)
+        id_career: student.student?.id_career ? String(student.student.id_career) : (student.id_career ? String(student.id_career) : ''), // CORREGIDO: Convertir a string
+        id_specialty: student.student?.id_specialty ? String(student.student.id_specialty) : (student.id_specialty ? String(student.id_specialty) : null), // CORREGIDO: Convertir a string
+        id_institution: String(formData.value.academico.id_institution) // CORREGIDO: Convertir a string
       }));
 
       const formattedBenefitTypes = Array.isArray(formData.value.unidadDual.benefitTypes)
         ? formData.value.unidadDual.benefitTypes
             .filter(b => b && b.id)
             .map(b => ({
-              id: Number(b.id),
+              id: String(b.id), // CORREGIDO: Convertir a string (UUID)
               quantity: Number(b.quantity || 1)
             }))
         : [];
 
       payload = {
         has_report: 1,
-        id_institution: Number(formData.value.academico.id_institution),
+        id_institution: String(formData.value.academico.id_institution), // CORREGIDO: Convertir a string
         number_student: studentCount,
         students: studentsPayload,
         name_report: formData.value.unidadDual.name_report,
-        id_organization: Number(formData.value.unidadDual.id_organization),
-        id_dual_area: Number(formData.value.unidadDual.id_dual_area),
+        id_organization: String(formData.value.unidadDual.id_organization), // CORREGIDO: Convertir a string
+        id_dual_area: String(formData.value.unidadDual.id_dual_area), // CORREGIDO: Convertir a string
         period_start: formatDate(formData.value.unidadDual.period_start),
         period_end: formatDate(formData.value.unidadDual.period_end),
         period_observation: formData.value.unidadDual.period_observation || '',
-        status_document: Number(formData.value.unidadDual.status_document),
-        economic_support: Number(formData.value.unidadDual.economic_support),
+        status_document: formData.value.unidadDual.status_document ? String(formData.value.unidadDual.status_document) : '', // CORREGIDO: Convertir a string
+        economic_support: formData.value.unidadDual.economic_support ? String(formData.value.unidadDual.economic_support) : '', // CORREGIDO: Convertir a string
         amount: Number(formData.value.unidadDual.amount) || 0,
-        qualification: Number(formData.value.unidadDual.qualification) || null,
+        qualification: formData.value.unidadDual.qualification ? Number(formData.value.unidadDual.qualification) : null,
         max_qualification: String(formData.value.unidadDual.max_qualification) || '10',
         is_concluded: Number(formData.value.unidadDual.is_concluded) || 0,
         is_hired: Number(formData.value.unidadDual.is_hired) || 0,
         hired_observation: formData.value.unidadDual.hired_observation || '',
-        dual_type_id: Number(formData.value.unidadDual.dual_type_id),
+        dual_type_id: formData.value.unidadDual.dual_type_id ? String(formData.value.unidadDual.dual_type_id) : '', // CORREGIDO: Convertir a string
         description: formData.value.unidadDual.description || '',
-        micro_credentials: formData.value.unidadDual.micro_credentials || [],
-        certifications: formData.value.unidadDual.certifications || [],
-        diplomas: formData.value.unidadDual.diplomas || [],
+        micro_credentials: (formData.value.unidadDual.micro_credentials || []).map(id => String(id)), // CORREGIDO: Convertir a strings
+        certifications: (formData.value.unidadDual.certifications || []).map(id => String(id)), // CORREGIDO: Convertir a strings
+        diplomas: (formData.value.unidadDual.diplomas || []).map(id => String(id)), // CORREGIDO: Convertir a strings
         benefit_types: formattedBenefitTypes,
         internal_advisor_name: formData.value.unidadDual.internal_advisor_name || '',
-        internal_advisor_qualification: Number(formData.value.unidadDual.internal_advisor_qualification) || null,
+        internal_advisor_qualification: formData.value.unidadDual.internal_advisor_qualification ? Number(formData.value.unidadDual.internal_advisor_qualification) : null,
         external_advisor_name: formData.value.unidadDual.external_advisor_name || '',
-        external_advisor_qualification: Number(formData.value.unidadDual.external_advisor_qualification) || null,
+        external_advisor_qualification: formData.value.unidadDual.external_advisor_qualification ? Number(formData.value.unidadDual.external_advisor_qualification) : null,
       };
     }
+    
+    console.log('========== DATOS ENVIADOS ==========');
+    console.log('Modo:', mode.value);
+    console.log('Payload completo:', JSON.stringify(payload, null, 2));
+    console.log('Reporta modelo dual:', reportaModeloDual.value);
+    console.log('====================================');
 
     if (mode.value === 'create') {
       await createDualProject(payload);
@@ -879,6 +900,8 @@ const submitForm = async () => {
     let errorMessage = 'Ocurrió un error inesperado';
     
     if (axios.isAxiosError(err) && err.response) {
+      console.error('Respuesta del servidor:', err.response.data);
+      
       if (err.response.data.errors) {
         const errorMessages = Object.values(err.response.data.errors).flat().join('<br>');
         errorMessage = errorMessages;
