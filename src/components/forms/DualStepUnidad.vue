@@ -196,39 +196,52 @@ const remainingDualTypes = computed(() => filteredDualTypes.value.slice(3));
 
 const filteredMicro = computed(() => {
 	if (!searchMicro.value) {
-		return allMicroCredentials.value.filter((m) => !selectedMicroCredentials.value.some((s) => Number(s.id) === Number(m.id)));
+		return allMicroCredentials.value.filter((m) => 
+			!selectedMicroCredentials.value.some((s) => String(s.id) === String(m.id))
+		);
 	}
 	const searchTerm = searchMicro.value.toLowerCase();
 	return allMicroCredentials.value.filter(
-		(m) => m.name.toLowerCase().includes(searchTerm) && !selectedMicroCredentials.value.some((s) => Number(s.id) === Number(m.id))
+		(m) => m.name.toLowerCase().includes(searchTerm) && 
+		!selectedMicroCredentials.value.some((s) => String(s.id) === String(m.id))
 	);
 });
 
 const filteredCertifications = computed(() => {
 	if (!searchCertification.value) {
-		return allCertifications.value.filter((c) => !selectedCertifications.value.some((s) => Number(s.id) === Number(c.id)));
+		return allCertifications.value.filter((c) => 
+			!selectedCertifications.value.some((s) => String(s.id) === String(c.id))
+		);
 	}
 	const searchTerm = searchCertification.value.toLowerCase();
 	return allCertifications.value.filter(
-		(c) => c.name.toLowerCase().includes(searchTerm) && !selectedCertifications.value.some((s) => Number(s.id) === Number(c.id))
+		(c) => c.name.toLowerCase().includes(searchTerm) && 
+		!selectedCertifications.value.some((s) => String(s.id) === String(c.id))
 	);
 });
 
 const filteredDiplomas = computed(() => {
 	if (!searchDiploma.value) {
-		return allDiplomas.value.filter((d) => !selectedDiplomas.value.some((s) => Number(s.id) === Number(d.id)));
+		return allDiplomas.value.filter((d) => 
+			!selectedDiplomas.value.some((s) => String(s.id) === String(d.id))
+		);
 	}
 	const searchTerm = searchDiploma.value.toLowerCase();
 	return allDiplomas.value.filter(
-		(d) => d.name.toLowerCase().includes(searchTerm) && !selectedDiplomas.value.some((s) => Number(s.id) === Number(d.id))
+		(d) => d.name.toLowerCase().includes(searchTerm) && 
+		!selectedDiplomas.value.some((s) => String(s.id) === String(d.id))
 	);
 });
+
 
 const filteredBenefitTypes = computed(() => {
 	if (!searchBenefitType.value) return allBenefitTypes.value || [];
 	const searchTerm = searchBenefitType.value.toLowerCase();
-	const selectedIds = new Set(selectedBenefitTypes.value.map((b) => b.id));
-	return (allBenefitTypes.value || []).filter((b) => b.name.toLowerCase().includes(searchTerm) && !selectedIds.has(b.id));
+	const selectedIds = new Set(selectedBenefitTypes.value.map((b) => String(b.id)));
+	return (allBenefitTypes.value || []).filter((b) => 
+		b.name.toLowerCase().includes(searchTerm) && 
+		!selectedIds.has(String(b.id))
+	);
 });
 
 // ==================== MÉTODOS DE VALIDACIÓN ====================
@@ -351,35 +364,48 @@ const update = (field, value) => {
 		}
 	}
 
-	emit('update:modelValue', { ...props.modelValue, [field]: value });
+	// Para campos que son UUIDs, asegurar que se pasen como strings
+	const fieldsThatAreUUIDs = [
+		'id_dual_area',
+		'dual_type_id',
+		'id_organization',
+		'status_document',
+		'economic_support'
+	];
 
-	if (errors.value[field]) delete errors.value[field];
+	let processedValue = value;
+	if (fieldsThatAreUUIDs.includes(field) && value !== null && value !== undefined && value !== '') {
+		processedValue = String(value); // Asegurar que sea string
+	}
+
+	emit('update:modelValue', { ...props.modelValue, [field]: processedValue });
 
 	// Actualizar valores de búsqueda cuando se selecciona un elemento
 	switch (field) {
 		case 'id_dual_area':
-			const area = props.areas?.find((a) => a.id === value);
+			const area = props.areas?.find((a) => String(a.id) === String(value));
 			searchArea.value = area?.name || '';
 			showAreaDropdown.value = false;
 			break;
 
 		case 'id_organization':
-			const org = props.organizations?.find((o) => o.id === value);
+			const org = props.organizations?.find((o) => String(o.id) === String(value));
 			searchOrganization.value = org?.name || '';
 			showOrganizationDropdown.value = false;
 			break;
 
 		case 'status_document':
-			const status = props.agreementStatuses?.find((s) => s.id === value);
+			const status = props.agreementStatuses?.find((s) => String(s.id) === String(value));
 			searchStatus.value = status?.name || '';
 			showStatusDropdown.value = false;
 			break;
 
 		case 'economic_support':
-			const support = props.supportTypes?.find((s) => s.id === value);
+			const support = props.supportTypes?.find((s) => String(s.id) === String(value));
 			searchSupport.value = support?.name || '';
 			
-			if (value === 1 || value === null || value === undefined || value === '') {
+			// El ID 1 es "Sin apoyo" - mantener como string para UUID
+			if (String(value) === '1' || value === null || value === undefined || value === '') {
 				isAmountDisabled.value = true;
 				emit('update:modelValue', { 
 					...props.modelValue, 
@@ -394,7 +420,7 @@ const update = (field, value) => {
 			break;
 
 		case 'dual_type_id':
-			const dualType = props.dualTypes?.find((d) => d.id === value);
+			const dualType = props.dualTypes?.find((d) => String(d.id) === String(value));
 			searchDualType.value = dualType?.name || '';
 			showDualTypeDropdown.value = false;
 			break;
@@ -426,12 +452,12 @@ const initializeMicroCredentials = () => {
 		return;
 	}
 
-	// Convertir todos los IDs a números para comparación
-	const microIds = props.modelValue.micro_credentials.map((id) => Number(id));
+	// Los UUIDs se comparan como strings, NO convertir a número
+	const microIds = props.modelValue.micro_credentials.filter(id => id !== null && id !== undefined && id !== '');
 
-	// Filtrar las microcredenciales que coinciden con los IDs
+	// Filtrar las microcredenciales que coinciden con los UUIDs
 	selectedMicroCredentials.value = allMicroCredentials.value.filter((m) => {
-		return microIds.includes(Number(m.id));
+		return microIds.includes(String(m.id));
 	});
 };
 
@@ -442,10 +468,10 @@ const initializeCertifications = () => {
 		return;
 	}
 
-	const certIds = props.modelValue.certifications.map((id) => Number(id));
+	const certIds = props.modelValue.certifications.filter(id => id !== null && id !== undefined && id !== '');
 
 	selectedCertifications.value = allCertifications.value.filter((c) => {
-		return certIds.includes(Number(c.id));
+		return certIds.includes(String(c.id));
 	});
 };
 
@@ -456,10 +482,10 @@ const initializeDiplomas = () => {
 		return;
 	}
 
-	const diplomaIds = props.modelValue.diplomas.map((id) => Number(id));
+	const diplomaIds = props.modelValue.diplomas.filter(id => id !== null && id !== undefined && id !== '');
 
 	selectedDiplomas.value = allDiplomas.value.filter((d) => {
-		return diplomaIds.includes(Number(d.id));
+		return diplomaIds.includes(String(d.id));
 	});
 };
 
@@ -475,20 +501,18 @@ const initializeBenefitTypes = () => {
 		let benefitId = null;
 		let quantity = 1;
 
-		if (typeof benefit === 'number') {
-			benefitId = benefit;
-		} else if (typeof benefit === 'string' && !isNaN(benefit) && benefit.trim() !== '') {
-			benefitId = parseInt(benefit, 10);
+		if (typeof benefit === 'string' || typeof benefit === 'number') {
+			benefitId = String(benefit); // Convertir a string para UUID
 		} else if (benefit && typeof benefit === 'object' && benefit.id !== undefined) {
-			benefitId = Number(benefit.id);
+			benefitId = String(benefit.id); // UUID como string
 			quantity = Number(benefit.quantity || benefit.pivot?.quantity || 1);
 		}
 
-		if (benefitId !== null && !isNaN(benefitId)) {
-			const existingBenefitType = allBenefitTypes.value.find((b) => b.id === benefitId);
+		if (benefitId !== null && benefitId !== '') {
+			const existingBenefitType = allBenefitTypes.value.find((b) => String(b.id) === String(benefitId));
 
 			if (existingBenefitType) {
-				if (!selectedBenefitTypes.value.some((b) => b.id === benefitId)) {
+				if (!selectedBenefitTypes.value.some((b) => String(b.id) === String(benefitId))) {
 					selectedBenefitTypes.value.push({
 						id: existingBenefitType.id,
 						name: existingBenefitType.name,
@@ -562,31 +586,32 @@ const initializeSearchValues = () => {
 
 // ==================== MÉTODOS PARA CREDENCIALES ====================
 const addMicroCredential = (micro) => {
-	if (!selectedMicroCredentials.value.some((m) => Number(m.id) === Number(micro.id))) {
+	if (!selectedMicroCredentials.value.some((m) => String(m.id) === String(micro.id))) {
 		selectedMicroCredentials.value.push(micro);
 		emit('update:modelValue', {
 			...props.modelValue,
-			micro_credentials: selectedMicroCredentials.value.map((m) => Number(m.id)),
+			micro_credentials: selectedMicroCredentials.value.map((m) => String(m.id)), // UUID como string
 		});
 	}
 	searchMicro.value = '';
 	showMicroDropdown.value = false;
 };
 
+
 const removeMicroCredential = (micro) => {
-	selectedMicroCredentials.value = selectedMicroCredentials.value.filter((m) => Number(m.id) !== Number(micro.id));
+	selectedMicroCredentials.value = selectedMicroCredentials.value.filter((m) => String(m.id) !== String(micro.id));
 	emit('update:modelValue', {
 		...props.modelValue,
-		micro_credentials: selectedMicroCredentials.value.map((m) => Number(m.id)),
+		micro_credentials: selectedMicroCredentials.value.map((m) => String(m.id)), // UUID como string
 	});
 };
 
 const addCertification = (certification) => {
-	if (!selectedCertifications.value.some((c) => Number(c.id) === Number(certification.id))) {
+	if (!selectedCertifications.value.some((c) => String(c.id) === String(certification.id))) {
 		selectedCertifications.value.push(certification);
 		emit('update:modelValue', {
 			...props.modelValue,
-			certifications: selectedCertifications.value.map((c) => Number(c.id)),
+			certifications: selectedCertifications.value.map((c) => String(c.id)), // UUID como string
 		});
 	}
 	searchCertification.value = '';
@@ -594,19 +619,19 @@ const addCertification = (certification) => {
 };
 
 const removeCertification = (certification) => {
-	selectedCertifications.value = selectedCertifications.value.filter((c) => Number(c.id) !== Number(certification.id));
+	selectedCertifications.value = selectedCertifications.value.filter((c) => String(c.id) !== String(certification.id));
 	emit('update:modelValue', {
 		...props.modelValue,
-		certifications: selectedCertifications.value.map((c) => Number(c.id)),
+		certifications: selectedCertifications.value.map((c) => String(c.id)), // UUID como string
 	});
 };
 
 const addDiploma = (diploma) => {
-	if (!selectedDiplomas.value.some((d) => Number(d.id) === Number(diploma.id))) {
+	if (!selectedDiplomas.value.some((d) => String(d.id) === String(diploma.id))) {
 		selectedDiplomas.value.push(diploma);
 		emit('update:modelValue', {
 			...props.modelValue,
-			diplomas: selectedDiplomas.value.map((d) => Number(d.id)),
+			diplomas: selectedDiplomas.value.map((d) => String(d.id)), // UUID como string
 		});
 	}
 	searchDiploma.value = '';
@@ -614,16 +639,17 @@ const addDiploma = (diploma) => {
 };
 
 const removeDiploma = (diploma) => {
-	selectedDiplomas.value = selectedDiplomas.value.filter((d) => Number(d.id) !== Number(diploma.id));
+	selectedDiplomas.value = selectedDiplomas.value.filter((d) => String(d.id) !== String(diploma.id));
 	emit('update:modelValue', {
 		...props.modelValue,
-		diplomas: selectedDiplomas.value.map((d) => Number(d.id)),
+		diplomas: selectedDiplomas.value.map((d) => String(d.id)), // UUID como string
 	});
 };
 
+
 // ==================== MÉTODOS PARA BENEFIT TYPES ====================
 const addBenefitType = (benefitType) => {
-	if (!selectedBenefitTypes.value.some((b) => b.id === benefitType.id)) {
+	if (!selectedBenefitTypes.value.some((b) => String(b.id) === String(benefitType.id))) {
 		selectedBenefitTypes.value.push(benefitType);
 		benefitQuantities.value[benefitType.id] = 1;
 		updateBenefitTypesInModel();
@@ -633,7 +659,7 @@ const addBenefitType = (benefitType) => {
 };
 
 const removeBenefitType = (benefitType) => {
-	selectedBenefitTypes.value = selectedBenefitTypes.value.filter((b) => b.id !== benefitType.id);
+	selectedBenefitTypes.value = selectedBenefitTypes.value.filter((b) => String(b.id) !== String(benefitType.id));
 	delete benefitQuantities.value[benefitType.id];
 	updateBenefitTypesInModel();
 };
@@ -648,7 +674,7 @@ const updateBenefitTypeQuantity = (benefitTypeId, quantity) => {
 
 const updateBenefitTypesInModel = () => {
 	const benefitTypesWithQuantities = selectedBenefitTypes.value.map((benefit) => ({
-		id: benefit.id,
+		id: String(benefit.id), // UUID como string
 		quantity: benefitQuantities.value[benefit.id] || 0,
 	}));
 
