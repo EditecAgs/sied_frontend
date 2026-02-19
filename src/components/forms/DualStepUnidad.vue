@@ -18,6 +18,7 @@ import { getDiplomas } from '../../services/dual_projects/diplomas';
 import { getDualTypes } from '../../services/dual_projects/dual-types';
 import { getDualAreas } from '../../services/dual_projects/dual-areas';
 import { getBenefitType } from '../../services/dual_projects/BenefitType.js';
+import { getEconomicSupports } from '../../services/dual_projects/economic-supports';
 import mdlBenefitType from '../../components/modals/modals-forms/mdlBenefitType.vue';
 
 const emit = defineEmits([
@@ -30,6 +31,7 @@ const emit = defineEmits([
 	'update:dualAreas',
 	'update:benefitTypes',
 ]);
+
 const props = defineProps({
 	modelValue: { type: Object, required: true },
 	areas: Array,
@@ -43,6 +45,7 @@ const props = defineProps({
 	benefitTypes: Array,
 });
 
+// Modales
 const { showModal, modalData, openModal, closeModal } = useModal();
 const { showModal: showAreaModal, modalData: areaModalData, openModal: openAreaModal, closeModal: closeAreaModal } = useModal();
 const { showModal: showMicroModal, modalData: microModalData, openModal: openMicroModal, closeModal: closeMicroModal } = useModal();
@@ -61,13 +64,17 @@ const {
 } = useModal();
 const { showModal: showDualTypeModal, modalData: dualTypeModalData, openModal: openDualTypeModal, closeModal: closeDualTypeModal } = useModal();
 
+// ==================== REFS ====================
 const maxQualification = ref(props.modelValue.max_qualification || '');
 const errors = ref({});
 const showValidationErrors = ref(false);
 const hasAttemptedSubmit = ref(false);
 const isAmountDisabled = ref(false);
 const amountField = ref(null);
+const sinApoyoId = ref(null); // ID dinámico de "Sin Apoyo Económico"
+const allEconomicSupports = ref([]);
 
+// Search refs
 const searchArea = ref('');
 const showAreaDropdown = ref(false);
 const areaDropdownRef = ref(null);
@@ -104,14 +111,17 @@ const searchBenefitType = ref('');
 const showBenefitTypeDropdown = ref(false);
 const benefitTypeDropdownRef = ref(null);
 
+// Fechas
 const period_start = ref(props.modelValue.period_start ? new Date(props.modelValue.period_start) : null);
 const period_end = ref(props.modelValue.period_end ? new Date(props.modelValue.period_end) : null);
 
+// Asesores
 const internalAdvisorName = ref(props.modelValue.internal_advisor_name || '');
 const externalAdvisorName = ref(props.modelValue.external_advisor_name || '');
 const internalAdvisorQualification = ref(props.modelValue.internal_advisor_qualification || null);
 const externalAdvisorQualification = ref(props.modelValue.external_advisor_qualification || null);
 
+// Credenciales
 const allMicroCredentials = ref(props.microCredentials || []);
 const selectedMicroCredentials = ref([]);
 
@@ -125,6 +135,7 @@ const allBenefitTypes = ref(props.benefitTypes || []);
 const selectedBenefitTypes = ref([]);
 const benefitQuantities = ref({});
 
+// ==================== COMPUTED ====================
 const showCredentialsSection = computed(() => props.modelValue.is_concluded === 1);
 const areQualificationsEnabled = computed(() => props.modelValue.is_concluded === 1);
 const isHiredDisabled = computed(() => props.modelValue.is_concluded !== 1);
@@ -153,6 +164,7 @@ const bothQualificationsPresent = computed(() => {
 	);
 });
 
+// Filtros
 const filteredAreas = computed(() => {
 	if (!searchArea.value) return props.areas || [];
 	const searchTerm = searchArea.value.toLowerCase();
@@ -188,54 +200,54 @@ const remainingDualTypes = computed(() => filteredDualTypes.value.slice(3));
 
 const filteredMicro = computed(() => {
 	if (!searchMicro.value) {
-		return allMicroCredentials.value.filter((m) => 
+		return allMicroCredentials.value.filter((m) =>
 			!selectedMicroCredentials.value.some((s) => String(s.id) === String(m.id))
 		);
 	}
 	const searchTerm = searchMicro.value.toLowerCase();
 	return allMicroCredentials.value.filter(
-		(m) => m.name.toLowerCase().includes(searchTerm) && 
-		!selectedMicroCredentials.value.some((s) => String(s.id) === String(m.id))
+		(m) => m.name.toLowerCase().includes(searchTerm) &&
+			!selectedMicroCredentials.value.some((s) => String(s.id) === String(m.id))
 	);
 });
 
 const filteredCertifications = computed(() => {
 	if (!searchCertification.value) {
-		return allCertifications.value.filter((c) => 
+		return allCertifications.value.filter((c) =>
 			!selectedCertifications.value.some((s) => String(s.id) === String(c.id))
 		);
 	}
 	const searchTerm = searchCertification.value.toLowerCase();
 	return allCertifications.value.filter(
-		(c) => c.name.toLowerCase().includes(searchTerm) && 
-		!selectedCertifications.value.some((s) => String(s.id) === String(c.id))
+		(c) => c.name.toLowerCase().includes(searchTerm) &&
+			!selectedCertifications.value.some((s) => String(s.id) === String(c.id))
 	);
 });
 
 const filteredDiplomas = computed(() => {
 	if (!searchDiploma.value) {
-		return allDiplomas.value.filter((d) => 
+		return allDiplomas.value.filter((d) =>
 			!selectedDiplomas.value.some((s) => String(s.id) === String(d.id))
 		);
 	}
 	const searchTerm = searchDiploma.value.toLowerCase();
 	return allDiplomas.value.filter(
-		(d) => d.name.toLowerCase().includes(searchTerm) && 
-		!selectedDiplomas.value.some((s) => String(s.id) === String(d.id))
+		(d) => d.name.toLowerCase().includes(searchTerm) &&
+			!selectedDiplomas.value.some((s) => String(s.id) === String(d.id))
 	);
 });
-
 
 const filteredBenefitTypes = computed(() => {
 	if (!searchBenefitType.value) return allBenefitTypes.value || [];
 	const searchTerm = searchBenefitType.value.toLowerCase();
 	const selectedIds = new Set(selectedBenefitTypes.value.map((b) => String(b.id)));
-	return (allBenefitTypes.value || []).filter((b) => 
-		b.name.toLowerCase().includes(searchTerm) && 
+	return (allBenefitTypes.value || []).filter((b) =>
+		b.name.toLowerCase().includes(searchTerm) &&
 		!selectedIds.has(String(b.id))
 	);
 });
 
+// ==================== HELPERS ====================
 const fieldHelpTexts = {
 	name_report: 'Escribe el nombre específico del proyecto o actividad dual que se está registrando.',
 	id_dual_area: 'Clasificación general del proyecto dual.',
@@ -257,6 +269,37 @@ const fieldHelpTexts = {
 	description: 'Proporcione una breve descripción de la modalidad seleccionada.',
 };
 
+// ==================== FUNCIÓN PARA ENCONTRAR SIN APOYO ====================
+const findSinApoyoId = async () => {
+	try {
+		// Si ya tenemos los apoyos en props, buscamos ahí
+		if (props.supportTypes && props.supportTypes.length > 0) {
+			const sinApoyo = props.supportTypes.find(
+				s => s.name.toLowerCase().includes('sin apoyo') ||
+					s.name.toLowerCase() === 'sin apoyo económico'
+			);
+			if (sinApoyo) {
+				sinApoyoId.value = String(sinApoyo.id);
+				return;
+			}
+		}
+
+		// Si no está en props, hacemos la petición directamente
+		const response = await getEconomicSupports();
+		allEconomicSupports.value = response.data;
+		const sinApoyo = response.data.find(
+			s => s.name.toLowerCase().includes('sin apoyo') ||
+				s.name.toLowerCase() === 'sin apoyo económico'
+		);
+		if (sinApoyo) {
+			sinApoyoId.value = String(sinApoyo.id);
+		}
+	} catch (error) {
+		console.error('Error al buscar ID de "Sin Apoyo Económico":', error);
+	}
+};
+
+// ==================== VALIDACIONES ====================
 const getValidationClass = (fieldName) => {
 	if (!showValidationErrors.value) return '';
 
@@ -343,6 +386,7 @@ const validateQualification = (value, fieldName) => {
 	return true;
 };
 
+// ==================== UPDATE ====================
 const update = (field, value) => {
 	if ((field === 'internal_advisor_qualification' || field === 'external_advisor_qualification') && !areQualificationsEnabled.value) {
 		return;
@@ -365,7 +409,7 @@ const update = (field, value) => {
 
 	let processedValue = value;
 	if (fieldsThatAreUUIDs.includes(field) && value !== null && value !== undefined && value !== '') {
-		processedValue = String(value); // Asegurar que sea string
+		processedValue = String(value);
 	}
 
 	emit('update:modelValue', { ...props.modelValue, [field]: processedValue });
@@ -392,19 +436,20 @@ const update = (field, value) => {
 		case 'economic_support':
 			const support = props.supportTypes?.find((s) => String(s.id) === String(value));
 			searchSupport.value = support?.name || '';
-			
-			// El ID 1 es "Sin apoyo" - mantener como string para UUID
-			if (String(value) === '1' || value === null || value === undefined || value === '') {
+
+			// Verificar si es "Sin Apoyo Económico" usando el ID dinámico
+			if ((sinApoyoId.value && String(value) === sinApoyoId.value) ||
+				value === null || value === undefined || value === '') {
 				isAmountDisabled.value = true;
-				emit('update:modelValue', { 
-					...props.modelValue, 
+				emit('update:modelValue', {
+					...props.modelValue,
 					[field]: value,
-					amount: 0 
+					amount: 0
 				});
 			} else {
 				isAmountDisabled.value = false;
 			}
-			
+
 			showSupportDropdown.value = false;
 			break;
 
@@ -433,16 +478,16 @@ const updateQualificationAverage = () => {
 	}
 };
 
+// ==================== INICIALIZACIONES ====================
 const initializeMicroCredentials = () => {
 	selectedMicroCredentials.value = [];
 
 	if (!props.modelValue.micro_credentials || !Array.isArray(props.modelValue.micro_credentials)) {
 		return;
 	}
-	// Los UUIDs se comparan como strings, NO convertir a número
+
 	const microIds = props.modelValue.micro_credentials.filter(id => id !== null && id !== undefined && id !== '');
 
-	// Filtrar las microcredenciales que coinciden con los UUIDs
 	selectedMicroCredentials.value = allMicroCredentials.value.filter((m) => {
 		return microIds.includes(String(m.id));
 	});
@@ -489,9 +534,9 @@ const initializeBenefitTypes = () => {
 		let quantity = 1;
 
 		if (typeof benefit === 'string' || typeof benefit === 'number') {
-			benefitId = String(benefit); // Convertir a string para UUID
+			benefitId = String(benefit);
 		} else if (benefit && typeof benefit === 'object' && benefit.id !== undefined) {
-			benefitId = String(benefit.id); // UUID como string
+			benefitId = String(benefit.id);
 			quantity = Number(benefit.quantity || benefit.pivot?.quantity || 1);
 		}
 
@@ -528,11 +573,12 @@ const initializeSearchValues = () => {
 	}
 
 	if (props.modelValue.economic_support && props.supportTypes && props.supportTypes.length > 0) {
-		const support = props.supportTypes.find((s) => s.id === props.modelValue.economic_support);
+		const support = props.supportTypes.find((s) => String(s.id) === String(props.modelValue.economic_support));
 		searchSupport.value = support?.name || '';
 
-		if (props.modelValue.economic_support === 1 || 
-			!props.modelValue.economic_support || 
+		// Verificar si es "Sin Apoyo Económico" usando el ID dinámico
+		if ((sinApoyoId.value && String(props.modelValue.economic_support) === sinApoyoId.value) ||
+			!props.modelValue.economic_support ||
 			props.modelValue.economic_support === '') {
 			isAmountDisabled.value = true;
 			if (props.modelValue.amount !== 0) {
@@ -574,19 +620,18 @@ const addMicroCredential = (micro) => {
 		selectedMicroCredentials.value.push(micro);
 		emit('update:modelValue', {
 			...props.modelValue,
-			micro_credentials: selectedMicroCredentials.value.map((m) => String(m.id)), // UUID como string
+			micro_credentials: selectedMicroCredentials.value.map((m) => String(m.id)),
 		});
 	}
 	searchMicro.value = '';
 	showMicroDropdown.value = false;
 };
 
-
 const removeMicroCredential = (micro) => {
 	selectedMicroCredentials.value = selectedMicroCredentials.value.filter((m) => String(m.id) !== String(micro.id));
 	emit('update:modelValue', {
 		...props.modelValue,
-		micro_credentials: selectedMicroCredentials.value.map((m) => String(m.id)), // UUID como string
+		micro_credentials: selectedMicroCredentials.value.map((m) => String(m.id)),
 	});
 };
 
@@ -595,7 +640,7 @@ const addCertification = (certification) => {
 		selectedCertifications.value.push(certification);
 		emit('update:modelValue', {
 			...props.modelValue,
-			certifications: selectedCertifications.value.map((c) => String(c.id)), // UUID como string
+			certifications: selectedCertifications.value.map((c) => String(c.id)),
 		});
 	}
 	searchCertification.value = '';
@@ -606,7 +651,7 @@ const removeCertification = (certification) => {
 	selectedCertifications.value = selectedCertifications.value.filter((c) => String(c.id) !== String(certification.id));
 	emit('update:modelValue', {
 		...props.modelValue,
-		certifications: selectedCertifications.value.map((c) => String(c.id)), // UUID como string
+		certifications: selectedCertifications.value.map((c) => String(c.id)),
 	});
 };
 
@@ -615,7 +660,7 @@ const addDiploma = (diploma) => {
 		selectedDiplomas.value.push(diploma);
 		emit('update:modelValue', {
 			...props.modelValue,
-			diplomas: selectedDiplomas.value.map((d) => String(d.id)), // UUID como string
+			diplomas: selectedDiplomas.value.map((d) => String(d.id)),
 		});
 	}
 	searchDiploma.value = '';
@@ -626,7 +671,7 @@ const removeDiploma = (diploma) => {
 	selectedDiplomas.value = selectedDiplomas.value.filter((d) => String(d.id) !== String(diploma.id));
 	emit('update:modelValue', {
 		...props.modelValue,
-		diplomas: selectedDiplomas.value.map((d) => String(d.id)), // UUID como string
+		diplomas: selectedDiplomas.value.map((d) => String(d.id)),
 	});
 };
 
@@ -656,7 +701,7 @@ const updateBenefitTypeQuantity = (benefitTypeId, quantity) => {
 
 const updateBenefitTypesInModel = () => {
 	const benefitTypesWithQuantities = selectedBenefitTypes.value.map((benefit) => ({
-		id: String(benefit.id), // UUID como string
+		id: String(benefit.id),
 		quantity: benefitQuantities.value[benefit.id] || 0,
 	}));
 
@@ -666,6 +711,7 @@ const updateBenefitTypesInModel = () => {
 	});
 };
 
+// ==================== HANDLERS DE GUARDADO ====================
 const handleSavedOrganization = async (newOrganization) => {
 	try {
 		const res = await getOrganizations();
@@ -871,6 +917,7 @@ const handleSavedDualType = async (newDualType) => {
 	}
 };
 
+// ==================== VALIDACIÓN PRINCIPAL ====================
 const validate = () => {
 	hasAttemptedSubmit.value = true;
 	showValidationErrors.value = true;
@@ -898,7 +945,9 @@ const validate = () => {
 		}
 	}
 
-	if (props.modelValue.economic_support && props.modelValue.economic_support !== 1) {
+	// Validación de monto - solo requerido si NO es "Sin Apoyo Económico"
+	if (props.modelValue.economic_support &&
+		(!sinApoyoId.value || String(props.modelValue.economic_support) !== sinApoyoId.value)) {
 		if (props.modelValue.amount === null || props.modelValue.amount === undefined || props.modelValue.amount === '') {
 			errors.value.amount = 'El monto es obligatorio cuando hay apoyo económico';
 			isValid = false;
@@ -940,6 +989,7 @@ const validate = () => {
 
 defineExpose({ validate, resetValidation, getValidationSummary });
 
+// ==================== WATCHERS ====================
 watch(internalAdvisorName, (newValue) => {
 	update('internal_advisor_name', newValue);
 });
@@ -1000,15 +1050,18 @@ watch(externalAdvisorQualification, (newQual) => {
 watch(
 	() => props.modelValue.economic_support,
 	(newSupportId, oldSupportId) => {
-		if (newSupportId === 1 || newSupportId === null || newSupportId === undefined || newSupportId === '') {
+		// Verificar si es "Sin Apoyo Económico" usando el ID dinámico
+		if ((sinApoyoId.value && String(newSupportId) === sinApoyoId.value) ||
+			newSupportId === null || newSupportId === undefined || newSupportId === '') {
 			isAmountDisabled.value = true;
 			emit('update:modelValue', {
 				...props.modelValue,
 				amount: 0
 			});
-			
-			if (newSupportId === 1 && props.supportTypes && props.supportTypes.length > 0) {
-				const sinApoyoOption = props.supportTypes.find((s) => s.id === 1);
+
+			// Si es "Sin Apoyo Económico", actualizar el searchSupport con el nombre correcto
+			if (sinApoyoId.value && String(newSupportId) === sinApoyoId.value && props.supportTypes) {
+				const sinApoyoOption = props.supportTypes.find((s) => String(s.id) === sinApoyoId.value);
 				if (sinApoyoOption) {
 					searchSupport.value = sinApoyoOption.name;
 				}
@@ -1044,6 +1097,23 @@ watch(maxQualification, (newVal) => {
 	update('max_qualification', newVal ? Number(newVal) : '');
 });
 
+// Watch para cuando cambian los supportTypes (por si agregan/eliminan opciones)
+watch(
+	() => props.supportTypes,
+	(newSupportTypes) => {
+		if (newSupportTypes && newSupportTypes.length > 0) {
+			const sinApoyo = newSupportTypes.find(
+				s => s.name.toLowerCase().includes('sin apoyo') ||
+					s.name.toLowerCase() === 'sin apoyo económico'
+			);
+			if (sinApoyo) {
+				sinApoyoId.value = String(sinApoyo.id);
+			}
+		}
+	},
+	{ immediate: true }
+);
+
 const updateSearchValuesFromProps = () => {
 	if (props.areas && props.areas.length > 0 && props.modelValue.id_dual_area) {
 		const area = props.areas.find((a) => a.id === props.modelValue.id_dual_area);
@@ -1067,12 +1137,13 @@ const updateSearchValuesFromProps = () => {
 	}
 
 	if (props.supportTypes && props.supportTypes.length > 0 && props.modelValue.economic_support) {
-		const support = props.supportTypes.find((s) => s.id === props.modelValue.economic_support);
+		const support = props.supportTypes.find((s) => String(s.id) === String(props.modelValue.economic_support));
 		if (support && searchSupport.value !== support.name) {
 			searchSupport.value = support.name;
 		}
-		
-		if (props.modelValue.economic_support === 1) {
+
+		// Verificar si es "Sin Apoyo Económico" usando el ID dinámico
+		if (sinApoyoId.value && String(props.modelValue.economic_support) === sinApoyoId.value) {
 			isAmountDisabled.value = true;
 		} else {
 			isAmountDisabled.value = false;
@@ -1178,7 +1249,7 @@ watch(
 watch(
 	() => props.modelValue.micro_credentials,
 	(newValue) => {
-		if (JSON.stringify(selectedMicroCredentials.value.map((m) => Number(m.id))) !== JSON.stringify(newValue || [])) {
+		if (JSON.stringify(selectedMicroCredentials.value.map((m) => String(m.id))) !== JSON.stringify(newValue || [])) {
 			initializeMicroCredentials();
 		}
 	},
@@ -1188,7 +1259,7 @@ watch(
 watch(
 	() => props.modelValue.certifications,
 	(newValue) => {
-		if (JSON.stringify(selectedCertifications.value.map((c) => Number(c.id))) !== JSON.stringify(newValue || [])) {
+		if (JSON.stringify(selectedCertifications.value.map((c) => String(c.id))) !== JSON.stringify(newValue || [])) {
 			initializeCertifications();
 		}
 	},
@@ -1198,7 +1269,7 @@ watch(
 watch(
 	() => props.modelValue.diplomas,
 	(newValue) => {
-		if (JSON.stringify(selectedDiplomas.value.map((d) => Number(d.id))) !== JSON.stringify(newValue || [])) {
+		if (JSON.stringify(selectedDiplomas.value.map((d) => String(d.id))) !== JSON.stringify(newValue || [])) {
 			initializeDiplomas();
 		}
 	},
@@ -1256,16 +1327,21 @@ const handleClickOutside = (event) => {
 	}
 };
 
-onMounted(() => {
+// ==================== LIFECYCLE ====================
+onMounted(async () => {
 	document.addEventListener('click', handleClickOutside);
+
+	// Buscar el ID de "Sin Apoyo Económico"
+	await findSinApoyoId();
 
 	setTimeout(() => {
 		initializeSearchValues();
 	}, 300);
 
-	if (props.modelValue.economic_support === 1 ||
-		!props.modelValue.economic_support || 
-		props.modelValue.economic_support === '' || 
+	// Verificar estado inicial del apoyo económico
+	if ((sinApoyoId.value && String(props.modelValue.economic_support) === sinApoyoId.value) ||
+		!props.modelValue.economic_support ||
+		props.modelValue.economic_support === '' ||
 		props.modelValue.economic_support === null) {
 		isAmountDisabled.value = true;
 		if (props.modelValue.amount !== 0) {
@@ -1283,21 +1359,36 @@ onUnmounted(() => {
 	document.removeEventListener('click', handleClickOutside);
 });
 
+// ==================== UTILIDADES ====================
 function formatNumber(value) {
-  if (!value) return '0'
-  return Number(value).toLocaleString('es-MX')
+	if (!value) return '0'
+	return Number(value).toLocaleString('es-MX')
 }
 
 function handleQuantityInput(id, event) {
-  let rawValue = event.target.value.replace(/[^0-9]/g, '')
+	let rawValue = event.target.value.replace(/[^0-9]/g, '')
+	const numericValue = rawValue ? Number(rawValue) : 0
+	benefitQuantities.value[id] = numericValue
+	updateBenefitTypesInModel()
+	event.target.value = formatNumber(numericValue)
+}
+const handleAmountInput = (event) => {
+	let value = event.target.value
 
-  const numericValue = rawValue ? Number(rawValue) : 0
+	value = value.replace(/[^0-9.]/g, '')
 
-  benefitQuantities.value[id] = numericValue
+	const parts = value.split('.')
+	if (parts.length > 2) {
+		value = parts[0] + '.' + parts.slice(1).join('')
+	}
 
-  updateBenefitTypesInModel()
+	if (parts[1]) {
+		value = parts[0] + '.' + parts[1].slice(0, 2)
+	}
 
-  event.target.value = formatNumber(numericValue)
+	const numericValue = parseFloat(value)
+
+	update('amount', isNaN(numericValue) ? null : numericValue)
 }
 
 </script>
@@ -1801,7 +1892,7 @@ function handleQuantityInput(id, event) {
 					<!-- Monto -->
 					<div>
 						<label class="label flex items-center gap-1">
-							Monto
+							Monto Mensual
 							<button
 								v-tooltip="fieldHelpTexts.amount"
 								type="button"
@@ -1809,24 +1900,30 @@ function handleQuantityInput(id, event) {
 								?
 							</button>
 						</label>
-						<input
-							ref="amountField"
-							type="number"
-							min="0"
-							step="0.01"
-							class="input"
-							:class="[getValidationClass('amount'), { 
-								'bg-gray-100 cursor-not-allowed opacity-60': isAmountDisabled 
-							}]"
-							:disabled="isAmountDisabled"
-							:placeholder="isAmountDisabled ? 'No aplica' : 'Ingrese el monto'"
-							:value="modelValue.amount"
-							@input="update('amount', parseFloat($event.target.value))" />
+						<div class="relative w-32">
+							<span class="absolute left-28 top-1/2 -translate-y-1/2 text-gray-500">
+								$
+							</span>
+							<input
+								ref="amountField"
+								type="text"
+								inputmode="decimal"
+								class="input"
+								:class="[
+									getValidationClass('amount'),
+									{ 'bg-gray-100 cursor-not-allowed opacity-60': isAmountDisabled }
+								]"
+								:disabled="isAmountDisabled"
+								:placeholder="isAmountDisabled ? 'No aplica' : 'Ingrese el monto'"
+								:value="formatNumber(modelValue.amount)"
+								@input="handleAmountInput($event)" />
+						</div>
 						<p
 							v-if="errors.amount"
 							class="error-msg">
 							{{ errors.amount }}
 						</p>
+
 						<p
 							v-if="isAmountDisabled"
 							class="text-xs text-gray-500 mt-1">
@@ -2316,7 +2413,6 @@ function handleQuantityInput(id, event) {
 							:table="'Tipo de Beneficio'"
 							@open="({ mode, pk, table }) => openBenefitTypeModal(mode, pk, table)" />
 
-						<!-- Dropdown corregido -->
 						<div
 							v-show="showBenefitTypeDropdown && filteredBenefitTypes.length"
 							class="absolute top-full left-0 w-full mt-1 z-50">
@@ -2332,7 +2428,6 @@ function handleQuantityInput(id, event) {
 						</div>
 					</div>
 
-					<!-- Lista de beneficios seleccionados -->
 					<div class="space-y-3 mt-4">
 						<div
 							v-for="benefit in selectedBenefitTypes"
@@ -2344,12 +2439,17 @@ function handleQuantityInput(id, event) {
 							<div class="flex items-center gap-3">
 								<div>
 									<label class="text-sm text-gray-600 mr-2">Cantidad Anual:</label>
-									<input
-										type="text"
-										inputmode="numeric"
-										class="w-24 px-3 py-2 border border-gray-300 rounded-lg text-center focus:ring-2 focus:ring-brand-600 focus:border-transparent"
-										:value="formatNumber(benefitQuantities[benefit.id])"
-										@input="handleQuantityInput(benefit.id, $event)" />
+									<div class="relative w-32">
+										<span class="absolute left-28 top-1/2 -translate-y-1/2 text-gray-500">
+											$
+										</span>
+										<input
+											type="text"
+											inputmode="decimal"
+											class="w-full pl-4 pr-4 py-2 border border-gray-300 rounded-lg text-center focus:ring-2 focus:ring-brand-600 focus:border-transparent"
+											:value="formatNumber(benefitQuantities[benefit.id])"
+											@input="handleQuantityInput(benefit.id, $event)" />
+									</div>
 								</div>
 								<button
 									type="button"

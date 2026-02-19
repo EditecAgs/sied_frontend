@@ -36,7 +36,7 @@
 			<img
 				src="/images/metric/org-registred.png"
 				alt="Organizaciones Registradas"
-				class="w-24 h-26 object-contain mb-4" />
+				class="56 h-56 object-contain mb-4" />
 			<h3 class="text-gray-600 dark:text-gray-300 text-sm font-medium text-center">
 				Organizaciones Registradas
 			</h3>

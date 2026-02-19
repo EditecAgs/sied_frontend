@@ -67,65 +67,45 @@
 			</div>
 
 			<div class="min-h-screen w-full bg-cover bg-center bg-fixed">
-				<div class="grid grid-cols-12 gap-4 md:gap-6 p-4 md:p-6 grid-flow-dense">
-					<div class="col-span-12 xl:col-span-7 grid gap-4 md:gap-6 auto-rows-max">
-						<ecommerce-metrics :key="componentKey + 'metrics'" :filters="currentFilters" @loaded="onChildLoaded" />
-						<monthly-sale :key="componentKey + 'monthly'" :filters="currentFilters" @loaded="onChildLoaded" />
-					</div>
+				<div class="flex flex-col gap-4 md:gap-6 p-4 md:p-6">
+					<ecommerce-metrics :key="componentKey + 'metrics'" :filters="currentFilters" @loaded="onChildLoaded" />
+					<customer-demographic
+						:key="componentKey + 'demographic'"
+						:filters="currentFilters"
+						@loaded="onChildLoaded" />
 
-					<div class="col-span-12 xl:col-span-5">
-						<div class="h-full max-h-[575px] overflow-y-auto">
-							<SectorsMexico :key="componentKey + 'sectors'" :filters="currentFilters" @loaded="onChildLoaded" />
-						</div>
-					</div>
+					<monthly-sale :key="componentKey + 'monthly'" :filters="currentFilters" @loaded="onChildLoaded" />
 
-					<div class="col-span-12">
-						<statistics-chart :key="componentKey + 'stats'" :filters="currentFilters" @loaded="onChildLoaded" />
-					</div>
-
-					<div class="col-span-12 xl:col-span-8 grid gap-4 md:gap-6 auto-rows-max">
-						<recent-orders :key="componentKey + 'orders'" :filters="currentFilters" @loaded="onChildLoaded" />
-						<OrganizationsByScope :key="componentKey + 'scope'" :filters="currentFilters" @loaded="onChildLoaded" />
-						<ProjectsByEconomicSupport :key="componentKey + 'economic'" :filters="currentFilters" @loaded="onChildLoaded" />
+					<div class="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
+						<SectorsMexico :key="componentKey + 'sectors'" :filters="currentFilters" @loaded="onChildLoaded" />
 						<SectorsMexicoMetric :key="componentKey + 'metric'" :filters="currentFilters" @loaded="onChildLoaded" />
 					</div>
 
-					<div class="col-span-12 xl:col-span-4 grid gap-4 md:gap-6 auto-rows-max min-w-0">
-						<customer-demographic
-							:key="componentKey + 'demographic'"
-							:filters="currentFilters"
-							class="h-auto min-w-0"
-							@loaded="onChildLoaded" />
+					<statistics-chart :key="componentKey + 'stats'" :filters="currentFilters" @loaded="onChildLoaded" />
 
-						<AverageAmountByEconomicSupport
-							:key="componentKey + 'average'"
-							:filters="currentFilters"
-							class="h-auto min-w-0"
-							@loaded="onChildLoaded" />
+					<recent-orders :key="componentKey + 'orders'" :filters="currentFilters" @loaded="onChildLoaded" />
 
-						<div class="min-w-0 overflow-hidden">
-							<ProjectsByDualType
-								:key="componentKey + 'dualtype'"
-								:filters="currentFilters"
-								class="h-auto w-full"
-								@loaded="onChildLoaded" />
-						</div>
+					<OrganizationsByScope :key="componentKey + 'scope'" :filters="currentFilters" @loaded="onChildLoaded" />
+
+					<ProjectsByEconomicSupport :key="componentKey + 'economic'" :filters="currentFilters" @loaded="onChildLoaded" />
+					<AverageAmountByEconomicSupport
+						:key="componentKey + 'average'"
+						:filters="currentFilters"
+						@loaded="onChildLoaded" />
+
+					<ProjectsByDualType
+						:key="componentKey + 'dualtype'"
+						:filters="currentFilters"
+						@loaded="onChildLoaded" />
+
+					<OrganizationsByLocalCluster :key="componentKey + 'cluster'" :filters="currentFilters" @loaded="onChildLoaded" />
+
+					<div class="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
+						<ProjectsByClusterLocal :key="componentKey + 'local'" :filters="currentFilters" @loaded="onChildLoaded" />
+						<ProjectsByClusterNacional :key="componentKey + 'nacional'" :filters="currentFilters" @loaded="onChildLoaded" />
 					</div>
 
-					<div class="col-span-12">
-						<OrganizationsByLocalCluster :key="componentKey + 'cluster'" :filters="currentFilters" @loaded="onChildLoaded" />
-					</div>
-
-					<div class="col-span-12">
-						<div class="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
-							<ProjectsByClusterLocal :key="componentKey + 'local'" :filters="currentFilters" @loaded="onChildLoaded" />
-							<ProjectsByClusterNacional :key="componentKey + 'nacional'" :filters="currentFilters" @loaded="onChildLoaded" />
-						</div>
-					</div>
-
-					<div class="col-span-12">
-						<BenefitType :key="componentKey + 'benefittype'" :filters="currentFilters" @loaded="onChildLoaded" />
-					</div>
+					<BenefitType :key="componentKey + 'benefittype'" :filters="currentFilters" @loaded="onChildLoaded" />
 				</div>
 			</div>
 		</admin-layout>

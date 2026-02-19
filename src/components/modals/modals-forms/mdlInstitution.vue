@@ -80,6 +80,8 @@ const fieldHelpTexts: Record<string, string> = {
 	city: "Ciudad donde se localiza la institución.",
 	id_state: "Selecciona el estado de la república donde se encuentra la institución.",
 	id_municipality: "Selecciona el municipio correspondiente al estado elegido.",
+	id_subsystem: "Selecciona el subsistema educativo al que pertenece la institución.",
+	id_academic_period: "Selecciona el período académico vigente para la institución.",
 	image: "Imagen o logotipo representativo de la institución; debe ser en formato jpg o png."
 }
 
@@ -236,6 +238,44 @@ const onFileChange = (event: Event) => {
 								<option value="Privada">Privada</option>
 								<option value="Mixta">Mixta</option>
 							</select>
+						</div>
+					</div>
+
+					<!-- Nueva sección: Subsistema y Período Académico -->
+					<div class="border-t pt-4 mb-6">
+						<h5 class="text-md font-semibold text-brand-800 mb-3">Información Académica</h5>
+						<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+							<div class="form-error">
+								<label class="flex items-center gap-1 text-sm font-medium text-gray-700 mb-1">
+									Subsistema*
+									<button
+										type="button"
+										v-tooltip="fieldHelpTexts.id_subsystem"
+										class="help-icon text-gray-400 hover:text-brand-600 cursor-help">?</button>
+								</label>
+								<select v-model="form.id_subsystem" name="id_subsystem" required class="w-full px-3 py-2 border rounded-md">
+									<option value="">Selecciona un subsistema</option>
+									<option v-for="subsystem in subsystems" :key="subsystem.id" :value="subsystem.id">
+										{{ subsystem.name }}
+									</option>
+								</select>
+							</div>
+
+							<div class="form-error">
+								<label class="flex items-center gap-1 text-sm font-medium text-gray-700 mb-1">
+									Período Académico*
+									<button
+										type="button"
+										v-tooltip="fieldHelpTexts.id_academic_period"
+										class="help-icon text-gray-400 hover:text-brand-600 cursor-help">?</button>
+								</label>
+								<select v-model="form.id_academic_period" name="id_academic_period" required class="w-full px-3 py-2 border rounded-md">
+									<option value="">Selecciona un período</option>
+									<option v-for="period in academic_periods" :key="period.id" :value="period.id">
+										{{ period.name }} {{ period.year ? `(${period.year})` : '' }}
+									</option>
+								</select>
+							</div>
 						</div>
 					</div>
 

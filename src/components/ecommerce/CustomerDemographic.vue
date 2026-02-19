@@ -21,25 +21,15 @@
 			</div>
 		</div>
 
-		<div class="relative min-h-[300px]">
+		<div class="relative min-h-[400px]">
 			<div
 				v-if="loading"
 				class="absolute inset-0 flex items-center justify-center bg-white/80 dark:bg-gray-900/80 z-10 rounded-lg">
-				<div class="space-y-4 w-full max-w-sm px-4">
-					<div
-						v-for="i in 3"
-						:key="`skeleton-${i}`"
-						class="flex items-center gap-3 p-2">
-						<div class="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-gray-300 dark:bg-gray-700 animate-pulse" />
-						<div class="flex-1">
-							<div class="h-3 sm:h-4 bg-gray-300 dark:bg-gray-700 rounded animate-pulse mb-1 sm:mb-2 w-3/4" />
-							<div class="h-2 sm:h-3 bg-gray-200 dark:bg-gray-600 rounded animate-pulse w-1/2" />
-						</div>
-						<div class="flex items-center gap-2 w-full max-w-[100px] sm:max-w-[140px]">
-							<div class="relative w-full max-w-[60px] sm:max-w-[100px] h-2 rounded-sm bg-gray-300 dark:bg-gray-700 animate-pulse" />
-							<div class="h-3 sm:h-4 bg-gray-300 dark:bg-gray-700 rounded animate-pulse w-6 sm:w-8" />
-						</div>
-					</div>
+				<div class="text-center">
+					<div class="animate-spin rounded-full h-12 w-12 border-b-2 border-[#9C2131] mx-auto" />
+					<p class="mt-3 text-gray-600 dark:text-gray-400 text-sm">
+						Cargando datos...
+					</p>
 				</div>
 			</div>
 
@@ -84,68 +74,85 @@
 				</div>
 			</div>
 
-			<div
-				v-else
-				class="space-y-4 sm:space-y-6">
-				<div
-					v-for="(item, index) in topTenInstitutions"
-					:key="index"
-					class="flex items-center justify-between gap-2 sm:gap-4 hover:bg-gray-200/50 dark:hover:bg-gray-800/70 p-2 rounded-lg transition-colors cursor-pointer"
-					@click="onInstitutionClick(item)">
-					<div class="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
-						<img
-							v-if="item.image && isValidImage(item.image)"
-							:src="item.image"
-							:alt="item.institution_name"
-							class="w-8 h-8 sm:w-10 sm:h-10 rounded-full object-contain border border-gray-300 dark:border-gray-600 flex-shrink-0"
-							@error="handleImageError" />
+			<div v-else class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+				<div class="lg:col-span-2 space-y-4 sm:space-y-6">
+					<div
+						v-for="(item, index) in topTenInstitutions"
+						:key="index"
+						class="flex items-center justify-between gap-2 sm:gap-4 hover:bg-gray-200/50 dark:hover:bg-gray-800/70 p-2 rounded-lg transition-colors cursor-pointer"
+						@click="onInstitutionClick(item)">
+						<div class="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
+							<img
+								v-if="item.image && isValidImage(item.image)"
+								:src="item.image"
+								:alt="item.institution_name"
+								class="w-8 h-8 sm:w-10 sm:h-10 rounded-full object-contain border border-gray-300 dark:border-gray-600 flex-shrink-0"
+								@error="handleImageError" />
 
-						<div
-							v-else
-							class="w-8 h-8 sm:w-10 sm:h-10 flex items-center justify-center rounded-full bg-gray-300 dark:bg-gray-700 border border-gray-400 dark:border-gray-600 text-gray-700 dark:text-gray-300 flex-shrink-0">
-							<svg
-								xmlns="http://www.w3.org/2000/svg"
-								class="h-5 w-5 sm:h-6 sm:w-6"
-								fill="none"
-								viewBox="0 0 24 24"
-								stroke="currentColor">
-								<path
-									stroke-linecap="round"
-									stroke-linejoin="round"
-									stroke-width="2"
-									d="M12 14l9-5-9-5-9 5 9 5zm0 7v-7m0 0L3 9m9 5l9-5" />
-							</svg>
+							<div
+								v-else
+								class="w-8 h-8 sm:w-10 sm:h-10 flex items-center justify-center rounded-full bg-gray-300 dark:bg-gray-700 border border-gray-400 dark:border-gray-600 text-gray-700 dark:text-gray-300 flex-shrink-0">
+								<svg
+									xmlns="http://www.w3.org/2000/svg"
+									class="h-5 w-5 sm:h-6 sm:w-6"
+									fill="none"
+									viewBox="0 0 24 24"
+									stroke="currentColor">
+									<path
+										stroke-linecap="round"
+										stroke-linejoin="round"
+										stroke-width="2"
+										d="M12 14l9-5-9-5-9 5 9 5zm0 7v-7m0 0L3 9m9 5l9-5" />
+								</svg>
+							</div>
+
+							<div class="min-w-0 flex-1">
+								<p
+									class="font-semibold text-gray-900 dark:text-white text-sm sm:text-base truncate"
+									:title="item.institution_name">
+									{{ item.institution_name }}
+								</p>
+								<span class="block text-gray-600 text-xs dark:text-gray-400">
+									{{ item.project_count }} Proyecto{{ item.project_count !== 1 ? 's' : '' }}
+								</span>
+							</div>
 						</div>
 
-						<div class="min-w-0 flex-1">
-							<p
-								class="font-semibold text-gray-900 dark:text-white text-sm sm:text-base truncate"
-								:title="item.institution_name">
-								{{ item.institution_name }}
+						<div class="flex items-center gap-2 sm:gap-3 w-auto sm:w-full max-w-[80px] sm:max-w-[160px] flex-shrink-0">
+							<div class="relative w-full max-w-[40px] sm:max-w-[110px] h-2 rounded-sm bg-gray-300 dark:bg-gray-700">
+								<div
+									class="absolute left-0 top-0 h-full rounded-sm transition-all duration-500 ease-out"
+									:style="{
+										width: item.percentage + '%',
+										backgroundColor: palette[index % palette.length]
+									}" />
+							</div>
+							<p class="font-medium text-gray-900 dark:text-white text-xs sm:text-sm whitespace-nowrap">
+								{{ formatPercentage(item.percentage) }}%
 							</p>
-							<span class="block text-gray-600 text-xs dark:text-gray-400">
-								{{ item.project_count }} Proyecto{{ item.project_count !== 1 ? 's' : '' }}
-							</span>
 						</div>
 					</div>
 
-					<div class="flex items-center gap-2 sm:gap-3 w-auto sm:w-full max-w-[80px] sm:max-w-[160px] flex-shrink-0">
-						<div class="relative w-full max-w-[40px] sm:max-w-[110px] h-2 rounded-sm bg-gray-300 dark:bg-gray-700">
-							<div
-								class="absolute left-0 top-0 h-full rounded-sm bg-brand-500 transition-all duration-500 ease-out"
-								:style="{ width: item.percentage + '%' }" />
-						</div>
-						<p class="font-medium text-gray-900 dark:text-white text-xs sm:text-sm whitespace-nowrap">
-							{{ formatPercentage(item.percentage) }}%
+					<div
+						v-if="dual_projects_by_institution.length > 10"
+						class="pt-3 sm:pt-4 border-t border-gray-200 dark:border-gray-700">
+						<p class="text-xs text-gray-500 dark:text-gray-400 text-center sm:text-sm">
+							Mostrando las 10 con más proyectos de {{ dual_projects_by_institution.length }} instituciones
 						</p>
 					</div>
 				</div>
 
-				<div
-					v-if="dual_projects_by_institution.length > 10"
-					class="pt-3 sm:pt-4 border-t border-gray-200 dark:border-gray-700">
-					<p class="text-xs text-gray-500 dark:text-gray-400 text-center sm:text-sm">
-						Mostrando las 10 con más proyectos de {{ dual_projects_by_institution.length }} instituciones
+				<div class="lg:col-span-1 flex flex-col items-center justify-start">
+					<div class="w-full max-w-[250px] h-[250px] sm:h-[280px] mx-auto">
+						<PieChart
+							v-if="!loading"
+							:key="chartKey"
+							:data="chartData"
+							:options="chartOptions" />
+					</div>
+
+					<p class="mt-2 text-xs text-gray-500 dark:text-gray-400 text-center">
+						Distribución de proyectos
 					</p>
 				</div>
 			</div>
@@ -153,11 +160,13 @@
 	</div>
 </template>
 
-<script
-	setup
-	lang="ts">
-import { ref, watch, onMounted, computed } from 'vue';
+<script setup lang="ts">
+import { ref, watch, onMounted, computed, nextTick } from 'vue';
+import { Chart as ChartJS, Title, Tooltip, Legend, ArcElement } from 'chart.js';
+import { Pie } from 'vue-chartjs';
 import { getProjectsByIntitution } from '../../services/statistics/dashboard';
+
+ChartJS.register(Title, Tooltip, Legend, ArcElement);
 
 interface ProjectByInstitution {
 	id?: number;
@@ -176,9 +185,17 @@ const props = defineProps({
 
 const emit = defineEmits(['loaded', 'loading', 'error']);
 
+const PieChart = Pie;
 const dual_projects_by_institution = ref<ProjectByInstitution[]>([]);
 const loading = ref(false);
 const loadError = ref(null);
+const chartKey = ref(0);
+
+const palette = [
+	'#9C2131', '#C9A236', '#3A4A5F', '#707070', '#C4C4C4',
+	'#6B7280', '#B45309', '#9CA3AF', '#7C3AED', '#0891B2',
+	'#65A30D', '#EA580C', '#BE123C', '#0F766E', '#4338CA'
+];
 
 const isValidImage = (src: string | null): boolean => {
 	if (!src) return false;
@@ -212,7 +229,47 @@ const topTenInstitutions = computed(() => {
 		}));
 });
 
+const chartData = computed(() => ({
+	labels: topTenInstitutions.value.map(i =>
+		i.institution_name.length > 20
+			? i.institution_name.substring(0, 18) + '...'
+			: i.institution_name
+	),
+	datasets: [
+		{
+			data: topTenInstitutions.value.map(i => i.project_count),
+			backgroundColor: topTenInstitutions.value.map((_, index) =>
+				palette[index % palette.length]
+			),
+			borderWidth: 1,
+			borderColor: '#fff'
+		}
+	]
+}));
+
+const chartOptions = computed(() => ({
+	responsive: true,
+	maintainAspectRatio: false,
+	plugins: {
+		legend: {
+			display: false,
+		},
+		tooltip: {
+			callbacks: {
+				label(context: any) {
+					const value = context.parsed;
+					const total = context.dataset.data.reduce((a: number, b: number) => a + b, 0);
+					const percentage = total > 0 ? ((value / total) * 100).toFixed(1) : 0;
+					const label = context.label || '';
+					return `${label}: ${value} proyectos (${percentage}%)`;
+				}
+			}
+		}
+	}
+}));
+
 const onInstitutionClick = (institution: ProjectByInstitution) => {
+	console.log('Institución seleccionada:', institution);
 };
 
 const loadData = async () => {
@@ -236,6 +293,9 @@ const loadData = async () => {
 		items.sort((a, b) => b.project_count - a.project_count);
 
 		dual_projects_by_institution.value = items;
+
+		await nextTick();
+		chartKey.value++;
 
 		emit('loaded');
 	} catch (err) {
@@ -273,5 +333,19 @@ watch(
 	:deep(p) {
 		font-size: 0.8125rem !important;
 	}
+}
+
+/* Animación del spinner */
+@keyframes spin {
+	from {
+		transform: rotate(0deg);
+	}
+	to {
+		transform: rotate(360deg);
+	}
+}
+
+.animate-spin {
+	animation: spin 1s linear infinite;
 }
 </style>

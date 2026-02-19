@@ -451,7 +451,7 @@ const addStudent = () => {
 			id_specialty: form.value.id_specialty ? String(form.value.id_specialty) : null,
 			institution: props.institution || {},
 			career: selectedCareer || { name: 'N/A', id: form.value.id_career },
-			specialty: selectedSpecialty || { name: 'Sin especialidad', id: form.value.id_specialty }
+			specialty: selectedSpecialty || { name: 'Sin especialidad', id: form.value.id_specialty },
 			academic_period: institutionAcademicPeriod.value || {}
 		}
 	};
