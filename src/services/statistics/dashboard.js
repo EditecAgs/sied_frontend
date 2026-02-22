@@ -144,3 +144,37 @@ export function downloadDashboardPdf(params = {}) {
 	});
 }
 
+export function getAllCredentialsStats(params = {}) {
+	const { id_state, id_institution } = params;
+	const queryString = buildQueryString({ id_state, id_institution });
+
+	return Promise.all([
+		axios.get(`project/project-MicroCredential${queryString}`),
+		axios.get(`project/project-Certification${queryString}`),
+		axios.get(`project/project-Diplomas${queryString}`)
+	]).then(([microRes, certRes, diplomaRes]) => {
+		return {
+			microCredentials: microRes.data,
+			certifications: certRes.data,
+			diplomas: diplomaRes.data
+		};
+	});
+}
+
+export function getProjectsByDocumentStatus(params = {}) {
+	const { id_state, id_institution } = params;
+	const queryString = buildQueryString({ id_state, id_institution });
+	return axios.get(`project/document-status${queryString}`);
+}
+
+export function getProjectsByStatus(params = {}) {
+	const { id_state, id_institution } = params;
+	const queryString = buildQueryString({ id_state, id_institution });
+	return axios.get(`project/project-status${queryString}`);
+}
+
+export function getDualAreasStats(params = {}) {
+	const { id_state, id_institution } = params;
+	const queryString = buildQueryString({ id_state, id_institution });
+	return axios.get(`project/project-DualAreas${queryString}`);
+}

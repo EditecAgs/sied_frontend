@@ -1,4 +1,3 @@
-<!-- /pages/ModeloDualFormPage.vue - VERSIÓN OPTIMIZADA MEJORADA -->
 <template>
 	<AdminLayout>
 		<div v-if="globalLoading" class="fixed inset-0 bg-gray-500 bg-opacity-75 flex items-center justify-center z-50">
@@ -8,7 +7,7 @@
 					{{ globalLoadingMessage }}
 				</p>
 				<div v-if="loadingProgress < 100" class="w-full bg-gray-200 rounded-full h-2">
-					<div 
+					<div
 						class="bg-brand-600 h-2 rounded-full transition-all duration-300"
 						:style="{ width: `${loadingProgress}%` }" />
 				</div>
@@ -17,9 +16,9 @@
 				</p>
 			</div>
 		</div>
-    
+
 		<PageBreadcrumb :pageTitle="pageTitle" />
-    
+
 		<div class="space-y-5 sm:space-y-6" :class="{ 'opacity-50 pointer-events-none': globalLoading }">
 			<ComponentCard :title="formTitle">
 				<div class="flex justify-between items-center mb-6">
@@ -39,12 +38,10 @@
 				</div>
 
 				<div id="form-container" class="bg-white rounded-lg shadow p-6 space-y-8">
-					<!-- Sección 1: Información de Institución -->
 					<div
-						id="section-1" 
+						id="section-1"
 						class="border rounded-lg overflow-hidden transition-all duration-300"
 						:class="section1Expanded ? 'border-blue-200 shadow-sm' : 'border-gray-200'">
-						<!-- Encabezado de sección 1 -->
 						<button
 							class="w-full p-4 bg-gradient-to-r from-brand-400 to-brand-600 hover:from-brand-500 hover:to-brand-700 flex items-center justify-between transition-all duration-200"
 							:disabled="globalLoading"
@@ -64,18 +61,18 @@
 							</div>
 							<div class="flex items-center">
 								<div
-									v-if="isSection1Incomplete" 
+									v-if="isSection1Incomplete"
 									class="mr-3 flex items-center bg-yellow-100 text-yellow-800 px-2 py-1 rounded-full">
 									<ExclamationTriangleIcon class="h-3 w-3 mr-1" />
 									<span class="text-xs font-medium">Pendiente</span>
 								</div>
 								<div
-									v-else-if="!isSection1Incomplete" 
+									v-else-if="!isSection1Incomplete"
 									class="mr-3 flex items-center bg-green-100 text-green-800 px-2 py-1 rounded-full">
 									<CheckCircleIcon class="h-3 w-3 mr-1" />
 									<span class="text-xs font-medium">Completo</span>
 								</div>
-								<ChevronDownIcon 
+								<ChevronDownIcon
 									class="h-6 w-6 text-white transition-transform duration-300"
 									:class="{ 'transform rotate-180': section1Expanded }" />
 							</div>
@@ -101,13 +98,12 @@
 						</transition>
 					</div>
 
-					<!-- Sección 2: Datos Personales -->
+					<!-- SECCIÓN 2: DATOS PERSONALES -->
 					<div
-						v-if="reportaModeloDual" 
+						v-if="reportaModeloDual"
 						id="section-2"
 						class="border rounded-lg overflow-hidden transition-all duration-300"
 						:class="section2Expanded ? 'border-blue-200 shadow-sm' : 'border-gray-200'">
-						<!-- Encabezado de sección 2 -->
 						<button
 							class="w-full p-4 bg-gradient-to-r from-brand-400 to-brand-600 hover:from-brand-500 hover:to-brand-700 flex items-center justify-between transition-all duration-200"
 							:disabled="isSection1Incomplete || globalLoading"
@@ -128,18 +124,24 @@
 							</div>
 							<div class="flex items-center">
 								<div
-									v-if="isSection2Incomplete" 
+									v-if="section2Loading && mode === 'create'"
+									class="mr-3 flex items-center bg-blue-100 text-blue-800 px-2 py-1 rounded-full">
+									<div class="animate-spin rounded-full h-3 w-3 border-b-2 border-blue-800 mr-1" />
+									<span class="text-xs font-medium">Cargando...</span>
+								</div>
+								<div
+									v-else-if="isSection2Incomplete"
 									class="mr-3 flex items-center bg-yellow-100 text-yellow-800 px-2 py-1 rounded-full">
 									<ExclamationTriangleIcon class="h-3 w-3 mr-1" />
 									<span class="text-xs font-medium">Pendiente</span>
 								</div>
 								<div
-									v-else-if="!isSection2Incomplete" 
+									v-else-if="!isSection2Incomplete"
 									class="mr-3 flex items-center bg-green-100 text-green-800 px-2 py-1 rounded-full">
 									<CheckCircleIcon class="h-3 w-3 mr-1" />
 									<span class="text-xs font-medium">Completo</span>
 								</div>
-								<ChevronDownIcon 
+								<ChevronDownIcon
 									class="h-6 w-6 text-white transition-transform duration-300"
 									:class="{ 'transform rotate-180': section2Expanded }" />
 							</div>
@@ -154,31 +156,36 @@
 							leave-from-class="opacity-100 max-h-[2000px]"
 							leave-to-class="opacity-0 max-h-0">
 							<div v-show="section2Expanded" class="p-6 border-t">
-								<DualStepPersonal
-									:key="'personal-step-' + personalStepKey"
-									ref="stepPersonalRef"
-									v-model="formData.personal"
-									:careers="filteredCareersForInstitution"
-									:specialties="filteredSpecialtiesForInstitution"
-									:institution="{
-										id: formData.academico.id_institution,
-										name: institutions.find(i => i.id === formData.academico.id_institution)?.name || '',
-										id_academic_period: institutions.find(i => i.id === formData.academico.id_institution)?.id_academic_period || null
-									}"
-									:academic-periods="academicPeriods"
-									@update:careers="handleCareersUpdate"
-									@update:specialties="handleSpecialtiesUpdate" />
+								<div v-if="section2Loading && mode === 'create'" class="flex flex-col items-center justify-center py-12">
+									<div class="animate-spin rounded-full h-12 w-12 border-b-2 border-brand-800 mb-4" />
+									<p class="text-gray-600">Cargando datos de la sección 2...</p>
+								</div>
+								<div v-else>
+									<DualStepPersonal
+										:key="'personal-step-' + personalStepKey"
+										ref="stepPersonalRef"
+										v-model="formData.personal"
+										:careers="filteredCareersForInstitution"
+										:specialties="filteredSpecialtiesForInstitution"
+										:institution="{
+											id: formData.academico.id_institution,
+											name: institutions.find(i => i.id === formData.academico.id_institution)?.name || '',
+											id_academic_period: institutions.find(i => i.id === formData.academico.id_institution)?.id_academic_period || null
+										}"
+										:academic-periods="academicPeriods"
+										@update:careers="handleCareersUpdate"
+										@update:specialties="handleSpecialtiesUpdate" />
+								</div>
 							</div>
 						</transition>
 					</div>
 
-					<!-- Sección 3: Unidad Dual -->
+					<!-- SECCIÓN 3: UNIDAD DUAL -->
 					<div
-						v-if="reportaModeloDual" 
+						v-if="reportaModeloDual"
 						id="section-3"
 						class="border rounded-lg overflow-hidden transition-all duration-300"
 						:class="section3Expanded ? 'border-blue-200 shadow-sm' : 'border-gray-200'">
-						<!-- Encabezado de sección 3 -->
 						<button
 							class="w-full p-4 bg-gradient-to-r from-brand-400 to-brand-600 hover:from-brand-500 hover:to-brand-700 flex items-center justify-between transition-all duration-200"
 							:disabled="isSection2Incomplete || globalLoading"
@@ -199,18 +206,24 @@
 							</div>
 							<div class="flex items-center">
 								<div
-									v-if="isSection3Incomplete" 
+									v-if="section3Loading && mode === 'create'"
+									class="mr-3 flex items-center bg-blue-100 text-blue-800 px-2 py-1 rounded-full">
+									<div class="animate-spin rounded-full h-3 w-3 border-b-2 border-blue-800 mr-1" />
+									<span class="text-xs font-medium">Cargando...</span>
+								</div>
+								<div
+									v-else-if="isSection3Incomplete"
 									class="mr-3 flex items-center bg-yellow-100 text-yellow-800 px-2 py-1 rounded-full">
 									<ExclamationTriangleIcon class="h-3 w-3 mr-1" />
 									<span class="text-xs font-medium">Pendiente</span>
 								</div>
 								<div
-									v-else-if="!isSection3Incomplete" 
+									v-else-if="!isSection3Incomplete"
 									class="mr-3 flex items-center bg-green-100 text-green-800 px-2 py-1 rounded-full">
 									<CheckCircleIcon class="h-3 w-3 mr-1" />
 									<span class="text-xs font-medium">Completo</span>
 								</div>
-								<ChevronDownIcon 
+								<ChevronDownIcon
 									class="h-6 w-6 text-white transition-transform duration-300"
 									:class="{ 'transform rotate-180': section3Expanded }" />
 							</div>
@@ -225,26 +238,32 @@
 							leave-from-class="opacity-100 max-h-[2000px]"
 							leave-to-class="opacity-0 max-h-0">
 							<div v-show="section3Expanded" class="p-6 border-t">
-								<DualStepUnidad
-									ref="stepUnidadDualRef"
-									:key="'unidad-step-' + personalStepKey"
-									v-model="formData.unidadDual"
-									:areas="areas"
-									:clusters="clusters"
-									:agreementStatuses="agreementStatuses"
-									:supportTypes="supportTypes"
-									:organizations="organizations"
-									:dualTypes="dualTypes"
-									:microCredentials="microCredentials"
-									:certifications="certifications"
-									:diplomas="diplomas"
-									:benefitTypes="benefitTypes"
-									@update:organizations="handleOrganizationsUpdate"
-									@update:microCredentials="handleMicroCredentialsUpdate"
-									@update:certifications="handleCertificationsUpdate"
-									@update:diplomas="handleDiplomasUpdate"
-									@update:dualTypes="handleDualTypesUpdate"
-									@update:benefitTypes="handleBenefitTypesUpdate" />
+								<div v-if="section3Loading && mode === 'create'" class="flex flex-col items-center justify-center py-12">
+									<div class="animate-spin rounded-full h-12 w-12 border-b-2 border-brand-800 mb-4" />
+									<p class="text-gray-600">Cargando datos de la sección 3...</p>
+								</div>
+								<div v-else>
+									<DualStepUnidad
+										ref="stepUnidadDualRef"
+										:key="'unidad-step-' + personalStepKey"
+										v-model="formData.unidadDual"
+										:areas="areas"
+										:clusters="clusters"
+										:agreementStatuses="agreementStatuses"
+										:supportTypes="supportTypes"
+										:organizations="organizations"
+										:dualTypes="dualTypes"
+										:microCredentials="microCredentials"
+										:certifications="certifications"
+										:diplomas="diplomas"
+										:benefitTypes="benefitTypes"
+										@update:organizations="handleOrganizationsUpdate"
+										@update:microCredentials="handleMicroCredentialsUpdate"
+										@update:certifications="handleCertificationsUpdate"
+										@update:diplomas="handleDiplomasUpdate"
+										@update:dualTypes="handleDualTypesUpdate"
+										@update:benefitTypes="handleBenefitTypesUpdate" />
+								</div>
 							</div>
 						</transition>
 					</div>
@@ -302,10 +321,10 @@ import ComponentCard from '../../components/common/componentCard.vue';
 import DualStepPersonal from '../../components/forms/DualStepPersonal.vue';
 import DualStepAcademico from '../../components/forms/DualStepAcademico.vue';
 import DualStepUnidad from '../../components/forms/DualStepUnidad.vue';
-import { 
-  createDualProject, 
-  updateDualProject, 
-  showDualProject 
+import {
+  createDualProject,
+  updateDualProject,
+  showDualProject
 } from '../../services/dual_projects/dual_projects';
 import { getInstitutions } from '../../services/institutions/institutions.js';
 import { getCareers } from '../../services/institutions/careers.js';
@@ -321,12 +340,12 @@ import { getCertifications } from '../../services/dual_projects/certifications.j
 import { getDiplomas } from '../../services/dual_projects/diplomas.js';
 import { getAcademicPeriods } from '../../services/institutions/academic-periods';
 import { getBenefitType } from '../../services/dual_projects/BenefitType';
-import { 
-  ArrowLeftIcon, 
+import {
+  ArrowLeftIcon,
   CheckIcon,
   ChevronDownIcon,
   ExclamationTriangleIcon,
-  CheckCircleIcon 
+  CheckCircleIcon
 } from '@heroicons/vue/24/solid'
 
 const route = useRoute();
@@ -344,6 +363,12 @@ const isSubmitting = ref(false);
 const reportaModeloDual = ref<boolean>(false);
 const personalStepKey = ref(0);
 const showFloatingIndicator = ref(false);
+
+// ==================== ESTADOS DE CARGA POR SECCIÓN ====================
+const section2Loading = ref(false);
+const section3Loading = ref(false);
+const section2DataLoaded = ref(false);
+const section3DataLoaded = ref(false);
 
 // ==================== ESTADO DE EXPANSIÓN DE SECCIONES ====================
 const section1Expanded = ref(true);
@@ -366,7 +391,7 @@ const formData = ref({
     semester: '',
     id_career: '',
     id_specialty: '',
-	academic_period: [],
+    academic_period: [],
     dual_project_students: [],
   },
   academico: {
@@ -400,7 +425,7 @@ const formData = ref({
   }
 });
 
-// ==================== DATOS PARA SELECTORES (CARGADOS POR LOTES) ====================
+// ==================== DATOS PARA SELECTORES ====================
 const institutions = shallowRef([]);
 const careers = shallowRef([]);
 const specialties = shallowRef([]);
@@ -427,7 +452,7 @@ const getModeFromRoute = (): string => {
 
 const getPkFromRoute = (): string | null => {
   const path = route.path;
-  
+
   const numberMatch = path.match(/\/(\d+)$/);
   if (numberMatch && numberMatch[1]) {
     return numberMatch[1];
@@ -455,9 +480,9 @@ const isSection2Incomplete = computed(() => {
 
 const isSection3Incomplete = computed(() => {
   if (!reportaModeloDual.value) return false;
-  return !formData.value.unidadDual.name_report || 
-         !formData.value.unidadDual.id_organization || 
-         !formData.value.unidadDual.id_dual_area;
+  return !formData.value.unidadDual.name_report ||
+      !formData.value.unidadDual.id_organization ||
+      !formData.value.unidadDual.id_dual_area;
 });
 
 const pendingSectionsCount = computed(() => {
@@ -492,58 +517,117 @@ const buttonText = computed(() => {
 const canSubmit = computed(() => {
   if (!formData.value.academico.id_institution) return false;
   if (reportaModeloDual.value === false) return true;
-  
+
   const studentCount = formData.value.personal.dual_project_students?.length || 0;
   if (studentCount < 1) return false;
-  
-  return !(!formData.value.unidadDual.name_report || 
-           !formData.value.unidadDual.id_organization || 
-           !formData.value.unidadDual.id_dual_area);
+
+  return !(!formData.value.unidadDual.name_report ||
+      !formData.value.unidadDual.id_organization ||
+      !formData.value.unidadDual.id_dual_area);
 });
 
 const filteredCareersForInstitution = computed(() => {
   if (!formData.value.academico.id_institution || careers.value.length === 0) return [];
-  
-  const institutionId = formData.value.academico.id_institution; // Esto es UUID
+
+  const institutionId = formData.value.academico.id_institution;
   return careers.value.filter(career => {
-    // Comparar UUIDs como strings
     return String(career.id_institution) === String(institutionId) ||
-           String(career.institution_id) === String(institutionId) ||
-           String(career.institution?.id) === String(institutionId);
+        String(career.institution_id) === String(institutionId) ||
+        String(career.institution?.id) === String(institutionId);
   });
 });
 
 const filteredSpecialtiesForInstitution = computed(() => {
   if (!formData.value.academico.id_institution || specialties.value.length === 0) return [];
-  
+
   const filteredCareers = filteredCareersForInstitution.value;
-  const careerIds = new Set(filteredCareers.map(c => String(c.id))); // Convertir a string para comparar
-  
-  return specialties.value.filter(specialty => 
-    careerIds.has(String(specialty.id_career)) || 
-    careerIds.has(String(specialty.career_id))
+  const careerIds = new Set(filteredCareers.map(c => String(c.id)));
+
+  return specialties.value.filter(specialty =>
+      careerIds.has(String(specialty.id_career)) ||
+      careerIds.has(String(specialty.career_id))
   );
 });
 
-// ==================== MÉTODOS DE CARGA OPTIMIZADOS ====================
+// ==================== MÉTODOS DE CARGA ====================
 const updateLoadingProgress = (increment: number) => {
   loadingProgress.value = Math.min(loadingProgress.value + increment, 100);
+};
+
+const loadAllData = async () => {
+  globalLoadingMessage.value = 'Cargando todos los datos...';
+
+  try {
+    const [
+      institutionsRes,
+      careersRes,
+      specialtiesRes,
+      periodsRes,
+      clustersRes,
+      areasRes,
+      statusesRes,
+      supportsRes,
+      orgsRes,
+      typesRes,
+      microRes,
+      certRes,
+      diplomaRes,
+      benefitRes
+    ] = await Promise.all([
+      getInstitutions(),
+      getCareers(),
+      getSpecialties(),
+      getAcademicPeriods(),
+      getClusters(),
+      getDualAreas(),
+      getDocumentStatuses(),
+      getEconomicSupports(),
+      getOrganizations(),
+      getDualTypes(),
+      getMicroCredentials(),
+      getCertifications(),
+      getDiplomas(),
+      getBenefitType()
+    ]);
+
+    institutions.value = institutionsRes.data;
+    careers.value = careersRes.data;
+    specialties.value = specialtiesRes.data;
+    academicPeriods.value = periodsRes.data;
+    clusters.value = clustersRes.data;
+    areas.value = areasRes.data;
+    agreementStatuses.value = statusesRes.data;
+    supportTypes.value = supportsRes.data;
+    organizations.value = orgsRes.data;
+    dualTypes.value = typesRes.data;
+    microCredentials.value = microRes.data;
+    certifications.value = certRes.data;
+    diplomas.value = diplomaRes.data;
+    benefitTypes.value = benefitRes.data;
+
+    updateLoadingProgress(60);
+
+    return true;
+  } catch (error) {
+    console.error('Error cargando todos los datos:', error);
+    return false;
+  }
 };
 
 const loadEssentialDependencies = async () => {
   globalLoadingMessage.value = 'Cargando datos básicos...';
   updateLoadingProgress(10);
-  
+
   try {
-    const [institutionsRes, organizationsRes] = await Promise.all([
+    const [institutionsRes, periodsRes] = await Promise.all([
       getInstitutions(),
-      getOrganizations()
+      getAcademicPeriods()
     ]);
-    
+
     institutions.value = institutionsRes.data;
-    organizations.value = organizationsRes.data;
-    updateLoadingProgress(30);
-    
+    academicPeriods.value = periodsRes.data;
+    updateLoadingProgress(40);
+
     return true;
   } catch (error) {
     console.error('Error cargando dependencias esenciales:', error);
@@ -551,88 +635,100 @@ const loadEssentialDependencies = async () => {
   }
 };
 
-const loadSecondaryDependencies = async () => {
-  globalLoadingMessage.value = 'Cargando datos adicionales...';
-  
+const loadSection2Data = async () => {
+  if (section2DataLoaded.value) return true;
+
+  section2Loading.value = true;
+
   try {
-    const batch1 = await Promise.all([
+    const [careersRes, specialtiesRes] = await Promise.all([
       getCareers(),
-      getSpecialties(),
-      getClusters()
+      getSpecialties()
     ]);
-    
-    careers.value = batch1[0].data;
-    specialties.value = batch1[1].data;
-    clusters.value = batch1[2].data;
-    updateLoadingProgress(15);
-    
-    await new Promise(resolve => setTimeout(resolve, 100));
-    
-    const batch2 = await Promise.all([
-      getDualAreas(),
-      getDocumentStatuses(),
-      getEconomicSupports()
-    ]);
-    
-    areas.value = batch2[0].data;
-    agreementStatuses.value = batch2[1].data;
-    supportTypes.value = batch2[2].data;
-    updateLoadingProgress(15);
-    
-    await new Promise(resolve => setTimeout(resolve, 100));
-    
-    const batch3 = await Promise.all([
-      getDualTypes(),
-      getMicroCredentials()
-    ]);
-    
-    dualTypes.value = batch3[0].data;
-    microCredentials.value = batch3[1].data;
-    updateLoadingProgress(10);
-    
-    setTimeout(async () => {
-      try {
-        const [certRes, diplomaRes, benefitRes] = await Promise.all([
-          getCertifications(),
-          getDiplomas(),
-          getBenefitType()
-        ]);
-        
-        certifications.value = certRes.data;
-        diplomas.value = diplomaRes.data;
-        benefitTypes.value = benefitRes.data;
-        updateLoadingProgress(20);
-      } catch (error) {
-        console.warn('Error cargando datos opcionales:', error);
-      }
-    }, 500);
-    
+
+    careers.value = careersRes.data;
+    specialties.value = specialtiesRes.data;
+
+    section2DataLoaded.value = true;
     return true;
   } catch (error) {
-    console.error('Error cargando dependencias secundarias:', error);
-    return true;
+    console.error('Error cargando datos de sección 2:', error);
+    await Swal.fire({
+      icon: 'error',
+      title: 'Error de carga',
+      text: 'No se pudieron cargar los datos de la sección 2',
+      confirmButtonColor: '#3085d6',
+    });
+    return false;
+  } finally {
+    section2Loading.value = false;
   }
 };
 
-const loadAcademicPeriods = async () => {
-	globalLoadingMessage.value = 'Cargando períodos académicos...';
+const loadSection3Data = async () => {
+  if (section3DataLoaded.value) return true;
 
-	try {
-		const response = await getAcademicPeriods();
-		academicPeriods.value = response.data;
-		updateLoadingProgress(10);
-		return true;
-	} catch (error) {
-		console.error('Error cargando períodos académicos:', error);
-		return false;
-	}
+  section3Loading.value = true;
+
+  try {
+    if (organizations.value.length === 0) {
+      const orgRes = await getOrganizations();
+      organizations.value = orgRes.data;
+    }
+
+    const [
+      clustersRes,
+      areasRes,
+      statusesRes,
+      supportsRes,
+      typesRes,
+      microRes,
+      certRes,
+      diplomaRes,
+      benefitRes
+    ] = await Promise.all([
+      getClusters(),
+      getDualAreas(),
+      getDocumentStatuses(),
+      getEconomicSupports(),
+      getDualTypes(),
+      getMicroCredentials(),
+      getCertifications(),
+      getDiplomas(),
+      getBenefitType()
+    ]);
+
+    clusters.value = clustersRes.data;
+    areas.value = areasRes.data;
+    agreementStatuses.value = statusesRes.data;
+    supportTypes.value = supportsRes.data;
+    dualTypes.value = typesRes.data;
+    microCredentials.value = microRes.data;
+    certifications.value = certRes.data;
+    diplomas.value = diplomaRes.data;
+    benefitTypes.value = benefitRes.data;
+
+    section3DataLoaded.value = true;
+    return true;
+  } catch (error) {
+    console.error('Error cargando datos de sección 3:', error);
+    await Swal.fire({
+      icon: 'error',
+      title: 'Error de carga',
+      text: 'No se pudieron cargar los datos de la sección 3',
+      confirmButtonColor: '#3085d6',
+    });
+    return false;
+  } finally {
+    section3Loading.value = false;
+  }
 };
 
 const loadExistingData = async () => {
   if (!projectId.value) return;
-  
+
   globalLoadingMessage.value = 'Cargando datos del proyecto...';
-  
+
   try {
     const res = await showDualProject(projectId.value);
     const project = res.data;
@@ -647,7 +743,7 @@ const loadExistingData = async () => {
       id_career: '',
       id_specialty: '',
       academic_period: project.academic_period || [],
-		dual_project_students: project.dual_project_students || []
+      dual_project_students: project.dual_project_students || []
     };
 
     if (project.dual_project_students && project.dual_project_students.length > 0) {
@@ -657,41 +753,41 @@ const loadExistingData = async () => {
       formData.value.personal.lastname = firstStudent.lastname || '';
       formData.value.personal.gender = firstStudent.gender || '';
       formData.value.personal.semester = firstStudent.semester || '';
-      formData.value.personal.id_career = firstStudent.id_career || ''; // UUID
-      formData.value.personal.id_specialty = firstStudent.id_specialty || ''; // UUID
+      formData.value.personal.id_career = firstStudent.id_career || '';
+      formData.value.personal.id_specialty = firstStudent.id_specialty || '';
     }
 
     formData.value.academico = {
-      id_institution: project.id_institution ? String(project.id_institution) : '', // Convertir a string
+      id_institution: project.id_institution ? String(project.id_institution) : '',
     };
 
     const benefitTypesData = project.dual_project_reports?.benefit_types || [];
-    const formattedBenefitTypes = Array.isArray(benefitTypesData) 
-      ? benefitTypesData.map(b => ({
-          id: b.id ? String(b.id) : (b.pivot?.id ? String(b.pivot.id) : ''), // CORREGIDO: Convertir a string
+    const formattedBenefitTypes = Array.isArray(benefitTypesData)
+        ? benefitTypesData.map(b => ({
+          id: b.id ? String(b.id) : (b.pivot?.id ? String(b.pivot.id) : ''),
           quantity: Number(b.pivot?.quantity || 1)
-        })).filter(b => b.id) // Filtrar los que tienen ID válido
-      : [];
+        })).filter(b => b.id)
+        : [];
 
     formData.value.unidadDual = {
       name_report: project.dual_project_reports?.name ?? '',
-      id_organization: project.organization_dual_projects?.organization?.id ? String(project.organization_dual_projects.organization.id) : '', // CORREGIDO: Convertir a string
-      id_dual_area: project.dual_project_reports?.dual_area?.id ? String(project.dual_project_reports.dual_area.id) : '', // CORREGIDO: Convertir a string
+      id_organization: project.organization_dual_projects?.organization?.id ? String(project.organization_dual_projects.organization.id) : '',
+      id_dual_area: project.dual_project_reports?.dual_area?.id ? String(project.dual_project_reports.dual_area.id) : '',
       period_start: project.dual_project_reports?.period_start ?? '',
       period_end: project.dual_project_reports?.period_end ?? '',
       period_observation: project.dual_project_reports?.period_observation ?? '',
-      status_document: project.dual_project_reports?.status_document?.id ? String(project.dual_project_reports.status_document.id) : '', // CORREGIDO: Convertir a string
-      economic_support: project.dual_project_reports?.economic_support?.id ? String(project.dual_project_reports.economic_support.id) : '', // CORREGIDO: Convertir a string
+      status_document: project.dual_project_reports?.status_document?.id ? String(project.dual_project_reports.status_document.id) : '',
+      economic_support: project.dual_project_reports?.economic_support?.id ? String(project.dual_project_reports.economic_support.id) : '',
       amount: String(project.dual_project_reports?.amount ?? ''),
       qualification: project.dual_project_reports?.qualification ?? '',
       is_concluded: project.dual_project_reports?.is_concluded ?? 0,
       is_hired: project.dual_project_reports?.is_hired ?? 0,
       hired_observation: project.dual_project_reports?.hired_observation ?? '',
-      dual_type_id: project.dual_project_reports?.dual_type?.id ? String(project.dual_project_reports.dual_type.id) : '', // CORREGIDO: Convertir a string
+      dual_type_id: project.dual_project_reports?.dual_type?.id ? String(project.dual_project_reports.dual_type.id) : '',
       max_qualification: project.dual_project_reports?.max_qualification ?? '',
-      micro_credentials: (project.dual_project_reports?.micro_credentials || []).map(m => String(m.id)), // CORREGIDO: Convertir a strings
-      certifications: (project.dual_project_reports?.certifications || []).map(c => String(c.id)), // CORREGIDO: Convertir a strings
-      diplomas: (project.dual_project_reports?.diplomas || []).map(d => String(d.id)), // CORREGIDO: Convertir a strings
+      micro_credentials: (project.dual_project_reports?.micro_credentials || []).map(m => String(m.id)),
+      certifications: (project.dual_project_reports?.certifications || []).map(c => String(c.id)),
+      diplomas: (project.dual_project_reports?.diplomas || []).map(d => String(d.id)),
       benefitTypes: formattedBenefitTypes,
       description: project.dual_project_reports?.description ?? '',
       internal_advisor_name: project.dual_project_reports?.internal_advisor_name ?? '',
@@ -701,10 +797,10 @@ const loadExistingData = async () => {
     };
 
     reportaModeloDual.value = mode.value === 'complete' ? true : !!project.dual_project_reports;
-    
+
     personalStepKey.value++;
-    updateLoadingProgress(10);
-    
+    updateLoadingProgress(40);
+
   } catch (error) {
     console.error('Error cargando datos del proyecto:', error);
     throw error;
@@ -712,21 +808,31 @@ const loadExistingData = async () => {
 };
 
 // ==================== MÉTODOS PRINCIPALES ====================
-const toggleSection = (sectionNumber: number) => {
+const toggleSection = async (sectionNumber: number) => {
   if (globalLoading.value) return;
-  
+
   if (sectionNumber === 2 && isSection1Incomplete.value) return;
   if (sectionNumber === 3 && isSection2Incomplete.value) return;
 
   switch (sectionNumber) {
-    case 1: 
-      section1Expanded.value = !section1Expanded.value; 
+    case 1:
+      section1Expanded.value = !section1Expanded.value;
       break;
-    case 2: 
-      if (reportaModeloDual.value) section2Expanded.value = !section2Expanded.value; 
+    case 2:
+      if (reportaModeloDual.value) {
+        if (mode.value === 'create' && !section2Expanded.value && !section2DataLoaded.value) {
+          await loadSection2Data();
+        }
+        section2Expanded.value = !section2Expanded.value;
+      }
       break;
-    case 3: 
-      if (reportaModeloDual.value) section3Expanded.value = !section3Expanded.value; 
+    case 3:
+      if (reportaModeloDual.value) {
+        if (mode.value === 'create' && !section3Expanded.value && !section3DataLoaded.value) {
+          await loadSection3Data();
+        }
+        section3Expanded.value = !section3Expanded.value;
+      }
       break;
   }
 };
@@ -811,7 +917,7 @@ const submitForm = async () => {
     if (reportaModeloDual.value === false) {
       payload = {
         has_report: 0,
-        id_institution: String(formData.value.academico.id_institution) // CORREGIDO: Convertir a string (UUID)
+        id_institution: String(formData.value.academico.id_institution)
       };
     } else {
       const studentCount = formData.value.personal.dual_project_students?.length || 0;
@@ -822,44 +928,44 @@ const submitForm = async () => {
         lastname: student.student?.lastname || student.lastname,
         gender: student.student?.gender || student.gender,
         semester: student.student?.semester || student.semester,
-        id_career: student.student?.id_career ? String(student.student.id_career) : (student.id_career ? String(student.id_career) : ''), // CORREGIDO: Convertir a string
-        id_specialty: student.student?.id_specialty ? String(student.student.id_specialty) : (student.id_specialty ? String(student.id_specialty) : null), // CORREGIDO: Convertir a string
-        id_institution: String(formData.value.academico.id_institution) // CORREGIDO: Convertir a string
+        id_career: student.student?.id_career ? String(student.student.id_career) : (student.id_career ? String(student.id_career) : ''),
+        id_specialty: student.student?.id_specialty ? String(student.student.id_specialty) : (student.id_specialty ? String(student.id_specialty) : null),
+        id_institution: String(formData.value.academico.id_institution)
       }));
 
       const formattedBenefitTypes = Array.isArray(formData.value.unidadDual.benefitTypes)
-        ? formData.value.unidadDual.benefitTypes
-            .filter(b => b && b.id)
-            .map(b => ({
-              id: String(b.id), // CORREGIDO: Convertir a string (UUID)
-              quantity: Number(b.quantity || 1)
-            }))
-        : [];
+          ? formData.value.unidadDual.benefitTypes
+              .filter(b => b && b.id)
+              .map(b => ({
+                id: String(b.id),
+                quantity: Number(b.quantity || 1)
+              }))
+          : [];
 
       payload = {
         has_report: 1,
-        id_institution: String(formData.value.academico.id_institution), // CORREGIDO: Convertir a string
+        id_institution: String(formData.value.academico.id_institution),
         number_student: studentCount,
         students: studentsPayload,
         name_report: formData.value.unidadDual.name_report,
-        id_organization: String(formData.value.unidadDual.id_organization), // CORREGIDO: Convertir a string
-        id_dual_area: String(formData.value.unidadDual.id_dual_area), // CORREGIDO: Convertir a string
+        id_organization: String(formData.value.unidadDual.id_organization),
+        id_dual_area: String(formData.value.unidadDual.id_dual_area),
         period_start: formatDate(formData.value.unidadDual.period_start),
         period_end: formatDate(formData.value.unidadDual.period_end),
         period_observation: formData.value.unidadDual.period_observation || '',
-        status_document: formData.value.unidadDual.status_document ? String(formData.value.unidadDual.status_document) : '', // CORREGIDO: Convertir a string
-        economic_support: formData.value.unidadDual.economic_support ? String(formData.value.unidadDual.economic_support) : '', // CORREGIDO: Convertir a string
+        status_document: formData.value.unidadDual.status_document ? String(formData.value.unidadDual.status_document) : '',
+        economic_support: formData.value.unidadDual.economic_support ? String(formData.value.unidadDual.economic_support) : '',
         amount: Number(formData.value.unidadDual.amount) || 0,
         qualification: formData.value.unidadDual.qualification ? Number(formData.value.unidadDual.qualification) : null,
         max_qualification: String(formData.value.unidadDual.max_qualification) || '10',
         is_concluded: Number(formData.value.unidadDual.is_concluded) || 0,
         is_hired: Number(formData.value.unidadDual.is_hired) || 0,
         hired_observation: formData.value.unidadDual.hired_observation || '',
-        dual_type_id: formData.value.unidadDual.dual_type_id ? String(formData.value.unidadDual.dual_type_id) : '', // CORREGIDO: Convertir a string
+        dual_type_id: formData.value.unidadDual.dual_type_id ? String(formData.value.unidadDual.dual_type_id) : '',
         description: formData.value.unidadDual.description || '',
-        micro_credentials: (formData.value.unidadDual.micro_credentials || []).map(id => String(id)), // CORREGIDO: Convertir a strings
-        certifications: (formData.value.unidadDual.certifications || []).map(id => String(id)), // CORREGIDO: Convertir a strings
-        diplomas: (formData.value.unidadDual.diplomas || []).map(id => String(id)), // CORREGIDO: Convertir a strings
+        micro_credentials: (formData.value.unidadDual.micro_credentials || []).map(id => String(id)),
+        certifications: (formData.value.unidadDual.certifications || []).map(id => String(id)),
+        diplomas: (formData.value.unidadDual.diplomas || []).map(id => String(id)),
         benefit_types: formattedBenefitTypes,
         internal_advisor_name: formData.value.unidadDual.internal_advisor_name || '',
         internal_advisor_qualification: formData.value.unidadDual.internal_advisor_qualification ? Number(formData.value.unidadDual.internal_advisor_qualification) : null,
@@ -867,12 +973,6 @@ const submitForm = async () => {
         external_advisor_qualification: formData.value.unidadDual.external_advisor_qualification ? Number(formData.value.unidadDual.external_advisor_qualification) : null,
       };
     }
-    
-    console.log('========== DATOS ENVIADOS ==========');
-    console.log('Modo:', mode.value);
-    console.log('Payload completo:', JSON.stringify(payload, null, 2));
-    console.log('Reporta modelo dual:', reportaModeloDual.value);
-    console.log('====================================');
 
     if (mode.value === 'create') {
       await createDualProject(payload);
@@ -891,17 +991,17 @@ const submitForm = async () => {
         confirmButtonColor: '#3085d6',
       });
     }
-    
+
     router.push('/form-elements');
-    
+
   } catch (err: any) {
     console.error('Error al guardar:', err);
-    
+
     let errorMessage = 'Ocurrió un error inesperado';
-    
+
     if (axios.isAxiosError(err) && err.response) {
       console.error('Respuesta del servidor:', err.response.data);
-      
+
       if (err.response.data.errors) {
         const errorMessages = Object.values(err.response.data.errors).flat().join('<br>');
         errorMessage = errorMessages;
@@ -909,7 +1009,7 @@ const submitForm = async () => {
         errorMessage = err.response.data.message;
       }
     }
-    
+
     await Swal.fire({
       icon: 'error',
       title: 'Error',
@@ -982,10 +1082,14 @@ const handleScroll = () => {
   }
 };
 
-watch(reportaModeloDual, (newValue) => {
+// ==================== WATCHERS ====================
+watch(reportaModeloDual, async (newValue) => {
   if (newValue && !globalLoading.value) {
-    setTimeout(() => {
+    setTimeout(async () => {
       if (!isSection1Incomplete.value && !section2Expanded.value) {
+        if (mode.value === 'create' && !section2DataLoaded.value) {
+          await loadSection2Data();
+        }
         section2Expanded.value = true;
       }
     }, 100);
@@ -995,17 +1099,23 @@ watch(reportaModeloDual, (newValue) => {
   }
 });
 
-watch(() => formData.value.academico.id_institution, (newValue) => {
+watch(() => formData.value.academico.id_institution, async (newValue) => {
   if (newValue && reportaModeloDual.value && !section2Expanded.value && !globalLoading.value) {
-    setTimeout(() => {
+    setTimeout(async () => {
+      if (mode.value === 'create' && !section2DataLoaded.value) {
+        await loadSection2Data();
+      }
       section2Expanded.value = true;
     }, 50);
   }
 });
 
-watch(() => formData.value.personal.dual_project_students?.length, (newValue) => {
+watch(() => formData.value.personal.dual_project_students?.length, async (newValue) => {
   if (newValue && newValue >= 1 && reportaModeloDual.value && !section3Expanded.value && !globalLoading.value) {
-    setTimeout(() => {
+    setTimeout(async () => {
+      if (mode.value === 'create' && !section3DataLoaded.value) {
+        await loadSection3Data();
+      }
       section3Expanded.value = true;
     }, 50);
   }
@@ -1016,56 +1126,59 @@ watch(pendingSectionsCount, (newCount) => {
 });
 
 onMounted(async () => {
-	mode.value = getModeFromRoute();
-	projectId.value = getPkFromRoute();
+  mode.value = getModeFromRoute();
+  projectId.value = getPkFromRoute();
 
-	globalLoading.value = true;
-	globalLoadingMessage.value = 'Preparando formulario...';
-	loadingProgress.value = 0;
+  globalLoading.value = true;
+  globalLoadingMessage.value = 'Preparando formulario...';
+  loadingProgress.value = 0;
 
-	try {
-		const essentialLoaded = await loadEssentialDependencies();
-		if (!essentialLoaded) {
-			throw new Error('No se pudieron cargar los datos esenciales');
-		}
+  try {
+    if (mode.value === 'create') {
+      const essentialLoaded = await loadEssentialDependencies();
+      if (!essentialLoaded) {
+        throw new Error('No se pudieron cargar los datos esenciales');
+      }
 
-		await loadAcademicPeriods();
+      if (projectId.value) {
+        await loadExistingData();
+      }
 
-		if ((mode.value === 'edit' || mode.value === 'complete') && projectId.value) {
-			await loadExistingData();
-		}
+    } else {
+      globalLoadingMessage.value = 'Cargando todos los datos...';
 
-		setTimeout(async () => {
-			try {
-				await loadSecondaryDependencies();
+      const allDataLoaded = await loadAllData();
+      if (!allDataLoaded) {
+        throw new Error('No se pudieron cargar los datos necesarios');
+      }
 
-				setTimeout(() => {
-					globalLoadingMessage.value = '¡Listo!';
-					loadingProgress.value = 100;
+      if (projectId.value) {
+        await loadExistingData();
+      }
 
-					setTimeout(() => {
-						globalLoading.value = false;
-					}, 300);
-				}, 500);
+      section2DataLoaded.value = true;
+      section3DataLoaded.value = true;
+    }
 
-			} catch (error) {
-				console.warn('Error en carga secundaria:', error);
-				globalLoading.value = false;
-			}
-		}, 300);
+    globalLoadingMessage.value = '¡Listo!';
+    loadingProgress.value = 100;
 
-	} catch (error) {
-		console.error('Error inicializando formulario:', error);
-		await Swal.fire({
-			icon: 'error',
-			title: 'Error de carga',
-			text: 'No se pudieron cargar los datos necesarios',
-			confirmButtonColor: '#3085d6',
-		});
-		goBackToList();
-	}
+    setTimeout(() => {
+      globalLoading.value = false;
+    }, 300);
 
-	window.addEventListener('scroll', handleScroll, { passive: true });
+  } catch (error) {
+    console.error('Error inicializando formulario:', error);
+    await Swal.fire({
+      icon: 'error',
+      title: 'Error de carga',
+      text: 'No se pudieron cargar los datos necesarios',
+      confirmButtonColor: '#3085d6',
+    });
+    goBackToList();
+  }
+
+  window.addEventListener('scroll', handleScroll, { passive: true });
 });
 
 onUnmounted(() => {

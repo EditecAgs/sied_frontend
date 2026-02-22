@@ -106,6 +106,9 @@
 					</div>
 
 					<BenefitType :key="componentKey + 'benefittype'" :filters="currentFilters" @loaded="onChildLoaded" />
+
+					<Microcredentials :key="componentKey + 'microcredentials'" :filters="currentFilters" @loaded="onChildLoaded" />
+					<ProjectsByDocumentStatus :key="componentKey + 'documentstatus'" :filters="currentFilters" @loaded="onChildLoaded" />
 				</div>
 			</div>
 		</admin-layout>
@@ -130,6 +133,8 @@ import OrganizationsByLocalCluster from '../components/ecommerce/OrganizationsBy
 import ProjectsByClusterLocal from '../components/ecommerce/ProjectsByClusterLocal.vue'
 import ProjectsByClusterNacional from '../components/ecommerce/ProjectsByClusterNacional.vue'
 import BenefitType from '../components/ecommerce/BenefitType.vue';
+import Microcredentials from '../components/ecommerce/Microcredentials.vue';
+import ProjectsByDocumentStatus from '../components/ecommerce/ProjectsByDocumentStatus.vue';
 import { downloadDashboardPdf } from '../services/statistics/dashboard';
 import { getInstitutions, showInstitutions } from '../services/institutions/institutions'
 import { getStates } from '../services/location/states.js'
@@ -153,6 +158,8 @@ export default {
 		ProjectsByClusterLocal,
 		ProjectsByClusterNacional,
 		BenefitType,
+		Microcredentials,
+		ProjectsByDocumentStatus,
 		LoadingScreen
 	},
 	data() {
