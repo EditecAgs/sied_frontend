@@ -44,13 +44,39 @@
 					</div>
 
 					<div class="flex gap-2">
-						<button
-							:disabled="isApplyingFilters"
-							class="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-							@click="applyFilters">
-							<span v-if="isApplyingFilters">Aplicando...</span>
-							<span v-else>Filtrar</span>
-						</button>
+<button
+	:disabled="isApplyingFilters"
+	class="inline-flex items-center gap-2
+	       px-4 py-2
+	       bg-[#6b1d2a]
+	       text-white
+	       rounded-md
+	       hover:bg-[#5a1823]
+	       focus:outline-none
+	       focus:ring-2
+	       focus:ring-[#7a1f2b]
+	       focus:ring-offset-2
+	       transition-all
+	       disabled:opacity-50
+	       disabled:cursor-not-allowed"
+	@click="applyFilters">
+
+	<!-- Icono filtro -->
+	<svg v-if="!isApplyingFilters"
+	     xmlns="http://www.w3.org/2000/svg"
+	     class="w-4 h-4"
+	     fill="none"
+	     viewBox="0 0 24 24"
+	     stroke="currentColor"
+	     stroke-width="2">
+		<path stroke-linecap="round"
+		      stroke-linejoin="round"
+		      d="M3 4h18l-7 8v6l-4 2v-8L3 4z" />
+	</svg>
+
+	<span v-if="isApplyingFilters">Aplicando...</span>
+	<span v-else>Filtrar</span>
+</button>
 						<button
 							:disabled="isApplyingFilters"
 							class="px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
@@ -58,9 +84,76 @@
 							Borrar filtros
 						</button>
 						<button
-							class="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700"
-							@click="downloadPdf">
-							Descargar PDF
+							class="w-12 h-12 flex items-center justify-center
+								bg-[#7a1f2b]
+								text-white
+								rounded-xl
+								shadow-md
+								hover:bg-[#8f2433]
+								hover:shadow-lg
+								active:scale-95
+								transition-all duration-200"
+							@click="downloadPdf"
+							title="Descargar PDF">
+
+							<svg xmlns="http://www.w3.org/2000/svg"
+								class="w-6 h-6"
+								fill="none"
+								viewBox="0 0 24 24"
+								stroke="currentColor"
+								stroke-width="2">
+
+								<!-- Documento -->
+								<path stroke-linecap="round"
+									stroke-linejoin="round"
+									d="M9 3h6l4 4v14a2 2 0 01-2 2H7a2 2 0 01-2-2V5a2 2 0 012-2h2z"/>
+
+								<!-- Doblez esquina -->
+								<path stroke-linecap="round"
+									stroke-linejoin="round"
+									d="M15 3v4h4"/>
+
+								<!-- Líneas simulando PDF -->
+								<path stroke-linecap="round"
+									stroke-linejoin="round"
+									d="M8 13h8M8 17h6"/>
+							</svg>
+						</button>
+						<button
+							class="w-12 h-12 flex items-center justify-center
+								bg-emerald-600
+								text-white
+								rounded-xl
+								shadow-md
+								hover:bg-emerald-700
+								hover:shadow-lg
+								active:scale-95
+								transition-all duration-200"
+							@click="downloadExcel"
+							title="Descargar Excel">
+
+							<svg xmlns="http://www.w3.org/2000/svg"
+								class="w-6 h-6"
+								fill="none"
+								viewBox="0 0 24 24"
+								stroke="currentColor"
+								stroke-width="2">
+
+								<!-- Documento -->
+								<path stroke-linecap="round"
+									stroke-linejoin="round"
+									d="M9 3h6l4 4v14a2 2 0 01-2 2H7a2 2 0 01-2-2V5a2 2 0 012-2h2z"/>
+
+								<!-- Doblez esquina -->
+								<path stroke-linecap="round"
+									stroke-linejoin="round"
+									d="M15 3v4h4"/>
+
+								<!-- X -->
+								<path stroke-linecap="round"
+									stroke-linejoin="round"
+									d="M9 13l6 6M15 13l-6 6"/>
+							</svg>
 						</button>
 					</div>
 				</div>
@@ -135,7 +228,7 @@ import ProjectsByClusterNacional from '../components/ecommerce/ProjectsByCluster
 import BenefitType from '../components/ecommerce/BenefitType.vue';
 import Microcredentials from '../components/ecommerce/Microcredentials.vue';
 import ProjectsByDocumentStatus from '../components/ecommerce/ProjectsByDocumentStatus.vue';
-import { downloadDashboardPdf } from '../services/statistics/dashboard';
+import { downloadDashboardPdf, downloadDashboardExcel  } from '../services/statistics/dashboard';
 import { getInstitutions, showInstitutions } from '../services/institutions/institutions'
 import { getStates } from '../services/location/states.js'
 
@@ -317,6 +410,31 @@ export default {
 			link.click();
 
 			window.URL.revokeObjectURL(url);
+		},
+		async downloadExcel() {
+		try {
+			const response = await downloadDashboardExcel({
+				id_state: this.currentFilters.id_state,
+				id_institution: this.currentFilters.id_institution
+			})
+
+			const blob = new Blob(
+				[response.data],
+				{ type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' }
+			)
+
+			const url = window.URL.createObjectURL(blob)
+
+			const link = document.createElement('a')
+			link.href = url
+			link.download = 'dashboard.xlsx'
+			link.click()
+
+			window.URL.revokeObjectURL(url)
+
+		} catch (error) {
+			console.error('Error al descargar Excel:', error)
+		}
 		}
 	}
 }

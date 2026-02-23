@@ -143,6 +143,12 @@ export function downloadDashboardPdf(params = {}) {
 		responseType: 'blob'
 	});
 }
+export const downloadDashboardExcel = (params = {}) => {
+	return axios.get('/dashboard/export-excel', {
+		params,
+		responseType: 'blob'
+	});
+};
 
 export function getAllCredentialsStats(params = {}) {
 	const { id_state, id_institution } = params;
