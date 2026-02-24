@@ -161,13 +161,12 @@
 
 			<div class="min-h-screen w-full bg-cover bg-center bg-fixed">
 				<div class="flex flex-col gap-4 md:gap-6 p-4 md:p-6">
-					<ecommerce-metrics :key="componentKey + 'metrics'" :filters="currentFilters" @loaded="onChildLoaded" />
-					<customer-demographic
-						:key="componentKey + 'demographic'"
-						:filters="currentFilters"
-						@loaded="onChildLoaded" />
-
-					<monthly-sale :key="componentKey + 'monthly'" :filters="currentFilters" @loaded="onChildLoaded" />
+					<div class="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
+						<SectorsMexico :key="componentKey + 'sectors'" :filters="currentFilters" @loaded="onChildLoaded" />
+						<SectorsMexicoMetric :key="componentKey + 'metric'" :filters="currentFilters" @loaded="onChildLoaded" />
+					</div>
+					<recent-orders :key="componentKey + 'orders'" :filters="currentFilters" @loaded="onChildLoaded" />
+					<OrganizationsByScope :key="componentKey + 'scope'" :filters="currentFilters" @loaded="onChildLoaded" />
 				</div>
 			</div>
 		</admin-layout>
@@ -176,9 +175,10 @@
 
 <script>
 import AdminLayout from '../components/layouts/AdminLayout.vue'
-import EcommerceMetrics from '../components/ecommerce/EcommerceMetrics.vue'
-import MonthlySale from '../components/ecommerce/MonthlySale.vue'
-import CustomerDemographic from '../components/ecommerce/CustomerDemographic.vue'
+import RecentOrders from '../components/ecommerce/RecentOrders.vue'
+import SectorsMexico from '../components/ecommerce/SectorsMexico.vue'
+import SectorsMexicoMetric from '../components/ecommerce/SectorsMexicoMetric.vue'
+import OrganizationsByScope from '../components/ecommerce/OrganizationsByScope.vue'
 import LoadingScreen from '../components/layouts/LoadingScreen.vue'
 import { downloadDashboardPdf, downloadDashboardExcel  } from '../services/statistics/dashboard';
 import { getInstitutions, showInstitutions } from '../services/institutions/institutions'
@@ -188,9 +188,10 @@ export default {
 	name: 'Ecommerce',
 	components: {
 		AdminLayout,
-		EcommerceMetrics,
-		MonthlySale,
-		CustomerDemographic,
+		RecentOrders,
+		SectorsMexico,
+		SectorsMexicoMetric,
+		OrganizationsByScope,
 		LoadingScreen
 	},
 	data() {

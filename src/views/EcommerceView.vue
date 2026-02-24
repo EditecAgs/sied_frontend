@@ -44,9 +44,9 @@
 					</div>
 
 					<div class="flex gap-2">
-<button
-	:disabled="isApplyingFilters"
-	class="inline-flex items-center gap-2
+						<button
+							:disabled="isApplyingFilters"
+							class="inline-flex items-center gap-2
 	       px-4 py-2
 	       bg-[#6b1d2a]
 	       text-white
@@ -59,24 +59,24 @@
 	       transition-all
 	       disabled:opacity-50
 	       disabled:cursor-not-allowed"
-	@click="applyFilters">
+							@click="applyFilters">
+							<svg
+								v-if="!isApplyingFilters"
+								xmlns="http://www.w3.org/2000/svg"
+								class="w-4 h-4"
+								fill="none"
+								viewBox="0 0 24 24"
+								stroke="currentColor"
+								stroke-width="2">
+								<path
+									stroke-linecap="round"
+									stroke-linejoin="round"
+									d="M3 4h18l-7 8v6l-4 2v-8L3 4z" />
+							</svg>
 
-	<!-- Icono filtro -->
-	<svg v-if="!isApplyingFilters"
-	     xmlns="http://www.w3.org/2000/svg"
-	     class="w-4 h-4"
-	     fill="none"
-	     viewBox="0 0 24 24"
-	     stroke="currentColor"
-	     stroke-width="2">
-		<path stroke-linecap="round"
-		      stroke-linejoin="round"
-		      d="M3 4h18l-7 8v6l-4 2v-8L3 4z" />
-	</svg>
-
-	<span v-if="isApplyingFilters">Aplicando...</span>
-	<span v-else>Filtrar</span>
-</button>
+							<span v-if="isApplyingFilters">Aplicando...</span>
+							<span v-else>Filtrar</span>
+						</button>
 						<button
 							:disabled="isApplyingFilters"
 							class="px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
@@ -93,30 +93,30 @@
 								hover:shadow-lg
 								active:scale-95
 								transition-all duration-200"
-							@click="downloadPdf"
-							title="Descargar PDF">
-
-							<svg xmlns="http://www.w3.org/2000/svg"
+							title="Descargar PDF"
+							@click="downloadPdf">
+							<svg
+								xmlns="http://www.w3.org/2000/svg"
 								class="w-6 h-6"
 								fill="none"
 								viewBox="0 0 24 24"
 								stroke="currentColor"
 								stroke-width="2">
 
-								<!-- Documento -->
-								<path stroke-linecap="round"
+								<path
+									stroke-linecap="round"
 									stroke-linejoin="round"
-									d="M9 3h6l4 4v14a2 2 0 01-2 2H7a2 2 0 01-2-2V5a2 2 0 012-2h2z"/>
+									d="M9 3h6l4 4v14a2 2 0 01-2 2H7a2 2 0 01-2-2V5a2 2 0 012-2h2z" />
 
-								<!-- Doblez esquina -->
-								<path stroke-linecap="round"
+								<path
+									stroke-linecap="round"
 									stroke-linejoin="round"
-									d="M15 3v4h4"/>
+									d="M15 3v4h4" />
 
-								<!-- Líneas simulando PDF -->
-								<path stroke-linecap="round"
+								<path
+									stroke-linecap="round"
 									stroke-linejoin="round"
-									d="M8 13h8M8 17h6"/>
+									d="M8 13h8M8 17h6" />
 							</svg>
 						</button>
 						<button
@@ -129,30 +129,30 @@
 								hover:shadow-lg
 								active:scale-95
 								transition-all duration-200"
-							@click="downloadExcel"
-							title="Descargar Excel">
-
-							<svg xmlns="http://www.w3.org/2000/svg"
+							title="Descargar Excel"
+							@click="downloadExcel">
+							<svg
+								xmlns="http://www.w3.org/2000/svg"
 								class="w-6 h-6"
 								fill="none"
 								viewBox="0 0 24 24"
 								stroke="currentColor"
 								stroke-width="2">
 
-								<!-- Documento -->
-								<path stroke-linecap="round"
+								<path
+									stroke-linecap="round"
 									stroke-linejoin="round"
-									d="M9 3h6l4 4v14a2 2 0 01-2 2H7a2 2 0 01-2-2V5a2 2 0 012-2h2z"/>
+									d="M9 3h6l4 4v14a2 2 0 01-2 2H7a2 2 0 01-2-2V5a2 2 0 012-2h2z" />
 
-								<!-- Doblez esquina -->
-								<path stroke-linecap="round"
+								<path
+									stroke-linecap="round"
 									stroke-linejoin="round"
-									d="M15 3v4h4"/>
+									d="M15 3v4h4" />
 
-								<!-- X -->
-								<path stroke-linecap="round"
+								<path
+									stroke-linecap="round"
 									stroke-linejoin="round"
-									d="M9 13l6 6M15 13l-6 6"/>
+									d="M9 13l6 6M15 13l-6 6" />
 							</svg>
 						</button>
 					</div>
@@ -202,6 +202,7 @@
 
 					<Microcredentials :key="componentKey + 'microcredentials'" :filters="currentFilters" @loaded="onChildLoaded" />
 					<ProjectsByDocumentStatus :key="componentKey + 'documentstatus'" :filters="currentFilters" @loaded="onChildLoaded" />
+					<ProjectsByStatus :key="componentKey + 'projectstatus'" :filters="currentFilters" @loaded="onChildLoaded" />
 				</div>
 			</div>
 		</admin-layout>
@@ -228,6 +229,7 @@ import ProjectsByClusterNacional from '../components/ecommerce/ProjectsByCluster
 import BenefitType from '../components/ecommerce/BenefitType.vue';
 import Microcredentials from '../components/ecommerce/Microcredentials.vue';
 import ProjectsByDocumentStatus from '../components/ecommerce/ProjectsByDocumentStatus.vue';
+import ProjectsByStatus from '../components/ecommerce/ProjectsByStatus.vue';
 import { downloadDashboardPdf, downloadDashboardExcel  } from '../services/statistics/dashboard';
 import { getInstitutions, showInstitutions } from '../services/institutions/institutions'
 import { getStates } from '../services/location/states.js'
@@ -253,6 +255,7 @@ export default {
 		BenefitType,
 		Microcredentials,
 		ProjectsByDocumentStatus,
+		ProjectsByStatus,
 		LoadingScreen
 	},
 	data() {

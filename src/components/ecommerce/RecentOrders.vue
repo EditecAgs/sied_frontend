@@ -61,9 +61,7 @@
 			</nav>
 		</div>
 
-		<!-- Grid: Tabla a la izquierda, Gráfica a la derecha -->
 		<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-			<!-- Tabla de sectores (ocupa 2 columnas en lg) -->
 			<div class="lg:col-span-2">
 				<div class="overflow-x-auto">
 					<table class="min-w-full table-auto divide-y divide-gray-200 dark:divide-gray-700">

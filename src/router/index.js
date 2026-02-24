@@ -40,6 +40,12 @@ import ResetPassword from "../views/Auth/ResetPassword.vue";
 import CertificationView from "../views/Tables/CertificationView.vue";
 import DiplomaView from "../views/Tables/DiplomaView.vue";
 import DashboardInstitutions from "../views/DashboardInstitutions.vue"
+import Acreditaciones from '../views/Acreditaciones.vue';
+import AnalisisClusters from '../views/AnalisisClusters.vue';
+import ClasificacionProyectos from '../views/ClasificacionProyectos.vue';
+import EstadosProyecto from '../views/EstadosProyecto.vue';
+import Finanzas from '../views/Finanzas.vue';
+import OrganizacionesSectores from '../views/OrganizacionesSectores.vue';
 import ModeloDualFormPage from "../components/forms/ModeloDualFormPage.vue";
 import BenefitTypeView from "../views/Tables/BenefitTypeView.vue";
 
@@ -54,7 +60,14 @@ const routes = [
     { path: '/signin', name: 'signin', component: Signin },
     { path: '/signup', name: 'signup', component: Signup },
     { path: "/404", name: "404", component: NotFound },
-    { path: '/dashboard', name: 'dashboard', component: EcommerceView, meta: { title: 'eCommerce Dashboard' } },
+	{ path: '/dashboard', name: 'dashboard', component: EcommerceView, meta: { title: 'eCommerce Dashboard' } },
+    { path: '/static-general', name: 'general', component: DashboardInstitutions},
+	{ path: '/static-accreditations', name: 'Accreditations', component: Acreditaciones},
+	{ path: '/static-analysis-clusters', name: 'AnalysisClusters', component: AnalisisClusters},
+	{ path: '/static-project-classification', name: 'ProjectClassification', component: ClasificacionProyectos},
+	{ path: '/static-project-states', name: 'ProjectStates', component: EstadosProyecto},
+	{ path: '/static-finances', name: 'Finances', component: Finanzas},
+	{ path: '/static-organizations-sectors', name: 'OrganizationsSectors', component: OrganizacionesSectores},
     { path: '/profile', name: 'Profile', component: Profile },
     { path: '/form-elements', name: 'FormElements', component: FormDual },
     { path: '/basic-tables', name: 'BasicTables', component: UsersView },
@@ -86,7 +99,6 @@ const routes = [
     { path: '/reset-password', name: 'ResetPassword', component: ResetPassword },
 	{ path: '/certifications-table', name: 'CertificationsTable', component: CertificationView },
 	{ path: '/diplomas-table', name: 'DiplomasTable', component: DiplomaView },
-    {path: '/dashboard-institutions', name: 'DashboardInstitutions', component: DashboardInstitutions},
     {path: '/benefit-type-table', name: 'BenefitTypeTable', component: BenefitTypeView},
     {
     path: '/modelo-dual/editar/:pk',

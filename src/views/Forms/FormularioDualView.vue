@@ -2,24 +2,23 @@
 	<AdminLayout>
 		<PageBreadcrumb :pageTitle="currentPageTitle" />
 		<div class="space-y-5 sm:space-y-6">
-			<ComponentCard title="Registro de Modelo Dual" >
+			<ComponentCard title="Registro de Modelo Dual">
 				<div class="flex justify-start mb-4">
-				<router-link
-					to="/modelo-dual/crear"
-					class="inline-flex items-center px-4 py-2 rounded-md shadow-sm
+					<router-link
+						to="/modelo-dual/crear"
+						class="inline-flex items-center px-4 py-2 rounded-md shadow-sm
 						text-sm font-medium text-white
 						bg-brand-800 hover:bg-brand-900
-						focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-700"
-				>
-					<PlusIcon class="h-5 w-5 mr-2" />
-					Crear
-				</router-link>
+						focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-700">
+						<PlusIcon class="h-5 w-5 mr-2" />
+						Crear
+					</router-link>
 				</div>
 
 				<TableModeloDual
 					ref="tableRef"
 					@open="handleOpen"
-					@open-confirm="openDeleteModal"/>
+					@open-confirm="openDeleteModal" />
 				<mdlDeleteModelDual
 					:show="showDeleteModal"
 					:table="deleteTarget.table"

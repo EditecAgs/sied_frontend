@@ -161,13 +161,8 @@
 
 			<div class="min-h-screen w-full bg-cover bg-center bg-fixed">
 				<div class="flex flex-col gap-4 md:gap-6 p-4 md:p-6">
-					<ecommerce-metrics :key="componentKey + 'metrics'" :filters="currentFilters" @loaded="onChildLoaded" />
-					<customer-demographic
-						:key="componentKey + 'demographic'"
-						:filters="currentFilters"
-						@loaded="onChildLoaded" />
-
-					<monthly-sale :key="componentKey + 'monthly'" :filters="currentFilters" @loaded="onChildLoaded" />
+					<ProjectsByDocumentStatus :key="componentKey + 'documentstatus'" :filters="currentFilters" @loaded="onChildLoaded" />
+					<ProjectsByStatus :key="componentKey + 'projectstatus'" :filters="currentFilters" @loaded="onChildLoaded" />
 				</div>
 			</div>
 		</admin-layout>
@@ -176,10 +171,9 @@
 
 <script>
 import AdminLayout from '../components/layouts/AdminLayout.vue'
-import EcommerceMetrics from '../components/ecommerce/EcommerceMetrics.vue'
-import MonthlySale from '../components/ecommerce/MonthlySale.vue'
-import CustomerDemographic from '../components/ecommerce/CustomerDemographic.vue'
 import LoadingScreen from '../components/layouts/LoadingScreen.vue'
+import ProjectsByDocumentStatus from '../components/ecommerce/ProjectsByDocumentStatus.vue';
+import ProjectsByStatus from '../components/ecommerce/ProjectsByStatus.vue';
 import { downloadDashboardPdf, downloadDashboardExcel  } from '../services/statistics/dashboard';
 import { getInstitutions, showInstitutions } from '../services/institutions/institutions'
 import { getStates } from '../services/location/states.js'
@@ -188,9 +182,8 @@ export default {
 	name: 'Ecommerce',
 	components: {
 		AdminLayout,
-		EcommerceMetrics,
-		MonthlySale,
-		CustomerDemographic,
+		ProjectsByDocumentStatus,
+		ProjectsByStatus,
 		LoadingScreen
 	},
 	data() {

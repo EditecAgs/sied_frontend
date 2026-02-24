@@ -184,3 +184,21 @@ export function getDualAreasStats(params = {}) {
 	const queryString = buildQueryString({ id_state, id_institution });
 	return axios.get(`project/project-DualAreas${queryString}`);
 }
+
+export function refreshDashboardCache(options = {}) {
+	const { sync = false, force = false } = options;
+
+	const queryParams = new URLSearchParams();
+	if (sync) queryParams.append('sync', 'true');
+	if (force) queryParams.append('force', 'true');
+
+	const queryString = queryParams.toString();
+	const url = `refresh-cache${queryString ? `?${queryString}` : ''}`;
+
+	return axios.post(url);
+}
+
+export function getDashboardCacheStatus() {
+	return axios.get('cache-status');
+}
+
