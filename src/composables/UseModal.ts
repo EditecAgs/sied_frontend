@@ -1,28 +1,38 @@
-// composables/useModal.ts
 import { ref } from 'vue'
 
+type ModalBase = {
+	mode: 'create' | 'edit'
+	pk: number | null
+	table: string
+}
+
 export function useModal() {
-    const showModal = ref(false)
-    const modalData = ref<{ mode: 'create' | 'edit'; pk: number | null; table: string }>({
-        mode: 'create',
-        pk: null,
+	const showModal = ref(false)
+
+	const modalData = ref<ModalBase & Record<string, unknown>>({
+		mode: 'create',
+		pk: null,
 		table: ''
-    })
+	})
 
-    const openModal = (mode: 'create' | 'edit', pk: number | null = null, table: string, extraData: any = null) => {
-        modalData.value = { mode, pk , table, ...extraData }
-        showModal.value = true
-    }
+	const openModal = (
+		mode: 'create' | 'edit',
+		pk: number | null = null,
+		table: string,
+		extraData: Record<string, unknown> = {}
+	) => {
+		modalData.value = { mode, pk, table, ...extraData }
+		showModal.value = true
+	}
 
-    const closeModal = () => {
-        showModal.value = false
-    }
+	const closeModal = () => {
+		showModal.value = false
+	}
 
-    return {
-        showModal,
-        modalData,
-        openModal,
-        closeModal,
-    }
-
+	return {
+		showModal,
+		modalData,
+		openModal,
+		closeModal,
+	}
 }
