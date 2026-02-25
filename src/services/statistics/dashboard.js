@@ -130,3 +130,75 @@ export function getProjectsByCluster(params = {}) {
 	const queryString = buildQueryString({ id_state, id_institution });
 	return axios.get(`projects/cluster/count${queryString}`);
 }
+
+export function getStatsByBenefitType(params = {}) {
+	const { id_state, id_institution } = params;
+	const queryString = buildQueryString({ id_state, id_institution });
+	return axios.get(`project/benefit-type${queryString}`);
+}
+
+export function downloadDashboardPdf(params = {}) {
+	return axios.get('dashboard/export-pdf', {
+		params,
+		responseType: 'blob'
+	});
+}
+export const downloadDashboardExcel = (params = {}) => {
+	return axios.get('/dashboard/export-excel', {
+		params,
+		responseType: 'blob'
+	});
+};
+
+export function getAllCredentialsStats(params = {}) {
+	const { id_state, id_institution } = params;
+	const queryString = buildQueryString({ id_state, id_institution });
+
+	return Promise.all([
+		axios.get(`project/project-MicroCredential${queryString}`),
+		axios.get(`project/project-Certification${queryString}`),
+		axios.get(`project/project-Diplomas${queryString}`)
+	]).then(([microRes, certRes, diplomaRes]) => {
+		return {
+			microCredentials: microRes.data,
+			certifications: certRes.data,
+			diplomas: diplomaRes.data
+		};
+	});
+}
+
+export function getProjectsByDocumentStatus(params = {}) {
+	const { id_state, id_institution } = params;
+	const queryString = buildQueryString({ id_state, id_institution });
+	return axios.get(`project/document-status${queryString}`);
+}
+
+export function getProjectsByStatus(params = {}) {
+	const { id_state, id_institution } = params;
+	const queryString = buildQueryString({ id_state, id_institution });
+	return axios.get(`project/project-status${queryString}`);
+}
+
+export function getDualAreasStats(params = {}) {
+	const { id_state, id_institution } = params;
+	const queryString = buildQueryString({ id_state, id_institution });
+	return axios.get(`project/project-DualAreas${queryString}`);
+}
+
+export function refreshDashboardCache(options = {}) {
+	const { sync = false, force = false } = options;
+
+	const queryParams = new URLSearchParams();
+	if (sync) queryParams.append('sync', 'true');
+	if (force) queryParams.append('force', 'true');
+
+	const queryString = queryParams.toString();
+	const url = `refresh-cache${queryString ? `?${queryString}` : ''}`;
+
+	return axios.post(url);
+}
+
+export function getDashboardCacheStatus() {
+	return axios.get('cache-status');
+}
+
