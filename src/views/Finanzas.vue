@@ -119,42 +119,6 @@
 									d="M8 13h8M8 17h6" />
 							</svg>
 						</button>
-						<button
-							class="w-12 h-12 flex items-center justify-center
-								bg-emerald-600
-								text-white
-								rounded-xl
-								shadow-md
-								hover:bg-emerald-700
-								hover:shadow-lg
-								active:scale-95
-								transition-all duration-200"
-							title="Descargar Excel"
-							@click="downloadExcel">
-							<svg
-								xmlns="http://www.w3.org/2000/svg"
-								class="w-6 h-6"
-								fill="none"
-								viewBox="0 0 24 24"
-								stroke="currentColor"
-								stroke-width="2">
-
-								<path
-									stroke-linecap="round"
-									stroke-linejoin="round"
-									d="M9 3h6l4 4v14a2 2 0 01-2 2H7a2 2 0 01-2-2V5a2 2 0 012-2h2z" />
-
-								<path
-									stroke-linecap="round"
-									stroke-linejoin="round"
-									d="M15 3v4h4" />
-
-								<path
-									stroke-linecap="round"
-									stroke-linejoin="round"
-									d="M9 13l6 6M15 13l-6 6" />
-							</svg>
-						</button>
 					</div>
 				</div>
 			</div>
@@ -348,31 +312,6 @@ export default {
 
 			window.URL.revokeObjectURL(url);
 		},
-		async downloadExcel() {
-			try {
-				const response = await downloadDashboardExcel({
-					id_state: this.currentFilters.id_state,
-					id_institution: this.currentFilters.id_institution
-				})
-
-				const blob = new Blob(
-					[response.data],
-					{ type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' }
-				)
-
-				const url = window.URL.createObjectURL(blob)
-
-				const link = document.createElement('a')
-				link.href = url
-				link.download = 'dashboard.xlsx'
-				link.click()
-
-				window.URL.revokeObjectURL(url)
-
-			} catch (error) {
-				console.error('Error al descargar Excel:', error)
-			}
-		}
 	}
 }
 </script>

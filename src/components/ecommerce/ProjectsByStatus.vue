@@ -10,14 +10,11 @@
 			</div>
 		</div>
 
-		<!-- Estado de carga -->
 		<div v-if="loading" class="flex justify-center py-12">
 			<div class="animate-spin rounded-full h-12 w-12 border-b-2 border-[#9C2131]" />
 		</div>
 
-		<!-- Contenido principal -->
 		<div v-else-if="hasData" class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-			<!-- Gráfica de pastel -->
 			<div class="flex flex-col items-center justify-center">
 				<div class="w-full max-w-[280px] h-[280px] mx-auto">
 					<PieChart
@@ -28,31 +25,29 @@
 				</div>
 			</div>
 
-			<!-- Leyenda y estadísticas -->
 			<div class="flex flex-col justify-center space-y-4">
 				<div
-					v-for="(item, index) in chartData.datasets[0].data"
-					:key="index"
+					v-for="(item, index) in activeStatuses"
+					:key="item.status_key"
 					class="flex items-center justify-between p-3 bg-white/50 dark:bg-gray-800/50 rounded-lg">
 					<div class="flex items-center gap-3">
 						<div
 							class="w-4 h-4 rounded-full"
 							:style="{ backgroundColor: chartData.datasets[0].backgroundColor[index] }" />
 						<span class="text-sm font-medium text-gray-700 dark:text-gray-300">
-							{{ chartData.labels[index] }}
+							{{ item.status }}
 						</span>
 					</div>
 					<div class="flex items-center gap-4">
 						<span class="text-sm text-gray-600 dark:text-gray-400">
-							{{ statusData[index].count }} proyectos
+							{{ item.count }} proyectos
 						</span>
 						<span class="text-sm font-semibold text-gray-900 dark:text-white min-w-[50px] text-right">
-							{{ statusData[index].percentage }}%
+							{{ item.percentage }}%
 						</span>
 					</div>
 				</div>
 
-				<!-- Resumen -->
 				<div class="mt-4 p-4 bg-[#9C2131]/10 dark:bg-[#9C2131]/20 rounded-lg">
 					<p class="text-sm text-gray-700 dark:text-gray-300 text-center">
 						<span class="font-semibold">{{ statusConcluidos }} proyectos</span> concluidos
@@ -62,7 +57,6 @@
 			</div>
 		</div>
 
-		<!-- Sin datos -->
 		<div v-else class="text-center py-12 text-gray-500 dark:text-gray-400">
 			No hay datos disponibles
 		</div>
@@ -88,7 +82,6 @@ const props = defineProps({
 
 const emit = defineEmits(['loaded'])
 
-// Paleta de colores (usando los mismos colores)
 const colors = ['#9C2131', '#C9A236', '#3A4A5F', '#707070']
 
 const statusData = ref([])
@@ -113,9 +106,7 @@ const statusEnProceso = computed(() => {
 	return item ? item.count : 0
 })
 
-// Datos para la gráfica
 const chartData = computed(() => {
-	// Filtramos solo estados con count > 0 para la gráfica
 	const activeStatuses = statusData.value.filter(item => item.count > 0)
 
 	if (activeStatuses.length === 0) {
@@ -143,13 +134,12 @@ const chartData = computed(() => {
 	}
 })
 
-// Opciones de la gráfica
 const chartOptions = computed(() => ({
 	responsive: true,
 	maintainAspectRatio: false,
 	plugins: {
 		legend: {
-			display: false, // Ocultamos la leyenda porque ya tenemos nuestra propia
+			display: false,
 		},
 		tooltip: {
 			callbacks: {
@@ -163,15 +153,17 @@ const chartOptions = computed(() => ({
 			}
 		}
 	},
-	cutout: '60%', // Para hacer un efecto donut (opcional)
+	cutout: '60%',
 }))
 
+const activeStatuses = computed(() => {
+	return statusData.value.filter(item => item.count > 0)
+})
 const loadData = async () => {
 	try {
 		loading.value = true
 		const response = await getProjectsByStatus(props.filters)
 
-		// La API devuelve directamente el array
 		statusData.value = response.data
 
 		await nextTick()
