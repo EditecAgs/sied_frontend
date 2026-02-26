@@ -60,6 +60,7 @@
 									<li
 										v-for="(item, index) in menuGroup.items"
 										:key="item.name">
+										<!-- Botón para items con subItems (menú desplegable) -->
 										<button
 											v-if="item.subItems"
 											:class="[
@@ -88,6 +89,27 @@
 													},
 												]" />
 										</button>
+
+										<!-- Botón para items con action (como Recargar Caché) -->
+										<button
+											v-else-if="item.action"
+											@click="item.action"
+											:class="[
+												'menu-item group w-full',
+												'menu-item-inactive hover:opacity-80',
+												!isExpanded && !isHovered ? 'lg:justify-center' : 'lg:justify-start',
+											]">
+											<span class="menu-item-icon-inactive">
+												<component :is="item.icon" class="text-white" />
+											</span>
+											<span
+												v-if="isExpanded || isHovered || isMobileOpen"
+												class="menu-item-text text-white">
+												{{ item.name }}
+											</span>
+										</button>
+
+										<!-- Link normal para items con path -->
 										<router-link
 											v-else-if="item.path && !item.path.startsWith('http')"
 											:to="item.path"
@@ -107,6 +129,8 @@
 												{{ item.name }}
 											</span>
 										</router-link>
+
+										<!-- Link externo -->
 										<a
 											v-else-if="item.path && item.path.startsWith('http')"
 											:href="item.path"
@@ -190,6 +214,7 @@
 <script setup>
 import { computed, ref, onMounted } from 'vue';
 import { useRoute } from 'vue-router';
+import Swal from 'sweetalert2';
 
 import {
 	GridIcon,
@@ -200,14 +225,17 @@ import {
 	ListIcon,
 	FolderIcon,
 	HistoryIcon,
-	accesIcon, BarChartIcon,
+	accesIcon,
+	RefreshIcon, // Importa el icono de refresh (asegúrate de tenerlo en tus iconos)
 } from '../../icons';
 import { useSidebar } from '../../composables/useSidebar';
+import { refreshDashboardCache } from '../../services/statistics/dashboard';
 
 const route = useRoute();
 const { isExpanded, isMobileOpen, isHovered, openSubmenu } = useSidebar();
 
 const userType = ref(null);
+const isRefreshing = ref(false);
 
 onMounted(() => {
 	const userData = localStorage.getItem('user');
@@ -221,6 +249,74 @@ onMounted(() => {
 	}
 });
 
+// Función para recargar caché con SweetAlert2
+const handleRefreshCache = async () => {
+	if (isRefreshing.value) return;
+
+	const result = await Swal.fire({
+		title: '¿Recargar caché del dashboard?',
+		text: 'Esto actualizará todos los datos estadísticos. Puede tomar unos segundos.',
+		icon: 'question',
+		showCancelButton: true,
+		confirmButtonColor: '#3085d6',
+		cancelButtonColor: '#d33',
+		confirmButtonText: 'Sí, recargar',
+		cancelButtonText: 'Cancelar'
+	});
+
+	if (!result.isConfirmed) return;
+
+	isRefreshing.value = true;
+
+	Swal.fire({
+		title: 'Actualizando caché',
+		text: 'Por favor espera...',
+		allowOutsideClick: false,
+		allowEscapeKey: false,
+		didOpen: () => {
+			Swal.showLoading();
+		}
+	});
+
+	try {
+		const response = await refreshDashboardCache();
+
+		if (response.data.success) {
+			Swal.fire({
+				icon: 'success',
+				title: '¡Caché actualizada!',
+				html: `
+					${response.data.message}<br>
+					<small class="text-gray-500">Job ID: ${response.data.data?.job_id || 'N/A'}</small>
+				`,
+				timer: 3000,
+				showConfirmButton: true
+			});
+		} else {
+			throw new Error(response.data.message || 'Error al actualizar');
+		}
+	} catch (error) {
+		console.error('Error:', error);
+
+		if (error.response?.status === 429) {
+			Swal.fire({
+				icon: 'warning',
+				title: 'Ya está en proceso',
+				text: 'La caché ya está siendo actualizada. Por favor espera unos segundos.',
+				confirmButtonColor: '#3085d6'
+			});
+		} else {
+			Swal.fire({
+				icon: 'error',
+				title: 'Error',
+				text: error.response?.data?.message || 'Error al conectar con el servidor',
+				confirmButtonColor: '#3085d6'
+			});
+		}
+	} finally {
+		isRefreshing.value = false;
+	}
+};
 
 const menuGroups = computed(() => {
 	return [
@@ -228,9 +324,17 @@ const menuGroups = computed(() => {
 			title: 'Menú',
 			items: [
 				{
+					name: 'Estadisticas',
 					icon: GridIcon,
-					name: 'Dashboard',
-					path: '/dashboard',
+					subItems: [
+						{ name: 'Métricas Generales', path: '/static-general', pro: false },
+						{ name: 'Estado del Proyecto', path: '/static-project-states', pro: false },
+						{ name: 'Clasificación de Proyectos', path: '/static-project-classification', pro: false },
+						{ name: 'Organizaciones y Sectores', path: '/static-organizations-sectors', pro: false },
+						{ name: 'Finanzas', path: '/static-finances', pro: false },
+						{ name: 'Análisis por Clúster', path: '/static-analysis-clusters', pro: false },
+						{ name: 'Acreditaciones', path: '/static-accreditations', pro: false },
+					]
 				},
 				{
 					icon: UserCircleIcon,
@@ -252,25 +356,34 @@ const menuGroups = computed(() => {
 					icon: TableIcon,
 					subItems: [
 						...(userType.value === 0 ? [{ name: 'Usuarios', path: '/basic-tables', pro: false }] : []),
-							{ name: 'Apoyo Económico', path: '/economic-table', pro: false },
-							{ name: 'Carreras', path: '/careers-table', pro: false },
-							{ name: 'Cámaras', path: '/Clusters-table', pro: false },
-							{ name: 'Certificaciones', path: '/certifications-table', pro: false },
-							{ name: 'Clasificación General del Proyecto Dual', path: '/dual_Area-table', pro: false },
-							{ name: 'Diplomados', path: '/diplomas-table', pro: false },
-							{ name: 'Especialidades', path: '/specialties-table', pro: false },
-							{ name: 'Estudiantes', path: '/student-table', pro: false },
-							{ name: 'Estatus de Documentos', path: '/document-table', pro: false },
-							{ name: 'Instituciones', path: '/institution-table', pro: false },
-							{ name: 'Microcredenciales', path: '/micro-credentials-table', pro: false },
-							{ name: 'Organizaciones', path: '/Organization-table', pro: false },
-							{ name: 'Periodos Académicos', path: '/periods_Academic-table', pro: false },
-							{ name: 'Sectores', path: '/sectors-table', pro: false },
-							{ name: 'Subsistemas', path: '/subsystem-table', pro: false },
-							{ name: 'Tipo de Modelo Dual', path: '/dual_type-table', pro: false },
-							{ name: 'Tipo de Organización ', path: '/type-table', pro: false }
+						{ name: 'Apoyo Económico', path: '/economic-table', pro: false },
+						{ name: 'Carreras', path: '/careers-table', pro: false },
+						{ name: 'Cámaras', path: '/Clusters-table', pro: false },
+						{ name: 'Certificaciones', path: '/certifications-table', pro: false },
+						{ name: 'Clasificación General del Proyecto Dual', path: '/dual_Area-table', pro: false },
+						{ name: 'Diplomados', path: '/diplomas-table', pro: false },
+						{ name: 'Especialidades', path: '/specialties-table', pro: false },
+						{ name: 'Estudiantes', path: '/student-table', pro: false },
+						{ name: 'Estatus de Documentos', path: '/document-table', pro: false },
+						{ name: 'Instituciones', path: '/institution-table', pro: false },
+						{ name: 'Microcredenciales', path: '/micro-credentials-table', pro: false },
+						{ name: 'Organizaciones', path: '/Organization-table', pro: false },
+						{ name: 'Periodos Académicos', path: '/periods_Academic-table', pro: false },
+						{ name: 'Sectores', path: '/sectors-table', pro: false },
+						{ name: 'Subsistemas', path: '/subsystem-table', pro: false },
+						{ name: 'Tipo de Modelo Dual', path: '/dual_type-table', pro: false },
+						{ name: 'Tipo de Organización ', path: '/type-table', pro: false },
+						{ name: 'Tipo de Beneficio', path: '/benefit-type-table', pro: false }
 					].filter(Boolean),
 				},
+				// BOTÓN DE RECARGAR CACHÉ - SOLO PARA ADMIN
+				...(userType.value === 0
+					? [{
+						icon: RefreshIcon, // Usa RefreshIcon o HistoryIcon
+						name: 'Recargar Caché',
+						action: handleRefreshCache, // Función que se ejecutará
+					}]
+					: []),
 			],
 		},
 		{
@@ -280,22 +393,21 @@ const menuGroups = computed(() => {
 					icon: FolderIcon,
 					name: 'Tutoriales',
 					path: '/tutorials',
-					
 				},
-...(userType.value === 0
-    ? [
-        {
-            icon: HistoryIcon,
-            name: 'Registro de Actividades de Usuario',
-            path: '/logs',
-        },
-		{
-			icon: accesIcon,
-			name: 'Registro de Accesos de Usuario',
-			path: '/access-logs',
-		}
-    ]
-    : []),
+				...(userType.value === 0
+					? [
+						{
+							icon: HistoryIcon,
+							name: 'Registro de Actividades de Usuario',
+							path: '/logs',
+						},
+						{
+							icon: accesIcon,
+							name: 'Registro de Accesos de Usuario',
+							path: '/access-logs',
+						}
+					]
+					: []),
 			],
 		},
 	];

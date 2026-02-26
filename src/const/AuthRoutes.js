@@ -1,7 +1,13 @@
 export default [
     'home',
     'dashboard',
-    'DashboardInstitutions',
+	'general',
+	'Accreditations',
+	'AnalysisClusters',
+	'ProjectClassification',
+	'ProjectStates',
+	'Finances',
+	'OrganizationsSectors',
     'Profile',
     'FormElements',
     'BasicTables',
@@ -33,5 +39,9 @@ export default [
 	'Dual_TypeTable',
     'Logs',
     'AccessLogs',
-    'Tutorials'
+    'Tutorials',
+    'modelo-dual-crear',
+    'modelo-dual-editar',
+    'modelo-dual-completar',
+     'BenefitTypeTable'
 ];

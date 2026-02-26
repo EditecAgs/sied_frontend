@@ -1,8 +1,8 @@
 <template>
 	<div class="rounded-2xl border border-gray-200 bg-[rgb(211,211,210)]/50 p-4 shadow-md dark:border-gray-700 dark:bg-gray-900/90 sm:p-6">
 		<div class="mb-4 sm:mb-6">
-			<h3 class="text-lg font-semibold text-gray-600 dark:text-white sm:text-xl">Proyectos por Institución</h3>
-			<p class="mt-1 text-gray-500 text-sm dark:text-gray-400">Porcentaje de Proyectos de modelo dual por institución</p>
+			<h3 class="text-lg font-semibold text-gray-600 dark:text-white sm:text-xl">Clasificación General de Proyectos</h3>
+			<p class="mt-1 text-gray-500 text-sm dark:text-gray-400">Distribución de proyectos por área de especialización</p>
 
 			<div
 				v-if="loading"
@@ -17,11 +17,12 @@
 			<div
 				v-else
 				class="mt-2 text-xs text-gray-500 sm:text-sm">
-				{{ dual_projects_by_institution.length }} instituciones
+				{{ dual_areas.length }} áreas de clasificación
 			</div>
 		</div>
 
 		<div class="relative min-h-[400px]">
+			<!-- Estado de carga -->
 			<div
 				v-if="loading"
 				class="absolute inset-0 flex items-center justify-center bg-white/80 dark:bg-gray-900/80 z-10 rounded-lg">
@@ -33,6 +34,7 @@
 				</div>
 			</div>
 
+			<!-- Estado de error -->
 			<div
 				v-else-if="loadError"
 				class="absolute inset-0 flex flex-col items-center justify-center bg-white/80 dark:bg-gray-900/80 z-10 rounded-lg p-4">
@@ -55,6 +57,7 @@
 				</button>
 			</div>
 
+			<!-- Sin datos -->
 			<div
 				v-else-if="!hasData"
 				class="absolute inset-0 flex items-center justify-center bg-white/80 dark:bg-gray-900/80 z-10 rounded-lg">
@@ -74,43 +77,30 @@
 				</div>
 			</div>
 
+			<!-- Grid con listado y gráfica -->
 			<div v-else class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+				<!-- Listado de áreas (ocupa 2 columnas) -->
 				<div class="lg:col-span-2 space-y-4 sm:space-y-6">
 					<div
-						v-for="(item, index) in topTenInstitutions"
+						v-for="(item, index) in topTenAreas"
 						:key="index"
 						class="flex items-center justify-between gap-2 sm:gap-4 hover:bg-gray-200/50 dark:hover:bg-gray-800/70 p-2 rounded-lg transition-colors cursor-pointer"
-						@click="onInstitutionClick(item)">
+						@click="onAreaClick(item)">
 						<div class="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
-							<img
-								v-if="item.image && isValidImage(item.image)"
-								:src="item.image"
-								:alt="item.institution_name"
-								class="w-8 h-8 sm:w-10 sm:h-10 rounded-full object-contain border border-gray-300 dark:border-gray-600 flex-shrink-0"
-								@error="handleImageError" />
-
+							<!-- Círculo de color en lugar de imagen -->
 							<div
-								v-else
-								class="w-8 h-8 sm:w-10 sm:h-10 flex items-center justify-center rounded-full bg-gray-300 dark:bg-gray-700 border border-gray-400 dark:border-gray-600 text-gray-700 dark:text-gray-300 flex-shrink-0">
-								<svg
-									xmlns="http://www.w3.org/2000/svg"
-									class="h-5 w-5 sm:h-6 sm:w-6"
-									fill="none"
-									viewBox="0 0 24 24"
-									stroke="currentColor">
-									<path
-										stroke-linecap="round"
-										stroke-linejoin="round"
-										stroke-width="2"
-										d="M12 14l9-5-9-5-9 5 9 5zm0 7v-7m0 0L3 9m9 5l9-5" />
-								</svg>
+								class="w-8 h-8 sm:w-10 sm:h-10 flex items-center justify-center rounded-full border border-gray-300 dark:border-gray-600 flex-shrink-0"
+								:style="{ backgroundColor: palette[index % palette.length] + '20' }">
+								<div
+									class="w-5 h-5 sm:w-6 sm:h-6 rounded-full"
+									:style="{ backgroundColor: palette[index % palette.length] }" />
 							</div>
 
 							<div class="min-w-0 flex-1">
 								<p
-									class="font-semibold text-gray-900 dark:text-white text-sm sm:text-base truncate"
-									:title="item.institution_name">
-									{{ item.institution_name }}
+									class="font-semibold text-gray-900 dark:text-white text-sm sm:text-base"
+									:title="item.name">
+									{{ item.name }}
 								</p>
 								<span class="block text-gray-600 text-xs dark:text-gray-400">
 									{{ item.project_count }} Proyecto{{ item.project_count !== 1 ? 's' : '' }}
@@ -134,14 +124,15 @@
 					</div>
 
 					<div
-						v-if="dual_projects_by_institution.length > 10"
+						v-if="dual_areas.length > 10"
 						class="pt-3 sm:pt-4 border-t border-gray-200 dark:border-gray-700">
 						<p class="text-xs text-gray-500 dark:text-gray-400 text-center sm:text-sm">
-							Mostrando las 10 con más proyectos de {{ dual_projects_by_institution.length }} instituciones
+							Mostrando las 10 áreas con más proyectos de {{ dual_areas.length }} clasificaciones
 						</p>
 					</div>
 				</div>
 
+				<!-- Gráfica de pastel (ocupa 1 columna) -->
 				<div class="lg:col-span-1 flex flex-col items-center justify-start">
 					<div class="w-full max-w-[250px] h-[250px] sm:h-[280px] mx-auto">
 						<PieChart
@@ -152,7 +143,10 @@
 					</div>
 
 					<p class="mt-2 text-xs text-gray-500 dark:text-gray-400 text-center">
-						Distribución de proyectos
+						Distribución por área
+					</p>
+					<p class="text-xs text-gray-400 dark:text-gray-500 text-center mt-1">
+						Mostrando {{ Math.min(10, dual_areas.length) }} áreas principales
 					</p>
 				</div>
 			</div>
@@ -164,16 +158,15 @@
 import { ref, watch, onMounted, computed, nextTick } from 'vue';
 import { Chart as ChartJS, Title, Tooltip, Legend, ArcElement } from 'chart.js';
 import { Pie } from 'vue-chartjs';
-import { getProjectsByIntitution } from '../../services/statistics/dashboard';
+import { getDualAreasStats } from '../../services/statistics/dashboard';
 
 ChartJS.register(Title, Tooltip, Legend, ArcElement);
 
-interface ProjectByInstitution {
-	id?: number;
-	institution_name: string;
+interface DualArea {
+	id: string;
+	name: string;
 	project_count: number;
-	percentage: number | string;
-	image?: string | null;
+	percentage: number;
 }
 
 const props = defineProps({
@@ -186,7 +179,7 @@ const props = defineProps({
 const emit = defineEmits(['loaded', 'loading', 'error']);
 
 const PieChart = Pie;
-const dual_projects_by_institution = ref<ProjectByInstitution[]>([]);
+const dual_areas = ref<DualArea[]>([]);
 const loading = ref(false);
 const loadError = ref(null);
 const chartKey = ref(0);
@@ -197,55 +190,55 @@ const palette = [
 	'#65A30D', '#EA580C', '#BE123C', '#0F766E', '#4338CA'
 ];
 
-const isValidImage = (src: string | null): boolean => {
-	if (!src) return false;
-	return src.startsWith('data:image/') || src.startsWith('http') || src.startsWith('/');
-};
-
-const handleImageError = (event: Event) => {
-	const img = event.target as HTMLImageElement;
-	img.style.display = 'none';
-};
-
-const formatPercentage = (percentage: number | string): string => {
-	if (typeof percentage === 'string') {
-		const num = parseFloat(percentage);
-		return isNaN(num) ? '0.0' : num.toFixed(1);
-	}
+const formatPercentage = (percentage: number): string => {
 	return percentage.toFixed(1);
 };
 
 const hasData = computed(() => {
-	return dual_projects_by_institution.value.length > 0;
+	return dual_areas.value.length > 0;
 });
 
-const topTenInstitutions = computed(() => {
-	return dual_projects_by_institution.value
+const topTenAreas = computed(() => {
+	return dual_areas.value
 		.sort((a, b) => b.project_count - a.project_count)
-		.slice(0, 10)
-		.map((item) => ({
-			...item,
-			percentage: typeof item.percentage === 'string' ? parseFloat(item.percentage) : item.percentage,
-		}));
+		.slice(0, 10);
 });
 
-const chartData = computed(() => ({
-	labels: topTenInstitutions.value.map(i =>
-		i.institution_name.length > 20
-			? i.institution_name.substring(0, 18) + '...'
-			: i.institution_name
-	),
-	datasets: [
-		{
-			data: topTenInstitutions.value.map(i => i.project_count),
-			backgroundColor: topTenInstitutions.value.map((_, index) =>
-				palette[index % palette.length]
-			),
-			borderWidth: 1,
-			borderColor: '#fff'
-		}
-	]
-}));
+const chartData = computed(() => {
+	const areasForChart = dual_areas.value
+		.filter(area => area.project_count > 0)
+		.slice(0, 10);
+
+	if (areasForChart.length === 0) {
+		return {
+			labels: ['Sin proyectos'],
+			datasets: [{
+				data: [1],
+				backgroundColor: ['#C4C4C4'],
+				borderWidth: 1,
+				borderColor: '#fff'
+			}]
+		};
+	}
+
+	return {
+		labels: areasForChart.map(area =>
+			area.name.length > 20
+				? area.name.substring(0, 18) + '...'
+				: area.name
+		),
+		datasets: [
+			{
+				data: areasForChart.map(area => area.project_count),
+				backgroundColor: areasForChart.map((_, index) =>
+					palette[index % palette.length]
+				),
+				borderWidth: 1,
+				borderColor: '#fff'
+			}
+		]
+	};
+});
 
 const chartOptions = computed(() => ({
 	responsive: true,
@@ -268,8 +261,9 @@ const chartOptions = computed(() => ({
 	}
 }));
 
-const onInstitutionClick = (institution: ProjectByInstitution) => {
-	console.log('Institución seleccionada:', institution);
+const onAreaClick = (area: DualArea) => {
+	console.log('Área seleccionada:', area);
+	// Aquí puedes emitir un evento o navegar a detalles
 };
 
 const loadData = async () => {
@@ -278,10 +272,9 @@ const loadData = async () => {
 		loadError.value = null;
 		emit('loading', true);
 
-		const response = await getProjectsByIntitution(props.filters);
+		const response = await getDualAreasStats(props.filters);
 
-		let items: ProjectByInstitution[] = [];
-
+		let items: DualArea[] = [];
 		if (Array.isArray(response.data)) {
 			items = response.data;
 		} else if (response.data && Array.isArray(response.data.data)) {
@@ -292,16 +285,16 @@ const loadData = async () => {
 
 		items.sort((a, b) => b.project_count - a.project_count);
 
-		dual_projects_by_institution.value = items;
+		dual_areas.value = items;
 
 		await nextTick();
 		chartKey.value++;
 
 		emit('loaded');
 	} catch (err) {
-		console.error('Error al cargar proyectos por institución:', err);
+		console.error('Error al cargar áreas de clasificación:', err);
 		loadError.value = err.message || 'Error desconocido';
-		dual_projects_by_institution.value = [];
+		dual_areas.value = [];
 		emit('error', err);
 	} finally {
 		loading.value = false;
@@ -335,7 +328,6 @@ watch(
 	}
 }
 
-/* Animación del spinner */
 @keyframes spin {
 	from {
 		transform: rotate(0deg);

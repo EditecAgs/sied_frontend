@@ -125,46 +125,6 @@
 
 			<div class="min-h-screen w-full bg-cover bg-center bg-fixed">
 				<div class="flex flex-col gap-4 md:gap-6 p-4 md:p-6">
-					<ecommerce-metrics :key="componentKey + 'metrics'" :filters="currentFilters" @loaded="onChildLoaded" />
-					<customer-demographic
-						:key="componentKey + 'demographic'"
-						:filters="currentFilters"
-						@loaded="onChildLoaded" />
-
-					<monthly-sale :key="componentKey + 'monthly'" :filters="currentFilters" @loaded="onChildLoaded" />
-
-					<div class="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
-						<SectorsMexico :key="componentKey + 'sectors'" :filters="currentFilters" @loaded="onChildLoaded" />
-						<SectorsMexicoMetric :key="componentKey + 'metric'" :filters="currentFilters" @loaded="onChildLoaded" />
-					</div>
-
-					<statistics-chart :key="componentKey + 'stats'" :filters="currentFilters" @loaded="onChildLoaded" />
-
-					<recent-orders :key="componentKey + 'orders'" :filters="currentFilters" @loaded="onChildLoaded" />
-
-					<OrganizationsByScope :key="componentKey + 'scope'" :filters="currentFilters" @loaded="onChildLoaded" />
-
-					<ProjectsByEconomicSupport :key="componentKey + 'economic'" :filters="currentFilters" @loaded="onChildLoaded" />
-					<AverageAmountByEconomicSupport
-						:key="componentKey + 'average'"
-						:filters="currentFilters"
-						@loaded="onChildLoaded" />
-
-					<ProjectsByDualType
-						:key="componentKey + 'dualtype'"
-						:filters="currentFilters"
-						@loaded="onChildLoaded" />
-
-					<OrganizationsByLocalCluster :key="componentKey + 'cluster'" :filters="currentFilters" @loaded="onChildLoaded" />
-
-					<div class="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
-						<ProjectsByClusterLocal :key="componentKey + 'local'" :filters="currentFilters" @loaded="onChildLoaded" />
-						<ProjectsByClusterNacional :key="componentKey + 'nacional'" :filters="currentFilters" @loaded="onChildLoaded" />
-					</div>
-
-					<BenefitType :key="componentKey + 'benefittype'" :filters="currentFilters" @loaded="onChildLoaded" />
-
-					<Microcredentials :key="componentKey + 'microcredentials'" :filters="currentFilters" @loaded="onChildLoaded" />
 					<ProjectsByDocumentStatus :key="componentKey + 'documentstatus'" :filters="currentFilters" @loaded="onChildLoaded" />
 					<ProjectsByStatus :key="componentKey + 'projectstatus'" :filters="currentFilters" @loaded="onChildLoaded" />
 				</div>
@@ -175,23 +135,7 @@
 
 <script>
 import AdminLayout from '../components/layouts/AdminLayout.vue'
-import EcommerceMetrics from '../components/ecommerce/EcommerceMetrics.vue'
-import MonthlySale from '../components/ecommerce/MonthlySale.vue'
-import CustomerDemographic from '../components/ecommerce/CustomerDemographic.vue'
-import StatisticsChart from '../components/ecommerce/StatisticsChart.vue'
-import RecentOrders from '../components/ecommerce/RecentOrders.vue'
-import SectorsMexico from '../components/ecommerce/SectorsMexico.vue'
-import SectorsMexicoMetric from '../components/ecommerce/SectorsMexicoMetric.vue'
-import OrganizationsByScope from '../components/ecommerce/OrganizationsByScope.vue'
-import ProjectsByEconomicSupport from '../components/ecommerce/ProjectsByEconomicSupport.vue'
-import AverageAmountByEconomicSupport from '../components/ecommerce/AverageAmountByEconomicSupport.vue'
 import LoadingScreen from '../components/layouts/LoadingScreen.vue'
-import ProjectsByDualType from '../components/ecommerce/ProjectsByDualType.vue'
-import OrganizationsByLocalCluster from '../components/ecommerce/OrganizationsByLocalCluster.vue'
-import ProjectsByClusterLocal from '../components/ecommerce/ProjectsByClusterLocal.vue'
-import ProjectsByClusterNacional from '../components/ecommerce/ProjectsByClusterNacional.vue'
-import BenefitType from '../components/ecommerce/BenefitType.vue';
-import Microcredentials from '../components/ecommerce/Microcredentials.vue';
 import ProjectsByDocumentStatus from '../components/ecommerce/ProjectsByDocumentStatus.vue';
 import ProjectsByStatus from '../components/ecommerce/ProjectsByStatus.vue';
 import { downloadDashboardPdf, downloadDashboardExcel  } from '../services/statistics/dashboard';
@@ -202,22 +146,6 @@ export default {
 	name: 'Ecommerce',
 	components: {
 		AdminLayout,
-		EcommerceMetrics,
-		MonthlySale,
-		CustomerDemographic,
-		StatisticsChart,
-		RecentOrders,
-		SectorsMexico,
-		SectorsMexicoMetric,
-		OrganizationsByScope,
-		ProjectsByEconomicSupport,
-		AverageAmountByEconomicSupport,
-		ProjectsByDualType,
-		OrganizationsByLocalCluster,
-		ProjectsByClusterLocal,
-		ProjectsByClusterNacional,
-		BenefitType,
-		Microcredentials,
 		ProjectsByDocumentStatus,
 		ProjectsByStatus,
 		LoadingScreen

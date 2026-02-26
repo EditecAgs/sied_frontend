@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { defineProps, defineEmits, reactive, watchEffect, ref, onMounted, nextTick } from 'vue'
+import { defineProps, defineEmits, reactive, watchEffect, ref, onMounted, nextTick, watch } from 'vue'
 import axios from 'axios'
 import { getInstitutions } from '../../../services/institutions/institutions.js'
 import { showCareer } from "../../../services/institutions/careers.js"
@@ -35,6 +35,7 @@ const props = defineProps<{
 		mode: 'create' | 'edit'
 		pk: number | null
 		table: string
+		institutionId?: string // <-- Agregar esta prop opcional
 	}
 }>()
 
@@ -81,6 +82,22 @@ onMounted(() => {
 	loadInstitutions()
 })
 
+
+watch(() => props.show, async (newVal) => {
+	if (newVal) {
+		await loadInstitutions();
+		
+
+		if (props.data?.institutionId) {
+			
+			await nextTick();
+			
+			form.id_institution = props.data.institutionId;
+
+		}
+	}
+}, { immediate: true });
+
 watchEffect(() => {
 	if (props.data.mode === 'edit' && props.data.pk !== null) {
 		alvRoute.value = `${axios.defaults.baseURL}careers/${props.data.pk}`
@@ -102,13 +119,17 @@ watchEffect(() => {
 		alvRoute.value = `${axios.defaults.baseURL}careers`
 		alvMethod.value = 'POST'
 
-		Object.keys(form).forEach(key => {
-			form[key] = ''
-		})
+		if (!props.data?.institutionId) {
+			Object.keys(form).forEach(key => {
+				form[key] = ''
+			})
+		} else {
+			form.name = '';
+
+		}
 	}
 })
 </script>
-
 <template>
 	<transition name="fade-scale">
 		<div v-if="show" class="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm" style="margin-top: 0px" @click.self="emit('close')">

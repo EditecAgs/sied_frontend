@@ -46,8 +46,34 @@
 					<div class="flex gap-2">
 						<button
 							:disabled="isApplyingFilters"
-							class="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+							class="inline-flex items-center gap-2
+	       px-4 py-2
+	       bg-[#6b1d2a]
+	       text-white
+	       rounded-md
+	       hover:bg-[#5a1823]
+	       focus:outline-none
+	       focus:ring-2
+	       focus:ring-[#7a1f2b]
+	       focus:ring-offset-2
+	       transition-all
+	       disabled:opacity-50
+	       disabled:cursor-not-allowed"
 							@click="applyFilters">
+							<svg
+								v-if="!isApplyingFilters"
+								xmlns="http://www.w3.org/2000/svg"
+								class="w-4 h-4"
+								fill="none"
+								viewBox="0 0 24 24"
+								stroke="currentColor"
+								stroke-width="2">
+								<path
+									stroke-linecap="round"
+									stroke-linejoin="round"
+									d="M3 4h18l-7 8v6l-4 2v-8L3 4z" />
+							</svg>
+
 							<span v-if="isApplyingFilters">Aplicando...</span>
 							<span v-else>Filtrar</span>
 						</button>
@@ -57,68 +83,55 @@
 							@click="clearFilters">
 							Borrar filtros
 						</button>
+						<button
+							class="w-12 h-12 flex items-center justify-center
+								bg-[#7a1f2b]
+								text-white
+								rounded-xl
+								shadow-md
+								hover:bg-[#8f2433]
+								hover:shadow-lg
+								active:scale-95
+								transition-all duration-200"
+							title="Descargar PDF"
+							@click="downloadPdf">
+							<svg
+								xmlns="http://www.w3.org/2000/svg"
+								class="w-6 h-6"
+								fill="none"
+								viewBox="0 0 24 24"
+								stroke="currentColor"
+								stroke-width="2">
+
+								<path
+									stroke-linecap="round"
+									stroke-linejoin="round"
+									d="M9 3h6l4 4v14a2 2 0 01-2 2H7a2 2 0 01-2-2V5a2 2 0 012-2h2z" />
+
+								<path
+									stroke-linecap="round"
+									stroke-linejoin="round"
+									d="M15 3v4h4" />
+
+								<path
+									stroke-linecap="round"
+									stroke-linejoin="round"
+									d="M8 13h8M8 17h6" />
+							</svg>
+						</button>
 					</div>
 				</div>
-
-
 			</div>
 
 			<div class="min-h-screen w-full bg-cover bg-center bg-fixed">
-				<div class="grid grid-cols-12 gap-4 md:gap-6 p-4 md:p-6 grid-flow-dense">
-					<div class="col-span-12 xl:col-span-7 grid gap-4 md:gap-6 auto-rows-max">
-						<ecommerce-metrics :key="componentKey + 'metrics'" :filters="currentFilters" @loaded="onChildLoaded" />
-						<monthly-sale :key="componentKey + 'monthly'" :filters="currentFilters" @loaded="onChildLoaded" />
-					</div>
+				<div class="flex flex-col gap-4 md:gap-6 p-4 md:p-6">
+					<ecommerce-metrics :key="componentKey + 'metrics'" :filters="currentFilters" @loaded="onChildLoaded" />
+					<customer-demographic
+						:key="componentKey + 'demographic'"
+						:filters="currentFilters"
+						@loaded="onChildLoaded" />
 
-					<div class="col-span-12 xl:col-span-5">
-						<div class="h-full max-h-[575px] overflow-y-auto">
-							<SectorsMexico :key="componentKey + 'sectors'" :filters="currentFilters" @loaded="onChildLoaded" />
-						</div>
-					</div>
-
-					<div class="col-span-12">
-						<statistics-chart :key="componentKey + 'stats'" :filters="currentFilters" @loaded="onChildLoaded" />
-					</div>
-
-					<div class="col-span-12 xl:col-span-8 grid gap-4 md:gap-6 auto-rows-max">
-						<recent-orders :key="componentKey + 'orders'" :filters="currentFilters" @loaded="onChildLoaded" />
-						<OrganizationsByScope :key="componentKey + 'scope'" :filters="currentFilters" @loaded="onChildLoaded" />
-						<ProjectsByEconomicSupport :key="componentKey + 'economic'" :filters="currentFilters" @loaded="onChildLoaded" />
-						<SectorsMexicoMetric :key="componentKey + 'metric'" :filters="currentFilters" @loaded="onChildLoaded" />
-					</div>
-
-					<div class="col-span-12 xl:col-span-4 grid gap-4 md:gap-6 auto-rows-max min-w-0">
-						<customer-demographic
-							:key="componentKey + 'demographic'"
-							:filters="currentFilters"
-							class="h-auto min-w-0"
-							@loaded="onChildLoaded" />
-
-						<AverageAmountByEconomicSupport
-							:key="componentKey + 'average'"
-							:filters="currentFilters"
-							class="h-auto min-w-0"
-							@loaded="onChildLoaded" />
-
-						<div class="min-w-0 overflow-hidden">
-							<ProjectsByDualType
-								:key="componentKey + 'dualtype'"
-								:filters="currentFilters"
-								class="h-auto w-full"
-								@loaded="onChildLoaded" />
-						</div>
-					</div>
-
-					<div class="col-span-12">
-						<OrganizationsByLocalCluster :key="componentKey + 'cluster'" :filters="currentFilters" @loaded="onChildLoaded" />
-					</div>
-
-					<div class="col-span-12">
-						<div class="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
-							<ProjectsByClusterLocal :key="componentKey + 'local'" :filters="currentFilters" @loaded="onChildLoaded" />
-							<ProjectsByClusterNacional :key="componentKey + 'nacional'" :filters="currentFilters" @loaded="onChildLoaded" />
-						</div>
-					</div>
+					<monthly-sale :key="componentKey + 'monthly'" :filters="currentFilters" @loaded="onChildLoaded" />
 				</div>
 			</div>
 		</admin-layout>
@@ -130,189 +143,176 @@ import AdminLayout from '../components/layouts/AdminLayout.vue'
 import EcommerceMetrics from '../components/ecommerce/EcommerceMetrics.vue'
 import MonthlySale from '../components/ecommerce/MonthlySale.vue'
 import CustomerDemographic from '../components/ecommerce/CustomerDemographic.vue'
-import StatisticsChart from '../components/ecommerce/StatisticsChart.vue'
-import RecentOrders from '../components/ecommerce/RecentOrders.vue'
-import SectorsMexico from '../components/ecommerce/SectorsMexico.vue'
-import SectorsMexicoMetric from '../components/ecommerce/SectorsMexicoMetric.vue'
-import OrganizationsByScope from '../components/ecommerce/OrganizationsByScope.vue'
-import ProjectsByEconomicSupport from '../components/ecommerce/ProjectsByEconomicSupport.vue'
-import AverageAmountByEconomicSupport from '../components/ecommerce/AverageAmountByEconomicSupport.vue'
 import LoadingScreen from '../components/layouts/LoadingScreen.vue'
-import ProjectsByDualType from '../components/ecommerce/ProjectsByDualType.vue'
-import OrganizationsByLocalCluster from '../components/ecommerce/OrganizationsByLocalCluster.vue'
-import ProjectsByClusterLocal from '../components/ecommerce/ProjectsByClusterLocal.vue'
-import ProjectsByClusterNacional from '../components/ecommerce/ProjectsByClusterNacional.vue'
-import { getInstitutions } from '../services/institutions/institutions'
+import { downloadDashboardPdf, downloadDashboardExcel  } from '../services/statistics/dashboard';
+import { getInstitutions, showInstitutions } from '../services/institutions/institutions'
 import { getStates } from '../services/location/states.js'
 
 export default {
-  name: 'Ecommerce',
-  components: {
-    AdminLayout,
-    EcommerceMetrics,
-    MonthlySale,
-    CustomerDemographic,
-    StatisticsChart,
-    RecentOrders,
-    SectorsMexico,
-    SectorsMexicoMetric,
-    OrganizationsByScope,
-    ProjectsByEconomicSupport,
-    AverageAmountByEconomicSupport,
-    ProjectsByDualType,
-    OrganizationsByLocalCluster,
-    ProjectsByClusterLocal,
-    ProjectsByClusterNacional,
-    LoadingScreen
-  },
-  data() {
-    return {
-      loading: true,
-      loadedChildren: 0,
-      totalChildren: 5,
-      componentKey: 0,
-      userType: null,
-      userInstitution: null,
-      allInstitutions: [],
-      allStates: [],
-      isApplyingFilters: false,
-      selectedFilter: {
-        type: '',
-        stateId: '',
-        institutionId: ''
-      },
-      currentFilters: {
-        id_state: null,
-        id_institution: null
-      },
-      activeFilter: null
-    }
-  },
-  computed: {
-    isAdmin() {
-      return this.userType === 0
-    },
-    filteredStates() {
-      if (this.isAdmin) return this.allStates
-      if (this.userInstitution?.state_id) {
-        return this.allStates.filter(s => s.id === this.userInstitution.state_id)
-      }
-      return []
-    },
-    filteredInstitutions() {
-      if (this.isAdmin) return this.allInstitutions
-      if (this.userInstitution?.id) return [this.userInstitution]
-      return []
-    },
-    showInstitutionFilter() {
-      return this.filteredInstitutions.length > 0
-    },
-    showStateFilter() {
-      return this.filteredStates.length > 0
-    }
-  },
-  async mounted() {
-    this.getUserData()
-    await this.loadFilterOptions()
-  },
-  methods: {
-    onChildLoaded() {
-      this.loadedChildren++
-      if (this.loadedChildren >= this.totalChildren) {
-        this.loading = false
-        this.isApplyingFilters = false
-      }
-    },
-    getUserData() {
-      const institution = JSON.parse(localStorage.getItem('institution') || '{}')
-      const userType = localStorage.getItem('user_type')
-      this.userType = userType ? parseInt(userType) : null
-      this.userInstitution = institution
-    },
-    async loadFilterOptions() {
-      const [institutionsRes, statesRes] = await Promise.all([
-        getInstitutions(),
-        getStates()
-      ])
-      this.allInstitutions = institutionsRes?.data || institutionsRes || []
-      this.allStates = statesRes?.data || statesRes || []
+	name: 'Ecommerce',
+	components: {
+		AdminLayout,
+		EcommerceMetrics,
+		MonthlySale,
+		CustomerDemographic,
+		LoadingScreen
+	},
+	data() {
+		return {
+			loading: true,
+			loadedChildren: 0,
+			totalChildren: 2,
+			componentKey: 0,
+			userType: null,
+			userInstitution: null,
+			allInstitutions: [],
+			allStates: [],
+			isApplyingFilters: false,
+			selectedFilter: {
+				type: '',
+				stateId: '',
+				institutionId: ''
+			},
+			currentFilters: {
+				id_state: null,
+				id_institution: null
+			}
+		}
+	},
+	computed: {
+		isAdmin() {
+			return this.userType === 0
+		},
+		filteredStates() {
+			if (this.isAdmin) return this.allStates
+			if (this.userInstitution?.state) return [this.userInstitution.state]
+			return []
+		},
+		filteredInstitutions() {
+			if (this.isAdmin) return this.allInstitutions
+			if (this.userInstitution?.id) return [this.userInstitution]
+			return []
+		},
+		showInstitutionFilter() {
+			return this.filteredInstitutions.length > 0
+		},
+		showStateFilter() {
+			return this.isAdmin || !!this.userInstitution?.state
+		}
+	},
+	async mounted() {
+		await this.getUserData()
+		await this.loadFilterOptions()
+	},
+	methods: {
+		onChildLoaded() {
+			this.loadedChildren++
+			if (this.loadedChildren >= this.totalChildren) {
+				this.loading = false
+				this.isApplyingFilters = false
+			}
+		},
 
-      if (!this.isAdmin && this.userInstitution?.id) {
-        this.selectedFilter.type = 'institution'
-        this.selectedFilter.institutionId = this.userInstitution.id
-        if (this.userInstitution.state_id) {
-          this.selectedFilter.stateId = this.userInstitution.state_id
-        }
-        setTimeout(this.applyFilters, 500)
-      }
-    },
-    onFilterTypeChange() {
-      if (this.selectedFilter.type === 'state') {
-        this.selectedFilter.institutionId = ''
-      } else if (this.selectedFilter.type === 'institution') {
-        this.selectedFilter.stateId = ''
-      } else {
-        this.selectedFilter.stateId = ''
-        this.selectedFilter.institutionId = ''
-      }
-    },
-	  applyFilters() {
-		  this.isApplyingFilters = true;
-		  this.loading = true;
-		  this.loadedChildren = 0;
+		async getUserData() {
+			const userType = localStorage.getItem('user_type')
+			this.userType = userType ? parseInt(userType) : null
 
-		  // Resetear filtros primero
-		  this.currentFilters = { id_state: null, id_institution: null };
-		  this.activeFilter = null;
+			if (this.userType === 0) return
 
-		  // Construir filtros basados en selectedFilter
-		  const filters = {};
+			const inst = JSON.parse(localStorage.getItem('institution') || '{}')
+			if (inst?.id) {
+				const res = await showInstitutions(inst.id)
+				this.userInstitution = res.data
+			}
+		},
 
-		  if (this.selectedFilter.type === 'state' && this.selectedFilter.stateId) {
-			  filters.id_state = this.selectedFilter.stateId;
-			  const state = this.allStates.find(s => s.id === this.selectedFilter.stateId);
-			  this.activeFilter = {
-				  label: `Estado: ${state?.name || ''}`,
-				  paramsInfo: `id_state=${this.selectedFilter.stateId}`
-			  };
-		  } else if (this.selectedFilter.type === 'institution' && this.selectedFilter.institutionId) {
-			  filters.id_institution = this.selectedFilter.institutionId;
-			  const inst = this.allInstitutions.find(i => i.id === this.selectedFilter.institutionId);
-			  this.activeFilter = {
-				  label: `Institución: ${inst?.name || ''}`,
-				  paramsInfo: `id_institution=${this.selectedFilter.institutionId}`
-			  };
-		  }
+		async loadFilterOptions() {
+			const [instRes, statesRes] = await Promise.all([
+				getInstitutions(),
+				getStates()
+			])
 
-		  // Asignar los filtros actuales (esto es lo que se pasa a los componentes hijos)
-		  this.currentFilters = { ...filters };
+			this.allInstitutions = instRes?.data || []
+			this.allStates = statesRes?.data || []
 
-		  // Forzar re-renderizado de componentes hijos
-		  this.componentKey++;
+			if (!this.isAdmin && this.userInstitution?.id) {
+				this.selectedFilter.type = 'institution'
+				this.selectedFilter.institutionId = this.userInstitution.id
+				this.selectedFilter.stateId = this.userInstitution.state?.id || ''
+				this.applyFilters()
+			}
+		},
 
-		  // Debug: Ver qué se está enviando
-		  console.log('Filtros aplicados:', this.currentFilters);
-		  console.log('selectedFilter:', this.selectedFilter);
-	  },
-	  clearFilters() {
-		  this.isApplyingFilters = true;
-		  this.loading = true;
-		  this.loadedChildren = 0;
+		onFilterTypeChange() {
+			if (this.selectedFilter.type === 'state') {
+				this.selectedFilter.institutionId = ''
+				if (!this.isAdmin) {
+					this.selectedFilter.stateId = this.userInstitution?.state?.id || ''
+				}
+			}
+			if (this.selectedFilter.type === 'institution') {
+				this.selectedFilter.stateId = ''
+			}
+			if (!this.selectedFilter.type) {
+				this.selectedFilter.stateId = ''
+				this.selectedFilter.institutionId = ''
+			}
+		},
 
-		  this.selectedFilter = {
-			  type: '',
-			  stateId: '',
-			  institutionId: ''
-		  };
-		  this.currentFilters = {
-			  id_state: null,
-			  id_institution: null
-		  };
-		  this.activeFilter = null;
+		applyFilters() {
+			this.loading = true
+			this.isApplyingFilters = true
+			this.loadedChildren = 0
 
-		  // Forzar re-renderizado
-		  this.componentKey++;
-	  },
-  }
+			this.currentFilters = {
+				id_state:
+					this.selectedFilter.type === 'state'
+						? this.selectedFilter.stateId
+						: null,
+				id_institution:
+					this.selectedFilter.type === 'institution'
+						? this.selectedFilter.institutionId
+						: null
+			}
+
+			this.componentKey++
+		},
+
+		clearFilters() {
+			this.loading = true
+			this.isApplyingFilters = true
+			this.loadedChildren = 0
+
+			this.selectedFilter = {
+				type: '',
+				stateId: '',
+				institutionId: ''
+			}
+
+			this.currentFilters = {
+				id_state: null,
+				id_institution: null
+			}
+
+			this.componentKey++
+		},
+
+		async downloadPdf() {
+			const response = await downloadDashboardPdf({
+				id_state: this.currentFilters.id_state,
+				id_institution: this.currentFilters.id_institution
+			});
+
+			const blob = new Blob([response.data], { type: 'application/pdf' });
+			const url = window.URL.createObjectURL(blob);
+
+			const link = document.createElement('a');
+			link.href = url;
+			link.download = 'dashboard.pdf';
+			link.click();
+
+			window.URL.revokeObjectURL(url);
+		},
+	}
 }
 </script>
