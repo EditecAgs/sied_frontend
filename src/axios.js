@@ -31,6 +31,5 @@ export function useAxios(router) {
 		}
 	);
 
-	// 👇 ESTA LÍNEA ES LA CLAVE
 	window.axios = axios;
 }
