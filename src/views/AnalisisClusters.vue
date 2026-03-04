@@ -1,7 +1,9 @@
 <template>
 	<div style="background-image: url('/images/background/bg-white-flores.png')">
 		<admin-layout>
-			<LoadingScreen :show="loading" message="Cargando datos..." />
+			<LoadingScreen
+				:show="loading"
+				message="Cargando datos..." />
 
 			<div class="bg-white shadow-md rounded-lg p-4 mb-6 mx-4 mt-4">
 				<div class="flex flex-col md:flex-row gap-4 items-end">
@@ -24,7 +26,10 @@
 							:disabled="selectedFilter.type !== 'state' || !showStateFilter"
 							class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 disabled:bg-gray-100 disabled:cursor-not-allowed">
 							<option value="">Seleccionar estado</option>
-							<option v-for="state in filteredStates" :key="state.id" :value="state.id">
+							<option
+								v-for="state in filteredStates"
+								:key="state.id"
+								:value="state.id">
 								{{ state.name }}
 							</option>
 						</select>
@@ -37,7 +42,10 @@
 							:disabled="selectedFilter.type !== 'institution' || !showInstitutionFilter"
 							class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 disabled:bg-gray-100 disabled:cursor-not-allowed">
 							<option value="">Seleccionar institución</option>
-							<option v-for="institution in filteredInstitutions" :key="institution.id" :value="institution.id">
+							<option
+								v-for="institution in filteredInstitutions"
+								:key="institution.id"
+								:value="institution.id">
 								{{ institution.name }}
 							</option>
 						</select>
@@ -46,19 +54,7 @@
 					<div class="flex gap-2">
 						<button
 							:disabled="isApplyingFilters"
-							class="inline-flex items-center gap-2
-	       px-4 py-2
-	       bg-[#6b1d2a]
-	       text-white
-	       rounded-md
-	       hover:bg-[#5a1823]
-	       focus:outline-none
-	       focus:ring-2
-	       focus:ring-[#7a1f2b]
-	       focus:ring-offset-2
-	       transition-all
-	       disabled:opacity-50
-	       disabled:cursor-not-allowed"
+							class="inline-flex items-center gap-2 px-4 py-2 bg-[#6b1d2a] text-white rounded-md hover:bg-[#5a1823] focus:outline-none focus:ring-2 focus:ring-[#7a1f2b] focus:ring-offset-2 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
 							@click="applyFilters">
 							<svg
 								v-if="!isApplyingFilters"
@@ -83,6 +79,7 @@
 							@click="clearFilters">
 							Borrar filtros
 						</button>
+						<!-- Comentario aquí
 						<button
 							class="w-12 h-12 flex items-center justify-center
 								bg-[#7a1f2b]
@@ -119,17 +116,27 @@
 									d="M8 13h8M8 17h6" />
 							</svg>
 						</button>
+						-->
 					</div>
 				</div>
 			</div>
 
 			<div class="min-h-screen w-full bg-cover bg-center bg-fixed">
 				<div class="flex flex-col gap-4 md:gap-6 p-4 md:p-6">
-					<OrganizationsByLocalCluster :key="componentKey + 'cluster'" :filters="currentFilters" @loaded="onChildLoaded" />
+					<OrganizationsByLocalCluster
+						:key="componentKey + 'cluster'"
+						:filters="currentFilters"
+						@loaded="onChildLoaded" />
 
 					<div class="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
-						<ProjectsByClusterLocal :key="componentKey + 'local'" :filters="currentFilters" @loaded="onChildLoaded" />
-						<ProjectsByClusterNacional :key="componentKey + 'nacional'" :filters="currentFilters" @loaded="onChildLoaded" />
+						<ProjectsByClusterLocal
+							:key="componentKey + 'local'"
+							:filters="currentFilters"
+							@loaded="onChildLoaded" />
+						<ProjectsByClusterNacional
+							:key="componentKey + 'nacional'"
+							:filters="currentFilters"
+							@loaded="onChildLoaded" />
 					</div>
 				</div>
 			</div>
@@ -138,14 +145,14 @@
 </template>
 
 <script>
-import AdminLayout from '../components/layouts/AdminLayout.vue'
-import LoadingScreen from '../components/layouts/LoadingScreen.vue'
-import OrganizationsByLocalCluster from '../components/ecommerce/OrganizationsByLocalCluster.vue'
-import ProjectsByClusterLocal from '../components/ecommerce/ProjectsByClusterLocal.vue'
-import ProjectsByClusterNacional from '../components/ecommerce/ProjectsByClusterNacional.vue'
-import { downloadDashboardPdf, downloadDashboardExcel  } from '../services/statistics/dashboard';
-import { getInstitutions, showInstitutions } from '../services/institutions/institutions'
-import { getStates } from '../services/location/states.js'
+import AdminLayout from '../components/layouts/AdminLayout.vue';
+import LoadingScreen from '../components/layouts/LoadingScreen.vue';
+import OrganizationsByLocalCluster from '../components/ecommerce/OrganizationsByLocalCluster.vue';
+import ProjectsByClusterLocal from '../components/ecommerce/ProjectsByClusterLocal.vue';
+import ProjectsByClusterNacional from '../components/ecommerce/ProjectsByClusterNacional.vue';
+import { downloadDashboardPdf } from '../services/statistics/dashboard';
+import { getInstitutions, showInstitutions } from '../services/institutions/institutions';
+import { getStates } from '../services/location/states.js';
 
 export default {
 	name: 'Ecommerce',
@@ -154,7 +161,7 @@ export default {
 		OrganizationsByLocalCluster,
 		ProjectsByClusterLocal,
 		ProjectsByClusterNacional,
-		LoadingScreen
+		LoadingScreen,
 	},
 	data() {
 		return {
@@ -170,136 +177,127 @@ export default {
 			selectedFilter: {
 				type: '',
 				stateId: '',
-				institutionId: ''
+				institutionId: '',
 			},
 			currentFilters: {
 				id_state: null,
-				id_institution: null
-			}
-		}
+				id_institution: null,
+			},
+		};
 	},
 	computed: {
 		isAdmin() {
-			return this.userType === 0
+			return this.userType === 0;
 		},
 		filteredStates() {
-			if (this.isAdmin) return this.allStates
-			if (this.userInstitution?.state) return [this.userInstitution.state]
-			return []
+			if (this.isAdmin) return this.allStates;
+			if (this.userInstitution?.state) return [this.userInstitution.state];
+			return [];
 		},
 		filteredInstitutions() {
-			if (this.isAdmin) return this.allInstitutions
-			if (this.userInstitution?.id) return [this.userInstitution]
-			return []
+			if (this.isAdmin) return this.allInstitutions;
+			if (this.userInstitution?.id) return [this.userInstitution];
+			return [];
 		},
 		showInstitutionFilter() {
-			return this.filteredInstitutions.length > 0
+			return this.filteredInstitutions.length > 0;
 		},
 		showStateFilter() {
-			return this.isAdmin || !!this.userInstitution?.state
-		}
+			return this.isAdmin || !!this.userInstitution?.state;
+		},
 	},
 	async mounted() {
-		await this.getUserData()
-		await this.loadFilterOptions()
+		await this.getUserData();
+		await this.loadFilterOptions();
 	},
 	methods: {
 		onChildLoaded() {
-			this.loadedChildren++
+			this.loadedChildren++;
 			if (this.loadedChildren >= this.totalChildren) {
-				this.loading = false
-				this.isApplyingFilters = false
+				this.loading = false;
+				this.isApplyingFilters = false;
 			}
 		},
 
 		async getUserData() {
-			const userType = localStorage.getItem('user_type')
-			this.userType = userType ? parseInt(userType) : null
+			const userType = localStorage.getItem('user_type');
+			this.userType = userType ? parseInt(userType) : null;
 
-			if (this.userType === 0) return
+			if (this.userType === 0) return;
 
-			const inst = JSON.parse(localStorage.getItem('institution') || '{}')
+			const inst = JSON.parse(localStorage.getItem('institution') || '{}');
 			if (inst?.id) {
-				const res = await showInstitutions(inst.id)
-				this.userInstitution = res.data
+				const res = await showInstitutions(inst.id);
+				this.userInstitution = res.data;
 			}
 		},
 
 		async loadFilterOptions() {
-			const [instRes, statesRes] = await Promise.all([
-				getInstitutions(),
-				getStates()
-			])
+			const [instRes, statesRes] = await Promise.all([getInstitutions(), getStates()]);
 
-			this.allInstitutions = instRes?.data || []
-			this.allStates = statesRes?.data || []
+			this.allInstitutions = instRes?.data || [];
+			this.allStates = statesRes?.data || [];
 
 			if (!this.isAdmin && this.userInstitution?.id) {
-				this.selectedFilter.type = 'institution'
-				this.selectedFilter.institutionId = this.userInstitution.id
-				this.selectedFilter.stateId = this.userInstitution.state?.id || ''
-				this.applyFilters()
+				this.selectedFilter.type = 'institution';
+				this.selectedFilter.institutionId = this.userInstitution.id;
+				this.selectedFilter.stateId = this.userInstitution.state?.id || '';
+				this.applyFilters();
 			}
 		},
 
 		onFilterTypeChange() {
 			if (this.selectedFilter.type === 'state') {
-				this.selectedFilter.institutionId = ''
+				this.selectedFilter.institutionId = '';
 				if (!this.isAdmin) {
-					this.selectedFilter.stateId = this.userInstitution?.state?.id || ''
+					this.selectedFilter.stateId = this.userInstitution?.state?.id || '';
 				}
 			}
 			if (this.selectedFilter.type === 'institution') {
-				this.selectedFilter.stateId = ''
+				this.selectedFilter.stateId = '';
 			}
 			if (!this.selectedFilter.type) {
-				this.selectedFilter.stateId = ''
-				this.selectedFilter.institutionId = ''
+				this.selectedFilter.stateId = '';
+				this.selectedFilter.institutionId = '';
 			}
 		},
 
 		applyFilters() {
-			this.loading = true
-			this.isApplyingFilters = true
-			this.loadedChildren = 0
+			this.loading = true;
+			this.isApplyingFilters = true;
+			this.loadedChildren = 0;
 
 			this.currentFilters = {
-				id_state:
-					this.selectedFilter.type === 'state'
-						? this.selectedFilter.stateId
-						: null,
-				id_institution:
-					this.selectedFilter.type === 'institution'
-						? this.selectedFilter.institutionId
-						: null
-			}
+				id_state: this.selectedFilter.type === 'state' ? this.selectedFilter.stateId : null,
+				id_institution: this.selectedFilter.type === 'institution' ? this.selectedFilter.institutionId : null,
+			};
 
-			this.componentKey++
+			this.componentKey++;
 		},
 
 		clearFilters() {
-			this.loading = true
-			this.isApplyingFilters = true
-			this.loadedChildren = 0
+			this.loading = true;
+			this.isApplyingFilters = true;
+			this.loadedChildren = 0;
 
 			this.selectedFilter = {
 				type: '',
 				stateId: '',
-				institutionId: ''
-			}
+				institutionId: '',
+			};
 
 			this.currentFilters = {
 				id_state: null,
-				id_institution: null
-			}
+				id_institution: null,
+			};
 
-			this.componentKey++
+			this.componentKey++;
 		},
 
 		async downloadPdf() {
 			const response = await downloadDashboardPdf({
 				id_state: this.currentFilters.id_state,
-				id_institution: this.currentFilters.id_institution
+				id_institution: this.currentFilters.id_institution,
 			});
 
 			const blob = new Blob([response.data], { type: 'application/pdf' });
@@ -312,6 +310,6 @@ export default {
 
 			window.URL.revokeObjectURL(url);
 		},
-	}
-}
+	},
+};
 </script>
