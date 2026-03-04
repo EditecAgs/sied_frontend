@@ -83,6 +83,7 @@
 							@click="clearFilters">
 							Borrar filtros
 						</button>
+						<!-- Comentario aquí
 						<button
 							class="w-12 h-12 flex items-center justify-center
 								bg-[#7a1f2b]
@@ -119,6 +120,7 @@
 									d="M8 13h8M8 17h6" />
 							</svg>
 						</button>
+						-->
 					</div>
 				</div>
 			</div>
@@ -194,7 +196,7 @@ import BenefitType from '../components/ecommerce/BenefitType.vue';
 import Microcredentials from '../components/ecommerce/Microcredentials.vue';
 import ProjectsByDocumentStatus from '../components/ecommerce/ProjectsByDocumentStatus.vue';
 import ProjectsByStatus from '../components/ecommerce/ProjectsByStatus.vue';
-import { downloadDashboardPdf, downloadDashboardExcel  } from '../services/statistics/dashboard';
+import { downloadDashboardPdf } from '../services/statistics/dashboard';
 import { getInstitutions, showInstitutions } from '../services/institutions/institutions'
 import { getStates } from '../services/location/states.js'
 
