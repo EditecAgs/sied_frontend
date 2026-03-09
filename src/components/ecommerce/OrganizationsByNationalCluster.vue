@@ -165,10 +165,6 @@ const fetchData = async () => {
 
 		nationalClusters.value = result.data.nacionales || []
 
-		console.log('Cámaras nacionales recibidas:', nationalClusters.value.length)
-		console.log('Cámaras nacionales filtradas:', filteredNationalClusters.value.length)
-		console.log('Datos de cámaras nacionales filtradas:', filteredNationalClusters.value)
-
 	} catch (error) {
 		console.error('Error al cargar cámaras nacionales:', error)
 	}

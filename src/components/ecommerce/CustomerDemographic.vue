@@ -79,8 +79,7 @@
 					<div
 						v-for="(item, index) in topTenInstitutions"
 						:key="index"
-						class="flex items-center justify-between gap-2 sm:gap-4 hover:bg-gray-200/50 dark:hover:bg-gray-800/70 p-2 rounded-lg transition-colors cursor-pointer"
-						@click="onInstitutionClick(item)">
+						class="flex items-center justify-between gap-2 sm:gap-4 hover:bg-gray-200/50 dark:hover:bg-gray-800/70 p-2 rounded-lg transition-colors cursor-pointer">
 						<div class="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
 							<img
 								v-if="item.image && isValidImage(item.image)"
@@ -268,9 +267,6 @@ const chartOptions = computed(() => ({
 	}
 }));
 
-const onInstitutionClick = (institution: ProjectByInstitution) => {
-	console.log('Institución seleccionada:', institution);
-};
 
 const loadData = async () => {
 	try {

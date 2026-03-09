@@ -275,9 +275,6 @@ const chartOptions = computed(() => ({
 		if (elements.length > 0) {
 			const index = elements[0].index
 			const cluster = filteredLocalClusters.value[index]
-			if (cluster) {
-				console.log('Cámara local seleccionada:', cluster)
-			}
 		}
 	},
 	animation: {
@@ -308,14 +305,6 @@ const fetchData = async () => {
 
 		localClusters.value = clustersData?.locales || []
 
-		console.log('Datos de proyectos por cámaras locales cargados:', {
-			estructuraRecibida: response,
-			totalCámarasLocales: localClusters.value.length,
-			cámarasConProyectos: filteredLocalClusters.value.length,
-			totalProyectos: totalProjectsLocal.value,
-			datos: filteredLocalClusters.value.slice(0, 3)
-		})
-
 		await nextTick()
 		chartKey.value++
 
@@ -323,7 +312,6 @@ const fetchData = async () => {
 	} catch (err) {
 		console.error('Error al cargar proyectos por cámaras locales:', err)
 		loadError.value = err
-		localClusters.value = []
 		emit('error', err)
 	} finally {
 		loading.value = false

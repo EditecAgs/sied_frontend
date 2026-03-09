@@ -79,18 +79,10 @@ const loadData = async () => {
 		total_students.value = studentsRes.data
 		total_organizations.value = organizationsRes.data
 
-		console.log('Datos cargados:', {
-			projects: completed_dual_projects.value,
-			students: total_students.value,
-			organizations: total_organizations.value
-		})
 
 		emit('loaded')
 	} catch (error) {
 		console.error('Error cargando datos de métricas:', error)
-		completed_dual_projects.value = 0
-		total_students.value = 0
-		total_organizations.value = 0
 	} finally {
 		loading.value = false
 	}

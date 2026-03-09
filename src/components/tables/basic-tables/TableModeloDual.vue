@@ -1,12 +1,13 @@
 <template>
 	<div class="bg-white rounded-xl shadow-lg overflow-hidden ">
 		<div class="px-6 py-4 bg-gradient-to-r from-brand-800 to-brand-900">
-			<div class="flex justify-between items-center">
+			<div class="flex justify-between items-center mb-4">
 				<h2 class="text-xl font-bold text-white">Gestión de Proyectos Duales</h2>
-				<div class="flex items-center gap-2">
-					<!-- Botón de Exportar a Excel con el estilo solicitado -->
-					<button
-						class="w-12 h-12 flex items-center justify-center
+			</div>
+			<div class="flex items-center gap-2">
+
+				<button
+					class="w-12 h-12 flex items-center justify-center
 							bg-[#7a1f2b]
 							text-white
 							rounded-xl
@@ -15,75 +16,74 @@
 							hover:shadow-lg
 							active:scale-95
 							transition-all duration-200"
-						:title="loadingExport ? 'Exportando...' : 'Descargar Excel'"
-						:disabled="loadingExport"
-						@click="exportToExcel">
-						<svg
-							v-if="!loadingExport"
-							xmlns="http://www.w3.org/2000/svg"
-							class="w-6 h-6"
-							fill="none"
-							viewBox="0 0 24 24"
-							stroke="currentColor"
-							stroke-width="2">
-							<path
-								stroke-linecap="round"
-								stroke-linejoin="round"
-								d="M9 3h6l4 4v14a2 2 0 01-2 2H7a2 2 0 01-2-2V5a2 2 0 012-2h2z" />
-							<path
-								stroke-linecap="round"
-								stroke-linejoin="round"
-								d="M15 3v4h4" />
-							<path
-								stroke-linecap="round"
-								stroke-linejoin="round"
-								d="M8 13h8M8 17h6" />
-						</svg>
-						<svg
-							v-else
-							class="animate-spin w-6 h-6"
-							xmlns="http://www.w3.org/2000/svg"
-							fill="none"
-							viewBox="0 0 24 24">
-							<circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" />
-							<path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z" />
-						</svg>
-					</button>
+					:title="loadingExport ? 'Exportando...' : 'Descargar Excel'"
+					:disabled="loadingExport"
+					@click="exportToExcel">
+					<svg
+						v-if="!loadingExport"
+						xmlns="http://www.w3.org/2000/svg"
+						class="w-6 h-6"
+						fill="none"
+						viewBox="0 0 24 24"
+						stroke="currentColor"
+						stroke-width="2">
+						<path
+							stroke-linecap="round"
+							stroke-linejoin="round"
+							d="M9 3h6l4 4v14a2 2 0 01-2 2H7a2 2 0 01-2-2V5a2 2 0 012-2h2z" />
+						<path
+							stroke-linecap="round"
+							stroke-linejoin="round"
+							d="M15 3v4h4" />
+						<path
+							stroke-linecap="round"
+							stroke-linejoin="round"
+							d="M8 13h8M8 17h6" />
+					</svg>
+					<svg
+						v-else
+						class="animate-spin w-6 h-6"
+						xmlns="http://www.w3.org/2000/svg"
+						fill="none"
+						viewBox="0 0 24 24">
+						<circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" />
+						<path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z" />
+					</svg>
+				</button>
 
-					<button
-						class="flex items-center gap-2 px-4 py-2 bg-white/10 hover:bg-white/20 text-white rounded-lg backdrop-blur-sm transition-all border border-white/20"
-						@click="showColumnSelector = !showColumnSelector">
-						<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-							<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17V7m0 10a2 2 0 01-2 2H5a2 2 0 01-2-2V7a2 2 0 012-2h2a2 2 0 012 2m0 10a2 2 0 002 2h2a2 2 0 002-2M9 7a2 2 0 012-2h2a2 2 0 012 2m0 10V7m0 10a2 2 0 002 2h2a2 2 0 002-2V7a2 2 0 00-2-2h-2a2 2 0 00-2 2" />
-						</svg>
-						Columnas
-						<svg
-							xmlns="http://www.w3.org/2000/svg"
-							class="h-3 w-3 transition-transform duration-200"
-							:class="{ 'rotate-180': showColumnSelector }"
-							fill="none"
-							viewBox="0 0 24 24"
-							stroke="currentColor">
-							<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
-						</svg>
-					</button>
-					<button
-						class="flex items-center gap-2 px-4 py-2 bg-white/10 hover:bg-white/20 text-white rounded-lg backdrop-blur-sm transition-all border border-white/20"
-						@click="clearFilters">
-						<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-							<path
-								stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-								d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-						</svg>
-						Limpiar
-					</button>
-				</div>
+				<button
+					class="flex items-center gap-2 px-4 py-2 bg-white/10 hover:bg-white/20 text-white rounded-lg backdrop-blur-sm transition-all border border-white/20"
+					@click="showColumnSelector = !showColumnSelector">
+					<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17V7m0 10a2 2 0 01-2 2H5a2 2 0 01-2-2V7a2 2 0 012-2h2a2 2 0 012 2m0 10a2 2 0 002 2h2a2 2 0 002-2M9 7a2 2 0 012-2h2a2 2 0 012 2m0 10V7m0 10a2 2 0 002 2h2a2 2 0 002-2V7a2 2 0 00-2-2h-2a2 2 0 00-2 2" />
+					</svg>
+					Columnas
+					<svg
+						xmlns="http://www.w3.org/2000/svg"
+						class="h-3 w-3 transition-transform duration-200"
+						:class="{ 'rotate-180': showColumnSelector }"
+						fill="none"
+						viewBox="0 0 24 24"
+						stroke="currentColor">
+						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+					</svg>
+				</button>
+				<button
+					class="flex items-center gap-2 px-4 py-2 bg-white/10 hover:bg-white/20 text-white rounded-lg backdrop-blur-sm transition-all border border-white/20"
+					@click="clearFilters">
+					<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+						<path
+							stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+							d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+					</svg>
+					Limpiar
+				</button>
 			</div>
 		</div>
 
-		<!-- Mensaje de éxito/error para exportación -->
-		<div v-if="exportMessage"
-			 :class="[
+		<div
+			v-if="exportMessage"
+			:class="[
 				'px-4 py-2 text-sm font-medium transition-all duration-300',
 				exportMessageType === 'success' ? 'bg-green-100 text-green-800 border-b border-green-200' : 'bg-red-100 text-red-800 border-b border-red-200'
 			]">
@@ -157,52 +157,52 @@
 			<div class="min-w-max">
 				<table class="w-full">
 					<thead>
-					<tr class="bg-gradient-to-r from-brand-800 to-brand-900 text-white">
-						<th
-							v-for="column in visibleHeaderColumns"
-							:key="column.key"
-							:class="[
+						<tr class="bg-gradient-to-r from-brand-800 to-brand-900 text-white">
+							<th
+								v-for="column in visibleHeaderColumns"
+								:key="column.key"
+								:class="[
 									'px-5 py-3 text-left text-sm font-semibold border-b border-brand-700/50 border-r border-brand-700/30 whitespace-nowrap',
 									{ 'border-r-0': column.key === 'options' }
 								]">
-							{{ column.label }}
-						</th>
-					</tr>
+								{{ column.label }}
+							</th>
+						</tr>
 
-					<tr class="bg-gradient-to-r from-brand-700/80 to-brand-800/80 text-white">
-						<th
-							v-for="column in visibleHeaderColumns"
-							:key="column.key"
-							:class="[
+						<tr class="bg-gradient-to-r from-brand-700/80 to-brand-800/80 text-white">
+							<th
+								v-for="column in visibleHeaderColumns"
+								:key="column.key"
+								:class="[
 									'px-5 py-2 border-b border-brand-700/50 border-r border-brand-700/30',
 									{ 'border-r-0': column.key === 'options' }
 								]">
-							<input
-								v-if="column.filterable"
-								v-model="filters[column.key]"
-								:placeholder="`Filtrar...`"
-								class="w-full bg-white/10 border-none text-white rounded px-3 py-1 text-xs placeholder-white/70 focus:outline-none focus:ring-1 focus:ring-white/50 transition-all" />
-							<span v-else class="inline-block w-full h-8" />
-						</th>
-					</tr>
+								<input
+									v-if="column.filterable"
+									v-model="filters[column.key]"
+									:placeholder="`Filtrar...`"
+									class="w-full bg-white/10 border-none text-white rounded px-3 py-1 text-xs placeholder-white/70 focus:outline-none focus:ring-1 focus:ring-white/50 transition-all" />
+								<span v-else class="inline-block w-full h-8" />
+							</th>
+						</tr>
 					</thead>
 
 					<tbody>
-					<tr v-if="isLoading">
-						<td :colspan="visibleHeaderColumns.length" class="py-12 text-center">
-							<svg class="animate-spin h-8 w-8 text-brand-800 mx-auto mb-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-								<circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" />
-								<path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z" />
-							</svg>
-							<p class="text-gray-500">Cargando Proyectos Duales...</p>
-						</td>
-					</tr>
+						<tr v-if="isLoading">
+							<td :colspan="visibleHeaderColumns.length" class="py-12 text-center">
+								<svg class="animate-spin h-8 w-8 text-brand-800 mx-auto mb-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+									<circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" />
+									<path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z" />
+								</svg>
+								<p class="text-gray-500">Cargando Proyectos Duales...</p>
+							</td>
+						</tr>
 
-					<tr
-						v-for="(project, index) in dualProjects"
-						:key="project.id ?? index"
-						class="border-b border-gray-100 hover:bg-brand-50/30 transition-colors even:bg-gray-50">
-						<td v-if="isColumnVisible('status')" class="px-5 py-3 text-sm border-r border-gray-100 whitespace-nowrap">
+						<tr
+							v-for="(project, index) in dualProjects"
+							:key="project.id ?? index"
+							class="border-b border-gray-100 hover:bg-brand-50/30 transition-colors even:bg-gray-50">
+							<td v-if="isColumnVisible('status')" class="px-5 py-3 text-sm border-r border-gray-100 whitespace-nowrap">
 								<span
 									:class="[
 										'font-semibold px-2 py-1 rounded-full text-xs',
@@ -212,131 +212,130 @@
 									]">
 									{{ project.has_report == 1 ? 'Completado' : 'Incompleto' }}
 								</span>
-						</td>
+							</td>
 
-						<td v-if="isColumnVisible('students')" class="px-5 py-3 text-sm border-r border-gray-100 whitespace-nowrap">
-							<template v-if="project.student_name && project.student_name.trim() !== ''">
-								<button
-									class="px-3 py-1 bg-gradient-to-r from-brand-800 to-brand-900 text-white rounded-lg hover:from-brand-700 hover:to-brand-800 transition-all text-xs font-medium shadow-sm"
-									title="Ver estudiantes"
-									@click="openStudentModal(project)">
-									Ver estudiantes
-								</button>
-							</template>
-							<template v-else>
-								<span class="text-gray-500 font-medium text-center">Sin estudiantes</span>
-							</template>
-						</td>
-
-						<td v-if="isColumnVisible('institution_name')" class="px-5 py-3 text-sm border-r border-gray-100 whitespace-nowrap">{{ project.institution_name }}</td>
-						<td v-if="isColumnVisible('institution_state')" class="px-5 py-3 text-sm border-r border-gray-100 whitespace-nowrap">{{ project.institution_state }}</td>
-						<td v-if="isColumnVisible('institution_city')" class="px-5 py-3 text-sm border-r border-gray-100 whitespace-nowrap">{{ project.institution_city }}</td>
-
-						<td v-if="isColumnVisible('organization_name')" class="px-5 py-3 text-sm border-r border-gray-100 whitespace-nowrap">{{ project.organization_name }}</td>
-						<td v-if="isColumnVisible('organization_state')" class="px-5 py-3 text-sm border-r border-gray-100 whitespace-nowrap">{{ project.organization_state }}</td>
-						<td v-if="isColumnVisible('organization_city')" class="px-5 py-3 text-sm border-r border-gray-100 whitespace-nowrap">{{ project.organization_city }}</td>
-						<td v-if="isColumnVisible('organization_sector')" class="px-5 py-3 text-sm border-r border-gray-100 whitespace-nowrap">{{ project.organization_sector }}</td>
-						<td v-if="isColumnVisible('organization_type')" class="px-5 py-3 text-sm border-r border-gray-100 whitespace-nowrap">{{ project.organization_type }}</td>
-
-						<td v-if="isColumnVisible('education_type')" class="px-5 py-3 text-sm border-r border-gray-100 whitespace-nowrap">{{ project.education_type }}</td>
-						<td v-if="isColumnVisible('project_name')" class="px-5 py-3 text-sm border-r border-gray-100 whitespace-nowrap">{{ project.project_name }}</td>
-						<td v-if="isColumnVisible('agreement')" class="px-5 py-3 text-sm border-r border-gray-100 whitespace-nowrap">
-								<span :class="getAgreementClass(project.agreement)">
-									{{ project.agreement }}
-								</span>
-						</td>
-						<td v-if="isColumnVisible('project_status')" class="px-5 py-3 text-sm border-r border-gray-100 whitespace-nowrap">
-								<span :class="getStatusClass(project.project_status)">
-									{{ project.project_status }}
-								</span>
-						</td>
-						<td v-if="isColumnVisible('grade')" class="px-5 py-3 text-sm border-r border-gray-100 whitespace-nowrap">
-								<span class="text-gray-800 font-medium">
-									{{ project.grade }}
-								</span>
-						</td>
-						<td v-if="isColumnVisible('certifications')" class="px-5 py-3 text-sm border-r border-gray-100 whitespace-nowrap">
-							<template v-if="project.certifications && project.certifications.length > 0">
-								<button
-									class="px-3 py-1 bg-gradient-to-r from-brand-800 to-brand-900 text-white rounded text-xs hover:from-brand-700 hover:to-brand-800 transition-all shadow-sm"
-									@click="openCertificationsModal(project)">
-									Ver ({{ project.certifications.length }})
-								</button>
-							</template>
-							<template v-else>
-								<span class="text-gray-500 text-xs">Sin certificaciones</span>
-							</template>
-						</td>
-						<td v-if="isColumnVisible('microcredentials')" class="px-5 py-3 text-sm border-r border-gray-100 whitespace-nowrap">
-							<template v-if="project.microcredentials && project.microcredentials.length > 0">
-								<button
-									class="px-3 py-1 bg-gradient-to-r from-brand-800 to-brand-900 text-white rounded text-xs hover:from-brand-700 hover:to-brand-800 transition-all shadow-sm"
-									@click="openMicrocredentialsModal(project)">
-									Ver ({{ project.microcredentials.length }})
-								</button>
-							</template>
-							<template v-else>
-								<span class="text-gray-500 text-xs">Sin microcredenciales</span>
-							</template>
-						</td>
-						<!-- CORREGIDO: Cambiado de project.certificates a project.diplomas -->
-						<td v-if="isColumnVisible('certificates')" class="px-5 py-3 text-sm border-r border-gray-100 whitespace-nowrap">
-							<template v-if="project.diplomas && project.diplomas.length > 0">
-								<button
-									class="px-3 py-1 bg-gradient-to-r from-brand-800 to-brand-900 text-white rounded text-xs hover:from-brand-700 hover:to-brand-800 transition-all shadow-sm"
-									@click="openCertificatesModal(project)">
-									Ver ({{ project.diplomas.length }})
-								</button>
-							</template>
-							<template v-else>
-								<span class="text-gray-500 text-xs">Sin diplomados</span>
-							</template>
-						</td>
-						<td v-if="isColumnVisible('area')" class="px-5 py-3 text-sm border-r border-gray-100 whitespace-nowrap">{{ project.area }}</td>
-
-						<td v-if="isColumnVisible('options')" class="px-5 py-3 text-sm whitespace-nowrap">
-							<div class="flex space-x-2">
-								<template v-if="project.has_report == 1">
+							<td v-if="isColumnVisible('students')" class="px-5 py-3 text-sm border-r border-gray-100 whitespace-nowrap">
+								<template v-if="project.student_name && project.student_name.trim() !== ''">
 									<button
-										class="flex items-center gap-2 px-3 py-2 rounded-full text-brand-800 hover:bg-brand-100 transition-colors"
-										:title="'Editar'"
-										@click="$emit('open', { mode: 'edit', pk: project.id, table: 'modelo dual' })">
-										<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-											<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-										</svg>
-										<span class="text-sm font-medium">Editar</span>
+										class="px-3 py-1 bg-gradient-to-r from-brand-800 to-brand-900 text-white rounded-lg hover:from-brand-700 hover:to-brand-800 transition-all text-xs font-medium shadow-sm"
+										title="Ver estudiantes"
+										@click="openStudentModal(project)">
+										Ver estudiantes
 									</button>
 								</template>
 								<template v-else>
+									<span class="text-gray-500 font-medium text-center">Sin estudiantes</span>
+								</template>
+							</td>
+
+							<td v-if="isColumnVisible('institution_name')" class="px-5 py-3 text-sm border-r border-gray-100 whitespace-nowrap">{{ project.institution_name }}</td>
+							<td v-if="isColumnVisible('institution_state')" class="px-5 py-3 text-sm border-r border-gray-100 whitespace-nowrap">{{ project.institution_state }}</td>
+							<td v-if="isColumnVisible('institution_city')" class="px-5 py-3 text-sm border-r border-gray-100 whitespace-nowrap">{{ project.institution_city }}</td>
+
+							<td v-if="isColumnVisible('organization_name')" class="px-5 py-3 text-sm border-r border-gray-100 whitespace-nowrap">{{ project.organization_name }}</td>
+							<td v-if="isColumnVisible('organization_state')" class="px-5 py-3 text-sm border-r border-gray-100 whitespace-nowrap">{{ project.organization_state }}</td>
+							<td v-if="isColumnVisible('organization_city')" class="px-5 py-3 text-sm border-r border-gray-100 whitespace-nowrap">{{ project.organization_city }}</td>
+							<td v-if="isColumnVisible('organization_sector')" class="px-5 py-3 text-sm border-r border-gray-100 whitespace-nowrap">{{ project.organization_sector }}</td>
+							<td v-if="isColumnVisible('organization_type')" class="px-5 py-3 text-sm border-r border-gray-100 whitespace-nowrap">{{ project.organization_type }}</td>
+
+							<td v-if="isColumnVisible('education_type')" class="px-5 py-3 text-sm border-r border-gray-100 whitespace-nowrap">{{ project.education_type }}</td>
+							<td v-if="isColumnVisible('project_name')" class="px-5 py-3 text-sm border-r border-gray-100 whitespace-nowrap">{{ project.project_name }}</td>
+							<td v-if="isColumnVisible('agreement')" class="px-5 py-3 text-sm border-r border-gray-100 whitespace-nowrap">
+								<span :class="getAgreementClass(project.agreement)">
+									{{ project.agreement }}
+								</span>
+							</td>
+							<td v-if="isColumnVisible('project_status')" class="px-5 py-3 text-sm border-r border-gray-100 whitespace-nowrap">
+								<span :class="getStatusClass(project.project_status)">
+									{{ project.project_status }}
+								</span>
+							</td>
+							<td v-if="isColumnVisible('grade')" class="px-5 py-3 text-sm border-r border-gray-100 whitespace-nowrap">
+								<span class="text-gray-800 font-medium">
+									{{ project.grade }}
+								</span>
+							</td>
+							<td v-if="isColumnVisible('certifications')" class="px-5 py-3 text-sm border-r border-gray-100 whitespace-nowrap">
+								<template v-if="project.certifications && project.certifications.length > 0">
 									<button
-										class="flex items-center gap-2 px-3 py-2 rounded-full text-green-600 hover:bg-green-100 transition-colors"
-										:title="'Completar'"
-										@click="$emit('open', { mode: 'complete', pk: project.id, table: 'modelo dual' })">
-										<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-											<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-										</svg>
-										<span class="text-sm font-medium">Completar</span>
+										class="px-3 py-1 bg-gradient-to-r from-brand-800 to-brand-900 text-white rounded text-xs hover:from-brand-700 hover:to-brand-800 transition-all shadow-sm"
+										@click="openCertificationsModal(project)">
+										Ver ({{ project.certifications.length }})
 									</button>
 								</template>
-								<btnDelete
-									:table="'dual_projects'"
-									:pk="project.id ?? index"
-									@open-confirm="(payload) => $emit('open-confirm', payload)" />
-							</div>
-						</td>
-					</tr>
+								<template v-else>
+									<span class="text-gray-500 text-xs">Sin certificaciones</span>
+								</template>
+							</td>
+							<td v-if="isColumnVisible('microcredentials')" class="px-5 py-3 text-sm border-r border-gray-100 whitespace-nowrap">
+								<template v-if="project.microcredentials && project.microcredentials.length > 0">
+									<button
+										class="px-3 py-1 bg-gradient-to-r from-brand-800 to-brand-900 text-white rounded text-xs hover:from-brand-700 hover:to-brand-800 transition-all shadow-sm"
+										@click="openMicrocredentialsModal(project)">
+										Ver ({{ project.microcredentials.length }})
+									</button>
+								</template>
+								<template v-else>
+									<span class="text-gray-500 text-xs">Sin microcredenciales</span>
+								</template>
+							</td>
+							<td v-if="isColumnVisible('certificates')" class="px-5 py-3 text-sm border-r border-gray-100 whitespace-nowrap">
+								<template v-if="project.diplomas && project.diplomas.length > 0">
+									<button
+										class="px-3 py-1 bg-gradient-to-r from-brand-800 to-brand-900 text-white rounded text-xs hover:from-brand-700 hover:to-brand-800 transition-all shadow-sm"
+										@click="openCertificatesModal(project)">
+										Ver ({{ project.diplomas.length }})
+									</button>
+								</template>
+								<template v-else>
+									<span class="text-gray-500 text-xs">Sin diplomados</span>
+								</template>
+							</td>
+							<td v-if="isColumnVisible('area')" class="px-5 py-3 text-sm border-r border-gray-100 whitespace-nowrap">{{ project.area }}</td>
 
-					<tr v-if="!isLoading && dualProjects.length === 0">
-						<td :colspan="visibleHeaderColumns.length" class="px-5 py-8 text-center text-gray-500">
-							<div class="flex flex-col items-center justify-center">
-								<svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 text-gray-400 mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-									<path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-								</svg>
-								<p class="text-gray-500 font-medium">No se encontraron proyectos duales registrados.</p>
-								<p class="text-gray-400 text-sm mt-1">Intenta ajustar los filtros o verificar los datos.</p>
-							</div>
-						</td>
-					</tr>
+							<td v-if="isColumnVisible('options')" class="px-5 py-3 text-sm whitespace-nowrap">
+								<div class="flex space-x-2">
+									<template v-if="project.has_report == 1">
+										<button
+											class="flex items-center gap-2 px-3 py-2 rounded-full text-brand-800 hover:bg-brand-100 transition-colors"
+											:title="'Editar'"
+											@click="$emit('open', { mode: 'edit', pk: project.id, table: 'modelo dual' })">
+											<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+												<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+											</svg>
+											<span class="text-sm font-medium">Editar</span>
+										</button>
+									</template>
+									<template v-else>
+										<button
+											class="flex items-center gap-2 px-3 py-2 rounded-full text-green-600 hover:bg-green-100 transition-colors"
+											:title="'Completar'"
+											@click="$emit('open', { mode: 'complete', pk: project.id, table: 'modelo dual' })">
+											<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+												<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+											</svg>
+											<span class="text-sm font-medium">Completar</span>
+										</button>
+									</template>
+									<btnDelete
+										:table="'dual_projects'"
+										:pk="project.id ?? index"
+										@open-confirm="(payload) => $emit('open-confirm', payload)" />
+								</div>
+							</td>
+						</tr>
+
+						<tr v-if="!isLoading && dualProjects.length === 0">
+							<td :colspan="visibleHeaderColumns.length" class="px-5 py-8 text-center text-gray-500">
+								<div class="flex flex-col items-center justify-center">
+									<svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 text-gray-400 mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+										<path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+									</svg>
+									<p class="text-gray-500 font-medium">No se encontraron proyectos duales registrados.</p>
+									<p class="text-gray-400 text-sm mt-1">Intenta ajustar los filtros o verificar los datos.</p>
+								</div>
+							</td>
+						</tr>
 					</tbody>
 				</table>
 			</div>
@@ -411,47 +410,47 @@
 			<div class="overflow-x-auto">
 				<table class="min-w-full">
 					<thead>
-					<tr class="bg-gradient-to-r from-brand-800 to-brand-900 text-white">
-						<th class="px-5 py-3 text-left text-sm font-semibold border-b border-brand-700/50 border-r border-brand-700/30">Nombre</th>
-						<th class="px-5 py-3 text-left text-sm font-semibold border-b border-brand-700/50 border-r border-brand-700/30">Carrera</th>
-						<th class="px-5 py-3 text-left text-sm font-semibold border-b border-brand-700/50">Especialidad</th>
-					</tr>
-					<tr class="bg-gradient-to-r from-brand-700/80 to-brand-800/80 text-white">
-						<th class="px-5 py-2 border-b border-brand-700/50 border-r border-brand-700/30">
-							<input
-								v-model="studentFilters.name" placeholder="Filtrar por nombre"
-								class="w-full bg-white/10 border-none text-white rounded px-3 py-1 text-xs placeholder-white/70 focus:outline-none focus:ring-1 focus:ring-white/50 transition-all" />
-						</th>
-						<th class="px-5 py-2 border-b border-brand-700/50 border-r border-brand-700/30">
-							<input
-								v-model="studentFilters.career" placeholder="Filtrar por carrera"
-								class="w-full bg-white/10 border-none text-white rounded px-3 py-1 text-xs placeholder-white/70 focus:outline-none focus:ring-1 focus:ring-white/50 transition-all" />
-						</th>
-						<th class="px-5 py-2 border-b border-brand-700/50">
-							<input
-								v-model="studentFilters.specialty" placeholder="Filtrar por especialidad"
-								class="w-full bg-white/10 border-none text-white rounded px-3 py-1 text-xs placeholder-white/70 focus:outline-none focus:ring-1 focus:ring-white/50 transition-all" />
-						</th>
-					</tr>
+						<tr class="bg-gradient-to-r from-brand-800 to-brand-900 text-white">
+							<th class="px-5 py-3 text-left text-sm font-semibold border-b border-brand-700/50 border-r border-brand-700/30">Nombre</th>
+							<th class="px-5 py-3 text-left text-sm font-semibold border-b border-brand-700/50 border-r border-brand-700/30">Carrera</th>
+							<th class="px-5 py-3 text-left text-sm font-semibold border-b border-brand-700/50">Especialidad</th>
+						</tr>
+						<tr class="bg-gradient-to-r from-brand-700/80 to-brand-800/80 text-white">
+							<th class="px-5 py-2 border-b border-brand-700/50 border-r border-brand-700/30">
+								<input
+									v-model="studentFilters.name" placeholder="Filtrar por nombre"
+									class="w-full bg-white/10 border-none text-white rounded px-3 py-1 text-xs placeholder-white/70 focus:outline-none focus:ring-1 focus:ring-white/50 transition-all" />
+							</th>
+							<th class="px-5 py-2 border-b border-brand-700/50 border-r border-brand-700/30">
+								<input
+									v-model="studentFilters.career" placeholder="Filtrar por carrera"
+									class="w-full bg-white/10 border-none text-white rounded px-3 py-1 text-xs placeholder-white/70 focus:outline-none focus:ring-1 focus:ring-white/50 transition-all" />
+							</th>
+							<th class="px-5 py-2 border-b border-brand-700/50">
+								<input
+									v-model="studentFilters.specialty" placeholder="Filtrar por especialidad"
+									class="w-full bg-white/10 border-none text-white rounded px-3 py-1 text-xs placeholder-white/70 focus:outline-none focus:ring-1 focus:ring-white/50 transition-all" />
+							</th>
+						</tr>
 					</thead>
 					<tbody>
-					<tr
-						v-for="(stud, i) in filteredStudents" :key="i"
-						class="border-b border-gray-100 hover:bg-brand-50/30 transition-colors even:bg-gray-50">
-						<td class="px-5 py-3 text-sm border-r border-gray-100">{{ stud.name }}</td>
-						<td class="px-5 py-3 text-sm border-r border-gray-100">{{ stud.career }}</td>
-						<td class="px-5 py-3 text-sm">{{ stud.specialty }}</td>
-					</tr>
-					<tr v-if="filteredStudents.length === 0">
-						<td colspan="3" class="px-5 py-8 text-center text-gray-500">
-							<div class="flex flex-col items-center justify-center">
-								<svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 text-gray-400 mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-									<path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z" />
-								</svg>
-								<p class="text-gray-500">No se encontraron alumnos.</p>
-							</div>
-						</td>
-					</tr>
+						<tr
+							v-for="(stud, i) in filteredStudents" :key="i"
+							class="border-b border-gray-100 hover:bg-brand-50/30 transition-colors even:bg-gray-50">
+							<td class="px-5 py-3 text-sm border-r border-gray-100">{{ stud.name }}</td>
+							<td class="px-5 py-3 text-sm border-r border-gray-100">{{ stud.career }}</td>
+							<td class="px-5 py-3 text-sm">{{ stud.specialty }}</td>
+						</tr>
+						<tr v-if="filteredStudents.length === 0">
+							<td colspan="3" class="px-5 py-8 text-center text-gray-500">
+								<div class="flex flex-col items-center justify-center">
+									<svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 text-gray-400 mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+										<path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z" />
+									</svg>
+									<p class="text-gray-500">No se encontraron alumnos.</p>
+								</div>
+							</td>
+						</tr>
 					</tbody>
 				</table>
 			</div>
@@ -633,13 +632,11 @@ const filters = ref({
 	area: ''
 });
 
-// Función para exportar a Excel
 const exportToExcel = async () => {
 	loadingExport.value = true;
 	exportMessage.value = '';
 
 	try {
-		// Filtrar solo los filtros que tienen valor
 		const activeFilters = {};
 		Object.keys(filters.value).forEach(key => {
 			if (filters.value[key] && filters.value[key].trim() !== '') {
@@ -647,24 +644,20 @@ const exportToExcel = async () => {
 			}
 		});
 
-		// Llamar al servicio de exportación
 		const result = await exportDualProjectsToExcel(activeFilters);
 
-		// Mostrar mensaje de éxito
 		exportMessage.value = result.message || 'Excel descargado exitosamente';
 		exportMessageType.value = 'success';
 
 	} catch (error) {
 		console.error('Error al exportar:', error);
 
-		// Mostrar mensaje de error
 		exportMessage.value = error.message || 'Error al exportar los datos';
 		exportMessageType.value = 'error';
 
 	} finally {
 		loadingExport.value = false;
 
-		// Limpiar mensaje después de 5 segundos
 		setTimeout(() => {
 			exportMessage.value = '';
 			exportMessageType.value = '';
@@ -730,14 +723,8 @@ const fetchDualProjects = async () => {
 
 		const data = response.data?.data || [];
 		const meta = response.data?.meta || {};
-		console.log('Respuesta del servidor:', response.data);
 		if (data.length === 0) {
 			console.warn('No se recibieron datos del servidor');
-			dualProjects.value = [];
-			totalItems.value = 0;
-			totalPages.value = 1;
-			fromItem.value = 0;
-			toItem.value = 0;
 			return;
 		}
 
@@ -750,12 +737,6 @@ const fetchDualProjects = async () => {
 
 	} catch (error) {
 		console.error('Error al cargar proyectos:', error);
-
-		dualProjects.value = [];
-		totalItems.value = 0;
-		totalPages.value = 1;
-		fromItem.value = 0;
-		toItem.value = 0;
 	} finally {
 		isLoading.value = false;
 	}

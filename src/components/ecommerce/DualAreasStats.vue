@@ -22,7 +22,6 @@
 		</div>
 
 		<div class="relative min-h-[400px]">
-			<!-- Estado de carga -->
 			<div
 				v-if="loading"
 				class="absolute inset-0 flex items-center justify-center bg-white/80 dark:bg-gray-900/80 z-10 rounded-lg">
@@ -34,7 +33,6 @@
 				</div>
 			</div>
 
-			<!-- Estado de error -->
 			<div
 				v-else-if="loadError"
 				class="absolute inset-0 flex flex-col items-center justify-center bg-white/80 dark:bg-gray-900/80 z-10 rounded-lg p-4">
@@ -57,7 +55,6 @@
 				</button>
 			</div>
 
-			<!-- Sin datos -->
 			<div
 				v-else-if="!hasData"
 				class="absolute inset-0 flex items-center justify-center bg-white/80 dark:bg-gray-900/80 z-10 rounded-lg">
@@ -77,17 +74,13 @@
 				</div>
 			</div>
 
-			<!-- Grid con listado y gráfica -->
 			<div v-else class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-				<!-- Listado de áreas (ocupa 2 columnas) -->
 				<div class="lg:col-span-2 space-y-4 sm:space-y-6">
 					<div
 						v-for="(item, index) in topTenAreas"
 						:key="index"
-						class="flex items-center justify-between gap-2 sm:gap-4 hover:bg-gray-200/50 dark:hover:bg-gray-800/70 p-2 rounded-lg transition-colors cursor-pointer"
-						@click="onAreaClick(item)">
+						class="flex items-center justify-between gap-2 sm:gap-4 hover:bg-gray-200/50 dark:hover:bg-gray-800/70 p-2 rounded-lg transition-colors cursor-pointer">
 						<div class="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
-							<!-- Círculo de color en lugar de imagen -->
 							<div
 								class="w-8 h-8 sm:w-10 sm:h-10 flex items-center justify-center rounded-full border border-gray-300 dark:border-gray-600 flex-shrink-0"
 								:style="{ backgroundColor: palette[index % palette.length] + '20' }">
@@ -132,7 +125,6 @@
 					</div>
 				</div>
 
-				<!-- Gráfica de pastel (ocupa 1 columna) -->
 				<div class="lg:col-span-1 flex flex-col items-center justify-start">
 					<div class="w-full max-w-[250px] h-[250px] sm:h-[280px] mx-auto">
 						<PieChart
@@ -260,11 +252,6 @@ const chartOptions = computed(() => ({
 		}
 	}
 }));
-
-const onAreaClick = (area: DualArea) => {
-	console.log('Área seleccionada:', area);
-	// Aquí puedes emitir un evento o navegar a detalles
-};
 
 const loadData = async () => {
 	try {

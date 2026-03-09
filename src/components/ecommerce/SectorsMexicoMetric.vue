@@ -187,7 +187,6 @@ const chartOptions = computed(() => ({
 		if (elements.length > 0) {
 			const index = elements[0].index;
 			const sector = filteredSectors.value[index];
-			console.log('Sector seleccionado:', sector);
 		}
 	}
 }))

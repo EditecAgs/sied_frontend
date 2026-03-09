@@ -57,7 +57,6 @@
 				</button>
 			</div>
 
-			<!-- MODIFICADO: Cambiado hasData por hasPaginatedData -->
 			<div v-else-if="!hasPaginatedData" class="absolute inset-0 flex items-center justify-center bg-white/80 dark:bg-gray-900/80 z-10 rounded-lg">
 				<div class="text-center">
 					<svg class="h-10 w-10 sm:h-12 sm:w-12 text-gray-400 mx-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -203,7 +202,6 @@ const chartOptions = ref({
 				const supportIndex = config.dataPointIndex
 				const support = chartOptions.value.xaxis.categories[supportIndex]
 				const value = series.value[0].data[supportIndex]
-				console.log(`Apoyo económico seleccionado: ${support} (${value} proyectos)`)
 			}
 		}
 	},
@@ -428,12 +426,6 @@ const loadData = async () => {
 
 		updateChart()
 
-		console.log('Datos procesados para gráfico:', {
-			totalProyectos: totalProjects.value,
-			totalTiposDeApoyo: sortedData.length,
-			paginas: totalPages.value,
-			datosPaginaActual: paginatedSupports.value
-		})
 
 		await nextTick()
 		chartKey.value++
@@ -442,10 +434,6 @@ const loadData = async () => {
 	} catch (err) {
 		console.error('Error al cargar proyectos por apoyo económico:', err)
 		loadError.value = err.message || 'Error desconocido'
-		allSupports.value = []
-		series.value = [{ name: 'Proyectos', data: [] }]
-		chartOptions.value.xaxis.categories = []
-		totalProjects.value = 0
 		emit('error', err)
 	} finally {
 		loading.value = false

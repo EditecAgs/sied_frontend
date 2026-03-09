@@ -146,10 +146,6 @@ const loadData = async () => {
 		emit('loaded')
 	} catch (error) {
 		console.error('Error al cargar proyectos por mes:', error)
-		series.value = [{
-			name: 'Proyectos creados',
-			data: Array(12).fill(0),
-		}]
 	}
 }
 onMounted(() => {

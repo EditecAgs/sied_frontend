@@ -12,7 +12,7 @@
 <script setup>
 const props = defineProps({
 	table: String,
-	pk: Number,
+	pk: [String, Number],
 })
 
 const emit = defineEmits(['open-confirm'])
