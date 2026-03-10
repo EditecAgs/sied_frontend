@@ -322,9 +322,9 @@ import DualStepPersonal from '../../components/forms/DualStepPersonal.vue';
 import DualStepAcademico from '../../components/forms/DualStepAcademico.vue';
 import DualStepUnidad from '../../components/forms/DualStepUnidad.vue';
 import {
-  createDualProject,
-  updateDualProject,
-  showDualProject
+	createDualProject,
+	updateDualProject,
+	showDualProject
 } from '../../services/dual_projects/dual_projects';
 import { getInstitutions } from '../../services/institutions/institutions.js';
 import { getCareers } from '../../services/institutions/careers.js';
@@ -341,11 +341,11 @@ import { getDiplomas } from '../../services/dual_projects/diplomas.js';
 import { getAcademicPeriods } from '../../services/institutions/academic-periods';
 import { getBenefitType } from '../../services/dual_projects/BenefitType';
 import {
-  ArrowLeftIcon,
-  CheckIcon,
-  ChevronDownIcon,
-  ExclamationTriangleIcon,
-  CheckCircleIcon
+	ArrowLeftIcon,
+	CheckIcon,
+	ChevronDownIcon,
+	ExclamationTriangleIcon,
+	CheckCircleIcon
 } from '@heroicons/vue/24/solid'
 
 const route = useRoute();
@@ -354,6 +354,10 @@ const router = useRouter();
 // ==================== VARIABLES REACTIVAS PRINCIPALES ====================
 const mode = ref('create');
 const projectId = ref<number | null>(null);
+
+const isInitialLoad = ref(true);
+
+let saveTimeout: NodeJS.Timeout | null = null;
 
 // ==================== ESTADOS DE CARGA ====================
 const globalLoading = ref(false);
@@ -382,47 +386,47 @@ const stepUnidadDualRef = ref();
 
 // ==================== DATOS DEL FORMULARIO ====================
 const formData = ref({
-  personal: {
-    id_student: '',
-    control_number: '',
-    name_student: '',
-    lastname: '',
-    gender: '',
-    semester: '',
-    id_career: '',
-    id_specialty: '',
-    academic_period: [],
-    dual_project_students: [],
-  },
-  academico: {
-    id_institution: '',
-  },
-  unidadDual: {
-    name_report: '',
-    id_organization: '',
-    id_dual_area: '',
-    period_start: '',
-    period_end: '',
-    period_observation: '',
-    status_document: '',
-    economic_support: '',
-    amount: '0',
-    qualification: '0',
-    max_qualification: '10',
-    is_concluded: 0,
-    is_hired: 0,
-    hired_observation: '',
-    dual_type_id: '',
-    micro_credentials: [],
-    certifications: [],
-    diplomas: [],
-    benefitTypes: [],
-    description: '',
-    internal_advisor_name: '',
-    internal_advisor_qualification: null,
-    external_advisor_name: '',
-    external_advisor_qualification: null,
-  }
+	personal: {
+		id_student: '',
+		control_number: '',
+		name_student: '',
+		lastname: '',
+		gender: '',
+		semester: '',
+		id_career: '',
+		id_specialty: '',
+		academic_period: [],
+		dual_project_students: [],
+	},
+	academico: {
+		id_institution: '',
+	},
+	unidadDual: {
+		name_report: '',
+		id_organization: '',
+		id_dual_area: '',
+		period_start: '',
+		period_end: '',
+		period_observation: '',
+		status_document: '',
+		economic_support: '',
+		amount: '0',
+		qualification: '0',
+		max_qualification: '10',
+		is_concluded: 0,
+		is_hired: 0,
+		hired_observation: '',
+		dual_type_id: '',
+		micro_credentials: [],
+		certifications: [],
+		diplomas: [],
+		benefitTypes: [],
+		description: '',
+		internal_advisor_name: '',
+		internal_advisor_qualification: null,
+		external_advisor_name: '',
+		external_advisor_qualification: null,
+	}
 });
 
 // ==================== DATOS PARA SELECTORES ====================
@@ -443,746 +447,931 @@ const benefitTypes = shallowRef([]);
 
 // ==================== FUNCIONES AUXILIARES ====================
 const getModeFromRoute = (): string => {
-  const path = route.path;
-  if (path.includes('/modelo-dual/editar/')) return 'edit';
-  if (path.includes('/modelo-dual/completar/')) return 'complete';
-  if (path.includes('/modelo-dual/crear')) return 'create';
-  return 'create';
+	const path = route.path;
+	if (path.includes('/modelo-dual/editar/')) return 'edit';
+	if (path.includes('/modelo-dual/completar/')) return 'complete';
+	if (path.includes('/modelo-dual/crear')) return 'create';
+	return 'create';
 };
 
 const getPkFromRoute = (): string | null => {
-  const path = route.path;
+	const path = route.path;
 
-  const numberMatch = path.match(/\/(\d+)$/);
-  if (numberMatch && numberMatch[1]) {
-    return numberMatch[1];
-  }
+	const numberMatch = path.match(/\/(\d+)$/);
+	if (numberMatch && numberMatch[1]) {
+		return numberMatch[1];
+	}
 
-  const uuidMatch = path.match(/\/([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})$/i);
-  if (uuidMatch && uuidMatch[1]) {
-    return uuidMatch[1];
-  }
+	const uuidMatch = path.match(/\/([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})$/i);
+	if (uuidMatch && uuidMatch[1]) {
+		return uuidMatch[1];
+	}
 
-  const anyMatch = path.match(/\/(?:editar|completar)\/([^\/]+)$/);
-  if (anyMatch && anyMatch[1]) {
-    return anyMatch[1];
-  }
-  return null;
+	const anyMatch = path.match(/\/(?:editar|completar)\/([^\/]+)$/);
+	if (anyMatch && anyMatch[1]) {
+		return anyMatch[1];
+	}
+	return null;
 };
 
 // ==================== COMPUTED PROPERTIES ====================
 const isSection1Incomplete = computed(() => !formData.value.academico.id_institution);
 
 const isSection2Incomplete = computed(() => {
-  if (!reportaModeloDual.value) return false;
-  return (formData.value.personal.dual_project_students?.length || 0) < 1;
+	if (!reportaModeloDual.value) return false;
+	return (formData.value.personal.dual_project_students?.length || 0) < 1;
 });
 
 const isSection3Incomplete = computed(() => {
-  if (!reportaModeloDual.value) return false;
-  return !formData.value.unidadDual.name_report ||
-      !formData.value.unidadDual.id_organization ||
-      !formData.value.unidadDual.id_dual_area;
+	if (!reportaModeloDual.value) return false;
+	return !formData.value.unidadDual.name_report ||
+		!formData.value.unidadDual.id_organization ||
+		!formData.value.unidadDual.id_dual_area;
 });
 
 const pendingSectionsCount = computed(() => {
-  let count = 0;
-  if (isSection1Incomplete.value) count++;
-  if (reportaModeloDual.value && isSection2Incomplete.value) count++;
-  if (reportaModeloDual.value && isSection3Incomplete.value) count++;
-  return count;
+	let count = 0;
+	if (isSection1Incomplete.value) count++;
+	if (reportaModeloDual.value && isSection2Incomplete.value) count++;
+	if (reportaModeloDual.value && isSection3Incomplete.value) count++;
+	return count;
 });
 
 const pageTitle = computed(() => {
-  switch (mode.value) {
-    case 'create': return 'Crear Proyecto Dual';
-    case 'complete': return 'Completar Proyecto Dual';
-    default: return 'Editar Proyecto Dual';
-  }
+	switch (mode.value) {
+		case 'create': return 'Crear Proyecto Dual';
+		case 'complete': return 'Completar Proyecto Dual';
+		default: return 'Editar Proyecto Dual';
+	}
 });
 
 const formTitle = computed(() => {
-  const sections = reportaModeloDual.value ? '3 Secciones' : '1 Sección';
-  return `${pageTitle.value} - ${sections}`;
+	const sections = reportaModeloDual.value ? '3 Secciones' : '1 Sección';
+	return `${pageTitle.value} - ${sections}`;
 });
 
 const buttonText = computed(() => {
-  switch (mode.value) {
-    case 'create': return 'Guardar Proyecto Dual';
-    case 'complete': return 'Completar Proyecto Dual';
-    default: return 'Actualizar Proyecto Dual';
-  }
+	switch (mode.value) {
+		case 'create': return 'Guardar Proyecto Dual';
+		case 'complete': return 'Completar Proyecto Dual';
+		default: return 'Actualizar Proyecto Dual';
+	}
 });
 
 const canSubmit = computed(() => {
-  if (!formData.value.academico.id_institution) return false;
-  if (reportaModeloDual.value === false) return true;
+	if (!formData.value.academico.id_institution) return false;
+	if (reportaModeloDual.value === false) return true;
 
-  const studentCount = formData.value.personal.dual_project_students?.length || 0;
-  if (studentCount < 1) return false;
+	const studentCount = formData.value.personal.dual_project_students?.length || 0;
+	if (studentCount < 1) return false;
 
-  return !(!formData.value.unidadDual.name_report ||
-      !formData.value.unidadDual.id_organization ||
-      !formData.value.unidadDual.id_dual_area);
+	return !(!formData.value.unidadDual.name_report ||
+		!formData.value.unidadDual.id_organization ||
+		!formData.value.unidadDual.id_dual_area);
 });
 
 const filteredCareersForInstitution = computed(() => {
-  if (!formData.value.academico.id_institution || careers.value.length === 0) return [];
+	if (!formData.value.academico.id_institution || careers.value.length === 0) return [];
 
-  const institutionId = formData.value.academico.id_institution;
-  return careers.value.filter(career => {
-    return String(career.id_institution) === String(institutionId) ||
-        String(career.institution_id) === String(institutionId) ||
-        String(career.institution?.id) === String(institutionId);
-  });
+	const institutionId = formData.value.academico.id_institution;
+	return careers.value.filter(career => {
+		return String(career.id_institution) === String(institutionId) ||
+			String(career.institution_id) === String(institutionId) ||
+			String(career.institution?.id) === String(institutionId);
+	});
 });
 
 const filteredSpecialtiesForInstitution = computed(() => {
-  if (!formData.value.academico.id_institution || specialties.value.length === 0) return [];
+	if (!formData.value.academico.id_institution || specialties.value.length === 0) return [];
 
-  const filteredCareers = filteredCareersForInstitution.value;
-  const careerIds = new Set(filteredCareers.map(c => String(c.id)));
+	const filteredCareers = filteredCareersForInstitution.value;
+	const careerIds = new Set(filteredCareers.map(c => String(c.id)));
 
-  return specialties.value.filter(specialty =>
-      careerIds.has(String(specialty.id_career)) ||
-      careerIds.has(String(specialty.career_id))
-  );
+	return specialties.value.filter(specialty =>
+		careerIds.has(String(specialty.id_career)) ||
+		careerIds.has(String(specialty.career_id))
+	);
 });
 
 // ==================== MÉTODOS DE CARGA ====================
 const updateLoadingProgress = (increment: number) => {
-  loadingProgress.value = Math.min(loadingProgress.value + increment, 100);
+	loadingProgress.value = Math.min(loadingProgress.value + increment, 100);
 };
 
 const loadAllData = async () => {
-  globalLoadingMessage.value = 'Cargando todos los datos...';
+	globalLoadingMessage.value = 'Cargando todos los datos...';
 
-  try {
-    const [
-      institutionsRes,
-      careersRes,
-      specialtiesRes,
-      periodsRes,
-      clustersRes,
-      areasRes,
-      statusesRes,
-      supportsRes,
-      orgsRes,
-      typesRes,
-      microRes,
-      certRes,
-      diplomaRes,
-      benefitRes
-    ] = await Promise.all([
-      getInstitutions(),
-      getCareers(),
-      getSpecialties(),
-      getAcademicPeriods(),
-      getClusters(),
-      getDualAreas(),
-      getDocumentStatuses(),
-      getEconomicSupports(),
-      getOrganizations(),
-      getDualTypes(),
-      getMicroCredentials(),
-      getCertifications(),
-      getDiplomas(),
-      getBenefitType()
-    ]);
+	try {
+		const [
+			institutionsRes,
+			careersRes,
+			specialtiesRes,
+			periodsRes,
+			clustersRes,
+			areasRes,
+			statusesRes,
+			supportsRes,
+			orgsRes,
+			typesRes,
+			microRes,
+			certRes,
+			diplomaRes,
+			benefitRes
+		] = await Promise.all([
+			getInstitutions(),
+			getCareers(),
+			getSpecialties(),
+			getAcademicPeriods(),
+			getClusters(),
+			getDualAreas(),
+			getDocumentStatuses(),
+			getEconomicSupports(),
+			getOrganizations(),
+			getDualTypes(),
+			getMicroCredentials(),
+			getCertifications(),
+			getDiplomas(),
+			getBenefitType()
+		]);
 
-    institutions.value = institutionsRes.data;
-    careers.value = careersRes.data;
-    specialties.value = specialtiesRes.data;
-    academicPeriods.value = periodsRes.data;
-    clusters.value = clustersRes.data;
-    areas.value = areasRes.data;
-    agreementStatuses.value = statusesRes.data;
-    supportTypes.value = supportsRes.data;
-    organizations.value = orgsRes.data;
-    dualTypes.value = typesRes.data;
-    microCredentials.value = microRes.data;
-    certifications.value = certRes.data;
-    diplomas.value = diplomaRes.data;
-    benefitTypes.value = benefitRes.data;
+		institutions.value = institutionsRes.data;
+		careers.value = careersRes.data;
+		specialties.value = specialtiesRes.data;
+		academicPeriods.value = periodsRes.data;
+		clusters.value = clustersRes.data;
+		areas.value = areasRes.data;
+		agreementStatuses.value = statusesRes.data;
+		supportTypes.value = supportsRes.data;
+		organizations.value = orgsRes.data;
+		dualTypes.value = typesRes.data;
+		microCredentials.value = microRes.data;
+		certifications.value = certRes.data;
+		diplomas.value = diplomaRes.data;
+		benefitTypes.value = benefitRes.data;
 
-    updateLoadingProgress(60);
+		updateLoadingProgress(60);
 
-    return true;
-  } catch (error) {
-    console.error('Error cargando todos los datos:', error);
-    return false;
-  }
+		return true;
+	} catch (error) {
+		console.error('Error cargando todos los datos:', error);
+		return false;
+	}
 };
 
 const loadEssentialDependencies = async () => {
-  globalLoadingMessage.value = 'Cargando datos básicos...';
-  updateLoadingProgress(10);
+	globalLoadingMessage.value = 'Cargando datos básicos...';
+	updateLoadingProgress(10);
 
-  try {
-    const [institutionsRes, periodsRes] = await Promise.all([
-      getInstitutions(),
-      getAcademicPeriods()
-    ]);
+	try {
+		const [institutionsRes, periodsRes] = await Promise.all([
+			getInstitutions(),
+			getAcademicPeriods()
+		]);
 
-    institutions.value = institutionsRes.data;
-    academicPeriods.value = periodsRes.data;
-    updateLoadingProgress(40);
+		institutions.value = institutionsRes.data;
+		academicPeriods.value = periodsRes.data;
+		updateLoadingProgress(40);
 
-    return true;
-  } catch (error) {
-    console.error('Error cargando dependencias esenciales:', error);
-    return false;
-  }
+		return true;
+	} catch (error) {
+		console.error('Error cargando dependencias esenciales:', error);
+		return false;
+	}
 };
 
 const loadSection2Data = async () => {
-  if (section2DataLoaded.value) return true;
+	if (section2DataLoaded.value) return true;
 
-  section2Loading.value = true;
+	section2Loading.value = true;
 
-  try {
-    const [careersRes, specialtiesRes] = await Promise.all([
-      getCareers(),
-      getSpecialties()
-    ]);
+	try {
+		const [careersRes, specialtiesRes] = await Promise.all([
+			getCareers(),
+			getSpecialties()
+		]);
 
-    careers.value = careersRes.data;
-    specialties.value = specialtiesRes.data;
+		careers.value = careersRes.data;
+		specialties.value = specialtiesRes.data;
 
-    section2DataLoaded.value = true;
-    return true;
-  } catch (error) {
-    console.error('Error cargando datos de sección 2:', error);
-    await Swal.fire({
-      icon: 'error',
-      title: 'Error de carga',
-      text: 'No se pudieron cargar los datos de la sección 2',
-      confirmButtonColor: '#3085d6',
-    });
-    return false;
-  } finally {
-    section2Loading.value = false;
-  }
+		section2DataLoaded.value = true;
+		return true;
+	} catch (error) {
+		console.error('Error cargando datos de sección 2:', error);
+		await Swal.fire({
+			icon: 'error',
+			title: 'Error de carga',
+			text: 'No se pudieron cargar los datos de la sección 2',
+			confirmButtonColor: '#3085d6',
+		});
+		return false;
+	} finally {
+		section2Loading.value = false;
+	}
 };
 
 const loadSection3Data = async () => {
-  if (section3DataLoaded.value) return true;
+	if (section3DataLoaded.value) return true;
 
-  section3Loading.value = true;
+	section3Loading.value = true;
 
-  try {
-    if (organizations.value.length === 0) {
-      const orgRes = await getOrganizations();
-      organizations.value = orgRes.data;
-    }
+	try {
+		if (organizations.value.length === 0) {
+			const orgRes = await getOrganizations();
+			organizations.value = orgRes.data;
+		}
 
-    const [
-      clustersRes,
-      areasRes,
-      statusesRes,
-      supportsRes,
-      typesRes,
-      microRes,
-      certRes,
-      diplomaRes,
-      benefitRes
-    ] = await Promise.all([
-      getClusters(),
-      getDualAreas(),
-      getDocumentStatuses(),
-      getEconomicSupports(),
-      getDualTypes(),
-      getMicroCredentials(),
-      getCertifications(),
-      getDiplomas(),
-      getBenefitType()
-    ]);
+		const [
+			clustersRes,
+			areasRes,
+			statusesRes,
+			supportsRes,
+			typesRes,
+			microRes,
+			certRes,
+			diplomaRes,
+			benefitRes
+		] = await Promise.all([
+			getClusters(),
+			getDualAreas(),
+			getDocumentStatuses(),
+			getEconomicSupports(),
+			getDualTypes(),
+			getMicroCredentials(),
+			getCertifications(),
+			getDiplomas(),
+			getBenefitType()
+		]);
 
-    clusters.value = clustersRes.data;
-    areas.value = areasRes.data;
-    agreementStatuses.value = statusesRes.data;
-    supportTypes.value = supportsRes.data;
-    dualTypes.value = typesRes.data;
-    microCredentials.value = microRes.data;
-    certifications.value = certRes.data;
-    diplomas.value = diplomaRes.data;
-    benefitTypes.value = benefitRes.data;
+		clusters.value = clustersRes.data;
+		areas.value = areasRes.data;
+		agreementStatuses.value = statusesRes.data;
+		supportTypes.value = supportsRes.data;
+		dualTypes.value = typesRes.data;
+		microCredentials.value = microRes.data;
+		certifications.value = certRes.data;
+		diplomas.value = diplomaRes.data;
+		benefitTypes.value = benefitRes.data;
 
-    section3DataLoaded.value = true;
-    return true;
-  } catch (error) {
-    console.error('Error cargando datos de sección 3:', error);
-    await Swal.fire({
-      icon: 'error',
-      title: 'Error de carga',
-      text: 'No se pudieron cargar los datos de la sección 3',
-      confirmButtonColor: '#3085d6',
-    });
-    return false;
-  } finally {
-    section3Loading.value = false;
-  }
+		section3DataLoaded.value = true;
+		return true;
+	} catch (error) {
+		console.error('Error cargando datos de sección 3:', error);
+		await Swal.fire({
+			icon: 'error',
+			title: 'Error de carga',
+			text: 'No se pudieron cargar los datos de la sección 3',
+			confirmButtonColor: '#3085d6',
+		});
+		return false;
+	} finally {
+		section3Loading.value = false;
+	}
 };
 
 const loadExistingData = async () => {
-  if (!projectId.value) return;
+	if (!projectId.value) return;
 
-  globalLoadingMessage.value = 'Cargando datos del proyecto...';
+	globalLoadingMessage.value = 'Cargando datos del proyecto...';
 
-  try {
-    const res = await showDualProject(projectId.value);
-    const project = res.data;
+	try {
+		const res = await showDualProject(projectId.value);
+		const project = res.data;
 
-    formData.value.personal = {
-      id_student: '',
-      control_number: '',
-      name_student: '',
-      lastname: '',
-      gender: '',
-      semester: '',
-      id_career: '',
-      id_specialty: '',
-      academic_period: project.academic_period || [],
-      dual_project_students: project.dual_project_students || []
-    };
+		formData.value.personal = {
+			id_student: '',
+			control_number: '',
+			name_student: '',
+			lastname: '',
+			gender: '',
+			semester: '',
+			id_career: '',
+			id_specialty: '',
+			academic_period: project.academic_period || [],
+			dual_project_students: project.dual_project_students || []
+		};
 
-    if (project.dual_project_students && project.dual_project_students.length > 0) {
-      const firstStudent = project.dual_project_students[0].student;
-      formData.value.personal.control_number = firstStudent.control_number || '';
-      formData.value.personal.name_student = firstStudent.name || '';
-      formData.value.personal.lastname = firstStudent.lastname || '';
-      formData.value.personal.gender = firstStudent.gender || '';
-      formData.value.personal.semester = firstStudent.semester || '';
-      formData.value.personal.id_career = firstStudent.id_career || '';
-      formData.value.personal.id_specialty = firstStudent.id_specialty || '';
-    }
+		if (project.dual_project_students && project.dual_project_students.length > 0) {
+			const firstStudent = project.dual_project_students[0].student;
+			formData.value.personal.control_number = firstStudent.control_number || '';
+			formData.value.personal.name_student = firstStudent.name || '';
+			formData.value.personal.lastname = firstStudent.lastname || '';
+			formData.value.personal.gender = firstStudent.gender || '';
+			formData.value.personal.semester = firstStudent.semester || '';
+			formData.value.personal.id_career = firstStudent.id_career || '';
+			formData.value.personal.id_specialty = firstStudent.id_specialty || '';
+		}
 
-    formData.value.academico = {
-      id_institution: project.id_institution ? String(project.id_institution) : '',
-    };
+		formData.value.academico = {
+			id_institution: project.id_institution ? String(project.id_institution) : '',
+		};
 
-    const benefitTypesData = project.dual_project_reports?.benefit_types || [];
-    const formattedBenefitTypes = Array.isArray(benefitTypesData)
-        ? benefitTypesData.map(b => ({
-          id: b.id ? String(b.id) : (b.pivot?.id ? String(b.pivot.id) : ''),
-          quantity: Number(b.pivot?.quantity || 1)
-        })).filter(b => b.id)
-        : [];
+		const benefitTypesData = project.dual_project_reports?.benefit_types || [];
+		const formattedBenefitTypes = Array.isArray(benefitTypesData)
+			? benefitTypesData.map(b => ({
+				id: b.id ? String(b.id) : (b.pivot?.id ? String(b.pivot.id) : ''),
+				quantity: Number(b.pivot?.quantity || 1)
+			})).filter(b => b.id)
+			: [];
 
-    formData.value.unidadDual = {
-      name_report: project.dual_project_reports?.name ?? '',
-      id_organization: project.organization_dual_projects?.organization?.id ? String(project.organization_dual_projects.organization.id) : '',
-      id_dual_area: project.dual_project_reports?.dual_area?.id ? String(project.dual_project_reports.dual_area.id) : '',
-      period_start: project.dual_project_reports?.period_start ?? '',
-      period_end: project.dual_project_reports?.period_end ?? '',
-      period_observation: project.dual_project_reports?.period_observation ?? '',
-      status_document: project.dual_project_reports?.status_document?.id ? String(project.dual_project_reports.status_document.id) : '',
-      economic_support: project.dual_project_reports?.economic_support?.id ? String(project.dual_project_reports.economic_support.id) : '',
-      amount: String(project.dual_project_reports?.amount ?? ''),
-      qualification: project.dual_project_reports?.qualification ?? '',
-      is_concluded: project.dual_project_reports?.is_concluded ?? 0,
-      is_hired: project.dual_project_reports?.is_hired ?? 0,
-      hired_observation: project.dual_project_reports?.hired_observation ?? '',
-      dual_type_id: project.dual_project_reports?.dual_type?.id ? String(project.dual_project_reports.dual_type.id) : '',
-      max_qualification: project.dual_project_reports?.max_qualification ?? '',
-      micro_credentials: (project.dual_project_reports?.micro_credentials || []).map(m => String(m.id)),
-      certifications: (project.dual_project_reports?.certifications || []).map(c => String(c.id)),
-      diplomas: (project.dual_project_reports?.diplomas || []).map(d => String(d.id)),
-      benefitTypes: formattedBenefitTypes,
-      description: project.dual_project_reports?.description ?? '',
-      internal_advisor_name: project.dual_project_reports?.internal_advisor_name ?? '',
-      internal_advisor_qualification: project.dual_project_reports?.internal_advisor_qualification ?? null,
-      external_advisor_name: project.dual_project_reports?.external_advisor_name ?? '',
-      external_advisor_qualification: project.dual_project_reports?.external_advisor_qualification ?? null,
-    };
+		formData.value.unidadDual = {
+			name_report: project.dual_project_reports?.name ?? '',
+			id_organization: project.organization_dual_projects?.organization?.id ? String(project.organization_dual_projects.organization.id) : '',
+			id_dual_area: project.dual_project_reports?.dual_area?.id ? String(project.dual_project_reports.dual_area.id) : '',
+			period_start: project.dual_project_reports?.period_start ?? '',
+			period_end: project.dual_project_reports?.period_end ?? '',
+			period_observation: project.dual_project_reports?.period_observation ?? '',
+			status_document: project.dual_project_reports?.status_document?.id ? String(project.dual_project_reports.status_document.id) : '',
+			economic_support: project.dual_project_reports?.economic_support?.id ? String(project.dual_project_reports.economic_support.id) : '',
+			amount: String(project.dual_project_reports?.amount ?? ''),
+			qualification: project.dual_project_reports?.qualification ?? '',
+			is_concluded: project.dual_project_reports?.is_concluded ?? 0,
+			is_hired: project.dual_project_reports?.is_hired ?? 0,
+			hired_observation: project.dual_project_reports?.hired_observation ?? '',
+			dual_type_id: project.dual_project_reports?.dual_type?.id ? String(project.dual_project_reports.dual_type.id) : '',
+			max_qualification: project.dual_project_reports?.max_qualification ?? '',
+			micro_credentials: (project.dual_project_reports?.micro_credentials || []).map(m => String(m.id)),
+			certifications: (project.dual_project_reports?.certifications || []).map(c => String(c.id)),
+			diplomas: (project.dual_project_reports?.diplomas || []).map(d => String(d.id)),
+			benefitTypes: formattedBenefitTypes,
+			description: project.dual_project_reports?.description ?? '',
+			internal_advisor_name: project.dual_project_reports?.internal_advisor_name ?? '',
+			internal_advisor_qualification: project.dual_project_reports?.internal_advisor_qualification ?? null,
+			external_advisor_name: project.dual_project_reports?.external_advisor_name ?? '',
+			external_advisor_qualification: project.dual_project_reports?.external_advisor_qualification ?? null,
+		};
 
-    reportaModeloDual.value = mode.value === 'complete' ? true : !!project.dual_project_reports;
+		reportaModeloDual.value = mode.value === 'complete' ? true : !!project.dual_project_reports;
 
-    personalStepKey.value++;
-    updateLoadingProgress(40);
+		personalStepKey.value++;
+		updateLoadingProgress(40);
 
-  } catch (error) {
-    console.error('Error cargando datos del proyecto:', error);
-    throw error;
-  }
+	} catch (error) {
+		console.error('Error cargando datos del proyecto:', error);
+		throw error;
+	}
+};
+
+// ==================== [LOCALSTORAGE] FUNCIONES PARA GUARDADO ====================
+
+const STORAGE_KEY = 'dualProjectDraft'
+
+const saveDraft = () => {
+	if (isInitialLoad.value || mode.value !== 'create') return
+
+	try {
+		const draftData = {
+			formData: formData.value,
+			reportaModeloDual: reportaModeloDual.value,
+			section1Expanded: section1Expanded.value,
+			section2Expanded: section2Expanded.value,
+			section3Expanded: section3Expanded.value
+		}
+		localStorage.setItem(STORAGE_KEY, JSON.stringify(draftData))
+		console.log('Borrador guardado:', new Date().toLocaleTimeString())
+	} catch (error) {
+		console.error('Error guardando borrador:', error)
+	}
+}
+
+const saveDraftDebounced = () => {
+	if (saveTimeout) {
+		clearTimeout(saveTimeout)
+	}
+
+	saveTimeout = setTimeout(() => {
+		saveDraft()
+	}, 1000)
+}
+
+const loadDraft = () => {
+	const saved = localStorage.getItem(STORAGE_KEY)
+
+	if (!saved) return false
+
+	try {
+		const data = JSON.parse(saved)
+
+		if (data.formData) {
+			formData.value = data.formData
+			reportaModeloDual.value = data.reportaModeloDual ?? false
+			section1Expanded.value = data.section1Expanded ?? true
+			section2Expanded.value = data.section2Expanded ?? false
+			section3Expanded.value = data.section3Expanded ?? false
+		} else {
+			formData.value = data
+		}
+
+		console.log('Borrador cargado exitosamente')
+		return true
+	} catch (error) {
+		console.warn('Error cargando borrador:', error)
+		localStorage.removeItem(STORAGE_KEY)
+		return false
+	}
+}
+
+const clearDraft = () => {
+	localStorage.removeItem(STORAGE_KEY)
+	if (saveTimeout) {
+		clearTimeout(saveTimeout)
+		saveTimeout = null
+	}
+	console.log('Borrador eliminado')
+}
+const resetFormToDefault = () => {
+	formData.value = {
+		personal: {
+			id_student: '',
+			control_number: '',
+			name_student: '',
+			lastname: '',
+			gender: '',
+			semester: '',
+			id_career: '',
+			id_specialty: '',
+			academic_period: [],
+			dual_project_students: [],
+		},
+		academico: {
+			id_institution: '',
+		},
+		unidadDual: {
+			name_report: '',
+			id_organization: '',
+			id_dual_area: '',
+			period_start: '',
+			period_end: '',
+			period_observation: '',
+			status_document: '',
+			economic_support: '',
+			amount: '0',
+			qualification: '0',
+			max_qualification: '10',
+			is_concluded: 0,
+			is_hired: 0,
+			hired_observation: '',
+			dual_type_id: '',
+			micro_credentials: [],
+			certifications: [],
+			diplomas: [],
+			benefitTypes: [],
+			description: '',
+			internal_advisor_name: '',
+			internal_advisor_qualification: null,
+			external_advisor_name: '',
+			external_advisor_qualification: null,
+		}
+	};
+	reportaModeloDual.value = false;
+	section1Expanded.value = true;
+	section2Expanded.value = false;
+	section3Expanded.value = false;
 };
 
 // ==================== MÉTODOS PRINCIPALES ====================
 const toggleSection = async (sectionNumber: number) => {
-  if (globalLoading.value) return;
+	if (globalLoading.value) return;
 
-  if (sectionNumber === 2 && isSection1Incomplete.value) return;
-  if (sectionNumber === 3 && isSection2Incomplete.value) return;
+	if (sectionNumber === 2 && isSection1Incomplete.value) return;
+	if (sectionNumber === 3 && isSection2Incomplete.value) return;
 
-  switch (sectionNumber) {
-    case 1:
-      section1Expanded.value = !section1Expanded.value;
-      break;
-    case 2:
-      if (reportaModeloDual.value) {
-        if (mode.value === 'create' && !section2Expanded.value && !section2DataLoaded.value) {
-          await loadSection2Data();
-        }
-        section2Expanded.value = !section2Expanded.value;
-      }
-      break;
-    case 3:
-      if (reportaModeloDual.value) {
-        if (mode.value === 'create' && !section3Expanded.value && !section3DataLoaded.value) {
-          await loadSection3Data();
-        }
-        section3Expanded.value = !section3Expanded.value;
-      }
-      break;
-  }
+	switch (sectionNumber) {
+		case 1:
+			section1Expanded.value = !section1Expanded.value;
+			break;
+		case 2:
+			if (reportaModeloDual.value) {
+				if (mode.value === 'create' && !section2Expanded.value && !section2DataLoaded.value) {
+					await loadSection2Data();
+				}
+				section2Expanded.value = !section2Expanded.value;
+			}
+			break;
+		case 3:
+			if (reportaModeloDual.value) {
+				if (mode.value === 'create' && !section3Expanded.value && !section3DataLoaded.value) {
+					await loadSection3Data();
+				}
+				section3Expanded.value = !section3Expanded.value;
+			}
+			break;
+	}
 };
 
 const validateForm = async () => {
-  if (stepAcademicoRef.value?.validate) {
-    const academicValid = await stepAcademicoRef.value.validate();
-    if (!academicValid) {
-      await nextTick();
-      return false;
-    }
-  }
+	if (stepAcademicoRef.value?.validate) {
+		const academicValid = await stepAcademicoRef.value.validate();
+		if (!academicValid) {
+			await nextTick();
+			return false;
+		}
+	}
 
-  if (reportaModeloDual.value === false) return true;
+	if (reportaModeloDual.value === false) return true;
 
-  if (reportaModeloDual.value && stepPersonalRef.value?.validate) {
-    const personalValid = await stepPersonalRef.value.validate();
-    if (!personalValid) {
-      await nextTick();
-      return false;
-    }
+	if (reportaModeloDual.value && stepPersonalRef.value?.validate) {
+		const personalValid = await stepPersonalRef.value.validate();
+		if (!personalValid) {
+			await nextTick();
+			return false;
+		}
 
-    if ((formData.value.personal.dual_project_students?.length || 0) < 1) {
-      await Swal.fire({
-        icon: 'warning',
-        title: 'Estudiantes requeridos',
-        text: 'Debes agregar al menos 1 estudiante.',
-        confirmButtonColor: '#3085d6',
-      });
-      return false;
-    }
-  }
+		if ((formData.value.personal.dual_project_students?.length || 0) < 1) {
+			await Swal.fire({
+				icon: 'warning',
+				title: 'Estudiantes requeridos',
+				text: 'Debes agregar al menos 1 estudiante.',
+				confirmButtonColor: '#3085d6',
+			});
+			return false;
+		}
+	}
 
-  if (reportaModeloDual.value && stepUnidadDualRef.value?.validate) {
-    const unidadValid = await stepUnidadDualRef.value.validate();
-    if (!unidadValid) {
-      await nextTick();
-      return false;
-    }
-  }
+	if (reportaModeloDual.value && stepUnidadDualRef.value?.validate) {
+		const unidadValid = await stepUnidadDualRef.value.validate();
+		if (!unidadValid) {
+			await nextTick();
+			return false;
+		}
+	}
 
-  return true;
+	return true;
 };
 
 const formatDate = (date: string | Date | null): string => {
-  if (!date) return '';
-  try {
-    return new Date(date).toISOString().slice(0, 10);
-  } catch {
-    return '';
-  }
+	if (!date) return '';
+	try {
+		return new Date(date).toISOString().slice(0, 10);
+	} catch {
+		return '';
+	}
 };
 
 const submitForm = async () => {
-  if (isSubmitting.value || globalLoading.value) return;
+	if (isSubmitting.value || globalLoading.value) return;
 
-  try {
-    const isValid = await validateForm();
-    if (!isValid) return;
-  } catch (error) {
-    console.error('Error en validación:', error);
-    return;
-  }
+	try {
+		const isValid = await validateForm();
+		if (!isValid) return;
+	} catch (error) {
+		console.error('Error en validación:', error);
+		return;
+	}
 
-  if (!canSubmit.value) {
-    await Swal.fire({
-      icon: 'warning',
-      title: 'Formulario incompleto',
-      text: 'Por favor completa todas las secciones obligatorias',
-      confirmButtonColor: '#3085d6',
-    });
-    return;
-  }
+	if (!canSubmit.value) {
+		await Swal.fire({
+			icon: 'warning',
+			title: 'Formulario incompleto',
+			text: 'Por favor completa todas las secciones obligatorias',
+			confirmButtonColor: '#3085d6',
+		});
+		return;
+	}
 
-  isSubmitting.value = true;
-  globalLoadingMessage.value = mode.value === 'create' ? 'Creando proyecto...' : 'Actualizando proyecto...';
-  loadingProgress.value = 0;
+	isSubmitting.value = true;
+	globalLoadingMessage.value = mode.value === 'create' ? 'Creando proyecto...' : 'Actualizando proyecto...';
+	loadingProgress.value = 0;
 
-  try {
-    let payload: Record<string, any>;
+	try {
+		let payload: Record<string, any>;
 
-    if (reportaModeloDual.value === false) {
-      payload = {
-        has_report: 0,
-        id_institution: String(formData.value.academico.id_institution)
-      };
-    } else {
-      const studentCount = formData.value.personal.dual_project_students?.length || 0;
+		if (reportaModeloDual.value === false) {
+			payload = {
+				has_report: 0,
+				id_institution: String(formData.value.academico.id_institution)
+			};
+		} else {
+			const studentCount = formData.value.personal.dual_project_students?.length || 0;
 
-      const studentsPayload = formData.value.personal.dual_project_students.map(student => ({
-        control_number: student.student?.control_number || student.control_number,
-        name_student: student.student?.name || student.name_student,
-        lastname: student.student?.lastname || student.lastname,
-        gender: student.student?.gender || student.gender,
-        semester: student.student?.semester || student.semester,
-        id_career: student.student?.id_career ? String(student.student.id_career) : (student.id_career ? String(student.id_career) : ''),
-        id_specialty: student.student?.id_specialty ? String(student.student.id_specialty) : (student.id_specialty ? String(student.id_specialty) : null),
-        id_institution: String(formData.value.academico.id_institution)
-      }));
+			const studentsPayload = formData.value.personal.dual_project_students.map(student => ({
+				control_number: student.student?.control_number || student.control_number,
+				name_student: student.student?.name || student.name_student,
+				lastname: student.student?.lastname || student.lastname,
+				gender: student.student?.gender || student.gender,
+				semester: student.student?.semester || student.semester,
+				id_career: student.student?.id_career ? String(student.student.id_career) : (student.id_career ? String(student.id_career) : ''),
+				id_specialty: student.student?.id_specialty ? String(student.student.id_specialty) : (student.id_specialty ? String(student.id_specialty) : null),
+				id_institution: String(formData.value.academico.id_institution)
+			}));
 
-      const formattedBenefitTypes = Array.isArray(formData.value.unidadDual.benefitTypes)
-          ? formData.value.unidadDual.benefitTypes
-              .filter(b => b && b.id)
-              .map(b => ({
-                id: String(b.id),
-                quantity: Number(b.quantity || 1)
-              }))
-          : [];
+			const formattedBenefitTypes = Array.isArray(formData.value.unidadDual.benefitTypes)
+				? formData.value.unidadDual.benefitTypes
+					.filter(b => b && b.id)
+					.map(b => ({
+						id: String(b.id),
+						quantity: Number(b.quantity || 1)
+					}))
+				: [];
 
-      payload = {
-        has_report: 1,
-        id_institution: String(formData.value.academico.id_institution),
-        number_student: studentCount,
-        students: studentsPayload,
-        name_report: formData.value.unidadDual.name_report,
-        id_organization: String(formData.value.unidadDual.id_organization),
-        id_dual_area: String(formData.value.unidadDual.id_dual_area),
-        period_start: formatDate(formData.value.unidadDual.period_start),
-        period_end: formatDate(formData.value.unidadDual.period_end),
-        period_observation: formData.value.unidadDual.period_observation || '',
-        status_document: formData.value.unidadDual.status_document ? String(formData.value.unidadDual.status_document) : '',
-        economic_support: formData.value.unidadDual.economic_support ? String(formData.value.unidadDual.economic_support) : '',
-        amount: Number(formData.value.unidadDual.amount) || 0,
-        qualification: formData.value.unidadDual.qualification ? Number(formData.value.unidadDual.qualification) : null,
-        max_qualification: String(formData.value.unidadDual.max_qualification) || '10',
-        is_concluded: Number(formData.value.unidadDual.is_concluded) || 0,
-        is_hired: Number(formData.value.unidadDual.is_hired) || 0,
-        hired_observation: formData.value.unidadDual.hired_observation || '',
-        dual_type_id: formData.value.unidadDual.dual_type_id ? String(formData.value.unidadDual.dual_type_id) : '',
-        description: formData.value.unidadDual.description || '',
-        micro_credentials: (formData.value.unidadDual.micro_credentials || []).map(id => String(id)),
-        certifications: (formData.value.unidadDual.certifications || []).map(id => String(id)),
-        diplomas: (formData.value.unidadDual.diplomas || []).map(id => String(id)),
-        benefit_types: formattedBenefitTypes,
-        internal_advisor_name: formData.value.unidadDual.internal_advisor_name || '',
-        internal_advisor_qualification: formData.value.unidadDual.internal_advisor_qualification ? Number(formData.value.unidadDual.internal_advisor_qualification) : null,
-        external_advisor_name: formData.value.unidadDual.external_advisor_name || '',
-        external_advisor_qualification: formData.value.unidadDual.external_advisor_qualification ? Number(formData.value.unidadDual.external_advisor_qualification) : null,
-      };
-    }
+			payload = {
+				has_report: 1,
+				id_institution: String(formData.value.academico.id_institution),
+				number_student: studentCount,
+				students: studentsPayload,
+				name_report: formData.value.unidadDual.name_report,
+				id_organization: String(formData.value.unidadDual.id_organization),
+				id_dual_area: String(formData.value.unidadDual.id_dual_area),
+				period_start: formatDate(formData.value.unidadDual.period_start),
+				period_end: formatDate(formData.value.unidadDual.period_end),
+				period_observation: formData.value.unidadDual.period_observation || '',
+				status_document: formData.value.unidadDual.status_document ? String(formData.value.unidadDual.status_document) : '',
+				economic_support: formData.value.unidadDual.economic_support ? String(formData.value.unidadDual.economic_support) : '',
+				amount: Number(formData.value.unidadDual.amount) || 0,
+				qualification: formData.value.unidadDual.qualification ? Number(formData.value.unidadDual.qualification) : null,
+				max_qualification: String(formData.value.unidadDual.max_qualification) || '10',
+				is_concluded: Number(formData.value.unidadDual.is_concluded) || 0,
+				is_hired: Number(formData.value.unidadDual.is_hired) || 0,
+				hired_observation: formData.value.unidadDual.hired_observation || '',
+				dual_type_id: formData.value.unidadDual.dual_type_id ? String(formData.value.unidadDual.dual_type_id) : '',
+				description: formData.value.unidadDual.description || '',
+				micro_credentials: (formData.value.unidadDual.micro_credentials || []).map(id => String(id)),
+				certifications: (formData.value.unidadDual.certifications || []).map(id => String(id)),
+				diplomas: (formData.value.unidadDual.diplomas || []).map(id => String(id)),
+				benefit_types: formattedBenefitTypes,
+				internal_advisor_name: formData.value.unidadDual.internal_advisor_name || '',
+				internal_advisor_qualification: formData.value.unidadDual.internal_advisor_qualification ? Number(formData.value.unidadDual.internal_advisor_qualification) : null,
+				external_advisor_name: formData.value.unidadDual.external_advisor_name || '',
+				external_advisor_qualification: formData.value.unidadDual.external_advisor_qualification ? Number(formData.value.unidadDual.external_advisor_qualification) : null,
+			};
+		}
 
-    if (mode.value === 'create') {
-      await createDualProject(payload);
-      await Swal.fire({
-        icon: 'success',
-        title: '¡Éxito!',
-        text: 'Proyecto dual creado correctamente',
-        confirmButtonColor: '#3085d6',
-      });
-    } else {
-      await updateDualProject(projectId.value!, payload);
-      await Swal.fire({
-        icon: 'success',
-        title: '¡Éxito!',
-        text: 'Proyecto dual actualizado correctamente',
-        confirmButtonColor: '#3085d6',
-      });
-    }
+		if (mode.value === 'create') {
+			await createDualProject(payload);
+			await Swal.fire({
+				icon: 'success',
+				title: '¡Éxito!',
+				text: 'Proyecto dual creado correctamente',
+				confirmButtonColor: '#3085d6',
+			});
+		} else {
+			await updateDualProject(projectId.value!, payload);
+			await Swal.fire({
+				icon: 'success',
+				title: '¡Éxito!',
+				text: 'Proyecto dual actualizado correctamente',
+				confirmButtonColor: '#3085d6',
+			});
+		}
 
-    router.push('/form-elements');
+		clearDraft()
 
-  } catch (err: any) {
-    console.error('Error al guardar:', err);
+		router.push('/form-elements');
 
-    let errorMessage = 'Ocurrió un error inesperado';
+	} catch (err: any) {
+		console.error('Error al guardar:', err);
 
-    if (axios.isAxiosError(err) && err.response) {
-      console.error('Respuesta del servidor:', err.response.data);
+		let errorMessage = 'Ocurrió un error inesperado';
 
-      if (err.response.data.errors) {
-        const errorMessages = Object.values(err.response.data.errors).flat().join('<br>');
-        errorMessage = errorMessages;
-      } else if (err.response.data.message) {
-        errorMessage = err.response.data.message;
-      }
-    }
+		if (axios.isAxiosError(err) && err.response) {
+			console.error('Respuesta del servidor:', err.response.data);
 
-    await Swal.fire({
-      icon: 'error',
-      title: 'Error',
-      html: errorMessage,
-      confirmButtonColor: '#3085d6',
-    });
-  } finally {
-    isSubmitting.value = false;
-    loadingProgress.value = 100;
-  }
+			if (err.response.data.errors) {
+				const errorMessages = Object.values(err.response.data.errors).flat().join('<br>');
+				errorMessage = errorMessages;
+			} else if (err.response.data.message) {
+				errorMessage = err.response.data.message;
+			}
+		}
+
+		await Swal.fire({
+			icon: 'error',
+			title: 'Error',
+			html: errorMessage,
+			confirmButtonColor: '#3085d6',
+		});
+	} finally {
+		isSubmitting.value = false;
+		loadingProgress.value = 100;
+	}
 };
 
 // ==================== HANDLERS ====================
 const handleCareersUpdate = async () => {
-  try {
-    const response = await getCareers();
-    careers.value = response.data;
-  } catch (error) {
-    console.error('Error al recargar carreras:', error);
-  }
+	try {
+		const response = await getCareers();
+		careers.value = response.data;
+	} catch (error) {
+		console.error('Error al recargar carreras:', error);
+	}
 };
 
 const handleSpecialtiesUpdate = async () => {
-  try {
-    const response = await getSpecialties();
-    specialties.value = response.data;
-  } catch (error) {
-    console.error('Error al recargar especialidades:', error);
-  }
+	try {
+		const response = await getSpecialties();
+		specialties.value = response.data;
+	} catch (error) {
+		console.error('Error al recargar especialidades:', error);
+	}
 };
 
 const handleInstitutionsUpdate = (newInstitutions: any[]) => {
-  institutions.value = newInstitutions;
+	institutions.value = newInstitutions;
 };
 
 const handleOrganizationsUpdate = (newOrganizations: any[]) => {
-  organizations.value = newOrganizations;
+	organizations.value = newOrganizations;
 };
 
 const handleMicroCredentialsUpdate = (newMicroCredentials: any[]) => {
-  microCredentials.value = newMicroCredentials;
+	microCredentials.value = newMicroCredentials;
 };
 
 const handleDiplomasUpdate = (newDiplomas: any[]) => {
-  diplomas.value = newDiplomas;
+	diplomas.value = newDiplomas;
 };
 
 const handleCertificationsUpdate = (newCertifications: any[]) => {
-  certifications.value = newCertifications;
+	certifications.value = newCertifications;
 };
 
 const handleBenefitTypesUpdate = (newBenefitTypes: any[]) => {
-  benefitTypes.value = newBenefitTypes;
+	benefitTypes.value = newBenefitTypes;
 };
 
 const handleDualTypesUpdate = (newDualTypes: any[]) => {
-  dualTypes.value = newDualTypes;
+	dualTypes.value = newDualTypes;
 };
 
 const goBackToList = () => {
-  router.push('/form-elements');
+	if (mode.value === 'create' && pendingSectionsCount.value > 0) {
+		Swal.fire({
+			title: '¿Salir del formulario?',
+			text: 'Tienes cambios sin guardar. Se mantendrá un borrador automático.',
+			icon: 'question',
+			showCancelButton: true,
+			confirmButtonText: 'Sí, salir',
+			cancelButtonText: 'Cancelar'
+		}).then((result) => {
+			if (result.isConfirmed) {
+				router.push('/form-elements');
+			}
+		});
+	} else {
+		router.push('/form-elements');
+	}
 };
 
 const handleScroll = () => {
-  const formContainer = document.getElementById('form-container');
-  if (formContainer) {
-    const scrollPosition = window.scrollY + window.innerHeight;
-    const formBottom = formContainer.offsetTop + formContainer.offsetHeight;
-    showFloatingIndicator.value = pendingSectionsCount.value > 0 && scrollPosition < formBottom - 200;
-  }
+	const formContainer = document.getElementById('form-container');
+	if (formContainer) {
+		const scrollPosition = window.scrollY + window.innerHeight;
+		const formBottom = formContainer.offsetTop + formContainer.offsetHeight;
+		showFloatingIndicator.value = pendingSectionsCount.value > 0 && scrollPosition < formBottom - 200;
+	}
 };
 
 // ==================== WATCHERS ====================
 watch(reportaModeloDual, async (newValue) => {
-  if (newValue && !globalLoading.value) {
-    setTimeout(async () => {
-      if (!isSection1Incomplete.value && !section2Expanded.value) {
-        if (mode.value === 'create' && !section2DataLoaded.value) {
-          await loadSection2Data();
-        }
-        section2Expanded.value = true;
-      }
-    }, 100);
-  } else if (!newValue) {
-    section2Expanded.value = false;
-    section3Expanded.value = false;
-  }
+	if (newValue && !globalLoading.value) {
+		setTimeout(async () => {
+			if (!isSection1Incomplete.value && !section2Expanded.value) {
+				if (mode.value === 'create' && !section2DataLoaded.value) {
+					await loadSection2Data();
+				}
+				section2Expanded.value = true;
+			}
+		}, 100);
+	} else if (!newValue) {
+		section2Expanded.value = false;
+		section3Expanded.value = false;
+	}
 });
 
 watch(() => formData.value.academico.id_institution, async (newValue) => {
-  if (newValue && reportaModeloDual.value && !section2Expanded.value && !globalLoading.value) {
-    setTimeout(async () => {
-      if (mode.value === 'create' && !section2DataLoaded.value) {
-        await loadSection2Data();
-      }
-      section2Expanded.value = true;
-    }, 50);
-  }
+	if (newValue && reportaModeloDual.value && !section2Expanded.value && !globalLoading.value) {
+		setTimeout(async () => {
+			if (mode.value === 'create' && !section2DataLoaded.value) {
+				await loadSection2Data();
+			}
+			section2Expanded.value = true;
+		}, 50);
+	}
 });
 
 watch(() => formData.value.personal.dual_project_students?.length, async (newValue) => {
-  if (newValue && newValue >= 1 && reportaModeloDual.value && !section3Expanded.value && !globalLoading.value) {
-    setTimeout(async () => {
-      if (mode.value === 'create' && !section3DataLoaded.value) {
-        await loadSection3Data();
-      }
-      section3Expanded.value = true;
-    }, 50);
-  }
+	if (newValue && newValue >= 1 && reportaModeloDual.value && !section3Expanded.value && !globalLoading.value) {
+		setTimeout(async () => {
+			if (mode.value === 'create' && !section3DataLoaded.value) {
+				await loadSection3Data();
+			}
+			section3Expanded.value = true;
+		}, 50);
+	}
 });
 
 watch(pendingSectionsCount, (newCount) => {
-  showFloatingIndicator.value = newCount > 0;
+	showFloatingIndicator.value = newCount > 0;
 });
 
+watch(
+	() => ({
+		formData: formData.value,
+		reportaModeloDual: reportaModeloDual.value,
+		section1Expanded: section1Expanded.value,
+		section2Expanded: section2Expanded.value,
+		section3Expanded: section3Expanded.value
+	}),
+	() => {
+		saveDraftDebounced()
+	},
+	{ deep: true }
+)
+
 onMounted(async () => {
-  mode.value = getModeFromRoute();
-  projectId.value = getPkFromRoute();
+	mode.value = getModeFromRoute();
+	projectId.value = getPkFromRoute();
 
-  globalLoading.value = true;
-  globalLoadingMessage.value = 'Preparando formulario...';
-  loadingProgress.value = 0;
+	globalLoading.value = true;
+	globalLoadingMessage.value = 'Preparando formulario...';
+	loadingProgress.value = 0;
 
-  try {
-    if (mode.value === 'create') {
-      const essentialLoaded = await loadEssentialDependencies();
-      if (!essentialLoaded) {
-        throw new Error('No se pudieron cargar los datos esenciales');
-      }
+	try {
+		if (mode.value === 'create') {
+			const essentialLoaded = await loadEssentialDependencies();
+			if (!essentialLoaded) {
+				throw new Error('No se pudieron cargar los datos esenciales');
+			}
 
-      if (projectId.value) {
-        await loadExistingData();
-      }
+			const hasDraft = loadDraft();
 
-    } else {
-      globalLoadingMessage.value = 'Cargando todos los datos...';
+			if (hasDraft) {
+				if (formData.value.academico.id_institution) {
+					globalLoadingMessage.value = 'Cargando datos de carreras y especialidades...';
+					await loadSection2Data();
+				}
 
-      const allDataLoaded = await loadAllData();
-      if (!allDataLoaded) {
-        throw new Error('No se pudieron cargar los datos necesarios');
-      }
+				if (formData.value.personal.dual_project_students?.length > 0) {
+					globalLoadingMessage.value = 'Cargando datos de unidades duales...';
+					await loadSection3Data();
+				}
 
-      if (projectId.value) {
-        await loadExistingData();
-      }
+				const result = await Swal.fire({
+					title: '¡Borrador encontrado!',
+					text: 'Tienes un formulario guardado. ¿Quieres continuar donde lo dejaste?',
+					icon: 'question',
+					showCancelButton: true,
+					confirmButtonText: 'Sí, continuar',
+					cancelButtonText: 'Empezar de nuevo',
+					confirmButtonColor: '#3085d6',
+					cancelButtonColor: '#d33'
+				});
 
-      section2DataLoaded.value = true;
-      section3DataLoaded.value = true;
-    }
+				if (!result.isConfirmed) {
+					clearDraft();
+					resetFormToDefault();
+				}
+			}
 
-    globalLoadingMessage.value = '¡Listo!';
-    loadingProgress.value = 100;
+			if (projectId.value) {
+				await loadExistingData();
+				clearDraft();
+			}
 
-    setTimeout(() => {
-      globalLoading.value = false;
-    }, 300);
+		} else {
+			globalLoadingMessage.value = 'Cargando todos los datos...';
+			const allDataLoaded = await loadAllData();
+			if (!allDataLoaded) {
+				throw new Error('No se pudieron cargar los datos necesarios');
+			}
 
-  } catch (error) {
-    console.error('Error inicializando formulario:', error);
-    await Swal.fire({
-      icon: 'error',
-      title: 'Error de carga',
-      text: 'No se pudieron cargar los datos necesarios',
-      confirmButtonColor: '#3085d6',
-    });
-    goBackToList();
-  }
+			if (projectId.value) {
+				await loadExistingData();
+			}
 
-  window.addEventListener('scroll', handleScroll, { passive: true });
+			section2DataLoaded.value = true;
+			section3DataLoaded.value = true;
+
+			clearDraft();
+		}
+
+		isInitialLoad.value = false;
+
+		globalLoadingMessage.value = '¡Listo!';
+		loadingProgress.value = 100;
+
+		setTimeout(() => {
+			globalLoading.value = false;
+		}, 300);
+
+	} catch (error) {
+		console.error('Error inicializando formulario:', error);
+		await Swal.fire({
+			icon: 'error',
+			title: 'Error de carga',
+			text: 'No se pudieron cargar los datos necesarios',
+			confirmButtonColor: '#3085d6',
+		});
+		goBackToList();
+	}
+
+	window.addEventListener('scroll', handleScroll, { passive: true });
 });
 
 onUnmounted(() => {
-  window.removeEventListener('scroll', handleScroll);
+	window.removeEventListener('scroll', handleScroll);
+	if (saveTimeout) {
+		clearTimeout(saveTimeout);
+	}
 });
 </script>
 

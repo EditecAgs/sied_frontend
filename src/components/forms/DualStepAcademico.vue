@@ -217,190 +217,186 @@ watch(isInstitutionValid, (newVal) => {
 			<p class="text-gray-600 text-sm">Complete los datos académicos del proyecto dual</p>
 		</div>
 
-	<div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-		<div class="bg-gray-50 rounded-xl p-6 border border-gray-200">
-			<h3 class="text-lg font-semibold text-brand-800 mb-4 flex items-center">
-				<span class="w-6 h-6 bg-brand-100 rounded-full flex items-center justify-center text-brand-800 text-sm mr-2">1</span>
-				Selección de Institución
-			</h3>
+		<div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+			<div class="bg-gray-50 rounded-xl p-6 border border-gray-200">
+				<h3 class="text-lg font-semibold text-brand-800 mb-4 flex items-center">
+					<span class="w-6 h-6 bg-brand-100 rounded-full flex items-center justify-center text-brand-800 text-sm mr-2">1</span>
+					Selección de Institución
+				</h3>
 
-			<div class="space-y-4">
-				<div>
-					<label class="label">Institución Educativa <span class="text-red-500">*</span></label>
-					<div class="flex gap-3 items-start">
-						<div class="flex-1 relative">
-							<div class="relative">
-								<input 
-									v-model="searchTerm"
-									:disabled="loading"
-									class="input pl-10 pr-10 w-full"
-									@focus="showDropdown = true; isDropdownFocused = true"
-									@blur="handleInputBlur"
-									@input="handleSearchInput"
-									:placeholder="loading ? 'Cargando instituciones...' : 'Buscar institución por nombre...'"
+				<div class="space-y-4">
+					<div>
+						<label class="label">Institución Educativa <span class="text-red-500">*</span></label>
+						<div class="flex gap-3 items-start">
+							<div class="flex-1 relative">
+								<div class="relative">
+									<input 
+										v-model="searchTerm"
+										:disabled="loading"
+										class="input pl-10 pr-10 w-full"
+										:placeholder="loading ? 'Cargando instituciones...' : 'Buscar institución por nombre...'"
+										@focus="showDropdown = true; isDropdownFocused = true"
+										@blur="handleInputBlur"
+										@input="handleSearchInput" />
 
-								/>
+									<!-- Spinner cuando está cargando -->
+									<span
+										v-if="loading"
+										class="absolute right-3 top-1/2 -translate-y-1/2 animate-spin">
+										⏳
+									</span>
 
-								<!-- Spinner cuando está cargando -->
-								<span
-									v-if="loading"
-									class="absolute right-3 top-1/2 -translate-y-1/2 animate-spin"
-								>
-									⏳
-								</span>
+									<!-- Flechita cuando ya cargó -->
+									<span 
+										v-else
+										class="absolute text-brand-400 right-3 top-1/2 -translate-y-1/2 cursor-pointer"
+										@click="showDropdown = !showDropdown">
+										▼
+									</span>
+								</div>
 
-								<!-- Flechita cuando ya cargó -->
-								<span 
-									v-else
-									class="absolute text-brand-400 right-3 top-1/2 -translate-y-1/2 cursor-pointer"
-									@click="showDropdown = !showDropdown"
-								>
-									▼
-								</span>
+								<transition name="fade">
+									<ul
+										v-if="showDropdown && filteredInstitutions.length"
+										class="absolute z-10 bg-white border border-gray-300 rounded-lg mt-1 w-full max-h-60 overflow-y-auto shadow-lg"
+										@mouseenter="handleDropdownFocus"
+										@mouseleave="handleDropdownBlurInternal">
+										<li
+											v-for="inst in filteredInstitutions"
+											:key="inst.id"
+											class="px-4 py-3 hover:bg-brand-50 cursor-pointer transition-colors border-b border-gray-100 last:border-b-0"
+											:class="{ 'bg-brand-50': props.modelValue?.id_institution === inst.id }"
+											@click="handleInstitutionSelect(inst)">
+											<div class="font-medium text-gray-900">{{ inst.name }}</div>
+											<div v-if="inst.abbreviation" class="text-sm text-gray-500">{{ inst.abbreviation }}</div>
+										</li>
+									</ul>
+								</transition>
+
+								<div v-if="searchTerm && !filteredInstitutions.length" class="text-sm text-gray-500 mt-1">
+									No se encontraron instituciones.
+									<button
+										type="button"
+										class="text-brand-600 hover:text-brand-800 underline"
+										@click="openCreateModal">
+										¿Crear nueva institución?
+									</button>
+								</div>
 							</div>
 
-							<transition name="fade">
-								<ul
-									v-if="showDropdown && filteredInstitutions.length"
-									class="absolute z-10 bg-white border border-gray-300 rounded-lg mt-1 w-full max-h-60 overflow-y-auto shadow-lg"
-									@mouseenter="handleDropdownFocus"
-									@mouseleave="handleDropdownBlurInternal">
-									<li
-										v-for="inst in filteredInstitutions"
-										:key="inst.id"
-										class="px-4 py-3 hover:bg-brand-50 cursor-pointer transition-colors border-b border-gray-100 last:border-b-0"
-										:class="{ 'bg-brand-50': props.modelValue?.id_institution === inst.id }"
-										@click="handleInstitutionSelect(inst)">
-										<div class="font-medium text-gray-900">{{ inst.name }}</div>
-										<div v-if="inst.abbreviation" class="text-sm text-gray-500">{{ inst.abbreviation }}</div>
-									</li>
-								</ul>
-							</transition>
-
-							<div v-if="searchTerm && !filteredInstitutions.length" class="text-sm text-gray-500 mt-1">
-								No se encontraron instituciones.
-								<button
-									type="button"
-									class="text-brand-600 hover:text-brand-800 underline"
-									@click="openCreateModal">
-									¿Crear nueva institución?
-								</button>
-							</div>
+							<btn-create
+								:table="'institution'"
+								class="h-12 px-4 flex-shrink-0"
+								tooltip="Crear nueva institución"
+								@open="openCreateModal" />
 						</div>
 
-						<btn-create
-							:table="'institution'"
-							class="h-12 px-4 flex-shrink-0"
-							tooltip="Crear nueva institución"
-							@open="openCreateModal" />
-					</div>
+						<div v-if="errors.id_institution" class="text-red-500 text-sm mt-2 flex items-center">
+							<svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+								<path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2h-1V9z" clip-rule="evenodd" />
+							</svg>
+							{{ errors.id_institution }}
+						</div>
 
-					<div v-if="errors.id_institution" class="text-red-500 text-sm mt-2 flex items-center">
-						<svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
-							<path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2h-1V9z" clip-rule="evenodd" />
-						</svg>
-						{{ errors.id_institution }}
-					</div>
-
-					<div v-else-if="isInstitutionValid" class="text-green-600 text-sm mt-2 flex items-center">
-						<svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
-							<path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
-						</svg>
-						Institución válida seleccionada
-					</div>
-				</div>
-
-				<div
-					v-if="isInstitutionValid"
-					class="bg-green-50 border border-green-200 rounded-lg p-4">
-					<div class="flex items-center justify-between">
-						<div class="flex items-center">
-							<svg class="w-5 h-5 text-green-600 mr-2" fill="currentColor" viewBox="0 0 20 20">
+						<div v-else-if="isInstitutionValid" class="text-green-600 text-sm mt-2 flex items-center">
+							<svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
 								<path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
 							</svg>
-							<div>
-								<span class="text-green-800 font-medium">Institución seleccionada</span>
-								<p class="text-green-700 text-sm">{{ searchTerm }}</p>
-							</div>
+							Institución válida seleccionada
 						</div>
-						<button
-							type="button"
-							class="text-green-600 hover:text-green-800 text-sm font-medium"
-							@click="updateField('id_institution', ''); searchTerm = '';">
-							Cambiar
-						</button>
+					</div>
+
+					<div
+						v-if="isInstitutionValid"
+						class="bg-green-50 border border-green-200 rounded-lg p-4">
+						<div class="flex items-center justify-between">
+							<div class="flex items-center">
+								<svg class="w-5 h-5 text-green-600 mr-2" fill="currentColor" viewBox="0 0 20 20">
+									<path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
+								</svg>
+								<div>
+									<span class="text-green-800 font-medium">Institución seleccionada</span>
+									<p class="text-green-700 text-sm">{{ searchTerm }}</p>
+								</div>
+							</div>
+							<button
+								type="button"
+								class="text-green-600 hover:text-green-800 text-sm font-medium"
+								@click="updateField('id_institution', ''); searchTerm = '';">
+								Cambiar
+							</button>
+						</div>
 					</div>
 				</div>
 			</div>
-		</div>
 
-		<div
-			v-if="mode === 'create' || (mode !== 'create' && reportaModeloDual !== true)"
-			class="bg-gray-50 rounded-xl p-6 border border-gray-200">
-			<h3 class="text-lg font-semibold text-brand-800 mb-4 flex items-center">
-				<span class="w-6 h-6 bg-brand-100 rounded-full flex items-center justify-center text-brand-800 text-sm mr-2">2</span>
-				Tipo de Seguimiento
-			</h3>
+			<div
+				v-if="mode === 'create' || (mode !== 'create' && reportaModeloDual !== true)"
+				class="bg-gray-50 rounded-xl p-6 border border-gray-200">
+				<h3 class="text-lg font-semibold text-brand-800 mb-4 flex items-center">
+					<span class="w-6 h-6 bg-brand-100 rounded-full flex items-center justify-center text-brand-800 text-sm mr-2">2</span>
+					Tipo de Seguimiento
+				</h3>
 
-			<div class="space-y-4">
-				<label class="label">¿Este seguimiento incluye información del Modelo Dual?</label>
-				<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-					<label
-						class="relative flex cursor-pointer rounded-xl border-2 p-4 transition-all"
-						:class="reportaModeloDual === true
-							? 'border-brand-600 bg-brand-50'
-							: 'border-gray-200 hover:border-brand-300'">
-						<input
-							type="radio"
-							:checked="reportaModeloDual === true"
-							class="radio sr-only"
-							@change="$emit('update:reportaModeloDual', true)" />
-						<div class="flex items-center w-full">
-							<div class="flex-shrink-0">
-								<div
-									class="w-6 h-6 rounded-full border-2 flex items-center justify-center"
-									:class="reportaModeloDual === true ? 'border-brand-600 bg-brand-600' : 'border-gray-400'">
-									<svg v-if="reportaModeloDual === true" class="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
-										<path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
-									</svg>
+				<div class="space-y-4">
+					<label class="label">¿Este seguimiento incluye información del Modelo Dual?</label>
+					<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+						<label
+							class="relative flex cursor-pointer rounded-xl border-2 p-4 transition-all"
+							:class="reportaModeloDual === true
+								? 'border-brand-600 bg-brand-50'
+								: 'border-gray-200 hover:border-brand-300'">
+							<input
+								type="radio"
+								:checked="reportaModeloDual === true"
+								class="radio sr-only"
+								@change="$emit('update:reportaModeloDual', true)" />
+							<div class="flex items-center w-full">
+								<div class="flex-shrink-0">
+									<div
+										class="w-6 h-6 rounded-full border-2 flex items-center justify-center"
+										:class="reportaModeloDual === true ? 'border-brand-600 bg-brand-600' : 'border-gray-400'">
+										<svg v-if="reportaModeloDual === true" class="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
+											<path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
+										</svg>
+									</div>
+								</div>
+								<div class="ml-3">
+									<p class="font-medium text-gray-900">Sí, con Modelo Dual</p>
+									<p class="text-sm text-gray-500">Incluye información completa</p>
 								</div>
 							</div>
-							<div class="ml-3">
-								<p class="font-medium text-gray-900">Sí, con Modelo Dual</p>
-								<p class="text-sm text-gray-500">Incluye información completa</p>
-							</div>
-						</div>
-					</label>
+						</label>
 
-					<label
-						class="relative flex cursor-pointer rounded-xl border-2 p-4 transition-all"
-						:class="reportaModeloDual === false
-							? 'border-brand-600 bg-brand-50'
-							: 'border-gray-200 hover:border-brand-300'">
-						<input
-							type="radio"
-							:checked="reportaModeloDual === false"
-							class="radio sr-only"
-							@change="$emit('update:reportaModeloDual', false)" />
-						<div class="flex items-center w-full">
-							<div class="flex-shrink-0">
-								<div
-									class="w-6 h-6 rounded-full border-2 flex items-center justify-center"
-									:class="reportaModeloDual === false ? 'border-brand-600 bg-brand-600' : 'border-gray-400'">
-									<svg v-if="reportaModeloDual === false" class="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
-										<path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
-									</svg>
+						<label
+							class="relative flex cursor-pointer rounded-xl border-2 p-4 transition-all"
+							:class="reportaModeloDual === false
+								? 'border-brand-600 bg-brand-50'
+								: 'border-gray-200 hover:border-brand-300'">
+							<input
+								type="radio"
+								:checked="reportaModeloDual === false"
+								class="radio sr-only"
+								@change="$emit('update:reportaModeloDual', false)" />
+							<div class="flex items-center w-full">
+								<div class="flex-shrink-0">
+									<div
+										class="w-6 h-6 rounded-full border-2 flex items-center justify-center"
+										:class="reportaModeloDual === false ? 'border-brand-600 bg-brand-600' : 'border-gray-400'">
+										<svg v-if="reportaModeloDual === false" class="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
+											<path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
+										</svg>
+									</div>
+								</div>
+								<div class="ml-3">
+									<p class="font-medium text-gray-900">No, solo seguimiento</p>
+									<p class="text-sm text-gray-500">Información básica únicamente</p>
 								</div>
 							</div>
-							<div class="ml-3">
-								<p class="font-medium text-gray-900">No, solo seguimiento</p>
-								<p class="text-sm text-gray-500">Información básica únicamente</p>
-							</div>
-						</div>
-					</label>
+						</label>
+					</div>
 				</div>
 			</div>
-		</div>
 		</div>
 
 		<div class="bg-brand-100 rounded-xl p-6 border border-brand-200">
