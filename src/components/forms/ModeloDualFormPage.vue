@@ -310,7 +310,7 @@
 	</AdminLayout>
 </template>
 
-<script setup lang="ts">
+<script setup>
 import { ref, computed, onMounted, watch, nextTick, onUnmounted, shallowRef } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import axios from 'axios';
@@ -340,6 +340,7 @@ import { getCertifications } from '../../services/dual_projects/certifications.j
 import { getDiplomas } from '../../services/dual_projects/diplomas.js';
 import { getAcademicPeriods } from '../../services/institutions/academic-periods';
 import { getBenefitType } from '../../services/dual_projects/BenefitType';
+import { saveDraft, loadDraft, clearDraft } from '../../services/dual_projects/draft.service';
 import {
 	ArrowLeftIcon,
 	CheckIcon,
@@ -353,18 +354,18 @@ const router = useRouter();
 
 // ==================== VARIABLES REACTIVAS PRINCIPALES ====================
 const mode = ref('create');
-const projectId = ref<number | null>(null);
+const projectId = ref(null);
 
+// ==================== VARIABLES PARA BORRADOR EN BACKEND ====================
+let saveTimeout = null;
 const isInitialLoad = ref(true);
-
-let saveTimeout: NodeJS.Timeout | null = null;
 
 // ==================== ESTADOS DE CARGA ====================
 const globalLoading = ref(false);
 const globalLoadingMessage = ref('Iniciando formulario...');
 const loadingProgress = ref(0);
 const isSubmitting = ref(false);
-const reportaModeloDual = ref<boolean>(false);
+const reportaModeloDual = ref(false);
 const personalStepKey = ref(0);
 const showFloatingIndicator = ref(false);
 
@@ -446,7 +447,7 @@ const diplomas = shallowRef([]);
 const benefitTypes = shallowRef([]);
 
 // ==================== FUNCIONES AUXILIARES ====================
-const getModeFromRoute = (): string => {
+const getModeFromRoute = () => {
 	const path = route.path;
 	if (path.includes('/modelo-dual/editar/')) return 'edit';
 	if (path.includes('/modelo-dual/completar/')) return 'complete';
@@ -454,7 +455,7 @@ const getModeFromRoute = (): string => {
 	return 'create';
 };
 
-const getPkFromRoute = (): string | null => {
+const getPkFromRoute = () => {
 	const path = route.path;
 
 	const numberMatch = path.match(/\/(\d+)$/);
@@ -554,7 +555,7 @@ const filteredSpecialtiesForInstitution = computed(() => {
 });
 
 // ==================== MÉTODOS DE CARGA ====================
-const updateLoadingProgress = (increment: number) => {
+const updateLoadingProgress = (increment) => {
 	loadingProgress.value = Math.min(loadingProgress.value + increment, 100);
 };
 
@@ -811,73 +812,65 @@ const loadExistingData = async () => {
 	}
 };
 
-// ==================== [LOCALSTORAGE] FUNCIONES PARA GUARDADO ====================
 
-const STORAGE_KEY = 'dualProjectDraft'
-
-const saveDraft = () => {
-	if (isInitialLoad.value || mode.value !== 'create') return
+const saveDraftToBackend = async () => {
+	if (isInitialLoad.value || mode.value !== 'create') return;
 
 	try {
-		const draftData = {
+		await saveDraft(projectId.value, {
 			formData: formData.value,
 			reportaModeloDual: reportaModeloDual.value,
 			section1Expanded: section1Expanded.value,
 			section2Expanded: section2Expanded.value,
 			section3Expanded: section3Expanded.value
-		}
-		localStorage.setItem(STORAGE_KEY, JSON.stringify(draftData))
-		console.log('Borrador guardado:', new Date().toLocaleTimeString())
+		});
 	} catch (error) {
-		console.error('Error guardando borrador:', error)
+		console.error('Error guardando borrador en backend:', error);
 	}
-}
+};
+
 
 const saveDraftDebounced = () => {
 	if (saveTimeout) {
-		clearTimeout(saveTimeout)
+		clearTimeout(saveTimeout);
 	}
 
 	saveTimeout = setTimeout(() => {
-		saveDraft()
-	}, 1000)
-}
+		saveDraftToBackend();
+	}, 1000);
+};
 
-const loadDraft = () => {
-	const saved = localStorage.getItem(STORAGE_KEY)
-
-	if (!saved) return false
-
+const loadDraftFromBackend = async () => {
 	try {
-		const data = JSON.parse(saved)
+		const response = await loadDraft(
+			mode.value === 'edit' ? projectId.value : null
+		);
 
-		if (data.formData) {
-			formData.value = data.formData
-			reportaModeloDual.value = data.reportaModeloDual ?? false
-			section1Expanded.value = data.section1Expanded ?? true
-			section2Expanded.value = data.section2Expanded ?? false
-			section3Expanded.value = data.section3Expanded ?? false
-		} else {
-			formData.value = data
+		if (response.data.exists) {
+			formData.value = response.data.form_data;
+			reportaModeloDual.value = response.data.reporta_modelo_dual;
+			section1Expanded.value = response.data.section1_expanded;
+			section2Expanded.value = response.data.section2_expanded;
+			section3Expanded.value = response.data.section3_expanded;
+			return true;
 		}
-
-		console.log('Borrador cargado exitosamente')
-		return true
+		return false;
 	} catch (error) {
-		console.warn('Error cargando borrador:', error)
-		localStorage.removeItem(STORAGE_KEY)
-		return false
+		console.error('Error cargando borrador:', error);
+		return false;
 	}
-}
+};
 
-const clearDraft = () => {
-	localStorage.removeItem(STORAGE_KEY)
-	if (saveTimeout) {
-		clearTimeout(saveTimeout)
-		saveTimeout = null
+const clearDraftInBackend = async () => {
+	try {
+		const draftId = mode.value === 'edit' ? projectId.value : null;
+
+		await clearDraft(draftId);
+	} catch (error) {
+		console.error('Error limpiando borrador:', error);
 	}
-	console.log('Borrador eliminado')
-}
+};
+
 const resetFormToDefault = () => {
 	formData.value = {
 		personal: {
@@ -929,7 +922,7 @@ const resetFormToDefault = () => {
 };
 
 // ==================== MÉTODOS PRINCIPALES ====================
-const toggleSection = async (sectionNumber: number) => {
+const toggleSection = async (sectionNumber) => {
 	if (globalLoading.value) return;
 
 	if (sectionNumber === 2 && isSection1Incomplete.value) return;
@@ -998,7 +991,7 @@ const validateForm = async () => {
 	return true;
 };
 
-const formatDate = (date: string | Date | null): string => {
+const formatDate = (date) => {
 	if (!date) return '';
 	try {
 		return new Date(date).toISOString().slice(0, 10);
@@ -1029,11 +1022,18 @@ const submitForm = async () => {
 	}
 
 	isSubmitting.value = true;
+	isInitialLoad.value = true;
+
+	if (saveTimeout) {
+		clearTimeout(saveTimeout);
+		saveTimeout = null;
+	}
+
 	globalLoadingMessage.value = mode.value === 'create' ? 'Creando proyecto...' : 'Actualizando proyecto...';
 	loadingProgress.value = 0;
 
 	try {
-		let payload: Record<string, any>;
+		let payload;
 
 		if (reportaModeloDual.value === false) {
 			payload = {
@@ -1096,7 +1096,12 @@ const submitForm = async () => {
 		}
 
 		if (mode.value === 'create') {
-			await createDualProject(payload);
+			const response = await createDualProject(payload);
+
+			if (response.data && response.data.id) {
+				projectId.value = response.data.id;
+			}
+
 			await Swal.fire({
 				icon: 'success',
 				title: '¡Éxito!',
@@ -1104,7 +1109,7 @@ const submitForm = async () => {
 				confirmButtonColor: '#3085d6',
 			});
 		} else {
-			await updateDualProject(projectId.value!, payload);
+			await updateDualProject(projectId.value, payload);
 			await Swal.fire({
 				icon: 'success',
 				title: '¡Éxito!',
@@ -1113,11 +1118,11 @@ const submitForm = async () => {
 			});
 		}
 
-		clearDraft()
+		await clearDraftInBackend();
 
 		router.push('/form-elements');
 
-	} catch (err: any) {
+	} catch (err) {
 		console.error('Error al guardar:', err);
 
 		let errorMessage = 'Ocurrió un error inesperado';
@@ -1139,6 +1144,8 @@ const submitForm = async () => {
 			html: errorMessage,
 			confirmButtonColor: '#3085d6',
 		});
+
+		isInitialLoad.value = false;
 	} finally {
 		isSubmitting.value = false;
 		loadingProgress.value = 100;
@@ -1164,31 +1171,31 @@ const handleSpecialtiesUpdate = async () => {
 	}
 };
 
-const handleInstitutionsUpdate = (newInstitutions: any[]) => {
+const handleInstitutionsUpdate = (newInstitutions) => {
 	institutions.value = newInstitutions;
 };
 
-const handleOrganizationsUpdate = (newOrganizations: any[]) => {
+const handleOrganizationsUpdate = (newOrganizations) => {
 	organizations.value = newOrganizations;
 };
 
-const handleMicroCredentialsUpdate = (newMicroCredentials: any[]) => {
+const handleMicroCredentialsUpdate = (newMicroCredentials) => {
 	microCredentials.value = newMicroCredentials;
 };
 
-const handleDiplomasUpdate = (newDiplomas: any[]) => {
+const handleDiplomasUpdate = (newDiplomas) => {
 	diplomas.value = newDiplomas;
 };
 
-const handleCertificationsUpdate = (newCertifications: any[]) => {
+const handleCertificationsUpdate = (newCertifications) => {
 	certifications.value = newCertifications;
 };
 
-const handleBenefitTypesUpdate = (newBenefitTypes: any[]) => {
+const handleBenefitTypesUpdate = (newBenefitTypes) => {
 	benefitTypes.value = newBenefitTypes;
 };
 
-const handleDualTypesUpdate = (newDualTypes: any[]) => {
+const handleDualTypesUpdate = (newDualTypes) => {
 	dualTypes.value = newDualTypes;
 };
 
@@ -1272,10 +1279,10 @@ watch(
 		section3Expanded: section3Expanded.value
 	}),
 	() => {
-		saveDraftDebounced()
+		saveDraftDebounced();
 	},
 	{ deep: true }
-)
+);
 
 onMounted(async () => {
 	mode.value = getModeFromRoute();
@@ -1292,7 +1299,7 @@ onMounted(async () => {
 				throw new Error('No se pudieron cargar los datos esenciales');
 			}
 
-			const hasDraft = loadDraft();
+			const hasDraft = await loadDraftFromBackend();
 
 			if (hasDraft) {
 				if (formData.value.academico.id_institution) {
@@ -1317,14 +1324,14 @@ onMounted(async () => {
 				});
 
 				if (!result.isConfirmed) {
-					clearDraft();
+					await clearDraftInBackend();
 					resetFormToDefault();
 				}
 			}
 
 			if (projectId.value) {
 				await loadExistingData();
-				clearDraft();
+				await clearDraftInBackend();
 			}
 
 		} else {
@@ -1341,7 +1348,7 @@ onMounted(async () => {
 			section2DataLoaded.value = true;
 			section3DataLoaded.value = true;
 
-			clearDraft();
+			await clearDraftInBackend();
 		}
 
 		isInitialLoad.value = false;
@@ -1369,41 +1376,43 @@ onMounted(async () => {
 
 onUnmounted(() => {
 	window.removeEventListener('scroll', handleScroll);
+
 	if (saveTimeout) {
 		clearTimeout(saveTimeout);
+		saveDraftToBackend();
 	}
 });
 </script>
 
 <style scoped>
 .btn {
-  @apply px-5 py-2 rounded-lg font-medium transition-all duration-200;
+	@apply px-5 py-2 rounded-lg font-medium transition-all duration-200;
 }
 
 .animate-pulse {
-  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+	animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 }
 
 @keyframes pulse {
-  0%, 100% {
-    opacity: 1;
-    transform: scale(1);
-  }
-  50% {
-    opacity: 0.8;
-    transform: scale(1.02);
-  }
+	0%, 100% {
+		opacity: 1;
+		transform: scale(1);
+	}
+	50% {
+		opacity: 0.8;
+		transform: scale(1.02);
+	}
 }
 
 .transition-all {
-  will-change: transform, opacity, max-height;
+	will-change: transform, opacity, max-height;
 }
 
 .border-gradient {
-  border-image: linear-gradient(to right, #3b82f6, #8b5cf6) 1;
+	border-image: linear-gradient(to right, #3b82f6, #8b5cf6) 1;
 }
 
 #form-container {
-  scroll-behavior: smooth;
+	scroll-behavior: smooth;
 }
 </style>
