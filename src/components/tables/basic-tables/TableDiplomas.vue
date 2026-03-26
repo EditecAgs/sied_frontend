@@ -183,7 +183,6 @@ const fetchData = () => {
 	getDiplomas()
 		.then(({ data }) => {
 			diplomados.value = data;
-			console.log(data);
 		})
 		.finally(() => {
 			isLoading.value = false;

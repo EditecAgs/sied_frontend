@@ -79,7 +79,7 @@
 						<td class="px-5 py-3 text-sm">
 							<div class="flex space-x-2">
 								<btnEdit :table="'Certificacion'" :pk="certification.id" @open="(data) => $emit('open', data)" />
-								<btnDelete :table="'certifications'" :pk="certification.id" @open-confirm="(payload) => $emit('open-confirm', payload)" />
+								<btnDelete :table="'certifications'" :pk="certification.id ?? index" @open-confirm="(payload) => $emit('open-confirm', payload)" />
 							</div>
 						</td>
 					</tr>
@@ -187,7 +187,6 @@ const fetchData = () => {
 	getCertifications()
 		.then(({ data }) => {
 			certifications.value = data;
-            console.log(data);
 		})
 		.finally(() => {
 			isLoading.value = false;

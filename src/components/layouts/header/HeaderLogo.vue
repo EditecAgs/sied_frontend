@@ -1,5 +1,5 @@
 <template>
-  <router-link to="/" class="lg:hidden"/>
+	<router-link to="/" class="lg:hidden" />
 </template>
 
 <script setup>

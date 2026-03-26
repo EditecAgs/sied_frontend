@@ -113,7 +113,6 @@
 								class="hover:bg-gray-200/60 dark:hover:bg-gray-800/80 transition-colors">
 								<td class="py-3 px-4 text-sm font-medium text-gray-900 dark:text-white break-words max-w-[250px]">
 									<div class="flex items-center gap-2">
-										<!-- Círculo de color para identificar en la gráfica -->
 										<div
 											v-if="getSectorColorIndex(item) !== -1"
 											class="w-3 h-3 rounded-full flex-shrink-0"

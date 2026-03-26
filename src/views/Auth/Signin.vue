@@ -163,7 +163,7 @@ const handleSubmit = async () => {
         console.warn('No se pudo obtener la institución:', errInst)
       }
 
-      router.push('/dashboard')
+      router.push('/form-elements')
     } else {
       Swal.fire({
         icon: 'warning',

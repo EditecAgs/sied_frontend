@@ -11,10 +11,14 @@
 					class="object-cover h-full w-full" />
 			</span>
 
-
-			<span class="block mr-1 font-medium text-theme-sm">
-				{{ displayName }}
-			</span>
+			<div class="flex flex-col items-end mr-1">
+				<span class="font-medium text-theme-sm">
+					{{ displayName }}
+				</span>
+				<span class="text-xs text-gray-500 dark:text-gray-400 ">
+					{{ userName }}
+				</span>
+			</div>
 
 			<ChevronDownIcon :class="{ 'rotate-180': dropdownOpen }" />
 		</button>
@@ -54,10 +58,10 @@ import {
 	UserCircleIcon,
 	ChevronDownIcon,
 	LogoutIcon,
-	SettingsIcon,
 	InfoCircleIcon
 } from '../../../icons'
 import { showInstitutions } from '../../../services/institutions/institutions'
+import { showUsers } from '../../../services/users/users'
 
 const router = useRouter()
 const dropdownOpen = ref(false)
@@ -76,25 +80,25 @@ const closeDropdown = () => (dropdownOpen.value = false)
 
 
 const signOut = () => {
-  axios.get('/logout') 
-    .then(() => {
-      localStorage.removeItem('token')
-      localStorage.removeItem('user')
-      localStorage.removeItem('institution')
-      axios.defaults.headers.common['Authorization'] = undefined
+	axios.get('/logout')
+		.then(() => {
+			localStorage.removeItem('token')
+			localStorage.removeItem('user')
+			localStorage.removeItem('institution')
+			axios.defaults.headers.common['Authorization'] = undefined
 
-      router.push('/signin')
-      closeDropdown()
-    })
-    .catch((err) => {
-      console.error('Error al cerrar sesión:', err)
-      localStorage.removeItem('token')
-      localStorage.removeItem('user')
-      localStorage.removeItem('institution')
-      axios.defaults.headers.common['Authorization'] = undefined
-      router.push('/signin')
-      closeDropdown()
-    })
+			router.push('/signin')
+			closeDropdown()
+		})
+		.catch((err) => {
+			console.error('Error al cerrar sesión:', err)
+			localStorage.removeItem('token')
+			localStorage.removeItem('user')
+			localStorage.removeItem('institution')
+			axios.defaults.headers.common['Authorization'] = undefined
+			router.push('/signin')
+			closeDropdown()
+		})
 }
 
 const handleClickOutside = (event: MouseEvent) => {
@@ -110,6 +114,22 @@ onMounted(async () => {
 	if (rawUser) {
 		try {
 			user.value = JSON.parse(rawUser)
+
+			if (user.value?.id && !user.value.lastname) {
+				try {
+					const token = localStorage.getItem('token')
+					if (token) {
+						axios.defaults.headers.common['Authorization'] = `Bearer ${token}`
+					}
+					const userResponse = await showUsers(user.value.id)
+					if (userResponse?.data) {
+						user.value = userResponse.data
+						localStorage.setItem('user', JSON.stringify(userResponse.data))
+					}
+				} catch (err) {
+					console.error('Error al obtener detalles del usuario:', err)
+				}
+			}
 		} catch (err) {
 			console.warn('Error parseando user de localStorage', err)
 		}
@@ -145,6 +165,7 @@ onMounted(async () => {
 onUnmounted(() => {
 	document.removeEventListener('click', handleClickOutside)
 })
+
 const logoUrl = computed(() => {
 	if (!institution.value) return '/images/institutionsLogo/logo_ITA.png'
 
@@ -156,12 +177,20 @@ const logoUrl = computed(() => {
 	return '/images/institutionsLogo/logo_ITA.png'
 })
 
-
-
-
 const displayName = computed(() => {
 	if (institution.value?.name) return institution.value.name
 	if (user.value?.name) return user.value.name
 	return 'Institución'
+})
+
+const userName = computed(() => {
+	if (user.value?.name && user.value?.lastname) {
+		return `${user.value.name} ${user.value.lastname}`
+	} else if (user.value?.name) {
+		return user.value.name
+	} else if (user.value?.email) {
+		return user.value.email
+	}
+	return 'Usuario'
 })
 </script>

@@ -377,9 +377,6 @@ const fetchData = async () => {
 	} catch (err) {
 		console.error('Error al cargar datos de cámaras:', err)
 		loadError.value = err.message || 'Error desconocido'
-		localClusters.value = []
-		nationalClusters.value = []
-		totalOrganizationsCount.value = 0
 		emit('error', err)
 	} finally {
 		loading.value = false

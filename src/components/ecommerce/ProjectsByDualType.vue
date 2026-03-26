@@ -60,7 +60,6 @@
 				</div>
 
 				<div class="mt-4 sm:mt-6 space-y-6">
-					<!-- Primeros 3 registros con degradado vino -->
 					<div class="space-y-3">
 						<h4 class="text-sm font-semibold text-gray-700 dark:text-gray-300 border-b border-gray-200 dark:border-gray-700 pb-2">
 							Principales Tipos de Educación Dual
@@ -76,8 +75,7 @@
 									boxShadow: '0 2px 4px rgba(131, 24, 27, 0.2)'
 								}"
 								@mouseenter="hoveredWineItem = index"
-								@mouseleave="hoveredWineItem = null"
-								@click="onTypeClick(item)">
+								@mouseleave="hoveredWineItem = null">
 								<div
 									class="w-5 h-5 rounded-full flex-shrink-0 border-2 border-white shadow-md sm:w-6 sm:h-6"
 									:style="{
@@ -107,7 +105,6 @@
 						</div>
 					</div>
 
-					<!-- Registros restantes (a partir del 4to) con sección "Alternativas duales" y degradado azul -->
 					<div v-if="alternativeTypes.length > 0" class="space-y-3">
 						<div class="flex items-center justify-between border-b border-gray-200 dark:border-gray-700 pb-2">
 							<h4 class="text-sm font-semibold text-gray-700 dark:text-gray-300">
@@ -350,14 +347,6 @@ const loadData = async () => {
 			dualTypesData.value = response || []
 		}
 
-		console.log('Datos de proyectos por tipo dual cargados:', {
-			totalTipos: dualTypesData.value.length,
-			tiposConProyectos: filteredData.value.length,
-			primeros3: topThreeTypes.value.length,
-			alternativas: alternativeTypes.value.length,
-			tiposSinProyectos: typesWithZeroProjects.value.length,
-			totalProyectos: totalProjects.value
-		})
 
 		await nextTick()
 		chartKey.value++
@@ -366,7 +355,6 @@ const loadData = async () => {
 	} catch (err) {
 		console.error('Error al obtener proyectos por tipo dual:', err)
 		loadError.value = err
-		dualTypesData.value = []
 		emit('error', err)
 	} finally {
 		loading.value = false
@@ -374,9 +362,6 @@ const loadData = async () => {
 	}
 }
 
-const onTypeClick = (type) => {
-	console.log('Tipo de educación dual seleccionado:', type)
-}
 
 onMounted(async () => {
 	isMounted.value = true

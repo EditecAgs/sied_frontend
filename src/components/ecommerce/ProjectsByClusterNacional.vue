@@ -275,9 +275,6 @@ const chartOptions = computed(() => ({
 		if (elements.length > 0) {
 			const index = elements[0].index
 			const cluster = filteredNationalClusters.value[index]
-			if (cluster) {
-				console.log('Cámara nacional seleccionada:', cluster)
-			}
 		}
 	},
 	animation: {
@@ -296,8 +293,6 @@ const fetchData = async () => {
 
 		let clustersData = null
 
-		console.log('Respuesta del backend:', response)
-
 		if (response && response.nacionales !== undefined) {
 			clustersData = response
 		}
@@ -309,13 +304,6 @@ const fetchData = async () => {
 		}
 		nationalClusters.value = clustersData?.nacionales || []
 
-		console.log('Datos de proyectos por cámaras nacionales cargados:', {
-			estructuraRecibida: response,
-			totalCámarasNacionales: nationalClusters.value.length,
-			cámarasConProyectos: filteredNationalClusters.value.length,
-			totalProyectos: totalProjectsNational.value,
-			datos: filteredNationalClusters.value.slice(0, 3)
-		})
 
 		await nextTick()
 		chartKey.value++
@@ -324,7 +312,6 @@ const fetchData = async () => {
 	} catch (err) {
 		console.error('Error al cargar proyectos por cámaras nacionales:', err)
 		loadError.value = err
-		nationalClusters.value = []
 		emit('error', err)
 	} finally {
 		loading.value = false
