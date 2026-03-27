@@ -1,0 +1,33 @@
+name: prod_build
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: [self-hosted, Prod]
+
+    steps:
+      - name: Clonar repositorio
+        uses: actions/checkout@v4
+
+      - name: Usar Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+
+      - name: Instalar dependencias
+        run: npm install
+
+      - name: Ejecutar build
+        run: npm run build
+
+      - name: Verificar carpeta dist
+        run: ls -la dist
+
+      - name: Copiar build a Nginx
+        run: |
+          rm -rf /var/www/html/sied/*
+          cp -r dist/* /var/www/html/sied/
