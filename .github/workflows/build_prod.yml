@@ -26,8 +26,10 @@ jobs:
 
       - name: Verificar carpeta dist
         run: ls -la dist
-
+      
       - name: Copiar build a Nginx
         run: |
-          rm -rf /var/www/html/sied/*
-          cp -r dist/* /var/www/html/sied/
+          rm -rf /var/www/html/sied/dist/*
+          mkdir -p /var/www/html/sied/dist
+          cp -r dist/* /var/www/html/sied/dist/
+          sudo chown -R www-data:www-data /var/www/html/sied/dist/
