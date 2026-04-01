@@ -25,7 +25,7 @@ jobs:
         run: npm ci --verbose
 
       - name: Ejecutar build
-        run: npm run build
+        run: NODE_OPTIONS="--max-old-space-size=1024" npm run build
 
       - name: Verificar carpeta dist
         run: ls -la dist
