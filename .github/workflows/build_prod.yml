@@ -13,16 +13,13 @@ jobs:
       - name: Clonar repositorio
         uses: actions/checkout@v4
 
-      - name: Verificar Node
-        run: |
-          node -v
-          npm -v
-
-      - name: Limpiar cache npm
-        run: npm cache clean --force
+      - name: Usar Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
 
       - name: Instalar dependencias
-        run: npm ci --verbose
+        run: npm install
 
       - name: Ejecutar build
         run: NODE_OPTIONS="--max-old-space-size=1024" npm run build
